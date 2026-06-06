@@ -1,0 +1,347 @@
+---
+import '../styles/global.scss';
+
+// Force SSR mode
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aura Invite - Wedding Invitation Platform</title>
+    <meta name="description" content="Platform undangan pernikahan online premium berbasis Astro, Supabase, dan Cloudflare Pages." />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body class="home-body">
+
+    <!-- Glowing background ornaments -->
+    <div class="home-glow home-glow--top" aria-hidden="true"></div>
+    <div class="home-glow home-glow--bottom" aria-hidden="true"></div>
+
+    <!-- Navigation Header -->
+    <header class="home-header">
+      <div class="home-header__brand">
+        <span class="home-header__logo">AURA INVITE</span>
+      </div>
+      <div class="home-header__badge">Production-Ready</div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="home-main">
+      <div class="home-content">
+
+        <span class="home-eyebrow">Next-Gen Wedding Invitations</span>
+
+        <h1 class="home-headline">
+          Undangan Pernikahan <span class="home-headline__accent">Premium &amp; Cepat</span>
+        </h1>
+
+        <p class="home-desc">
+          Platform undangan pernikahan modular performa tinggi tanpa server yang dikendalikan penuh dari database Supabase. Mendukung custom domain, multi-acara, kado digital, dan view counter privasi.
+        </p>
+
+        <!-- Feature Cards -->
+        <div class="home-features">
+
+          <div class="feature-card">
+            <div class="feature-card__dot"></div>
+            <h4 class="feature-card__title">Astro Core Engine</h4>
+            <p class="feature-card__desc">Server-side rendering super cepat dengan target skor Lighthouse 90+ dan pemisahan kode otomatis.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__dot"></div>
+            <h4 class="feature-card__title">Modular Sections</h4>
+            <p class="feature-card__desc">Hero, countdown, couple, multiple-events, timeline, wishes, bank transfer, dan QRIS kado digital.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__dot"></div>
+            <h4 class="feature-card__title">Supabase Driven</h4>
+            <p class="feature-card__desc">Kontrol penuh tanpa panel admin yang lambat. Cukup buat atau edit baris data langsung di Supabase.</p>
+          </div>
+
+        </div>
+
+        <!-- Status Badges -->
+        <div class="home-badges">
+          <div class="home-status-badge">
+            <span class="home-status-badge__dot"></span>
+            Cloudflare Pages Ready
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="home-footer">
+      &copy; {new Date().getFullYear()} Aura Invite &bull; Built for scale and visual excellence
+    </footer>
+
+  </body>
+</html>
+
+<style lang="scss">
+  /* ── Body & Layout ── */
+  .home-body {
+    min-height: 100vh;
+    background-color: #020617; // slate-950
+    color: #f1f5f9;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-x: hidden;
+    position: relative;
+
+    ::selection {
+      background-color: rgba(200, 161, 101, 0.25);
+    }
+  }
+
+  /* ── Glowing Orbs ── */
+  .home-glow {
+    position: absolute;
+    width: 50vw;
+    height: 50vw;
+    border-radius: 9999px;
+    pointer-events: none;
+    filter: blur(120px);
+
+    &--top {
+      top: -10%;
+      left: -10%;
+      background-color: rgba(200, 161, 101, 0.08);
+    }
+
+    &--bottom {
+      bottom: -10%;
+      right: -10%;
+      background-color: rgba(59, 130, 246, 0.04);
+    }
+  }
+
+  /* ── Header ── */
+  .home-header {
+    width: 100%;
+    padding: 24px;
+    max-width: 1024px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 10;
+  }
+
+  .home-header__logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+    background: linear-gradient(to right, #C8A165, #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .home-header__badge {
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #94a3b8;
+    border: 1px solid #1e293b;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    background-color: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Main ── */
+  .home-main {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .home-content {
+    max-width: 768px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Eyebrow */
+  .home-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #C8A165;
+    margin-bottom: 16px;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Headline */
+  .home-headline {
+    font-family: 'Outfit', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    color: #ffffff;
+    margin-bottom: 24px;
+    line-height: 1.15;
+    max-width: 672px;
+
+    @media (min-width: 640px) {
+      font-size: 60px;
+    }
+
+    &__accent {
+      background: linear-gradient(to right, #C8A165, #fde68a, #DFBE8C);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+
+  /* Description */
+  .home-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    max-width: 512px;
+    margin-bottom: 40px;
+    line-height: 1.75;
+    font-weight: 300;
+
+    @media (min-width: 640px) { font-size: 14px; }
+  }
+
+  /* ── Feature Cards ── */
+  .home-features {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 672px;
+    text-align: left;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .feature-card {
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(30, 41, 59, 0.8);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+
+    &:hover {
+      border-color: rgba(200, 161, 101, 0.2);
+    }
+
+    &__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      background-color: #C8A165;
+      margin-bottom: 12px;
+    }
+
+    &__title {
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin: 0 0 6px;
+      letter-spacing: 0.8px;
+    }
+
+    &__desc {
+      font-size: 10px;
+      color: #94a3b8;
+      line-height: 1.75;
+      margin: 0;
+    }
+  }
+
+  /* ── Status Badge ── */
+  .home-badges {
+    margin-top: 48px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .home-status-badge {
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #1e293b;
+    background-color: rgba(15, 23, 42, 0.3);
+    padding: 8px 16px;
+    border-radius: 9999px;
+
+    &__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      background-color: #10b981;
+      animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+  }
+
+  /* ── Footer ── */
+  .home-footer {
+    width: 100%;
+    text-align: center;
+    padding: 24px;
+    font-size: 10px;
+    color: #475569;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 10;
+    border-top: 1px solid rgba(15, 23, 42, 0.5);
+    background-color: rgba(2, 6, 23, 0.4);
+  }
+
+  /* ── Keyframes ── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes ping {
+    75%, 100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+</style>

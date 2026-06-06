@@ -1,0 +1,81 @@
+---
+import FontLoader from "../components/common/FontLoader.astro";
+import "../styles/global.scss";
+import type { Wedding, InvitationSettings } from "../types";
+
+interface Props {
+  title?: string;
+  wedding: Wedding;
+  settings: InvitationSettings;
+  to?: string | null;
+  templateClass?: string;
+}
+
+const { title, wedding, settings, to, templateClass } = Astro.props;
+
+const brideName = wedding.bride_name;
+const groomName = wedding.groom_name;
+const defaultTitle = `The Wedding of ${groomName} & ${brideName}`;
+const docTitle = title || defaultTitle;
+const description = `Undangan pernikahan online ${groomName} dan ${brideName} pada ${new Date(wedding.wedding_date).toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.`;
+
+const theme = settings.theme_config.theme;
+---
+
+<!doctype html>
+<html lang="id" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Dynamic Fonts Injection -->
+    <FontLoader fontHeading={theme.fontHeading} fontBody={theme.fontBody} />
+
+    <!-- SEO Meta Tags -->
+    <title>{docTitle}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph (Facebook / WhatsApp) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={docTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={defaultTitle} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={docTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <!-- Dynamic Theme Styling Injection -->
+    <style
+      define:vars={{
+        primaryColor: theme.primaryColor,
+        secondaryColor: theme.secondaryColor,
+        textColor: theme.textColor,
+        bgColor: theme.bgColor,
+        fontHeading: theme.fontHeading,
+        fontBody: theme.fontBody,
+      }}
+    >
+      :root {
+        --primary-color: var(--primaryColor);
+        --secondary-color: var(--secondaryColor);
+        --text-color: var(--textColor);
+        --bg-color: var(--bgColor);
+        --font-heading: var(--fontHeading);
+        --font-body: var(--fontBody);
+      }
+    </style>
+  </head>
+  <body
+    class:list={[
+      "bg-secondary-light text-slate-800 antialiased font-body",
+      templateClass,
+    ]}
+    style={`color: ${theme.textColor}`}
+  >
+    <slot />
+  </body>
+</html>

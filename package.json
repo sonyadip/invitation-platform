@@ -1,0 +1,26 @@
+{
+  "name": "invitation-platform",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^9.1.0",
+    "@fancyapps/ui": "^6.1.14",
+    "@supabase/supabase-js": "^2.43.4",
+    "astro": "^4.15.0",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "sass": "^1.77.2",
+    "typescript": "^5.4.5"
+  }
+}
