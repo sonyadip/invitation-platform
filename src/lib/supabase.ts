@@ -1,20 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 import { createSupabaseClientOptions } from './supabase-options';
 
-const supabaseUrl =
-  (typeof process !== 'undefined' ? process.env.SUPABASE_URL : '') ||
-  import.meta.env.SUPABASE_URL ||
-  'https://placeholder-project-id.supabase.co'; // Fallback to avoid build compilation crash
-
-const supabaseAnonKey =
-  (typeof process !== 'undefined' ? process.env.SUPABASE_ANON_KEY : '') ||
-  import.meta.env.SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder-key'; // Fallback to avoid build compilation crash
-
-if (supabaseUrl.includes('placeholder-project-id')) {
-  console.warn('WARNING: Supabase URL and Anon Key are using default placeholder values. Database calls will fail until actual credentials are configured in your environment.');
+function getEnvValue(name: string) {
+  return (typeof process !== 'undefined' ? process.env[name] : '') || import.meta.env[name] || '';
 }
 
-const clientOptions = await createSupabaseClientOptions();
+function createSupabaseClient() {
+  const supabaseUrl = getEnvValue('SUPABASE_URL');
+  const supabaseAnonKey = getEnvValue('SUPABASE_ANON_KEY');
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, clientOptions);
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY are required.');
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey, createSupabaseClientOptions());
+}
+
+export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_target, property) {
+    const client = createSupabaseClient() as any;
+    const value = client[property];
+    return typeof value === 'function' ? value.bind(client) : value;
+  }
+});
