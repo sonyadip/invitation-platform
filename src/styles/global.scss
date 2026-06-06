@@ -1,0 +1,80 @@
+/* Aura Invite - Global SCSS Stylesheet */
+
+// --- 1. CSS Custom Properties (Variables) ---
+:root {
+  --primary-color: #C8A165;
+  --primary-light: #DFBE8C;
+  --primary-dark: #AA844C;
+  --secondary-color: #F5F1EA;
+  --secondary-light: #FAF7F2;
+  --secondary-dark: #ECE3D5;
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --text-color: #2D3748;
+  --bg-color: #FFFFFF;
+}
+
+// --- 2. Base Resets ---
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--secondary-light);
+  color: var(--text-color);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+// --- 3. Selection Styling ---
+::selection {
+  background-color: rgba(200, 161, 101, 0.3);
+  color: inherit;
+}
+
+// --- 4. Shared Component Classes ---
+
+// Glassmorphism (used in Countdown, [slug].astro status cards)
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+// --- 5. Keyframes ---
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

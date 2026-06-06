@@ -1,0 +1,22 @@
+---
+interface Props {
+  fontHeading: string;
+  fontBody: string;
+}
+
+const { fontHeading, fontBody } = Astro.props;
+
+const formatFont = (font: string) => {
+  return font.trim().replace(/\s+/g, '+');
+};
+
+const headingParam = formatFont(fontHeading || 'Playfair Display');
+const bodyParam = formatFont(fontBody || 'Inter');
+
+// Generate premium loading string covering standard styling weights
+const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${headingParam}:ital,wght@0,300;0,400;0,600;0,700;1,400&family=${bodyParam}:wght@300;400;500;600;700&display=swap`;
+---
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href={googleFontsUrl} rel="stylesheet" />

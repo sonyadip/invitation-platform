@@ -1,0 +1,339 @@
+---
+import { getInvitationByDomainOrSlug } from '../services/invitation';
+import {
+  getClientIp,
+  getInvitationAccessState,
+  handlePasswordUnlock,
+  isInvitationUnlocked,
+  resolveInvitationIdentifier
+} from '../services/invitation-runtime';
+import { shouldTrackInvitationView, trackInvitationView } from '../services/view-tracking';
+import { loadTemplate } from '../templates/registry';
+
+// Force dynamic SSR execution for Cloudflare Pages serverless runtime
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+const { identifier, isDomain } = resolveInvitationIdentifier(Astro.url, slug);
+const data = await getInvitationByDomainOrSlug(identifier, isDomain);
+
+if (!data) {
+  return new Response('Undangan tidak ditemukan atau telah dihapus.', { status: 404 });
+}
+
+const { wedding, settings } = data;
+const now = new Date();
+const unlockResult = await handlePasswordUnlock({
+  request: Astro.request,
+  cookies: Astro.cookies,
+  url: Astro.url,
+  weddingId: wedding.id,
+  accessPassword: settings.access_password
+});
+
+if (unlockResult.redirect) {
+  return unlockResult.redirect;
+}
+
+const errorMessage = unlockResult.errorMessage;
+const isUnlocked = await isInvitationUnlocked(Astro.cookies, wedding.id, settings.access_password);
+const { isMaintenance, isExpired, isPasswordLocked } = getInvitationAccessState(settings, isUnlocked, now);
+const guestName = Astro.url.searchParams.get('to') || null;
+
+if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked)) {
+  await trackInvitationView({
+    weddingId: wedding.id,
+    clientIp: getClientIp(Astro.request, Astro.clientAddress),
+    userAgent: Astro.request.headers.get('user-agent') || 'Unknown',
+    now
+  });
+}
+
+const loadedTemplate = await loadTemplate(wedding.template);
+const ActiveTemplate = loadedTemplate.component as any;
+
+if (!ActiveTemplate) {
+  return new Response(
+    `Template "${loadedTemplate.key}" was not found. Make sure src/templates/${loadedTemplate.key}/ follows the template convention.`,
+    { status: 404 }
+  );
+}
+
+---
+
+{isMaintenance ? (
+  <!-- MAINTENANCE MODE SCREEN -->
+  <div class="status-screen status-screen--light">
+    <div class="status-card glassmorphism">
+      <div class="status-card__bar status-card__bar--amber"></div>
+      <div class="status-card__icon status-card__icon--amber">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+        </svg>
+      </div>
+      <h1 class="status-card__title">Under Maintenance</h1>
+      <p class="status-card__desc">Undangan pernikahan saat ini sedang dalam proses pemeliharaan sistem. Silakan kunjungi kembali beberapa saat lagi.</p>
+    </div>
+  </div>
+) : isExpired ? (
+  <!-- EXPIRED INVITATION SCREEN -->
+  <div class="status-screen status-screen--light">
+    <div class="status-card glassmorphism">
+      <div class="status-card__bar status-card__bar--red"></div>
+      <div class="status-card__icon status-card__icon--red">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+      <h1 class="status-card__title">Undangan Berakhir</h1>
+      <p class="status-card__desc">Masa aktif undangan online ini telah berakhir.</p>
+      <p class="status-card__note">Daftar RSVP & Konfirmasi telah dinonaktifkan.</p>
+    </div>
+  </div>
+) : isPasswordLocked ? (
+  <!-- PASSWORD GATE SCREEN -->
+  <div class="status-screen status-screen--dark">
+    <div class="gate-card">
+      <div class="status-card__bar status-card__bar--gold"></div>
+      <div class="gate-card__icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+      </div>
+      <h1 class="gate-card__title">Halaman Terproteksi</h1>
+      <p class="gate-card__desc">Silakan masukkan kata sandi akses untuk membuka undangan pernikahan online ini.</p>
+      <form method="POST" class="gate-form">
+        <input type="hidden" name="action" value="unlock" />
+        <div class="gate-form__field">
+          <label for="gate-password" class="gate-form__label">Kata Sandi Akses</label>
+          <input
+            type="password"
+            id="gate-password"
+            name="password"
+            required
+            placeholder="Masukkan kata sandi..."
+            class="gate-form__input"
+          />
+        </div>
+        {errorMessage && (
+          <div class="gate-form__error">{errorMessage}</div>
+        )}
+        <button type="submit" class="gate-form__submit">Buka Undangan</button>
+      </form>
+    </div>
+  </div>
+) : (
+  <!-- FULL INVITATION RENDERING SYSTEM -->
+  <ActiveTemplate data={data} guestName={guestName} />
+)}
+
+<style lang="scss">
+  /* ── Status Screens ── */
+  .status-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+
+    &--light {
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+
+    &--dark {
+      background-color: #020617;
+      color: #f1f5f9;
+    }
+  }
+
+  /* ── Status Card (maintenance / expired) ── */
+  .status-card {
+    max-width: 448px;
+    width: 100%;
+    // .glassmorphism from global.scss
+    padding: 32px;
+    border-radius: 24px;
+    border: 1px solid rgba(200, 161, 101, 0.2);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    @media (min-width: 768px) { padding: 48px; }
+
+    &__bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+
+      &--amber { background-color: #f59e0b; }
+      &--red   { background-color: #ef4444; }
+      &--gold  { background-color: var(--primary-color, #C8A165); }
+    }
+
+    &__icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+
+      svg { width: 32px; height: 32px; }
+
+      &--amber { background-color: #fffbeb; color: #f59e0b; }
+      &--red   { background-color: #fff1f2; color: #ef4444; }
+    }
+
+    &__title {
+      font-family: var(--font-heading, 'Playfair Display', serif);
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 12px;
+    }
+
+    &__desc {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.75;
+      margin: 0;
+    }
+
+    &__note {
+      font-size: 10px;
+      color: #94a3b8;
+      font-style: italic;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+  }
+
+  /* ── Password Gate Card ── */
+  .gate-card {
+    max-width: 384px;
+    width: 100%;
+    background-color: #0f172a;
+    border: 1px solid rgba(200, 161, 101, 0.2);
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &__icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 9999px;
+      background-color: rgba(200, 161, 101, 0.1);
+      color: var(--primary-color, #C8A165);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+
+      svg { width: 24px; height: 24px; }
+    }
+
+    &__title {
+      font-family: var(--font-heading, 'Playfair Display', serif);
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 8px;
+    }
+
+    &__desc {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.75;
+      margin: 0 0 24px;
+      padding: 0 16px;
+      text-align: center;
+    }
+  }
+
+  /* ── Gate Form ── */
+  .gate-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+
+    &__field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    &__label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    &__input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-family: inherit;
+
+      &::placeholder { color: #64748b; }
+
+      &:focus {
+        border-color: var(--primary-color, #C8A165);
+        box-shadow: 0 0 0 3px rgba(200, 161, 101, 0.2);
+      }
+    }
+
+    &__error {
+      font-size: 12px;
+      color: #f87171;
+      background-color: rgba(69, 10, 10, 0.55);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(127, 29, 29, 0.5);
+    }
+
+    &__submit {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary-color, #C8A165);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      cursor: pointer;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover {
+        background-color: var(--primary-dark, #AA844C);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25);
+      }
+    }
+  }
+</style>

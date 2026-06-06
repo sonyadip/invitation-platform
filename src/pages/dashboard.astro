@@ -1,0 +1,759 @@
+---
+import {
+  duplicateInvitation,
+  permanentlyDeleteInvitation,
+  restoreInvitation,
+  softDeleteInvitation
+} from '../services/dashboard-crud';
+import { getDashboardReport } from '../services/dashboard-report';
+import { hashPasswordSHA256 } from '../utils/security';
+
+export const prerender = false;
+
+const dashboardPassword =
+  import.meta.env.DASHBOARD_PASSWORD ||
+  (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') ||
+  '';
+
+const cookieName = 'dashboard_unlocked';
+let errorMessage = '';
+let duplicateError = '';
+let successMessage = '';
+const postFormData = Astro.request.method === 'POST' ? await Astro.request.formData() : null;
+const postAction = String(postFormData?.get('action') || '');
+const formatUnknownError = (error: unknown, fallback: string) => {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object') return JSON.stringify(error);
+  return fallback;
+};
+
+if (dashboardPassword && postAction === 'login') {
+  const password = String(postFormData?.get('password') || '');
+  const enteredHash = await hashPasswordSHA256(password);
+  const passwordHash = await hashPasswordSHA256(dashboardPassword);
+
+  if (enteredHash === passwordHash) {
+    Astro.cookies.set(cookieName, enteredHash, {
+      path: '/dashboard',
+      maxAge: 60 * 60 * 8,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict'
+    });
+
+    return Astro.redirect('/dashboard');
+  }
+
+  errorMessage = 'Password salah.';
+}
+
+const isUnlocked = !dashboardPassword ||
+  Astro.cookies.get(cookieName)?.value === await hashPasswordSHA256(dashboardPassword);
+
+if (isUnlocked && postAction === 'duplicate') {
+  try {
+    const weddingId = String(postFormData?.get('weddingId') || '');
+    if (!weddingId) throw new Error('Wedding ID is required.');
+    const duplicatedSlug = await duplicateInvitation(weddingId);
+    return Astro.redirect(`/dashboard/${duplicatedSlug}/edit?duplicated=1`);
+  } catch (error) {
+    console.error('Duplicate invitation error:', error);
+    duplicateError = formatUnknownError(error, 'Failed to duplicate invitation.');
+  }
+}
+
+if (isUnlocked && postAction === 'soft-delete') {
+  try {
+    const weddingId = String(postFormData?.get('weddingId') || '');
+    if (!weddingId) throw new Error('Wedding ID is required.');
+    await softDeleteInvitation(weddingId);
+    return Astro.redirect('/dashboard?deleted=1');
+  } catch (error) {
+    console.error('Soft delete invitation error:', error);
+    duplicateError = formatUnknownError(error, 'Failed to soft delete invitation.');
+  }
+}
+
+if (isUnlocked && postAction === 'restore') {
+  try {
+    const weddingId = String(postFormData?.get('weddingId') || '');
+    if (!weddingId) throw new Error('Wedding ID is required.');
+    await restoreInvitation(weddingId);
+    return Astro.redirect('/dashboard?restored=1');
+  } catch (error) {
+    console.error('Restore invitation error:', error);
+    duplicateError = formatUnknownError(error, 'Failed to restore invitation.');
+  }
+}
+
+if (isUnlocked && postAction === 'permanent-delete') {
+  try {
+    const weddingId = String(postFormData?.get('weddingId') || '');
+    if (!weddingId) throw new Error('Wedding ID is required.');
+    await permanentlyDeleteInvitation(weddingId);
+    return Astro.redirect('/dashboard?permanentlyDeleted=1');
+  } catch (error) {
+    console.error('Permanent delete invitation error:', error);
+    duplicateError = formatUnknownError(error, 'Failed to permanently delete invitation.');
+  }
+}
+
+if (isUnlocked && Astro.url.searchParams.get('deleted')) {
+  successMessage = 'Invitation soft deleted.';
+}
+
+if (isUnlocked && Astro.url.searchParams.get('permanentlyDeleted')) {
+  successMessage = 'Invitation permanently deleted and unshared Supabase images were removed.';
+}
+
+if (isUnlocked && Astro.url.searchParams.get('restored')) {
+  successMessage = 'Invitation restored to active dashboard.';
+}
+
+const formatNumber = (value: number) => new Intl.NumberFormat('id-ID').format(value);
+const formatDate = (value: string | null) => value
+  ? new Date(value).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+  : '-';
+const formatDateTime = (value: string | null) => value
+  ? new Date(value).toLocaleString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  : '-';
+
+let report = null;
+let loadError = '';
+
+if (isUnlocked) {
+  try {
+    report = await getDashboardReport();
+  } catch (error) {
+    console.error('Dashboard report load error:', error);
+    loadError = formatUnknownError(error, 'Gagal memuat report dashboard.');
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Report - Invitation Platform</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    {isUnlocked ? (
+      <main class="dashboard-shell">
+        <header class="dashboard-header">
+          <div>
+            <p class="eyebrow">Invitation Platform</p>
+            <h1>Dashboard Report</h1>
+            <p class="subtitle">Ringkasan performa dan RSVP untuk semua slug undangan.</p>
+          </div>
+          {report && (
+            <div class="generated-at">
+              <span>Generated</span>
+              <strong>{formatDateTime(report.generatedAt)}</strong>
+            </div>
+          )}
+        </header>
+
+        {loadError ? (
+          <section class="error-panel">
+            <strong>Report gagal dimuat</strong>
+            <p>{loadError}</p>
+          </section>
+        ) : report && (
+          <>
+            {successMessage && (
+              <section class="success-panel">
+                <strong>Dashboard updated</strong>
+                <p>{successMessage}</p>
+              </section>
+            )}
+            {duplicateError && (
+              <section class="error-panel">
+                <strong>Duplicate failed</strong>
+                <p>{duplicateError}</p>
+              </section>
+            )}
+            <section class="metric-grid" aria-label="Dashboard summary">
+              <div class="metric">
+                <span>Total Slug</span>
+                <strong>{formatNumber(report.totals.invitations)}</strong>
+              </div>
+              <div class="metric">
+                <span>Published</span>
+                <strong>{formatNumber(report.totals.published)}</strong>
+              </div>
+              <div class="metric">
+                <span>Total Views</span>
+                <strong>{formatNumber(report.totals.views)}</strong>
+              </div>
+              <div class="metric">
+                <span>Total RSVP</span>
+                <strong>{formatNumber(report.totals.rsvps)}</strong>
+              </div>
+              <div class="metric">
+                <span>Guests</span>
+                <strong>{formatNumber(report.totals.guests)}</strong>
+              </div>
+              <div class="metric">
+                <span>Wishes</span>
+                <strong>{formatNumber(report.totals.wishes)}</strong>
+              </div>
+              <div class="metric">
+                <span>Deleted</span>
+                <strong>{formatNumber(report.totals.deleted)}</strong>
+              </div>
+            </section>
+
+            <section class="report-section">
+              <div class="section-heading">
+                <div>
+                  <h2>Report Per Slug</h2>
+                  <p>{formatNumber(report.reports.length)} invitation records</p>
+                </div>
+                <a class="primary-action" href="/dashboard/new">Create Invitation</a>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Slug</th>
+                      <th>Couple</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Views</th>
+                      <th>RSVP</th>
+                      <th>Attending</th>
+                      <th>Declined</th>
+                      <th>Guests</th>
+                      <th>Wishes</th>
+                      <th>Latest RSVP</th>
+                      <th>Flags</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.reports.map((item) => (
+                      <tr>
+                        <td>
+                          <span class="slug-text">{item.slug}</span>
+                          {item.customDomain && <span class="domain">{item.customDomain}</span>}
+                        </td>
+                        <td>{item.coupleName}</td>
+                        <td>
+                          <span class={`status status--${item.status}`}>{item.status}</span>
+                        </td>
+                        <td>{formatDate(item.weddingDate)}</td>
+                        <td>{formatNumber(item.viewCount)}</td>
+                        <td>{formatNumber(item.rsvpCount)}</td>
+                        <td>{formatNumber(item.attendingCount)}</td>
+                        <td>{formatNumber(item.declinedCount)}</td>
+                        <td>{formatNumber(item.guestCount)}</td>
+                        <td>{formatNumber(item.wishesCount)}</td>
+                        <td>{formatDateTime(item.latestRsvpAt)}</td>
+                        <td>
+                          <div class="flags">
+                            {item.isMaintenance && <span>Maintenance</span>}
+                            {item.isExpired && <span>Expired</span>}
+                            {item.passwordProtected && <span>Password</span>}
+                            {!item.isMaintenance && !item.isExpired && !item.passwordProtected && <span class="muted">-</span>}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="row-actions">
+                            <a href={`/dashboard/${item.slug}`}>Report</a>
+                            <a href={`/dashboard/${item.slug}/edit`}>Edit</a>
+                            <form method="POST">
+                              <input type="hidden" name="action" value="duplicate" />
+                              <input type="hidden" name="weddingId" value={item.weddingId} />
+                              <button type="submit">Duplicate</button>
+                            </form>
+                            <form method="POST">
+                              <input type="hidden" name="action" value="soft-delete" />
+                              <input type="hidden" name="weddingId" value={item.weddingId} />
+                              <button
+                                class="warning-action"
+                                type="submit"
+                                onclick="return confirm('Soft delete this invitation? It will move to Soft Deleted Slugs.')"
+                              >
+                                Soft Delete
+                              </button>
+                            </form>
+                            <a href={`/${item.slug}`} target="_blank" rel="noopener noreferrer">Open</a>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="report-section deleted-section">
+              <div class="section-heading">
+                <div>
+                  <h2>Soft Deleted Slugs</h2>
+                  <p>{formatNumber(report.deletedReports.length)} deleted invitation records</p>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Slug</th>
+                      <th>Couple</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Deleted At</th>
+                      <th>Deleted By</th>
+                      <th>Views</th>
+                      <th>RSVP</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.deletedReports.map((item) => (
+                      <tr>
+                        <td><span class="slug-text">{item.slug}</span></td>
+                        <td>{item.coupleName}</td>
+                        <td><span class={`status status--${item.status}`}>{item.status}</span></td>
+                        <td>{formatDate(item.weddingDate)}</td>
+                        <td>{formatDateTime(item.deletedAt)}</td>
+                        <td>{item.deletedBy || '-'}</td>
+                        <td>{formatNumber(item.viewCount)}</td>
+                        <td>{formatNumber(item.rsvpCount)}</td>
+                        <td>
+                          <div class="row-actions">
+                            <form method="POST">
+                              <input type="hidden" name="action" value="restore" />
+                              <input type="hidden" name="weddingId" value={item.weddingId} />
+                              <button type="submit">Restore</button>
+                            </form>
+                            <form method="POST">
+                              <input type="hidden" name="action" value="permanent-delete" />
+                              <input type="hidden" name="weddingId" value={item.weddingId} />
+                              <button
+                                class="danger-action"
+                                type="submit"
+                                onclick="return confirm('Permanently delete this soft-deleted invitation and unshared Supabase images? This cannot be undone.')"
+                              >
+                                Permanent Delete
+                              </button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {!report.deletedReports.length && (
+                      <tr>
+                        <td colspan="9" class="empty-row">No soft-deleted invitations.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        )}
+      </main>
+    ) : (
+      <main class="login-shell">
+        <form class="login-card" method="POST">
+          <input type="hidden" name="action" value="login" />
+          <p class="eyebrow">Private Report</p>
+          <h1>Dashboard Login</h1>
+          <p class="subtitle">Masukkan password dashboard untuk melihat report semua slug.</p>
+          <label for="password">Password</label>
+          <input id="password" type="password" name="password" required autofocus />
+          {errorMessage && <p class="form-error">{errorMessage}</p>}
+          <button type="submit">Open Dashboard</button>
+        </form>
+      </main>
+    )}
+  </body>
+</html>
+
+<style lang="scss">
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  :global(body) {
+    margin: 0;
+    min-height: 100vh;
+    background: #f4f5f7;
+    color: #20242c;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .dashboard-shell {
+    width: min(1440px, 100%);
+    margin: 0 auto;
+    padding: 28px;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+
+  .eyebrow {
+    margin: 0 0 8px;
+    color: #687080;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h1,
+  h2,
+  p {
+    margin-top: 0;
+  }
+
+  h1 {
+    margin-bottom: 8px;
+    font-size: 30px;
+    letter-spacing: 0;
+  }
+
+  h2 {
+    margin-bottom: 4px;
+    font-size: 18px;
+  }
+
+  .subtitle {
+    margin-bottom: 0;
+    color: #687080;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .generated-at {
+    min-width: 190px;
+    padding: 12px 14px;
+    border: 1px solid #d9dde5;
+    border-radius: 8px;
+    background: #ffffff;
+    text-align: right;
+  }
+
+  .generated-at span {
+    display: block;
+    color: #687080;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  .generated-at strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .metric {
+    padding: 16px;
+    border: 1px solid #d9dde5;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .metric span {
+    display: block;
+    margin-bottom: 10px;
+    color: #687080;
+    font-size: 12px;
+  }
+
+  .metric strong {
+    display: block;
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  .report-section,
+  .error-panel,
+  .success-panel {
+    border: 1px solid #d9dde5;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .deleted-section {
+    margin-top: 18px;
+  }
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px;
+    border-bottom: 1px solid #e5e8ef;
+  }
+
+  .section-heading p {
+    margin: 0;
+    color: #687080;
+    font-size: 13px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #eef0f4;
+    text-align: left;
+    vertical-align: top;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  th {
+    color: #687080;
+    background: #fafbfc;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  tbody tr:hover {
+    background: #fafafa;
+  }
+
+  .slug-text {
+    display: block;
+    color: #111827;
+    font-weight: 700;
+  }
+
+  .primary-action {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: 6px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .row-actions form {
+    margin: 0;
+  }
+
+  .row-actions a,
+  .row-actions button {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid #d9dde5;
+    border-radius: 6px;
+    color: #394150;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .row-actions .danger-action {
+    border-color: #fecdd3;
+    color: #be123c;
+    background: #fff1f2;
+  }
+
+  .row-actions .warning-action {
+    border-color: #fed7aa;
+    color: #c2410c;
+    background: #fff7ed;
+  }
+
+  .empty-row {
+    color: #687080;
+  }
+
+  .domain {
+    display: block;
+    margin-top: 4px;
+    color: #687080;
+    font-size: 12px;
+  }
+
+  .status,
+  .flags span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3730a3;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  .status--published {
+    background: #ecfdf5;
+    color: #047857;
+  }
+
+  .status--draft {
+    background: #fff7ed;
+    color: #c2410c;
+  }
+
+  .status--archived {
+    background: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .flags .muted {
+    background: transparent;
+    color: #9ca3af;
+  }
+
+  .error-panel {
+    padding: 18px;
+    color: #991b1b;
+    background: #fff5f5;
+  }
+
+  .success-panel {
+    margin-bottom: 18px;
+    padding: 18px;
+    color: #047857;
+    background: #ecfdf5;
+  }
+
+  .error-panel p,
+  .success-panel p {
+    margin: 8px 0 0;
+  }
+
+  .login-shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+
+  .login-card {
+    width: min(420px, 100%);
+    padding: 24px;
+    border: 1px solid #d9dde5;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .login-card label {
+    display: block;
+    margin: 22px 0 8px;
+    color: #394150;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .login-card input {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+  }
+
+  .login-card button {
+    width: 100%;
+    height: 44px;
+    margin-top: 16px;
+    border: 0;
+    border-radius: 6px;
+    background: #111827;
+    color: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .form-error {
+    margin: 12px 0 0;
+    color: #b91c1c;
+    font-size: 13px;
+  }
+
+  @media (max-width: 1100px) {
+    .metric-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .dashboard-shell {
+      padding: 18px;
+    }
+
+    .dashboard-header,
+    .section-heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .generated-at {
+      width: 100%;
+      text-align: left;
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
