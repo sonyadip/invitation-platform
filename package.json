@@ -8,11 +8,13 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "npm run build && wrangler dev",
+    "astro": "astro",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^9.1.0",
+    "@astrojs/cloudflare": "11",
     "@fancyapps/ui": "^6.1.14",
     "@supabase/supabase-js": "^2.43.4",
     "astro": "^4.15.0",
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@types/ws": "^8.18.1",
     "sass": "^1.77.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "wrangler": "^4.98.0"
   }
 }
