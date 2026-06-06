@@ -36,12 +36,12 @@ export interface InvitationFormInput {
 }
 
 const storageBucket =
-  import.meta.env.SUPABASE_STORAGE_BUCKET ||
   (typeof process !== 'undefined' ? process.env.SUPABASE_STORAGE_BUCKET : '') ||
+  import.meta.env.SUPABASE_STORAGE_BUCKET ||
   'invitation-images';
 const maxUploadBytes = Number(
-  import.meta.env.MAX_IMAGE_UPLOAD_MB ||
   (typeof process !== 'undefined' ? process.env.MAX_IMAGE_UPLOAD_MB : '') ||
+  import.meta.env.MAX_IMAGE_UPLOAD_MB ||
   5
 ) * 1024 * 1024;
 const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
