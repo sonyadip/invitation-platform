@@ -226,21 +226,13 @@ if (isUnlocked) {
               </div>
 
               <div class="table-wrap">
-                <table>
+                <table class="report-table report-table--active">
                   <thead>
                     <tr>
                       <th>Slug</th>
                       <th>Couple</th>
                       <th>Status</th>
                       <th>Date</th>
-                      <th>Views</th>
-                      <th>RSVP</th>
-                      <th>Attending</th>
-                      <th>Declined</th>
-                      <th>Guests</th>
-                      <th>Wishes</th>
-                      <th>Latest RSVP</th>
-                      <th>Flags</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -256,21 +248,6 @@ if (isUnlocked) {
                           <span class={`status status--${item.status}`}>{item.status}</span>
                         </td>
                         <td>{formatDate(item.weddingDate)}</td>
-                        <td>{formatNumber(item.viewCount)}</td>
-                        <td>{formatNumber(item.rsvpCount)}</td>
-                        <td>{formatNumber(item.attendingCount)}</td>
-                        <td>{formatNumber(item.declinedCount)}</td>
-                        <td>{formatNumber(item.guestCount)}</td>
-                        <td>{formatNumber(item.wishesCount)}</td>
-                        <td>{formatDateTime(item.latestRsvpAt)}</td>
-                        <td>
-                          <div class="flags">
-                            {item.isMaintenance && <span>Maintenance</span>}
-                            {item.isExpired && <span>Expired</span>}
-                            {item.passwordProtected && <span>Password</span>}
-                            {!item.isMaintenance && !item.isExpired && !item.passwordProtected && <span class="muted">-</span>}
-                          </div>
-                        </td>
                         <td>
                           <div class="row-actions">
                             <a href={`/dashboard/${item.slug}`}>Report</a>
@@ -310,7 +287,7 @@ if (isUnlocked) {
               </div>
 
               <div class="table-wrap">
-                <table>
+                <table class="report-table report-table--deleted">
                   <thead>
                     <tr>
                       <th>Slug</th>
@@ -319,8 +296,6 @@ if (isUnlocked) {
                       <th>Date</th>
                       <th>Deleted At</th>
                       <th>Deleted By</th>
-                      <th>Views</th>
-                      <th>RSVP</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -333,8 +308,6 @@ if (isUnlocked) {
                         <td>{formatDate(item.weddingDate)}</td>
                         <td>{formatDateTime(item.deletedAt)}</td>
                         <td>{item.deletedBy || '-'}</td>
-                        <td>{formatNumber(item.viewCount)}</td>
-                        <td>{formatNumber(item.rsvpCount)}</td>
                         <td>
                           <div class="row-actions">
                             <form method="POST">
@@ -359,7 +332,7 @@ if (isUnlocked) {
                     ))}
                     {!report.deletedReports.length && (
                       <tr>
-                        <td colspan="9" class="empty-row">No soft-deleted invitations.</td>
+                        <td colspan="7" class="empty-row">No soft-deleted invitations.</td>
                       </tr>
                     )}
                   </tbody>
@@ -528,18 +501,19 @@ if (isUnlocked) {
 
   table {
     width: 100%;
-    min-width: 1180px;
+    min-width: 0;
     border-collapse: collapse;
+    table-layout: fixed;
   }
 
   th,
   td {
-    padding: 13px 14px;
+    padding: 12px;
     border-bottom: 1px solid #eef0f4;
     text-align: left;
     vertical-align: top;
     font-size: 13px;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   th {
@@ -561,6 +535,66 @@ if (isUnlocked) {
     font-weight: 700;
   }
 
+  .report-table--active th:nth-child(1),
+  .report-table--active td:nth-child(1) {
+    width: 19%;
+  }
+
+  .report-table--active th:nth-child(2),
+  .report-table--active td:nth-child(2) {
+    width: 19%;
+  }
+
+  .report-table--active th:nth-child(3),
+  .report-table--active td:nth-child(3) {
+    width: 14%;
+  }
+
+  .report-table--active th:nth-child(4),
+  .report-table--active td:nth-child(4) {
+    width: 16%;
+  }
+
+  .report-table--active th:nth-child(5),
+  .report-table--active td:nth-child(5) {
+    width: 32%;
+  }
+
+  .report-table--deleted th:nth-child(1),
+  .report-table--deleted td:nth-child(1) {
+    width: 15%;
+  }
+
+  .report-table--deleted th:nth-child(2),
+  .report-table--deleted td:nth-child(2) {
+    width: 16%;
+  }
+
+  .report-table--deleted th:nth-child(3),
+  .report-table--deleted td:nth-child(3) {
+    width: 11%;
+  }
+
+  .report-table--deleted th:nth-child(4),
+  .report-table--deleted td:nth-child(4) {
+    width: 13%;
+  }
+
+  .report-table--deleted th:nth-child(5),
+  .report-table--deleted td:nth-child(5) {
+    width: 16%;
+  }
+
+  .report-table--deleted th:nth-child(6),
+  .report-table--deleted td:nth-child(6) {
+    width: 11%;
+  }
+
+  .report-table--deleted th:nth-child(7),
+  .report-table--deleted td:nth-child(7) {
+    width: 18%;
+  }
+
   .primary-action {
     min-height: 38px;
     display: inline-flex;
@@ -575,6 +609,8 @@ if (isUnlocked) {
 
   .row-actions {
     display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
     gap: 8px;
   }
 
@@ -587,6 +623,7 @@ if (isUnlocked) {
     min-height: 30px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     padding: 0 10px;
     border: 1px solid #d9dde5;
     border-radius: 6px;
@@ -595,6 +632,7 @@ if (isUnlocked) {
     font-size: 12px;
     font-weight: 700;
     font-family: inherit;
+    white-space: nowrap;
     cursor: pointer;
   }
 
@@ -621,8 +659,7 @@ if (isUnlocked) {
     font-size: 12px;
   }
 
-  .status,
-  .flags span {
+  .status {
     display: inline-flex;
     align-items: center;
     min-height: 24px;
@@ -648,17 +685,6 @@ if (isUnlocked) {
   .status--archived {
     background: #f3f4f6;
     color: #4b5563;
-  }
-
-  .flags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .flags .muted {
-    background: transparent;
-    color: #9ca3af;
   }
 
   .error-panel {
@@ -734,6 +760,10 @@ if (isUnlocked) {
     .metric-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    .row-actions {
+      flex-wrap: wrap;
+    }
   }
 
   @media (max-width: 720px) {
@@ -754,6 +784,81 @@ if (isUnlocked) {
 
     .metric-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .table-wrap {
+      overflow-x: visible;
+    }
+
+    table,
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+      width: 100%;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tr {
+      padding: 12px;
+      border-bottom: 1px solid #eef0f4;
+    }
+
+    td {
+      display: grid;
+      grid-template-columns: 94px minmax(0, 1fr);
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 0;
+    }
+
+    td::before {
+      color: #687080;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    td:nth-child(1)::before {
+      content: "Slug";
+    }
+
+    td:nth-child(2)::before {
+      content: "Couple";
+    }
+
+    td:nth-child(3)::before {
+      content: "Status";
+    }
+
+    td:nth-child(4)::before {
+      content: "Date";
+    }
+
+    td:nth-child(5)::before {
+      content: "Actions";
+    }
+
+    .deleted-section td:nth-child(5)::before {
+      content: "Deleted At";
+    }
+
+    .deleted-section td:nth-child(6)::before {
+      content: "Deleted By";
+    }
+
+    .deleted-section td:nth-child(7)::before {
+      content: "Actions";
+    }
+
+    .row-actions {
+      gap: 6px;
     }
   }
 </style>

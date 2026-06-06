@@ -7,7 +7,10 @@ export function resolveInvitationIdentifier(url: URL, slug?: string) {
     host.includes('localhost') ||
     host.includes('127.0.0.1') ||
     host.includes('.internal');
-  const isDomain = !isLocal && !host.endsWith('.pages.dev');
+  const isCloudflarePreview =
+    host.endsWith('.pages.dev') ||
+    host.endsWith('.workers.dev');
+  const isDomain = !isLocal && !isCloudflarePreview;
 
   return {
     identifier: isDomain ? host : (slug || ''),

@@ -130,6 +130,17 @@ if (isUnlocked && !loadError && !detail) {
                   <div><dt>Address</dt><dd>{detail.wedding.venueAddress}</dd></div>
                   <div><dt>Custom Domain</dt><dd>{detail.summary.customDomain || '-'}</dd></div>
                   <div><dt>Latest RSVP</dt><dd>{formatDateTime(detail.summary.latestRsvpAt)}</dd></div>
+                  <div>
+                    <dt>Flags</dt>
+                    <dd>
+                      <div class="flag-list">
+                        {detail.summary.isMaintenance && <span>Maintenance</span>}
+                        {detail.summary.isExpired && <span>Expired</span>}
+                        {detail.summary.passwordProtected && <span>Password</span>}
+                        {!detail.summary.isMaintenance && !detail.summary.isExpired && !detail.summary.passwordProtected && <span class="muted">-</span>}
+                      </div>
+                    </dd>
+                  </div>
                   <div><dt>Created</dt><dd>{formatDateTime(detail.wedding.createdAt)}</dd></div>
                 </dl>
               </article>
@@ -457,7 +468,14 @@ if (isUnlocked && !loadError && !detail) {
     padding: 18px;
   }
 
+  .flag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
   .toggle-grid span,
+  .flag-list span,
   .status {
     display: inline-flex;
     align-items: center;
@@ -490,6 +508,17 @@ if (isUnlocked && !loadError && !detail) {
   .status--archived {
     background: #f3f4f6;
     color: #4b5563;
+  }
+
+  .flag-list span {
+    background: #eef2ff;
+    color: #3730a3;
+  }
+
+  .flag-list .muted {
+    background: transparent;
+    color: #9ca3af;
+    padding: 0;
   }
 
   .stack-list {
