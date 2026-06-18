@@ -1,47 +1,46 @@
-const root = document.querySelector('body.template-noir [data-template-root]');
+const root = document.querySelector('body.template-editorial [data-template-root]');
 const cover = root?.querySelector('[data-template-cover]');
-const openBtn = root?.querySelector('[data-template-open]');
 const layout = root?.querySelector('[data-template-layout]');
+const openBtn = root?.querySelector('[data-template-open]');
 const song = root?.querySelector('[data-template-audio]');
 const audioBtn = root?.querySelector('[data-template-audio-toggle]');
-let heroSlideshowStarted = false;
+let isPlaying = false;
 
-const debugNoir = (event, payload = {}) => {
-  console.log(`[Noir RSVP] ${event}`, payload);
-};
-console.log("test");
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 if (layout instanceof HTMLElement) layout.style.display = 'none';
-if (cover instanceof HTMLElement) document.body.classList.add('template-no-scroll');
+if (cover instanceof HTMLElement) {
+  window.scrollTo(0, 0);
+  document.body.classList.add('template-no-scroll', 'template-cover-active');
+}
 
 openBtn?.addEventListener('click', () => {
   if (cover instanceof HTMLElement) {
-    cover.style.transition = 'opacity 0.8s ease, transform 1.2s ease';
-    cover.style.opacity = '0';
-    cover.style.transform = 'translateY(-100%)';
+    cover.classList.add('is-opening');
     setTimeout(() => {
       cover.style.display = 'none';
-    }, 1300);
+    }, 1600);
   }
 
   if (layout instanceof HTMLElement) {
-    layout.style.display = 'flex';
+    layout.style.display = 'block';
     layout.style.opacity = '0';
-    setTimeout(() => {
-      layout.style.transition = 'opacity 0.8s ease';
+    requestAnimationFrame(() => {
+      layout.style.transition = 'opacity 900ms ease';
       layout.style.opacity = '1';
-      startHeroSlideshow();
-    }, 500);
+    });
   }
 
-  document.body.classList.remove('template-no-scroll');
+  document.body.classList.remove('template-no-scroll', 'template-cover-active');
 
   if (song instanceof HTMLAudioElement) {
     song.play().catch(() => { });
     audioBtn?.classList.add('audio-toggle--playing');
+    isPlaying = true;
   }
 });
-
-let isPlaying = false;
 
 if (audioBtn && song instanceof HTMLAudioElement) {
   audioBtn.addEventListener('click', () => {
@@ -54,6 +53,31 @@ if (audioBtn && song instanceof HTMLAudioElement) {
     }
 
     isPlaying = !isPlaying;
+  });
+}
+
+function initSlideshows() {
+  const sliders = Array.from(root?.querySelectorAll('[data-template-slider]') || []);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  sliders.forEach((slider) => {
+    const slides = Array.from(slider.querySelectorAll('.template-slide'));
+    if (slides.length <= 1) return;
+
+    const firstCandidates = slides
+      .map((slide, index) => ({ slide, index }))
+      .filter(({ slide }) => slide instanceof HTMLElement && slide.dataset.coverSlide !== 'true');
+    const randomPool = firstCandidates.length > 0 ? firstCandidates : slides.map((slide, index) => ({ slide, index }));
+    let activeIndex = randomPool[Math.floor(Math.random() * randomPool.length)]?.index || 0;
+    slides.forEach((slide, index) => slide.classList.toggle('is-active', index === activeIndex));
+    slides[activeIndex]?.classList.add('is-active');
+    if (reduceMotion) return;
+
+    setInterval(() => {
+      slides[activeIndex]?.classList.remove('is-active');
+      activeIndex = (activeIndex + 1) % slides.length;
+      slides[activeIndex]?.classList.add('is-active');
+    }, 7200);
   });
 }
 
@@ -71,20 +95,18 @@ function initRevealAnimations() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
-
       entry.target.classList.add('is-animated');
       observer.unobserve(entry.target);
     });
   }, {
-    threshold: 0.02,
-    rootMargin: '0px 0px -4% 0px'
+    threshold: 0.04,
+    rootMargin: '0px 0px -8% 0px'
   });
 
   animatedItems.forEach((item, index) => {
     if (item instanceof HTMLElement) {
-      item.style.setProperty('--animate-delay', `${Math.min(index % 3, 2) * 180}ms`);
+      item.style.setProperty('--animate-delay', `${Math.min(index % 3, 2) * 130}ms`);
     }
-
     observer.observe(item);
   });
 }
@@ -99,14 +121,12 @@ function initCountdown() {
   const minutes = timer.querySelector('[data-countdown-minutes]');
   const seconds = timer.querySelector('[data-countdown-seconds]');
   const pad = (num) => String(num).padStart(2, '0');
-
   const setText = (el, value) => {
     if (el) el.textContent = value;
   };
 
   const update = () => {
     const difference = targetDate - Date.now();
-
     if (!Number.isFinite(targetDate) || difference <= 0) {
       setText(days, '00');
       setText(hours, '00');
@@ -126,43 +146,13 @@ function initCountdown() {
   update();
 }
 
-function startHeroSlideshow() {
-  if (heroSlideshowStarted) return;
-
-  const slider = root?.querySelector('[data-noir-hero-slider]');
-  if (!slider) return;
-
-  const slides = Array.from(slider.querySelectorAll('.hero-section__slide'));
-  if (slides.length <= 1) return;
-
-  heroSlideshowStarted = true;
-  let activeIndex = 0;
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  slides.forEach((slide, index) => {
-    slide.classList.toggle('is-active', index === activeIndex);
-  });
-
-  if (reduceMotion) return;
-
-  const advanceSlide = () => {
-    slides[activeIndex]?.classList.remove('is-active');
-    activeIndex = (activeIndex + 1) % slides.length;
-    slides[activeIndex]?.classList.add('is-active');
-  };
-
-  setTimeout(() => {
-    advanceSlide();
-    setInterval(advanceSlide, 4600);
-  }, 2200);
-}
-
 function initVideoPlayers() {
-  const players = Array.from(root?.querySelectorAll('[data-noir-video]') || []);
+  const players = Array.from(root?.querySelectorAll('[data-template-video]') || []);
   if (!players.length) return;
 
   players.forEach((player) => {
     const video = player.querySelector('video');
-    const playBtn = player.querySelector('[data-noir-video-play]');
+    const playBtn = player.querySelector('[data-template-video-play]');
     if (!(player instanceof HTMLElement) || !(video instanceof HTMLVideoElement) || !(playBtn instanceof HTMLButtonElement)) return;
 
     const showPosterState = () => {
@@ -172,16 +162,13 @@ function initVideoPlayers() {
 
     playBtn.addEventListener('click', () => {
       video.controls = true;
-      video.play().catch(() => {
-        showPosterState();
-      });
+      video.play().catch(showPosterState);
     });
 
     video.addEventListener('play', () => {
       player.classList.add('is-playing');
       video.controls = true;
     });
-
     video.addEventListener('pause', showPosterState);
     video.addEventListener('ended', showPosterState);
   });
@@ -191,8 +178,7 @@ async function initGalleryLightbox() {
   try {
     const { Fancybox } = await import('@fancyapps/ui');
     const galleryRoot = root instanceof Element ? root : document.body;
-
-    Fancybox.bind(galleryRoot, '[data-fancybox="noir-gallery"]');
+    Fancybox.bind(galleryRoot, '[data-fancybox="gallery-section"]');
   } catch (error) {
     console.error('Failed to initialize gallery lightbox:', error);
   }
@@ -211,8 +197,8 @@ function getRenderedWishKeys(container) {
 }
 
 function createWishCard({ id, name, attendance, message, createdAt }) {
-  const wishCard = document.createElement('div');
-  wishCard.className = 'wish-card animate-fade-in-up';
+  const wishCard = document.createElement('article');
+  wishCard.className = 'wish-card';
   if (id) wishCard.dataset.wishId = String(id);
   wishCard.dataset.wishKey = getWishKey({ id, name, message, createdAt });
 
@@ -272,15 +258,13 @@ function renderWishItems(wishesContainer, items, emptyState) {
 
     if (renderedKeys.has(wishKey)) return;
 
-    const card = createWishCard({
+    wishesContainer.append(createWishCard({
       id: wish.id,
       name: wish.guest_name,
       attendance: wish.attendance_status,
       message: wish.message || '',
       createdAt: wish.created_at
-    });
-
-    wishesContainer.append(card);
+    }));
     renderedKeys.add(wishKey);
     renderedCount += 1;
   });
@@ -289,8 +273,7 @@ function renderWishItems(wishesContainer, items, emptyState) {
 }
 
 async function syncWishesFromServer({ weddingId, wishesContainer, emptyState, loadMoreBtn, limit, submittedItem = null }) {
-  const cacheBust = Date.now();
-  const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&offset=0&limit=${limit}&_=${cacheBust}`, {
+  const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&offset=0&limit=${limit}&_=${Date.now()}`, {
     cache: 'no-store'
   });
   const result = await response.json();
@@ -301,19 +284,11 @@ async function syncWishesFromServer({ weddingId, wishesContainer, emptyState, lo
 
   if (loadMoreBtn instanceof HTMLButtonElement) {
     loadMoreBtn.dataset.offset = String(renderedCount);
-    loadMoreBtn.dataset.noirLoading = 'false';
+    loadMoreBtn.dataset.editorialLoading = 'false';
     loadMoreBtn.disabled = false;
     loadMoreBtn.textContent = 'Load More';
     if (!result.hasMore && renderedCount <= (result.items?.length || 0)) loadMoreBtn.remove();
   }
-
-  debugNoir('sync wishes complete', {
-    requestedLimit: limit,
-    responseCount: result.items?.length || 0,
-    submittedItemId: submittedItem?.id || null,
-    renderedCount,
-    hasMore: result.hasMore
-  });
 
   return renderedCount;
 }
@@ -328,29 +303,14 @@ function initRSVPForm() {
   const loadMoreBtn = root?.querySelector('[data-wishes-load-more]');
 
   if (!(form instanceof HTMLFormElement) || !(successState instanceof HTMLElement) || !(submitBtn instanceof HTMLButtonElement)) return;
-  if (form.dataset.noirRsvpBound === 'true') {
-    debugNoir('skip duplicate RSVP init', { form });
-    return;
-  }
-
-  form.dataset.noirRsvpBound = 'true';
-  debugNoir('bind RSVP submit', {
-    initialRendered: wishesContainer?.querySelectorAll('.wish-card').length || 0,
-    initialOffset: loadMoreBtn instanceof HTMLButtonElement ? loadMoreBtn.dataset.offset : null
-  });
+  if (form.dataset.editorialRsvpBound === 'true') return;
+  form.dataset.editorialRsvpBound = 'true';
+  const submitLabel = submitBtn.textContent || 'Submit';
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (form.dataset.noirSubmitting === 'true') {
-      debugNoir('skip duplicate active submit');
-      return;
-    }
-
-    form.dataset.noirSubmitting = 'true';
-    debugNoir('submit start', {
-      renderedBefore: wishesContainer?.querySelectorAll('.wish-card').length || 0,
-      offsetBefore: loadMoreBtn instanceof HTMLButtonElement ? loadMoreBtn.dataset.offset : null
-    });
+    if (form.dataset.editorialSubmitting === 'true') return;
+    form.dataset.editorialSubmitting = 'true';
 
     if (errorEl instanceof HTMLElement) {
       errorEl.style.display = 'none';
@@ -365,20 +325,18 @@ function initRSVPForm() {
       weddingId: formData.get('weddingId'),
       name: formData.get('name'),
       attendance: formData.get('attendance'),
-      count: 1,
+      count: formData.get('count') || 1,
       message: formData.get('message')
     };
-    console.log('[Noir RSVP CHECK] payload before fetch:', payload);
 
     if (!payload.weddingId || !payload.name || !payload.attendance || !String(payload.message || '').trim()) {
-      form.dataset.noirSubmitting = 'false';
+      form.dataset.editorialSubmitting = 'false';
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit';
+      submitBtn.textContent = submitLabel;
       if (errorEl instanceof HTMLElement) {
         errorEl.style.display = 'block';
         errorEl.textContent = 'Data RSVP belum lengkap. Isi nama, konfirmasi kehadiran, dan ucapan.';
       }
-      debugNoir('submit blocked incomplete payload', payload);
       return;
     }
 
@@ -388,22 +346,11 @@ function initRSVPForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      console.log('[Noir RSVP CHECK] /api/rsvp response status:', response.status);
       const result = await response.json();
-      console.log('[Noir RSVP CHECK] /api/rsvp response body:', result);
       if (!response.ok) throw new Error(result.error || 'Terjadi kesalahan sistem.');
-      debugNoir('submit response', {
-        itemId: result.item?.id,
-        itemKey: result.item ? getWishKey({
-          id: result.item.id,
-          name: result.item.guest_name,
-          message: result.item.message,
-          createdAt: result.item.created_at
-        }) : null
-      });
 
       form.style.display = 'none';
-      successState.style.display = 'flex';
+      successState.style.display = 'grid';
 
       if (wishesContainer && result.item?.message) {
         const currentRendered = wishesContainer.querySelectorAll('.wish-card').length;
@@ -412,22 +359,16 @@ function initRSVPForm() {
           wishesContainer,
           emptyState,
           loadMoreBtn,
-          limit: Math.max(currentRendered + 1, 3),
+          limit: Math.max(currentRendered + 1, 4),
           submittedItem: result.item
         });
-        debugNoir('submit rendered', {
-          renderedAfter: wishesContainer.querySelectorAll('.wish-card').length,
-          offsetAfter: loadMoreBtn instanceof HTMLButtonElement ? loadMoreBtn.dataset.offset : null
-        });
         wishesContainer.querySelector('.wish-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        console.log('[Noir RSVP CHECK] RSVP stored without message; wishes list unchanged.', result.item);
       }
-      form.dataset.noirSubmitting = 'false';
+      form.dataset.editorialSubmitting = 'false';
     } catch (error) {
-      form.dataset.noirSubmitting = 'false';
+      form.dataset.editorialSubmitting = 'false';
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit';
+      submitBtn.textContent = submitLabel;
       if (errorEl instanceof HTMLElement) {
         errorEl.style.display = 'block';
         errorEl.textContent = error instanceof Error ? error.message : 'Gagal mengirim RSVP. Coba kembali.';
@@ -439,48 +380,27 @@ function initRSVPForm() {
 function initWishesLoadMore() {
   const button = root?.querySelector('[data-wishes-load-more]');
   const wishesContainer = root?.querySelector('[data-wishes-list]');
-
   if (!(button instanceof HTMLButtonElement) || !wishesContainer) return;
-  if (button.dataset.noirWishesBound === 'true') {
-    debugNoir('skip duplicate load more init', { button });
-    return;
-  }
-
-  button.dataset.noirWishesBound = 'true';
-  debugNoir('bind load more', {
-    initialRendered: wishesContainer.querySelectorAll('.wish-card').length,
-    initialOffset: button.dataset.offset
-  });
+  if (button.dataset.editorialWishesBound === 'true') return;
+  button.dataset.editorialWishesBound = 'true';
 
   button.addEventListener('click', async () => {
-    if (button.dataset.noirLoading === 'true') {
-      debugNoir('skip duplicate active load more');
-      return;
-    }
+    if (button.dataset.editorialLoading === 'true') return;
 
     const weddingId = button.dataset.weddingId;
     const offset = parseInt(button.dataset.offset || '0', 10);
-
     if (!weddingId) return;
-    button.dataset.noirLoading = 'true';
-    debugNoir('load more start', {
-      offset,
-      renderedBefore: wishesContainer.querySelectorAll('.wish-card').length,
-      keysBefore: Array.from(getRenderedWishKeys(wishesContainer))
-    });
 
+    button.dataset.editorialLoading = 'true';
     button.disabled = true;
     button.textContent = 'Loading...';
 
     try {
-      const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&offset=${offset}&limit=3`);
+      const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&offset=${offset}&limit=4`);
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Gagal memuat ucapan.');
 
       const existingWishKeys = getRenderedWishKeys(wishesContainer);
-      let appendedCount = 0;
-      let skippedCount = 0;
-
       result.items.forEach((wish) => {
         const wishKey = getWishKey({
           id: wish.id,
@@ -488,46 +408,30 @@ function initWishesLoadMore() {
           message: wish.message || '',
           createdAt: wish.created_at
         });
+        if (existingWishKeys.has(wishKey)) return;
 
-        if (existingWishKeys.has(wishKey)) {
-          skippedCount += 1;
-          return;
-        }
-
-        const card = createWishCard({
+        wishesContainer.append(createWishCard({
           id: wish.id,
           name: wish.guest_name,
           attendance: wish.attendance_status,
           message: wish.message || '',
           createdAt: wish.created_at
-        });
-        wishesContainer.append(card);
+        }));
         existingWishKeys.add(wishKey);
-        appendedCount += 1;
       });
 
-      const nextOffset = offset + result.items.length;
-      button.dataset.offset = String(nextOffset);
-      debugNoir('load more response', {
-        requestedOffset: offset,
-        nextOffset,
-        responseCount: result.items.length,
-        appendedCount,
-        skippedCount,
-        hasMore: result.hasMore,
-        renderedAfter: wishesContainer.querySelectorAll('.wish-card').length
-      });
+      button.dataset.offset = String(offset + result.items.length);
 
       if (!result.hasMore || result.items.length === 0) {
         button.remove();
       } else {
         button.disabled = false;
-        button.dataset.noirLoading = 'false';
+        button.dataset.editorialLoading = 'false';
         button.textContent = 'Load More';
       }
     } catch (error) {
       button.disabled = false;
-      button.dataset.noirLoading = 'false';
+      button.dataset.editorialLoading = 'false';
       button.textContent = 'Load More';
       console.error(error);
     }
@@ -544,23 +448,24 @@ function initGiftInteractions() {
   const qrisClose = root?.querySelector('[data-qris-close]');
   const qrisImg = root?.querySelector('[data-qris-img]');
 
-  giftToggle?.addEventListener('click', () => {
+  if (giftToggle instanceof HTMLButtonElement && giftGrid instanceof HTMLElement) {
+    giftToggle.addEventListener('click', () => {
     if (!(giftGrid instanceof HTMLElement)) return;
-
     const isHidden = giftGrid.hasAttribute('hidden');
     if (isHidden) {
       giftGrid.removeAttribute('hidden');
-      giftGrid.querySelectorAll('[data-animate]').forEach((item) => {
-        item.classList.add('is-animated');
-      });
+      giftGrid.classList.add('is-open');
+      giftGrid.querySelectorAll('[data-animate]').forEach((item) => item.classList.add('is-animated'));
       giftToggle.setAttribute('aria-expanded', 'true');
       giftToggle.textContent = 'Sembunyikan Hadiah Pernikahan';
     } else {
       giftGrid.setAttribute('hidden', '');
+      giftGrid.classList.remove('is-open');
       giftToggle.setAttribute('aria-expanded', 'false');
       giftToggle.textContent = 'Lihat Hadiah Pernikahan';
     }
-  });
+    });
+  }
 
   copyBtns.forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -570,17 +475,12 @@ function initGiftInteractions() {
 
       try {
         await navigator.clipboard.writeText(value);
-        btn.style.backgroundColor = '#ecfdf5';
-        btn.style.color = '#059669';
-        btn.style.borderColor = '#a7f3d0';
-        if (textSpan) textSpan.textContent = 'Tersalin!';
-
+        btn.classList.add('is-copied');
+        if (textSpan) textSpan.textContent = 'Tersalin';
         setTimeout(() => {
-          btn.style.backgroundColor = '';
-          btn.style.color = '';
-          btn.style.borderColor = '';
+          btn.classList.remove('is-copied');
           if (textSpan) textSpan.textContent = originalText;
-        }, 2000);
+        }, 1800);
       } catch (error) {
         console.error('Failed to copy:', error);
       }
@@ -591,7 +491,7 @@ function initGiftInteractions() {
     if (!(qrisLightbox instanceof HTMLElement)) return;
     qrisLightbox.style.opacity = '0';
     qrisLightbox.style.pointerEvents = 'none';
-    if (qrisCard instanceof HTMLElement) qrisCard.style.transform = 'scale(0.95)';
+    if (qrisCard instanceof HTMLElement) qrisCard.style.transform = 'scale(0.96)';
     document.body.style.overflow = '';
   };
 
@@ -614,9 +514,10 @@ function initGiftInteractions() {
   });
 }
 
+initSlideshows();
+initRevealAnimations();
 initCountdown();
 initVideoPlayers();
-initRevealAnimations();
 initGalleryLightbox();
 initRSVPForm();
 initWishesLoadMore();

@@ -73,8 +73,55 @@ if (Astro.url.searchParams.get('saved')) {
 }
 
 const settings = detail.settings;
-const assets = settings?.assets || { heroImage: '', brideImage: '', groomImage: '' };
+const assets = settings?.assets || { heroImage: '', brideImage: '', groomImage: '', logoImage: '' };
+const content = settings?.content || {
+  instagramUrl: '',
+  whatsappUrl: '',
+  groomInstagramUrl: '',
+  brideInstagramUrl: '',
+  groomFatherName: '',
+  groomMotherName: '',
+  brideFatherName: '',
+  brideMotherName: '',
+  giftDescription: '',
+  thankYouMessage: ''
+};
 const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).join('\n');
+const fallbackEvent = {
+  name: 'Akad Nikah',
+  date: detail.wedding.weddingDate,
+  startTime: '',
+  endTime: 'Selesai',
+  venueName: detail.wedding.venueName,
+  venueAddress: detail.wedding.venueAddress,
+  mapsUrl: detail.wedding.mapsUrl
+};
+const eventValues = [
+  ...(detail.events.length ? detail.events : [fallbackEvent]),
+  { name: '', date: '', startTime: '', endTime: '', venueName: '', venueAddress: '', mapsUrl: '' },
+  { name: '', date: '', startTime: '', endTime: '', venueName: '', venueAddress: '', mapsUrl: '' }
+].slice(0, 3);
+const storyValues = [
+  ...(detail.wedding.story.length ? detail.wedding.story : [
+    { title: 'AWAL BERTEMU', description: '' },
+    { title: 'MENJALIN HUBUNGAN', description: '' },
+    { title: 'MENIKAH', description: '' }
+  ]),
+  { title: '', description: '' },
+  { title: '', description: '' }
+].slice(0, 3);
+const giftValues = [
+  ...(detail.gifts.length
+    ? detail.gifts.map((gift) => ({
+        bankName: gift.bankName,
+        accountNumber: gift.accountNumber,
+        accountName: gift.accountName,
+        qrisUrl: gift.qrisUrl || ''
+      }))
+    : []),
+  { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' },
+  { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' }
+].slice(0, 3);
 ---
 
 <!DOCTYPE html>
@@ -103,7 +150,7 @@ const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).joi
       <form class="form-panel" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="save" />
         <section>
-          <h2>Core Data</h2>
+          <h2>Publishing</h2>
           <div class="form-grid">
             <label>Slug<input name="slug" value={detail.wedding.slug} required /></label>
             <label>Status
@@ -120,29 +167,114 @@ const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).joi
                 ))}
               </select>
             </label>
-            <label>Wedding Date<input type="datetime-local" name="weddingDate" value={toLocalInput(detail.wedding.weddingDate)} required /></label>
-            <label>Groom Name<input name="groomName" value={detail.wedding.groomName} required /></label>
-            <label>Bride Name<input name="brideName" value={detail.wedding.brideName} required /></label>
-            <label>Groom Full Name<input name="groomFullName" value={detail.wedding.groomFullName} required /></label>
-            <label>Bride Full Name<input name="brideFullName" value={detail.wedding.brideFullName} required /></label>
-            <label>Venue Name<input name="venueName" value={detail.wedding.venueName} required /></label>
-            <label>Maps URL<input name="mapsUrl" value={detail.wedding.mapsUrl} required /></label>
-            <label class="wide">Venue Address<textarea name="venueAddress" rows="3" required>{detail.wedding.venueAddress}</textarea></label>
-            <label class="wide">Music URL<input name="musicUrl" value={detail.wedding.musicUrl || ''} /></label>
           </div>
         </section>
 
         <section>
-          <h2>Images</h2>
+          <h2>Opening</h2>
           <div class="form-grid">
-            <label class="wide">Hero / Cover Image URL<input name="heroImageUrl" value={assets.heroImage} placeholder="https://example.com/hero.jpg" /></label>
-            <label class="wide">Upload Hero / Cover Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <label>Bride Image URL<input name="brideImageUrl" value={assets.brideImage} placeholder="https://example.com/bride.jpg" /></label>
-            <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <label>Groom Image URL<input name="groomImageUrl" value={assets.groomImage} placeholder="https://example.com/groom.jpg" /></label>
-            <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+            <label class="wide">Logo Image URL<input name="logoImageUrl" value={assets.logoImage} placeholder="https://example.com/logo.png" /></label>
+            <label class="wide">Upload Logo Image<input type="file" name="logoImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+            <label class="wide">Popup / Hero Image URL<input name="heroImageUrl" value={assets.heroImage} placeholder="https://example.com/hero.jpg" /></label>
+            <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+            <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{content.introVerse || ''}</textarea></label>
+            <label>Intro Verse Source<input name="introVerseSource" value={content.introVerseSource || ''} placeholder="(Q.S. Ar-Rum: 21)" /></label>
+            <label>Instagram URL<input name="instagramUrl" value={content.instagramUrl || ''} placeholder="https://www.instagram.com/username" /></label>
+            <label>WhatsApp URL<input name="whatsappUrl" value={content.whatsappUrl || ''} placeholder="https://wa.me/6281234567890" /></label>
+          </div>
+        </section>
+
+        <section>
+          <h2>Couple</h2>
+          <div class="couple-grid">
+            <fieldset class="couple-card">
+              <legend>Groom</legend>
+              <div class="form-grid">
+                <label>Groom Name<input name="groomName" value={detail.wedding.groomName} required /></label>
+                <label>Groom Full Name<input name="groomFullName" value={detail.wedding.groomFullName} required /></label>
+                <label>Groom Father Name<input name="groomFatherName" value={content.groomFatherName || ''} placeholder="Groom father name" /></label>
+                <label>Groom Mother Name<input name="groomMotherName" value={content.groomMotherName || ''} placeholder="Groom mother name" /></label>
+                <label>Groom Image URL<input name="groomImageUrl" value={assets.groomImage} placeholder="https://example.com/groom.jpg" /></label>
+                <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                <label class="wide">Groom Instagram URL<input name="groomInstagramUrl" value={content.groomInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
+              </div>
+            </fieldset>
+            <fieldset class="couple-card">
+              <legend>Bride</legend>
+              <div class="form-grid">
+                <label>Bride Name<input name="brideName" value={detail.wedding.brideName} required /></label>
+                <label>Bride Full Name<input name="brideFullName" value={detail.wedding.brideFullName} required /></label>
+                <label>Bride Father Name<input name="brideFatherName" value={content.brideFatherName || ''} placeholder="Bride father name" /></label>
+                <label>Bride Mother Name<input name="brideMotherName" value={content.brideMotherName || ''} placeholder="Bride mother name" /></label>
+                <label>Bride Image URL<input name="brideImageUrl" value={assets.brideImage} placeholder="https://example.com/bride.jpg" /></label>
+                <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                <label class="wide">Bride Instagram URL<input name="brideInstagramUrl" value={content.brideInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
+              </div>
+            </fieldset>
+          </div>
+        </section>
+
+        <section>
+          <h2>Events</h2>
+          <div class="event-list">
+            {eventValues.map((event, index) => (
+              <fieldset class="event-card">
+                <legend>Event {index + 1}</legend>
+                <div class="form-grid">
+                  <label>Event Name<input name="eventName" value={event.name} required={index === 0} placeholder="Akad Nikah" /></label>
+                  <label>Date<input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} /></label>
+                  <label>Start Time<input type="time" name="eventStartTime" value={event.startTime} /></label>
+                  <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Selesai" /></label>
+                  <label>Venue Name<input name="eventVenueName" value={event.venueName} required={index === 0} /></label>
+                  <label>Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
+                  <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
+                </div>
+              </fieldset>
+            ))}
+          </div>
+        </section>
+
+        <section data-setting-target="storyEnabled">
+          <h2>Our Story</h2>
+          <div class="story-list">
+            {storyValues.map((story, index) => (
+              <fieldset class="story-card">
+                <legend>Story {index + 1}</legend>
+                <div class="form-grid">
+                  <label>Title<input name="storyTitle" value={story.title} placeholder="AWAL BERTEMU" /></label>
+                  <label class="wide">Description<textarea name="storyDescription" rows="3">{story.description}</textarea></label>
+                </div>
+              </fieldset>
+            ))}
+          </div>
+        </section>
+
+        <section data-setting-target="galleryEnabled">
+          <h2>Gallery</h2>
+          <div class="form-grid">
             <label class="wide">Gallery Image URLs<textarea name="galleryImageUrls" rows="6" placeholder={"https://example.com/gallery-1.jpg\nhttps://example.com/gallery-2.jpg"}>{galleryImageUrls}</textarea></label>
             <label class="wide">Upload Gallery Images<input type="file" name="galleryImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple /></label>
+          </div>
+        </section>
+
+        <section>
+          <h2>Gift & Thank You</h2>
+          <div class="gift-list">
+            {giftValues.map((gift, index) => (
+              <fieldset class="gift-card-form">
+                <legend>Gift Card {index + 1}</legend>
+                <div class="form-grid">
+                  <label>Bank Name<input name="giftBankName" value={gift.bankName} placeholder="BCA" /></label>
+                  <label>Account Number<input name="giftAccountNumber" value={gift.accountNumber} placeholder="1234567890" /></label>
+                  <label>Account Name<input name="giftAccountName" value={gift.accountName} placeholder="Account holder name" /></label>
+                  <label>QRIS URL<input name="giftQrisUrl" value={gift.qrisUrl} placeholder="https://example.com/qris.png" /></label>
+                </div>
+              </fieldset>
+            ))}
+            <div class="form-grid">
+              <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4">{content.giftDescription || ''}</textarea></label>
+              <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4">{content.thankYouMessage || ''}</textarea></label>
+            </div>
           </div>
         </section>
 
@@ -155,6 +287,7 @@ const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).joi
             <label><input type="checkbox" name="galleryEnabled" checked={settings?.galleryEnabled ?? true} /> Gallery</label>
             <label><input type="checkbox" name="wishesEnabled" checked={settings?.wishesEnabled ?? true} /> Wishes</label>
             <label><input type="checkbox" name="giftEnabled" checked={settings?.giftEnabled ?? true} /> Gift</label>
+            <label><input type="checkbox" name="storyEnabled" checked={settings?.storyEnabled ?? true} /> Our Story</label>
             <label><input type="checkbox" name="viewCounterEnabled" checked={settings?.viewCounterEnabled ?? true} /> View Counter</label>
             <label><input type="checkbox" name="maintenanceMode" checked={settings?.maintenanceMode ?? false} /> Maintenance</label>
             <label><input type="checkbox" name="passwordProtectionEnabled" checked={settings?.passwordProtectionEnabled ?? false} /> Password Protection</label>
@@ -162,6 +295,13 @@ const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).joi
           <div class="form-grid">
             <label>Access Password<input name="accessPassword" /></label>
             <label>Expiration Date<input type="datetime-local" name="expirationDate" value={toLocalInput(settings?.expirationDate || null)} /></label>
+          </div>
+        </section>
+
+        <section data-setting-target="musicEnabled">
+          <h2>Music</h2>
+          <div class="form-grid">
+            <label class="wide">Music URL<input name="musicUrl" value={detail.wedding.musicUrl || ''} /></label>
           </div>
         </section>
 
@@ -194,6 +334,25 @@ const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).joi
         </button>
       </form>
     </main>
+    <script>
+      const settingTargets = document.querySelectorAll('[data-setting-target]');
+
+      function syncSettingTargets() {
+        settingTargets.forEach((target) => {
+          const toggleName = target.getAttribute('data-setting-target');
+          const toggle = toggleName ? document.querySelector(`input[name="${toggleName}"]`) : null;
+          if (!(toggle instanceof HTMLInputElement)) return;
+
+          target.hidden = !toggle.checked;
+        });
+      }
+
+      document
+        .querySelectorAll('.toggle-grid input[type="checkbox"]')
+        .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
+
+      syncSettingTargets();
+    </script>
   </body>
 </html>
 
@@ -223,7 +382,12 @@ const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).joi
   .error-panel { color: #991b1b; background: #fff5f5; }
   .success-panel { color: #047857; background: #ecfdf5; }
   section { padding: 20px; border-bottom: 1px solid #eef0f4; }
+  section[hidden] { display: none; }
   .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .couple-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .event-list, .story-list, .gift-list { display: grid; gap: 14px; }
+  .event-card, .story-card, .couple-card, .gift-card-form { margin: 0; padding: 16px; border: 1px solid #eef0f4; border-radius: 8px; }
+  .event-card legend, .story-card legend, .couple-card legend, .gift-card-form legend { padding: 0 6px; color: #687080; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
   label { display: grid; gap: 7px; color: #394150; font-size: 13px; font-weight: 700; }
   label.wide { grid-column: 1 / -1; }
   input, select, textarea {
@@ -261,6 +425,6 @@ const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl).joi
   @media (max-width: 720px) {
     .shell { padding: 18px; }
     .header, .form-actions, .danger-panel { align-items: flex-start; flex-direction: column; }
-    .form-grid, .toggle-grid { grid-template-columns: 1fr; }
+    .form-grid, .toggle-grid, .couple-grid { grid-template-columns: 1fr; }
   }
 </style>

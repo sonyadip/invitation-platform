@@ -227,3 +227,36 @@ ALTER TABLE custom_domains ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow public read domains" ON custom_domains;
 CREATE POLICY "Allow public read domains" ON custom_domains FOR SELECT TO public USING (true);
 
+-- 15. Create PLATFORM SETTINGS Table (Global platform configuration)
+-- Run this migration separately if the table doesn't exist yet:
+CREATE TABLE IF NOT EXISTS platform_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    site_name VARCHAR(255) NOT NULL DEFAULT 'Senadda',
+    site_tagline TEXT NULL,
+    logo_url TEXT NULL,
+    logo_dark_url TEXT NULL,
+    whatsapp_url TEXT NULL,
+    instagram_url TEXT NULL,
+    email VARCHAR(255) NULL,
+    facebook_url TEXT NULL,
+    tiktok_url TEXT NULL,
+    youtube_url TEXT NULL,
+    home_heading_1 VARCHAR(255) NULL,
+    home_heading_2 VARCHAR(255) NULL,
+    home_heading_3 VARCHAR(255) NULL,
+    home_description TEXT NULL,
+    home_cta_label VARCHAR(255) NULL,
+    meta_title VARCHAR(255) NULL,
+    meta_description TEXT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- RLS: public can read, only service_role can write
+ALTER TABLE platform_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read platform_settings" ON platform_settings;
+CREATE POLICY "Allow public read platform_settings" ON platform_settings FOR SELECT TO public USING (true);
+
+-- Trigger for updated_at
+CREATE TRIGGER trigger_update_platform_settings_updated_at
+    BEFORE UPDATE ON platform_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

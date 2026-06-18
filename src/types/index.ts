@@ -41,9 +41,26 @@ export interface ThemeConfig {
     galleryColumns: number;
   };
   assets?: {
+    coverImage?: string;
     heroImage?: string;
+    heroImageTwo?: string;
+    heroImageThree?: string;
     brideImage?: string;
     groomImage?: string;
+    videoUrl?: string;
+    heroVideo?: string;
+    videoPoster?: string;
+    posterImage?: string;
+  };
+  content?: {
+    instagramUrl?: string;
+    groomInstagramUrl?: string;
+    brideInstagramUrl?: string;
+    groomFatherName?: string;
+    groomMotherName?: string;
+    brideFatherName?: string;
+    brideMotherName?: string;
+    [key: string]: string | undefined;
   };
 }
 

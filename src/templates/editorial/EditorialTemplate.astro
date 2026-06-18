@@ -1,0 +1,606 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { FullInvitationData } from '../../types';
+import { getPlatformSettings } from '../../services/platform-settings';
+import coverPhoto from './assets/cover.jpg';
+import groomPhoto from './assets/groom.jpg';
+import bridePhoto from './assets/bride.jpg';
+import eventPhoto from './assets/event.jpg';
+import rsvpPhoto from './assets/rsvp.jpg';
+import saveDatePhoto from './assets/save-date.jpg';
+import closingPhoto from './assets/closing.jpg';
+import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import './style.scss';
+
+interface Props {
+  data: FullInvitationData;
+  guestName: string | null;
+}
+
+const { data, guestName } = Astro.props;
+const { wedding, settings, events, gallery, gifts, wishes } = data;
+const sections = settings.sections;
+const themeConfig = (settings.theme_config || { theme: {}, layout: {}, assets: {} }) as any;
+
+const overrideSettings = {
+  ...settings,
+  theme_config: {
+    ...themeConfig,
+    theme: {
+      ...themeConfig.theme,
+      primaryColor: '#f3f3f3',
+      secondaryColor: '#050505',
+      textColor: '#f3f3f3',
+      bgColor: '#050505',
+      fontHeading: 'Cormorant Infant',
+      fontBody: 'Plus Jakarta Sans'
+    }
+  }
+};
+
+const themeAssets = themeConfig.assets || {};
+const themeContent = themeConfig.content || {};
+const heroSlides = [
+  themeAssets.heroImage || groomPhoto.src,
+  themeAssets.heroImageTwo || bridePhoto.src,
+  themeAssets.heroImageThree || eventPhoto.src,
+  themeAssets.eventImage || eventPhoto.src,
+  themeAssets.rsvpImage || rsvpPhoto.src,
+  themeAssets.countdownImage || saveDatePhoto.src,
+  themeAssets.closingImage || closingPhoto.src
+].filter((slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index);
+
+const coverImage = themeAssets.coverImage || coverPhoto.src;
+const groomImage = themeAssets.groomImage || groomPhoto.src;
+const brideImage = themeAssets.brideImage || bridePhoto.src;
+const eventImage = themeAssets.eventImage || eventPhoto.src;
+const rsvpImage = themeAssets.rsvpImage || rsvpPhoto.src;
+const closingImage = themeAssets.closingImage || closingPhoto.src;
+const countdownImage = themeAssets.countdownImage || saveDatePhoto.src;
+const initialHeroIndex = Math.max(heroSlides.findIndex((slide) => slide !== coverImage), 0);
+const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm';
+const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || saveDatePhoto.src;
+
+const defaultText = {
+  verse: 'Dan diantara ayat-ayat-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu merasa nyaman kepadanya, dan dijadikan-Nya di antaramu mawadah dan rahmah. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir.',
+  verseSource: '(Q.S. Ar-Rum: 21)',
+  groomParents: 'Putra dari Bapak Mempelai & Ibu Mempelai',
+  brideParents: 'Putri dari Bapak Mempelai & Ibu Mempelai',
+  giftDescription: 'Tanpa mengurangi rasa hormat, bagi tamu yang ingin mengirimkan hadiah kasih dapat melalui rekening berikut.',
+  rsvpDescription: 'Mohon konfirmasi kehadiran Anda dan berikan doa restu untuk kami.',
+  wishDescription: 'Tuliskan doa dan ucapan terbaik untuk kami.',
+  closingMessage: 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.',
+  instagramUrl: '#',
+  groomInstagramUrl: '',
+  brideInstagramUrl: ''
+};
+const text = { ...defaultText, ...themeContent };
+const platformSettings = await getPlatformSettings();
+const instagramUrl = text.instagramUrl && text.instagramUrl !== '#' ? text.instagramUrl : (platformSettings.instagram_url || '#');
+const whatsappUrl = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
+const groomInstagramUrl = text.groomInstagramUrl || instagramUrl;
+const brideInstagramUrl = text.brideInstagramUrl || instagramUrl;
+const buildParentText = (
+  roleText: string,
+  fatherName: string | undefined,
+  motherName: string | undefined,
+  fallbackText: string
+) => {
+  const parents = [
+    fatherName ? `Bapak ${fatherName}` : '',
+    motherName ? `Ibu ${motherName}` : ''
+  ].filter(Boolean).join(' & ');
+
+  return parents ? `${roleText} ${parents}` : fallbackText;
+};
+const groomParentsText = buildParentText(
+  'Putra dari',
+  text.groomFatherName,
+  text.groomMotherName,
+  text.groomParents
+);
+const brideParentsText = buildParentText(
+  'Putri dari',
+  text.brideFatherName,
+  text.brideMotherName,
+  text.brideParents
+);
+
+const formatDate = (iso: string) => new Date(iso).toLocaleDateString('id-ID', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const formatEventDate = (iso: string) => {
+  const date = new Date(iso);
+  return {
+    weekday: date.toLocaleDateString('id-ID', { weekday: 'long' }),
+    date: date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+  };
+};
+
+const formattedDate = formatDate(wedding.wedding_date);
+const activeEvents = events && events.length > 0
+  ? events
+  : [{
+      id: 'fallback',
+      event_name: 'Akad Nikah',
+      event_date: wedding.wedding_date,
+      start_time: '10:00',
+      end_time: 'Selesai',
+      venue_name: wedding.venue_name,
+      venue_address: wedding.venue_address,
+      maps_url: wedding.maps_url,
+      sort_order: 0,
+      wedding_id: wedding.id,
+      created_at: ''
+    }];
+
+const padDatePart = (value: number) => String(value).padStart(2, '0');
+const buildCalendarDate = (dateInput: string, timeInput?: string) => {
+  const date = new Date(dateInput);
+  const [hour = '09', minute = '00'] = timeInput && /^\d{1,2}:\d{2}$/.test(timeInput)
+    ? timeInput.split(':')
+    : ['09', '00'];
+
+  date.setHours(Number(hour), Number(minute), 0, 0);
+
+  return [
+    date.getFullYear(),
+    padDatePart(date.getMonth() + 1),
+    padDatePart(date.getDate()),
+    'T',
+    padDatePart(date.getHours()),
+    padDatePart(date.getMinutes()),
+    '00'
+  ].join('');
+};
+
+const buildGoogleCalendarUrl = () => {
+  const event = activeEvents[0];
+  const startTime = /^\d{1,2}:\d{2}$/.test(event.start_time) ? event.start_time : '09:00';
+  const endTime = /^\d{1,2}:\d{2}$/.test(event.end_time) ? event.end_time : '11:00';
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `Wedding of ${wedding.groom_name} & ${wedding.bride_name}`,
+    dates: `${buildCalendarDate(event.event_date, startTime)}/${buildCalendarDate(event.event_date, endTime)}`,
+    details: `Wedding invitation for ${wedding.groom_name} and ${wedding.bride_name}.`,
+    location: `${event.venue_name}, ${event.venue_address}`,
+    ctz: 'Asia/Makassar'
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
+const fallbackGallery = [
+  coverPhoto, groomPhoto, bridePhoto, eventPhoto, rsvpPhoto, saveDatePhoto, closingPhoto
+].map((image, index) => ({
+  id: String(index + 1),
+  image_url: image.src,
+  variant: index === 0 || index === 5 ? 'full-16x10' : 'half'
+}));
+
+const activeGallery = gallery && gallery.length > 0
+  ? gallery.map((image, index) => ({
+      id: image.id,
+      image_url: image.image_url,
+      variant: index === 0 || index === 5 ? 'full-16x10' : 'half'
+    }))
+  : fallbackGallery;
+const galleryColumns = themeConfig.layout?.galleryColumns || 3;
+const galleryColClass = galleryColumns === 2
+  ? 'gallery-grid--col2'
+  : galleryColumns === 4
+    ? 'gallery-grid--col4'
+    : 'gallery-grid--col3';
+
+const displayedWishes = wishes ? wishes.slice(0, 4) : [];
+const isWishesEmpty = !wishes || wishes.length === 0;
+const hasMoreWishes = wishes ? wishes.length > displayedWishes.length : false;
+const formatWishDate = (isoStr: string) => new Date(isoStr).toLocaleDateString('id-ID', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+});
+
+const activeGifts = gifts && gifts.length > 0
+  ? gifts
+  : [
+      { id: '1', bank_name: 'BCA', account_number: '0123 456 789', account_name: wedding.groom_name, qris_url: null },
+      { id: '2', bank_name: 'Mandiri', account_number: '9876 543 210', account_name: wedding.bride_name, qris_url: null }
+    ];
+---
+
+<BaseLayout wedding={wedding} settings={overrideSettings} to={guestName} templateClass="template-editorial">
+  <div class="invitation-root" data-template-root>
+    <div class="page-bg" data-template-slider aria-hidden="true">
+      {heroSlides.map((slide, index) => (
+        <img class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} src={slide} alt="" data-cover-slide={slide === coverImage ? 'true' : 'false'} />
+      ))}
+    </div>
+
+    <section class="cover-section" data-template-cover>
+      <img src={coverImage} alt="" aria-hidden="true" />
+      <div class="cover-section__overlay"></div>
+      <div class="cover-section__content">
+        <span class="cover-section__eyebrow">The Wedding of</span>
+        <h1 class="cover-section__title">{wedding.groom_name} &amp; {wedding.bride_name}</h1>
+        <time class="cover-section__date">{formattedDate}</time>
+        <p class="cover-section__guest-label">Dear</p>
+        <strong class="cover-section__guest-name">{guestName || 'Tamu Undangan'}</strong>
+        <button class="template-btn template-btn--cover" data-template-open type="button">Open Invitation</button>
+      </div>
+    </section>
+
+    <div class="invitation-layout" data-template-layout>
+      <div class="sidebar-section-wrap">
+        <aside class="sidebar-section">
+          <img class="section-bg section-bg--sidebar" src={coverImage} alt="" aria-hidden="true" />
+          <div class="sidebar-section__inner" data-animate>
+            <p class="sidebar-section__eyebrow">The Wedding Of</p>
+            <h2 class="sidebar-section__groom">{wedding.groom_name}</h2>
+            <div class="sidebar-section__sep">&amp;</div>
+            <h2 class="sidebar-section__bride">{wedding.bride_name}</h2>
+            <div class="sidebar-section__divider">
+              <span class="sidebar-section__date">{formattedDate}</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <main>
+        <section class="intro-section">
+          <div class="intro-section__inner" data-animate>
+            <p class="intro-section__eyebrow">The Wedding of</p>
+            <h2 class="intro-section__title">{wedding.groom_name} &amp; {wedding.bride_name}</h2>
+            <blockquote class="intro-section__verse">
+              "{text.verse}"
+              <cite class="intro-section__source">{text.verseSource}</cite>
+            </blockquote>
+          </div>
+        </section>
+
+        {sections.coupleInfo && (
+          <section class="couple-section">
+            <article class="couple-section__person" data-animate>
+              <img class="couple-section__image" src={groomImage} alt={wedding.groom_name} loading="lazy" />
+              <h3 class="couple-section__name">{wedding.groom_full_name || wedding.groom_name}</h3>
+              <p class="couple-section__parents">{groomParentsText}</p>
+              <a class="couple-section__social" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <circle cx="17.5" cy="6.5" r="1"></circle>
+                </svg>
+                <span>Instagram</span>
+              </a>
+            </article>
+            <article class="couple-section__person" data-animate>
+              <img class="couple-section__image" src={brideImage} alt={wedding.bride_name} loading="lazy" />
+              <h3 class="couple-section__name">{wedding.bride_full_name || wedding.bride_name}</h3>
+              <p class="couple-section__parents">{brideParentsText}</p>
+              <a class="couple-section__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <circle cx="17.5" cy="6.5" r="1"></circle>
+                </svg>
+                <span>Instagram</span>
+              </a>
+            </article>
+          </section>
+        )}
+
+        {sections.story && (
+          <section class="story-section">
+            <h3 class="story-section__title" data-animate>Our Story</h3>
+            {(wedding.story && wedding.story.length > 0 ? wedding.story : [
+              { title: 'AWAL BERTEMU', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec suscipit vehicula maximus.' },
+              { title: 'MENJALIN HUBUNGAN', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec suscipit vehicula maximus.' },
+              { title: 'MENIKAH', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus.' }
+            ]).map((story) => (
+              <article class="story-section__item" data-animate>
+                <h4 class="story-section__item-title">{story.title}</h4>
+                <p class="story-section__text">{story.description}</p>
+              </article>
+            ))}
+          </section>
+        )}
+
+        {sections.eventDetails && (
+          <section class="event-row">
+            <div class="event-row__media" data-animate>
+              <img src={eventImage} alt="" loading="lazy" />
+            </div>
+            <div class="event-row__content">
+              {activeEvents.map((event) => {
+                const eventDate = formatEventDate(event.event_date);
+                return (
+                  <article class="event-card" data-animate>
+                    <hr />
+                    <h3 class="event-card__title">{event.event_name}</h3>
+                    <h4 class="event-card__date">{eventDate.weekday},<br />{eventDate.date}</h4>
+                    <p class="event-card__time">{event.start_time} {event.end_time && event.end_time !== 'Selesai' ? `- ${event.end_time}` : ''}</p>
+                    <p class="event-card__venue">{event.venue_name}</p>
+                    <p class="event-card__address">{event.venue_address}</p>
+                    <a class="event-card__map-btn" href={event.maps_url} target="_blank" rel="noopener noreferrer">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      Open Maps
+                    </a>
+                  </article>
+                );
+              })}
+              <hr />
+            </div>
+          </section>
+        )}
+
+        {sections.countdown && settings.countdown_enabled && (
+          <section class="countdown-section" data-animate>
+            <div class="countdown-section__timer" data-animate>
+              <div class="countdown-card">
+                <div class="countdown-grid" data-countdown-timer data-date={wedding.wedding_date}>
+                  <div class="countdown-item">
+                    <span class="countdown-item__value" data-countdown-days>00</span>
+                    <span class="countdown-item__label">Hari</span>
+                  </div>
+                  <div class="countdown-item">
+                    <span class="countdown-item__value" data-countdown-hours>00</span>
+                    <span class="countdown-item__label">Jam</span>
+                  </div>
+                  <div class="countdown-item">
+                    <span class="countdown-item__value" data-countdown-minutes>00</span>
+                    <span class="countdown-item__label">Menit</span>
+                  </div>
+                  <div class="countdown-item">
+                    <span class="countdown-item__value" data-countdown-seconds>00</span>
+                    <span class="countdown-item__label">Detik</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <a class="countdown-section__calendar-btn" href={buildGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                <path d="M16 2v4M8 2v4M3 10h18"></path>
+              </svg>
+              Save to Calendar
+            </a>
+          </section>
+        )}
+
+        <section class="video-section" data-animate>
+          <div class="video-section__frame" data-template-video>
+            <video class="video-section__media" src={videoUrl} poster={videoPoster} playsinline preload="metadata"></video>
+            <button class="video-section__play" type="button" data-template-video-play aria-label="Play wedding video">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z"></path>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        {sections.gallery && settings.gallery_enabled && (
+          <section class="gallery-section" id="gallery-section">
+            <div class="gallery-container">
+              <div class="gallery-header" data-animate data-stagger-heading>
+                <h2 class="section-title gallery-section__title">Our Gallery</h2>
+                <div class="section-rule"></div>
+              </div>
+              <div class={`gallery-grid ${galleryColClass}`}>
+                {activeGallery.map((image) => (
+                  <a
+                    class={`gallery-item gallery-item--${image.variant}`}
+                    href={image.image_url}
+                    data-fancybox="gallery-section"
+                    data-animate
+                  >
+                    <img src={image.image_url} alt="Wedding gallery" loading="lazy" class="gallery-item__img" />
+                    <div class="gallery-item__overlay">
+                      <div class="gallery-item__zoom">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {sections.gift && settings.gift_enabled && (
+          <section class="gift-section" data-animate data-gift-section>
+            <div class="gift-container">
+              <div class="gift-header" data-animate data-stagger-heading>
+                <h3 class="section-title gift-section__title">Wedding Gift</h3>
+                <p class="gift-section__desc">{text.giftDescription}</p>
+                <div class="section-rule"></div>
+              </div>
+
+              <button class="gift-toggle-btn" data-gift-toggle type="button" aria-expanded="false">Lihat Hadiah Pernikahan</button>
+
+              <div class="gift-grid" data-gift-grid hidden>
+                {activeGifts.map((gift) => (
+                  <div class="gift-card" data-animate>
+                    <div class="gift-card__body">
+                      <span class="gift-card__bank">{gift.bank_name}</span>
+                      <p class="gift-card__number">{gift.account_number}</p>
+                      <p class="gift-card__holder">a.n. {gift.account_name}</p>
+                    </div>
+                    <div class="gift-card__actions">
+                      <button class="gift-btn gift-btn--copy" data-copy-btn data-value={gift.account_number} type="button">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                        </svg>
+                        <span>Salin</span>
+                      </button>
+                      {gift.qris_url && (
+                        <button class="gift-btn gift-btn--qris" data-qris-btn data-url={gift.qris_url} type="button">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                          </svg>
+                          <span>Tampilkan QRIS</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {sections.rsvp && settings.rsvp_enabled && (
+          <section class="rsvp-row" data-rsvp-section>
+            <div class="rsvp-row__media" data-animate>
+              <img src={rsvpImage} alt="" loading="lazy" />
+            </div>
+            <div class="rsvp-row__content">
+              <section class="rsvp-section" data-animate>
+                <div class="rsvp-container">
+                  <div class="rsvp-header" data-animate data-stagger-heading>
+                    <h3 class="section-title rsvp-section__title">RSVP & Wishes</h3>
+                    <p class="rsvp-section__desc">{text.rsvpDescription}</p>
+                  </div>
+
+                  <div class="rsvp-panel" data-animate>
+                    <div class="rsvp-card">
+                      <div class="rsvp-success" data-rsvp-success style="display:none;">
+                        <div class="rsvp-success__icon">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        </div>
+                        <h4 class="rsvp-success__title">Terima Kasih!</h4>
+                        <p class="rsvp-success__desc">Konfirmasi kehadiran dan ucapan Anda telah berhasil kami simpan.</p>
+                      </div>
+
+                      <form class="rsvp-form" data-rsvp-form>
+                        <input type="hidden" name="weddingId" value={wedding.id} />
+                        <div class="rsvp-form__field">
+                          <input type="text" id="rsvp-section-name" name="name" required placeholder="Nama" class="rsvp-form__input" />
+                        </div>
+                        <div class="rsvp-form__field">
+                          <select id="rsvp-section-attendance" name="attendance" required class="rsvp-form__select" data-rsvp-attendance>
+                            <option value="" disabled selected>Konfirmasi Kehadiran</option>
+                            <option value="attending">Hadir</option>
+                            <option value="declined">Tidak Hadir</option>
+                          </select>
+                        </div>
+                        <div class="rsvp-form__field">
+                          <textarea id="rsvp-section-message" name="message" rows="4" required placeholder="Ucapan" class="rsvp-form__textarea"></textarea>
+                        </div>
+                        <div class="rsvp-form__error" data-rsvp-error style="display:none;"></div>
+                        <button type="submit" class="rsvp-form__submit" data-rsvp-submit>Submit</button>
+                      </form>
+                    </div>
+
+                    <div class="wishes-list" data-wishes-list>
+                      <div class="wishes-empty" data-wishes-empty style={isWishesEmpty ? '' : 'display:none;'}>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <span>Belum ada ucapan. Jadilah yang pertama memberikan doa restu!</span>
+                      </div>
+
+                      {displayedWishes.map((wish) => (
+                        <div
+                          class="wish-card"
+                          data-animate
+                          data-wish-id={wish.id}
+                          data-wish-key={wish.id || `${wish.created_at}|${wish.guest_name}|${wish.message || ''}`}
+                        >
+                          <div class="wish-card__header">
+                            <div class="wish-card__meta">
+                              <span class="wish-card__name">{wish.guest_name}</span>
+                              <span class={`wish-card__badge ${wish.attendance_status === 'attending' ? 'wish-card__badge--attend' : 'wish-card__badge--absent'}`}>
+                                {wish.attendance_status === 'attending' ? 'Hadir' : 'Absen'}
+                              </span>
+                            </div>
+                            <span class="wish-card__date">{formatWishDate(wish.created_at)}</span>
+                          </div>
+                          <p class="wish-card__message">{wish.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {hasMoreWishes && (
+                      <button class="wishes-load-more" data-wishes-load-more data-offset={displayedWishes.length} data-wedding-id={wedding.id}>
+                        Load More
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+        )}
+
+        <section class="closing-row">
+          <div class="closing-row__media" data-animate>
+            <img src={closingImage} alt="" loading="lazy" />
+          </div>
+          <div class="closing-row__content" data-animate>
+            <h3 class="closing-row__title">Terima kasih</h3>
+            <p class="closing-row__message">{text.closingMessage}</p>
+            <h4 class="closing-row__names">{wedding.groom_name} &amp; {wedding.bride_name}</h4>
+            <footer class="thankyou-section__footer">
+              <img src="/images/senadda-logo.png" alt="Senadda" class="thankyou-section__brand" />
+              <div class="thankyou-section__socials">
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <circle cx="17.5" cy="6.5" r="1"></circle>
+                  </svg>
+                </a>
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="social-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.04 2.5a9.43 9.43 0 0 0-8.16 14.14L2.5 21.5l4.98-1.31a9.43 9.43 0 1 0 4.56-17.69Zm0 17.14a7.71 7.71 0 0 1-3.93-1.08l-.28-.17-2.95.77.79-2.88-.18-.3a7.72 7.72 0 1 1 6.55 3.66Zm4.23-5.78c-.23-.12-1.37-.68-1.58-.75-.21-.08-.37-.12-.52.12-.16.23-.6.75-.74.9-.14.16-.27.18-.5.06-.23-.12-.98-.36-1.86-1.15-.69-.61-1.15-1.36-1.28-1.59-.14-.23-.02-.36.1-.48.11-.11.23-.27.35-.41.12-.14.16-.23.23-.39.08-.16.04-.29-.02-.41-.06-.12-.52-1.25-.71-1.71-.19-.45-.38-.39-.52-.4h-.45c-.16 0-.41.06-.62.29-.21.23-.81.79-.81 1.93 0 1.14.83 2.24.95 2.4.12.16 1.64 2.5 3.98 3.51.56.24.99.38 1.33.49.56.18 1.07.15 1.47.09.45-.07 1.37-.56 1.57-1.1.19-.54.19-1 .14-1.1-.06-.1-.21-.16-.44-.28Z"/>
+                  </svg>
+                </a>
+              </div>
+              <p class="thankyou-section__copyright">&copy; Copyright {new Date().getFullYear()}</p>
+            </footer>
+          </div>
+        </section>
+      </main>
+
+      {sections.music && (
+        <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
+          <span></span>
+          {settings.music_enabled && wedding.music_url && (
+            <audio data-template-audio loop src={wedding.music_url}></audio>
+          )}
+        </button>
+      )}
+
+      <div class="qris-lightbox" data-qris-lightbox>
+        <div class="qris-lightbox__card" data-qris-card>
+          <button class="qris-lightbox__close" data-qris-close aria-label="Close QRIS">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+          <h4 class="qris-lightbox__title">Scan QRIS Transfer</h4>
+          <div class="qris-lightbox__img-frame">
+            <img src="" alt="QRIS Scan" class="qris-lightbox__img" data-qris-img />
+          </div>
+          <p class="qris-lightbox__note">Silakan gunakan aplikasi perbankan atau e-wallet untuk memindai kode QRIS.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import './script.js';
+</script>

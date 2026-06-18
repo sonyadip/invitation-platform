@@ -1,0 +1,1470 @@
+@font-face {
+  font-family: "La Luxes Serif";
+  src: url("./assets/la-luxes-serif-webfont.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "La Luxes Script";
+  src: url("./assets/la-luxes-script-webfont.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+html:has(body.template-deauville) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html:has(body.template-deauville)::-webkit-scrollbar {
+  display: none;
+}
+
+@font-face {
+  font-family: 'Billion Miracles';
+  src: url('./assets/BillionMiracles.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body.template-deauville {
+  --dea-ink: #f8f5ef;
+  --dea-muted: rgba(248, 245, 239, 0.7);
+  // --dea-muted: rgba(248, 245, 239, 1);
+  --dea-line: rgba(248, 245, 239, 0.22);
+  --dea-dark: #151515;
+  --dea-panel: rgba(22, 22, 22, 0.62);
+  --dea-panel-strong: rgba(18, 18, 18, 0.84);
+  --dea-paper: #f4efe7;
+  --dea-paper-ink: #202020;
+
+  margin: 0;
+  background: var(--dea-dark);
+  color: var(--dea-ink);
+  font-family: var(--font-body), "Josefin Sans", sans-serif;
+
+  &.template-no-scroll {
+    overflow: hidden;
+    height: 100dvh;
+  }
+
+  &.template-cover-active {
+    overflow: hidden;
+    height: 100dvh;
+  }
+
+  &.template-cover-active .cover-section {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: 500px;
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  .invitation-root {
+    min-height: 100vh;
+    background: var(--dea-dark);
+  }
+
+  .cover-section {
+    position: relative;
+    z-index: 99;
+    min-height: 100dvh;
+    overflow: hidden;
+    isolation: isolate;
+    transition: transform 1s ease-in-out;
+    will-change: transform;
+  }
+
+  .cover-section.is-opening {
+    transform: translateY(-100%);
+    pointer-events: none;
+  }
+
+  .cover-section.is-opened {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-100%);
+  }
+
+  .cover-section::after,
+  .hero-section::after,
+  .video-section::after,
+  .couple-section::before,
+  .event-section::before,
+  .thankyou-section::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    content: "";
+    background: rgba(49, 49, 49, 0.42);
+  }
+
+  .event-section::before {
+    background: rgba(49, 49, 49, 0.7);
+  }
+
+
+  .cover-section__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cover-section__title-block {
+    margin-bottom: 120px;
+  }
+
+  .cover-section__title-block p,
+  .couple-section__eyebrow,
+  .countdown-section__title,
+  .video-section__panel span {
+    margin: 0;
+    font-size: 0.9em;
+    font-weight: 300;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .cover-section__title-block h1,
+  .hero-section__names h2,
+  .event-section__title,
+  .video-section h3,
+  .gallery-section h3,
+  .gift-section h3,
+  .rsvp-section h3,
+  .thankyou-section h3 {
+    margin: 0;
+    font-family: var(--font-heading), "Cormorant Garamond", Georgia, serif;
+    font-weight: 400;
+    line-height: 0.94;
+  }
+
+  .deauville-name--glasvia {
+    font-family: "La Luxes Serif", var(--font-heading), Georgia, serif !important;
+    font-weight: 400 !important;
+  }
+
+  .deauville-name--letterx {
+    font-family: "La Luxes Script", var(--font-heading), Georgia, serif !important;
+    font-weight: 400 !important;
+  }
+
+  .cover-section__body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    gap: 40px;
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .cover-section__title-block,
+  .cover-section__guest {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    opacity: 0;
+    animation: deauville-fade-in 1.2s ease 0.2s forwards;
+  }
+
+  .cover-section__guest {
+    animation-delay: 0.55s;
+  }
+
+  .cover-section__title-block h1 {
+    display: grid;
+    gap: 0;
+    font-size: 1rem;
+  }
+
+  .cover-section__title-block h1 span {
+    display: block;
+  }
+
+  .cover-section__title-block h1 .deauville-name--glasvia {
+    font-size: 64px;
+    line-height: 0.9;
+    text-transform: none;
+  }
+
+  .cover-section__title-block h1 .deauville-name--letterx {
+    margin-top: -30px;
+    font-size: 75px;
+    text-transform: none;
+    font-family: "Billion Miracles", cursive !important;
+  }
+
+  .cover-section__title-block h1 em {
+    margin: 0px 0 -15px;
+    color: rgba(255, 255, 255, 0.65);
+    font: 300 0.9rem/1 var(--font-body), "Josefin Sans", sans-serif;
+    font-style: normal;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  .cover-section__guest {
+    color: #fff;
+  }
+
+  .cover-section__guest strong {
+    color: var(--dea-ink);
+    max-width: 70%;
+    font-size: 1.2em;
+    font-weight: 600;
+    line-height: 1.3;
+    text-transform: none;
+  }
+
+  .template-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 5px 20px 0px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: 400 14px/1 var(--font-body), "Josefin Sans", sans-serif;
+    letter-spacing: 0;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .template-btn:hover,
+  .template-btn:focus-visible {
+    background: var(--dea-ink);
+    color: var(--dea-dark);
+  }
+
+  .template-btn--light {
+    background: rgba(211, 211, 211, 0.23);
+    color: #fff;
+    border-color: transparent;
+    border-radius: 12px;
+  }
+
+  .invitation-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    z-index: 2;
+  }
+
+  .sidebar-section-wrap {
+    position: sticky;
+    top: 0;
+    width: calc(100% - 500px);
+    height: 100dvh;
+    min-width: 0;
+    background: #0d0d0d;
+  }
+
+  .sidebar-section__frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .sidebar-section__frame::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background: rgba(49, 49, 49, 0.4);
+  }
+
+  .sidebar-section__frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .invitation-main {
+    position: relative;
+    z-index: 3;
+    width: 500px;
+    min-height: 100vh;
+    margin-left: auto;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .snap-section {
+    position: relative;
+    min-height: 100dvh;
+    padding: 60px 30px;
+    overflow: hidden;
+  }
+
+  .template-slider {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+  }
+
+  .template-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity 1.4s ease, transform 4s ease;
+  }
+
+  .template-slide.is-active {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  .hero-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    isolation: isolate;
+    padding: 20px;
+    text-align: left;
+  }
+
+  .hero-section__names {
+    display: grid;
+    justify-items: start;
+    gap: 0;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .hero-section__names h2 {
+    font-size: 56px;
+    line-height: 0.9;
+    text-transform: none;
+    text-align: center;
+  }
+
+  .hero-section__names .deauville-name--letterx {
+    margin-top: -30px;
+    font-size: 64px;
+    font-family: "Billion Miracles", cursive !important;
+  }
+
+  .hero-section__names time {
+    margin-top: 20px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.8em;
+    font-weight: 300;
+    letter-spacing: 2px;
+  }
+
+  .hero-section blockquote {
+    width: min(100%, 380px);
+    margin: 0 auto;
+    color: var(--dea-muted);
+    font-size: 0.9em;
+    font-weight: 300;
+    line-height: 1.5;
+    text-align: center;
+    z-index: 2;
+  }
+
+  .hero-section cite {
+    display: block;
+    margin-top: 14px;
+    color: var(--dea-ink);
+    font-style: normal;
+  }
+
+  .couple-section {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    color: #fff;
+    isolation: isolate;
+  }
+
+  .couple-section__image {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .couple-section__content {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    // margin-bottom: 72px;
+    // padding: 32px;
+  }
+
+  .couple-section h3 {
+    margin: 0;
+    font-family: var(--font-heading), "Cormorant Garamond", Georgia, serif;
+    font-size: 1.5em;
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
+  .couple-section p:not(.couple-section__eyebrow) {
+    max-width: 280px;
+    margin: 0;
+    font-size: 0.9em;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .couple-section__social {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 7px;
+    margin-top: 4px;
+    padding: 2px 0 4px;
+    border-bottom: 1px solid rgba(245, 242, 238, 0.34);
+    color: rgba(245, 242, 238, 0.82);
+    font-family: var(--font-body), "Josefin Sans", sans-serif;
+    font-size: 11.52px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    line-height: 1.2;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: border-color 200ms ease, color 200ms ease, opacity 200ms ease;
+  }
+
+  .couple-section__social svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+
+  .couple-section__social:hover,
+  .couple-section__social:focus-visible {
+    border-color: var(--dea-ink);
+    color: #fff;
+  }
+
+  .couple-section__social:focus-visible {
+    outline: 2px solid rgba(245, 242, 238, 0.72);
+    outline-offset: 4px;
+  }
+
+  .event-section {
+    display: grid;
+    align-content: center;
+    gap: 14px;
+    padding: 34px;
+    background: url("./assets/deauville-event.jpg") center / cover;
+    background-attachment: fixed;
+    background-position: right center;
+    isolation: isolate;
+  }
+
+  .event-section header {
+    display: grid;
+    gap: 0;
+    text-align: left;
+  }
+
+  .event-section__title {
+    color: rgba(255, 255, 255, 0.72);
+    font-family: "La Luxes Serif", var(--font-heading), Georgia, serif;
+    font-size: clamp(52px, 10vw, 67px);
+    font-weight: 400;
+    display: grid;
+    line-height: 1;
+    letter-spacing: -5px;
+    text-transform: none;
+    text-shadow: 3px 4px 8px rgba(0, 0, 0, 0.18);
+  }
+
+  .event-section__title-main,
+  .event-section__title-script {
+    display: block;
+  }
+
+  .event-section__title-script {
+    margin-top: -24px;
+    font-family: "La Luxes Script", cursive;
+    font-family: "Billion Miracles", cursive;
+    font-size: clamp(60px, 8.5vw, 70px);
+    letter-spacing: 0;
+    line-height: 0.92;
+  }
+
+  .countdown-section {
+    display: flex;
+    width: 100%;
+    min-height: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 24px 0 0;
+    border: 0;
+    background: transparent;
+    color: var(--dea-ink);
+    text-align: center;
+  }
+
+  .countdown-section__title {
+    display: none;
+  }
+
+  .countdown-section__timer {
+    width: 100%;
+    // max-width: 360px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .countdown-card {
+    width: 100%;
+    // max-width: 360px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .countdown-grid {
+    display: grid;
+    width: 100%;
+    // max-width: 360px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .countdown-item {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    padding: 16px 8px 14px;
+    border: 1px solid rgba(248, 245, 239, 0.2);
+    border-radius: 8px;
+    background: rgba(248, 245, 239, 0.04);
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--countdown-delay, 0ms);
+  }
+
+  .countdown-item:nth-child(1) {
+    --countdown-delay: 120ms;
+  }
+
+  .countdown-item:nth-child(2) {
+    --countdown-delay: 260ms;
+  }
+
+  .countdown-item:nth-child(3) {
+    --countdown-delay: 400ms;
+  }
+
+  .countdown-item:nth-child(4) {
+    --countdown-delay: 540ms;
+  }
+
+  .countdown-section__timer.is-animated .countdown-item {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .countdown-item__label {
+    margin-top: 5.6px;
+    color: rgba(248, 245, 239, 0.68);
+    font-family: var(--font-body), "Josefin Sans", sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .countdown-item__value {
+    display: block;
+    color: var(--dea-ink);
+    font-family: var(--font-heading), "Cormorant Garamond", Georgia, serif;
+    font-size: 26.4px;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .countdown-section__calendar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 2px 0 4px;
+    border-bottom: 1px solid rgba(248, 245, 239, 0.34);
+    color: rgba(248, 245, 239, 0.82);
+    font-family: var(--font-body), "Josefin Sans", sans-serif;
+    font-size: 11.52px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    line-height: 1.2;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: border-color 200ms ease, color 200ms ease;
+  }
+
+  .countdown-section__calendar-btn:hover,
+  .countdown-section__calendar-btn:focus-visible {
+    border-color: var(--dea-ink);
+    color: var(--dea-ink);
+  }
+
+  .countdown-section__calendar-btn:focus-visible {
+    outline: 2px solid rgba(248, 245, 239, 0.72);
+    outline-offset: 4px;
+  }
+
+  .countdown-section__calendar-btn svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+  }
+
+  .event-grid {
+    display: grid;
+    gap: 12px;
+    padding: 0;
+  }
+
+  .event-card {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 0;
+    padding: 22px;
+    border: 0;
+    background: rgba(0, 0, 0, 0.38);
+    text-align: left;
+    backdrop-filter: blur(3px);
+  }
+
+  .event-card__title {
+    margin: 0;
+    font-family: var(--font-heading), "Cormorant Garamond", Georgia, serif;
+    font-size: 2.5em;
+    font-weight: 400;
+    text-transform: none;
+  }
+
+  .event-card__date,
+  .event-card__time,
+  .event-card__venue,
+  .event-card__address {
+    margin: 0;
+    color: var(--dea-muted);
+    font-size: 0.9em;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .event-card__venue {
+    color: var(--dea-ink);
+    font-weight: 600;
+  }
+
+  .event-card__map-btn {
+    justify-self: start;
+    color: var(--dea-ink);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+
+  .video-section {
+    display: grid;
+    place-items: center;
+    isolation: isolate;
+  }
+
+  .video-section__panel {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+    width: min(100%, 370px);
+    padding: 26px 22px;
+    border: 1px solid var(--dea-line);
+    background: rgba(20, 20, 20, 0.48);
+    backdrop-filter: blur(20px);
+    text-align: center;
+  }
+
+  .video-section__panel h3 {
+    font-size: clamp(2.7rem, 12vw, 4.4rem);
+  }
+
+  .video-section__panel p {
+    margin: 0;
+    color: var(--dea-muted);
+    line-height: 1.6;
+  }
+
+  .video-section__frame {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid rgba(248, 245, 239, 0.24);
+    background: rgba(0, 0, 0, 0.42);
+    aspect-ratio: 16 / 10;
+  }
+
+  .video-section__frame video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-section__play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: rgba(0, 0, 0, 0.24);
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .video-section__play svg {
+    width: 52px;
+    height: 52px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  .video-section__frame.is-playing .video-section__play {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .gallery-section,
+  .gift-section,
+  .rsvp-section,
+  .thankyou-section {
+    display: grid;
+    align-content: center;
+    gap: 6px;
+    background: rgba(49, 49, 49, 0.86);
+  }
+
+  .gallery-section {
+    background:
+      linear-gradient(rgba(49, 49, 49, 0.62), rgba(49, 49, 49, 0.62)),
+      url("./assets/deauville-closing.jpg") right center / cover fixed;
+  }
+
+  .gallery-section h3,
+  .gift-section h3,
+  .rsvp-section h3,
+  .thankyou-section h3 {
+    font-size: clamp(2.5rem, 11vw, 4.6rem);
+    text-align: left;
+    margin-bottom: 24px;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 120px;
+    gap: 6px;
+  }
+
+  .gallery-item {
+    position: relative;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .gallery-item__play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.24);
+    color: #fff;
+    pointer-events: none;
+    transition: opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .gallery-item__play svg {
+    width: 42px;
+    height: 42px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  .gallery-item:hover .gallery-item__play {
+    background: rgba(0, 0, 0, 0.44);
+  }
+
+  .gallery-item--wide {
+    grid-column: span 2;
+  }
+
+  .gallery-video-full {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    // margin-bottom: 22px;
+  }
+
+  .gallery-video-full img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .gallery-video-full:hover .gallery-item__play {
+    background: rgba(0, 0, 0, 0.44);
+  }
+
+  .gallery-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .gallery-item:hover img {
+    transform: scale(1.05);
+  }
+
+  .gift-section,
+  .rsvp-section {
+    background:
+      linear-gradient(rgba(49, 49, 49, 0.42), rgba(49, 49, 49, 0.42)),
+      rgba(49, 49, 49, 0.86);
+  }
+
+  .gift-section {
+    align-content: center;
+    padding: 72px 30px;
+    background:
+      linear-gradient(rgba(21, 21, 21, 0.68), rgba(21, 21, 21, 0.72)),
+      url("./assets/deauville-save-date.jpg") center / cover fixed;
+    color: var(--dea-ink);
+    text-align: center;
+  }
+
+  .rsvp-section {
+    background:
+      linear-gradient(rgba(49, 49, 49, 0.72), rgba(49, 49, 49, 0.72)),
+      url("./assets/deauville-rsvp.jpg") right center / cover fixed;
+
+    h3 {
+      margin-bottom: 10px;
+    }
+  }
+
+  .rsvp-section>p {
+    max-width: 620px;
+    margin: 4px auto 16px;
+    color: var(--dea-muted);
+    font-size: 0.9em;
+    font-weight: 300;
+    line-height: 1.7;
+    text-align: start;
+  }
+
+  .gift-container {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .gift-header {
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .gift-section__title {
+    margin: 0;
+    color: var(--dea-ink);
+    font-family: "La Luxes Serif", var(--font-heading), "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(46px, 10vw, 70px);
+    font-weight: 400;
+    line-height: 0.98;
+    letter-spacing: -4px;
+    text-align: center;
+    text-shadow: 3px 4px 8px rgba(0, 0, 0, 0.18);
+  }
+
+  .gift-section__desc {
+    max-width: 620px;
+    margin: 12px auto 0;
+    color: var(--dea-muted);
+    font-size: 0.9em;
+    font-weight: 300;
+    line-height: 1.7;
+    text-align: start;
+  }
+
+  .gift-toggle-btn,
+  .gift-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 10px 22px;
+    border: 1px solid var(--dea-ink);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--dea-ink);
+    font-family: var(--font-body), "Josefin Sans", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    line-height: 1.15;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, opacity 200ms ease;
+  }
+
+  .gift-toggle-btn:hover,
+  .gift-toggle-btn:focus-visible,
+  .gift-btn:hover,
+  .gift-btn:focus-visible {
+    background: rgba(248, 245, 239, 0.12);
+    color: var(--dea-ink);
+  }
+
+  .gift-toggle-btn:focus-visible,
+  .gift-btn:focus-visible {
+    outline: 2px solid rgba(248, 245, 239, 0.72);
+    outline-offset: 4px;
+  }
+
+  .gift-grid {
+    display: grid;
+    // max-width: 360px;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 12px;
+    margin: 40px auto 0;
+  }
+
+  .gift-grid[hidden] {
+    display: none !important;
+  }
+
+  .gift-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: flex-end;
+    gap: 14px;
+    padding: 22px;
+    border: 1px solid rgba(248, 245, 239, 0.28);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgba(248, 245, 239, 0.055), rgba(248, 245, 239, 0.018)),
+      rgba(0, 0, 0, 0.28);
+    color: var(--dea-ink);
+    text-align: left;
+    box-shadow: none;
+  }
+
+  .gift-card__body {
+    min-width: 0;
+  }
+
+  .gift-card__bank {
+    display: block;
+    margin-bottom: 10px;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: rgba(248, 245, 239, 0.78);
+    font-family: var(--font-body), "Josefin Sans", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .gift-card__number {
+    margin: 0;
+    max-width: 100%;
+    color: var(--dea-ink);
+    font-family: var(--font-body), "Josefin Sans", sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    line-height: 1.18;
+    overflow-wrap: anywhere;
+  }
+
+  .gift-card__holder {
+    margin: 6px 0 0;
+    color: rgba(248, 245, 239, 0.7);
+    font-family: var(--font-body), "Josefin Sans", sans-serif;
+    font-size: 13px;
+    line-height: 1.45;
+    text-transform: capitalize;
+  }
+
+  .gift-card__actions {
+    display: flex;
+    width: auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .gift-btn {
+    width: auto;
+    min-width: 88px;
+    min-height: 32px;
+    gap: 6px;
+    padding: 2px 14px 0px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+    line-height: 0;
+  }
+
+  .gift-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-bottom: 2.5px;
+  }
+
+  .gift-btn.is-copied {
+    border-color: rgba(167, 243, 208, 0.8);
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--dea-ink);
+  }
+
+  .rsvp-form {
+    display: grid;
+    gap: 12px;
+    width: min(100%, 370px);
+    margin: 0 auto;
+  }
+
+  .rsvp-form input,
+  .rsvp-form select,
+  .rsvp-form textarea {
+    width: 100%;
+    border: 1px solid var(--dea-line);
+    border-radius: 0;
+    background: rgba(248, 245, 239, 0.92);
+    color: #202020;
+    font: 400 0.95rem/1.3 var(--font-body), "Josefin Sans", sans-serif;
+  }
+
+  .rsvp-form input,
+  .rsvp-form select {
+    min-height: 46px;
+    padding: 0 14px;
+  }
+
+  .rsvp-form textarea {
+    min-height: 120px;
+    padding: 14px;
+    resize: vertical;
+  }
+
+  .rsvp-form__error {
+    padding: 12px;
+    background: rgba(160, 32, 32, 0.78);
+    color: #fff;
+    font-size: 0.86rem;
+  }
+
+  .rsvp-success {
+    padding: 18px;
+    border: 1px solid var(--dea-line);
+    background: var(--dea-panel-strong);
+    text-align: center;
+  }
+
+  .rsvp-success h4 {
+    margin: 0 0 6px;
+    font-family: var(--font-heading), "Cormorant Garamond", Georgia, serif;
+    font-size: 1.7rem;
+    font-weight: 400;
+  }
+
+  .wishes-list {
+    display: grid;
+    gap: 10px;
+    width: min(100%, 370px);
+    margin: 0 auto;
+    max-height: 420px;
+    overflow: auto;
+  }
+
+  .wish-card,
+  .wishes-empty {
+    padding: 16px;
+    border: 1px solid rgba(248, 245, 239, 0.16);
+    background: rgba(0, 0, 0, 0.24);
+  }
+
+  .wish-card__header,
+  .wish-card__meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .wish-card__header {
+    margin-bottom: 8px;
+  }
+
+  .wish-card__name {
+    font-weight: 700;
+  }
+
+  .wish-card__badge,
+  .wish-card__date {
+    color: var(--dea-muted);
+    font-size: 0.72rem;
+  }
+
+  .wish-card__message {
+    margin: 0;
+    color: var(--dea-muted);
+    line-height: 1.6;
+  }
+
+  .thankyou-section {
+    justify-items: center;
+    background:
+      linear-gradient(rgba(49, 49, 49, 0.42), rgba(49, 49, 49, 0.42)),
+      url("./assets/deauville-closing.jpg") center / cover;
+    text-align: center;
+  }
+
+  .audio-toggle {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    background: rgba(148, 148, 148, 0.42);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .audio-toggle span {
+    width: 0;
+    height: 0;
+    margin-left: 3px;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 11px solid currentColor;
+  }
+
+  .audio-toggle--playing span {
+    width: 12px;
+    height: 14px;
+    margin-left: 0;
+    border: 0;
+    background: linear-gradient(90deg, currentColor 0 35%, transparent 35% 65%, currentColor 65%);
+  }
+
+  [data-animate] {
+    opacity: 0;
+  }
+
+  [data-animate].is-animated {
+    animation: deauville-fade-in 1.2s ease var(--animate-delay, 0ms) forwards;
+  }
+
+  [data-opening-animate] {
+    opacity: 0;
+  }
+
+  [data-opening-animate].is-animated {
+    animation: deauville-fade-in 1.2s ease var(--opening-delay, 0.2s) forwards;
+  }
+
+  .qris-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.72);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .qris-lightbox__card {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    width: min(100%, 340px);
+    padding: 24px;
+    background: var(--dea-paper);
+    color: var(--dea-paper-ink);
+    text-align: center;
+    transform: scale(0.96);
+    transition: transform 0.2s ease;
+  }
+
+  .qris-lightbox__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .qris-lightbox img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+  }
+
+  .qris-lightbox__note {
+    margin: 0;
+    color: rgba(32, 32, 32, 0.74);
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  @keyframes deauville-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+
+    .sidebar-section-wrap,
+    .invitation-main {
+      width: 50%;
+    }
+
+    &.template-cover-active .cover-section {
+      width: 50%;
+    }
+  }
+
+  @media (max-width: 767px) {
+    &.template-cover-active .cover-section {
+      left: 0;
+      width: 100%;
+    }
+
+    .invitation-layout {
+      display: block;
+    }
+
+    .sidebar-section-wrap {
+      display: none;
+    }
+
+    .invitation-main {
+      width: 100%;
+      max-width: none;
+    }
+
+    .event-section,
+    .gallery-section,
+    .gift-section,
+    .rsvp-section {
+      background-attachment: scroll;
+      background-position: center;
+    }
+
+    .snap-section {
+      min-height: 100svh;
+      padding: 62px 24px;
+    }
+
+    .gallery-grid {
+      grid-auto-rows: 104px;
+    }
+
+    .gift-card {
+      padding: 20px;
+    }
+
+    .countdown-item__value {
+      font-size: 1.45rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  .thankyou-section {
+    position: relative;
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    overflow: hidden;
+    padding: 0 32px 32px;
+    background-color: var(--dea-bg);
+    text-align: center;
+    background-image: none !important;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: rgba(49, 49, 49, 0.42);
+      pointer-events: none;
+    }
+  }
+
+  .thankyou-section__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .thankyou-section__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .thankyou-section__title {
+    margin: 0;
+    color: var(--dea-ink);
+    font-family: 'Billion Miracles', cursive;
+    font-size: clamp(55px, 12vw, 65px);
+    font-weight: 400;
+    line-height: 0.5;
+    letter-spacing: 1px;
+    text-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .thankyou-section__socials {
+    display: flex;
+    gap: 12px;
+    margin-top: 0;
+  }
+
+  .social-link {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(248, 245, 239, 0.28);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--dea-ink);
+    cursor: pointer;
+    transition: background 0.25s ease, border-color 0.25s ease;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(248, 245, 239, 0.55);
+    }
+  }
+
+  .thankyou-section__brand-text {
+    margin: 0;
+    color: rgba(248, 245, 239, 0.4);
+    font-family: var(--font-body), 'Josefin Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    width: 150px;
+
+    span {
+      color: rgba(248, 245, 239, 0.68);
+      letter-spacing: 3.5px;
+    }
+  }
+}

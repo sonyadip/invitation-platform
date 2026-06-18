@@ -19,6 +19,16 @@ src/templates/
     style.scss
     script.js
     assets/
+  deauville/
+    DeauvilleTemplate.astro
+    style.scss
+    script.js
+    assets/
+  editorial/
+    EditorialTemplate.astro
+    style.scss
+    script.js
+    assets/
 ```
 
 Rules:
@@ -32,4 +42,4 @@ Rules:
 - Use `data-template-*` attributes for JavaScript selectors so behavior is not tied to visual class names.
 - Dashboard template dropdown options are generated from folders in `src/templates/`.
 
-When adding a new template, set `wedding.template` to the folder key, for example `noir`, `sage`, or `ochre`.
+When adding a new template, set `wedding.template` to the folder key, for example `noir`, `sage`, `ochre`, `deauville`, or `editorial`.

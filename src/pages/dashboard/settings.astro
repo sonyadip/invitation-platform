@@ -1,0 +1,418 @@
+---
+import { getPlatformSettings, savePlatformSettings } from '../../services/platform-settings';
+import { hashPasswordSHA256 } from '../../utils/security';
+
+export const prerender = false;
+
+const dashboardPassword =
+  import.meta.env.DASHBOARD_PASSWORD ||
+  (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') ||
+  '';
+const cookieName = 'dashboard_unlocked';
+const isUnlocked = !dashboardPassword ||
+  Astro.cookies.get(cookieName)?.value === await hashPasswordSHA256(dashboardPassword);
+
+if (!isUnlocked) {
+  return Astro.redirect('/dashboard');
+}
+
+let successMessage = '';
+let errorMessage = '';
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const val = (name: string) => String(formData.get(name) || '').trim();
+
+  try {
+    await savePlatformSettings({
+      site_name: val('site_name'),
+      site_tagline: val('site_tagline'),
+      logo_url: val('logo_url'),
+      logo_dark_url: val('logo_dark_url'),
+      whatsapp_url: val('whatsapp_url'),
+      instagram_url: val('instagram_url'),
+      email: val('email'),
+      facebook_url: val('facebook_url'),
+      tiktok_url: val('tiktok_url'),
+      youtube_url: val('youtube_url'),
+      home_heading_1: val('home_heading_1'),
+      home_heading_2: val('home_heading_2'),
+      home_heading_3: val('home_heading_3'),
+      home_description: val('home_description'),
+      home_cta_label: val('home_cta_label'),
+      meta_title: val('meta_title'),
+      meta_description: val('meta_description'),
+    });
+    successMessage = 'Settings berhasil disimpan.';
+  } catch (error) {
+    errorMessage = error instanceof Error ? error.message : 'Gagal menyimpan settings.';
+  }
+}
+
+const settings = await getPlatformSettings();
+---
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Settings - Dashboard</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <a class="back-link" href="/dashboard">← Back to dashboard</a>
+          <p class="eyebrow">Dashboard</p>
+          <h1>Platform Settings</h1>
+          <p class="subtitle">Kelola identitas platform, link sosial media, dan konten homepage.</p>
+        </div>
+        <a class="secondary-action" href="/" target="_blank" rel="noopener noreferrer">Lihat Homepage</a>
+      </header>
+
+      {successMessage && <div class="success-panel">{successMessage}</div>}
+      {errorMessage && <div class="error-panel">{errorMessage}</div>}
+
+      <form class="form-panel" method="POST">
+        <!-- IDENTITAS -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">🏢</span>
+            <div>
+              <h2>Identitas Platform</h2>
+              <p>Nama, tagline, dan logo yang tampil di seluruh platform.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label>
+              Nama Platform
+              <input name="site_name" value={settings.site_name} placeholder="Senadda" required />
+            </label>
+            <label>
+              Tagline
+              <input name="site_tagline" value={settings.site_tagline} placeholder="Jasa Pembuatan Undangan Digital" />
+            </label>
+            <label class="wide">
+              URL Logo (Light)
+              <input name="logo_url" value={settings.logo_url} placeholder="/images/senadda-logo.png" />
+              {settings.logo_url && <img class="logo-preview" src={settings.logo_url} alt="Logo preview" />}
+            </label>
+            <label class="wide">
+              URL Logo (Dark / Alternatif)
+              <input name="logo_dark_url" value={settings.logo_dark_url} placeholder="https://example.com/logo-dark.png" />
+              {settings.logo_dark_url && <img class="logo-preview" src={settings.logo_dark_url} alt="Logo dark preview" />}
+            </label>
+          </div>
+        </section>
+
+        <!-- SOCIAL MEDIA & KONTAK -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">📱</span>
+            <div>
+              <h2>Kontak & Sosial Media</h2>
+              <p>Link yang digunakan di tombol CTA, footer, dan link sosial media.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label>
+              WhatsApp URL
+              <input name="whatsapp_url" value={settings.whatsapp_url} placeholder="https://wa.me/6281234567890" />
+              <span class="hint">Gunakan format: https://wa.me/62812xxxxx</span>
+            </label>
+            <label>
+              Email
+              <input type="email" name="email" value={settings.email} placeholder="hello@senadda.com" />
+            </label>
+            <label>
+              Instagram URL
+              <input name="instagram_url" value={settings.instagram_url} placeholder="https://instagram.com/senadda" />
+            </label>
+            <label>
+              Facebook URL
+              <input name="facebook_url" value={settings.facebook_url} placeholder="https://facebook.com/senadda" />
+            </label>
+            <label>
+              TikTok URL
+              <input name="tiktok_url" value={settings.tiktok_url} placeholder="https://tiktok.com/@senadda" />
+            </label>
+            <label>
+              YouTube URL
+              <input name="youtube_url" value={settings.youtube_url} placeholder="https://youtube.com/@senadda" />
+            </label>
+          </div>
+        </section>
+
+        <!-- KONTEN HOMEPAGE -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">🏠</span>
+            <div>
+              <h2>Konten Homepage</h2>
+              <p>Teks hero, deskripsi, dan label tombol yang tampil di halaman utama.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label>
+              Heading Kata 1
+              <input name="home_heading_1" value={settings.home_heading_1} placeholder="Selaras" />
+            </label>
+            <label>
+              Heading Kata 2
+              <input name="home_heading_2" value={settings.home_heading_2} placeholder="Hangat" />
+            </label>
+            <label>
+              Heading Kata 3
+              <input name="home_heading_3" value={settings.home_heading_3} placeholder="Personal" />
+            </label>
+            <label>
+              Label CTA (Tombol Utama)
+              <input name="home_cta_label" value={settings.home_cta_label} placeholder="Mulai Konsultasi" />
+            </label>
+            <label class="wide">
+              Deskripsi Hero
+              <textarea name="home_description" rows="3">{settings.home_description}</textarea>
+            </label>
+          </div>
+        </section>
+
+        <!-- SEO -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">🔍</span>
+            <div>
+              <h2>SEO & Meta</h2>
+              <p>Title dan deskripsi yang tampil di Google dan share link.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label class="wide">
+              Meta Title
+              <input name="meta_title" value={settings.meta_title} placeholder="Senadda - Jasa Pembuatan Undangan Digital" />
+            </label>
+            <label class="wide">
+              Meta Description
+              <textarea name="meta_description" rows="3">{settings.meta_description}</textarea>
+            </label>
+          </div>
+        </section>
+
+        <footer class="form-actions">
+          <a href="/dashboard">Batal</a>
+          <button type="submit">Simpan Settings</button>
+        </footer>
+      </form>
+    </main>
+  </body>
+</html>
+
+<style lang="scss">
+  :global(*) { box-sizing: border-box; }
+  :global(body) {
+    margin: 0;
+    min-height: 100vh;
+    background: #f4f5f7;
+    color: #20242c;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .shell {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: 28px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 18px;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .secondary-action {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border: 1px solid #d9dde5;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #394150;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .eyebrow {
+    margin: 0 0 8px;
+    color: #687080;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h1 { margin: 0 0 8px; font-size: 32px; }
+  h2 { margin: 0 0 4px; font-size: 17px; }
+
+  .subtitle { margin: 0; color: #687080; font-size: 14px; }
+
+  .success-panel,
+  .error-panel {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .success-panel { color: #047857; background: #ecfdf5; border: 1px solid #6ee7b7; }
+  .error-panel   { color: #991b1b; background: #fff5f5; border: 1px solid #fca5a5; }
+
+  .form-panel {
+    border: 1px solid #d9dde5;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  section {
+    padding: 22px 24px;
+    border-bottom: 1px solid #eef0f4;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .section-icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f4f5f7;
+    font-size: 18px;
+  }
+
+  .section-label p {
+    margin: 0;
+    color: #687080;
+    font-size: 13px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  label {
+    display: grid;
+    gap: 7px;
+    color: #394150;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  label.wide { grid-column: 1 / -1; }
+
+  .hint {
+    margin-top: -2px;
+    color: #687080;
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 400;
+    color: #20242c;
+    transition: border-color 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+  }
+
+  textarea { resize: vertical; }
+
+  .logo-preview {
+    display: block;
+    max-height: 48px;
+    max-width: 180px;
+    object-fit: contain;
+    margin-top: 4px;
+    border: 1px solid #eef0f4;
+    border-radius: 6px;
+    padding: 4px 8px;
+    background: #fafbfc;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px 24px;
+  }
+
+  .form-actions a,
+  .form-actions button {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 18px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .form-actions a {
+    border: 1px solid #d9dde5;
+    color: #394150;
+    background: #ffffff;
+  }
+
+  .form-actions button {
+    border: 0;
+    background: #111827;
+    color: #ffffff;
+    transition: background 0.15s;
+
+    &:hover { background: #1f2937; }
+  }
+
+  @media (max-width: 720px) {
+    .shell { padding: 18px; }
+    .header { align-items: flex-start; flex-direction: column; }
+    .form-grid { grid-template-columns: 1fr; }
+    section { padding: 18px; }
+  }
+</style>

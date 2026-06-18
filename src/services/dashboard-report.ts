@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import type { LoveStoryItem } from '../types';
 
 export interface SlugReport {
   weddingId: string;
@@ -57,6 +58,7 @@ export interface SlugReportDetail {
     venueAddress: string;
     mapsUrl: string;
     musicUrl: string | null;
+    story: LoveStoryItem[];
     template: string;
     status: string;
     createdAt: string;
@@ -69,6 +71,7 @@ export interface SlugReportDetail {
     galleryEnabled: boolean;
     wishesEnabled: boolean;
     giftEnabled: boolean;
+    storyEnabled: boolean;
     viewCounterEnabled: boolean;
     maintenanceMode: boolean;
     expirationDate: string | null;
@@ -77,6 +80,19 @@ export interface SlugReportDetail {
       heroImage: string;
       brideImage: string;
       groomImage: string;
+    };
+    content: {
+      instagramUrl: string;
+      groomInstagramUrl: string;
+      brideInstagramUrl: string;
+      groomFatherName: string;
+      groomMotherName: string;
+      brideFatherName: string;
+      brideMotherName: string;
+      giftDescription: string;
+      thankYouMessage: string;
+      introVerse: string;
+      introVerseSource: string;
     };
   } | null;
   galleryImages: Array<{
@@ -97,6 +113,7 @@ export interface SlugReportDetail {
     accountNumber: string;
     accountName: string;
     hasQris: boolean;
+    qrisUrl: string;
   }>;
   rsvps: Array<{
     guestName: string;
@@ -278,7 +295,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvpsRes, viewsRes] = await Promise.all([
     supabase
       .from('invitation_settings')
-      .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, theme_config')
+      .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, sections, theme_config')
       .eq('wedding_id', wedding.id)
       .maybeSingle(),
     supabase
@@ -324,6 +341,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
 
   const settings = settingsRes.data as any;
   const assets = settings?.theme_config?.assets || {};
+  const content = settings?.theme_config?.content || {};
   const rsvps = (rsvpsRes.data || []) as any[];
   const views = (viewsRes.data || []) as any[];
   const isExpired = Boolean(settings?.expiration_date && new Date(settings.expiration_date) < now);
@@ -381,6 +399,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       venueAddress: wedding.venue_address,
       mapsUrl: wedding.maps_url,
       musicUrl: wedding.music_url,
+      story: Array.isArray(wedding.story) ? wedding.story : [],
       template: wedding.template,
       status: wedding.status,
       createdAt: wedding.created_at,
@@ -393,14 +412,28 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       galleryEnabled: Boolean(settings.gallery_enabled),
       wishesEnabled: Boolean(settings.wishes_enabled),
       giftEnabled: Boolean(settings.gift_enabled),
+      storyEnabled: settings.sections?.story !== false,
       viewCounterEnabled: Boolean(settings.view_counter_enabled),
       maintenanceMode: Boolean(settings.maintenance_mode),
       expirationDate: settings.expiration_date,
       passwordProtectionEnabled: Boolean(settings.password_protection_enabled),
       assets: {
-        heroImage: assets.heroImage || '',
+        heroImage: assets.coverImage || assets.heroImage || '',
         brideImage: assets.brideImage || '',
         groomImage: assets.groomImage || ''
+      },
+      content: {
+        instagramUrl: content.instagramUrl || '',
+        groomInstagramUrl: content.groomInstagramUrl || '',
+        brideInstagramUrl: content.brideInstagramUrl || '',
+        groomFatherName: content.groomFatherName || '',
+        groomMotherName: content.groomMotherName || '',
+        brideFatherName: content.brideFatherName || '',
+        brideMotherName: content.brideMotherName || '',
+        giftDescription: content.giftDescription || '',
+        thankYouMessage: content.closingMessage || '',
+        introVerse: content.verse || '',
+        introVerseSource: content.verseSource || ''
       }
     } : null,
     galleryImages: ((galleryRes.data || []) as any[]).map((image) => ({
@@ -420,7 +453,8 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       bankName: gift.bank_name,
       accountNumber: gift.account_number,
       accountName: gift.account_name,
-      hasQris: Boolean(gift.qris_url)
+      hasQris: Boolean(gift.qris_url),
+      qrisUrl: gift.qris_url || ''
     })),
     rsvps: rsvps.map((rsvp) => ({
       guestName: rsvp.guest_name,

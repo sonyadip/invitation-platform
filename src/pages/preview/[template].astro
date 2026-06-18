@@ -1,0 +1,146 @@
+---
+import { loadTemplate } from '../../templates/registry';
+import type { FullInvitationData } from '../../types';
+
+export const prerender = false;
+
+const { template } = Astro.params;
+const templateKey = (template || 'noir').toLowerCase();
+const now = new Date().toISOString();
+const weddingDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 45).toISOString();
+
+const data: FullInvitationData = {
+  wedding: {
+    id: `preview-${templateKey}`,
+    slug: `preview-${templateKey}`,
+    bride_name: 'Ayu',
+    groom_name: 'Rama',
+    bride_full_name: 'Ni Putu Ayu Lestari',
+    groom_full_name: 'I Made Rama Pratama',
+    wedding_date: weddingDate,
+    venue_name: 'The Royal Garden',
+    venue_address: 'Jl. Pantai Indah No. 8, Bali',
+    maps_url: 'https://maps.google.com',
+    story: [
+      { year: '2019', title: 'Pertama Bertemu', description: 'Sebuah pertemuan sederhana yang menjadi awal cerita kami.' },
+      { year: '2026', title: 'Hari Bahagia', description: 'Kami mengundang keluarga dan sahabat untuk merayakan momen ini.' }
+    ],
+    music_url: null,
+    template: templateKey,
+    status: 'published',
+    deleted_at: null,
+    deleted_by: null,
+    created_at: now,
+    updated_at: now
+  },
+  settings: {
+    id: `settings-${templateKey}`,
+    wedding_id: `preview-${templateKey}`,
+    rsvp_enabled: true,
+    music_enabled: false,
+    music_autoplay: false,
+    countdown_enabled: true,
+    gallery_enabled: true,
+    wishes_enabled: true,
+    gift_enabled: true,
+    share_enabled: true,
+    view_counter_enabled: false,
+    maintenance_mode: false,
+    expiration_date: null,
+    password_protection_enabled: false,
+    access_password: null,
+    sections: {
+      hero: true,
+      countdown: true,
+      coupleInfo: true,
+      eventDetails: true,
+      story: true,
+      gallery: true,
+      rsvp: true,
+      wishes: true,
+      gift: true,
+      music: false,
+      share: true,
+      livestream: false
+    },
+    theme_config: {
+      theme: {
+        primaryColor: '#5E0ED7',
+        secondaryColor: '#111111',
+        textColor: '#111111',
+        bgColor: '#ffffff',
+        fontHeading: 'Onest',
+        fontBody: 'Onest'
+      },
+      layout: {
+        heroStyle: 'centered',
+        galleryColumns: 3
+      },
+      assets: {}
+    },
+    created_at: now,
+    updated_at: now
+  },
+  events: [
+    {
+      id: 'event-1',
+      wedding_id: `preview-${templateKey}`,
+      event_name: 'Akad Nikah',
+      event_date: weddingDate,
+      start_time: '09:00',
+      end_time: '11:00',
+      venue_name: 'The Royal Garden',
+      venue_address: 'Jl. Pantai Indah No. 8, Bali',
+      maps_url: 'https://maps.google.com',
+      sort_order: 1,
+      created_at: now
+    },
+    {
+      id: 'event-2',
+      wedding_id: `preview-${templateKey}`,
+      event_name: 'Resepsi',
+      event_date: weddingDate,
+      start_time: '18:00',
+      end_time: 'Selesai',
+      venue_name: 'The Royal Garden',
+      venue_address: 'Jl. Pantai Indah No. 8, Bali',
+      maps_url: 'https://maps.google.com',
+      sort_order: 2,
+      created_at: now
+    }
+  ],
+  gallery: [],
+  gifts: [
+    {
+      id: 'gift-1',
+      wedding_id: `preview-${templateKey}`,
+      bank_name: 'BCA',
+      account_number: '1234567890',
+      account_name: 'Ayu Lestari',
+      qris_url: null,
+      sort_order: 1,
+      created_at: now
+    }
+  ],
+  wishes: [
+    {
+      id: 'wish-1',
+      wedding_id: `preview-${templateKey}`,
+      guest_name: 'Sahabat',
+      attendance_status: 'attending',
+      guest_count: 2,
+      message: 'Selamat menempuh hidup baru.',
+      created_at: now
+    }
+  ]
+};
+
+const loadedTemplate = await loadTemplate(templateKey);
+const ActiveTemplate = loadedTemplate.component as any;
+
+if (!ActiveTemplate) {
+  return new Response(`Template "${templateKey}" tidak ditemukan.`, { status: 404 });
+}
+---
+
+<ActiveTemplate data={data} guestName={null} />

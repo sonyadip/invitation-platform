@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from '../lib/supabase-admin';
-import type { ThemeConfig } from '../types';
+import type { LoveStoryItem, SectionToggles, ThemeConfig } from '../types';
 
 export interface InvitationFormInput {
   slug: string;
@@ -20,6 +20,7 @@ export interface InvitationFormInput {
   galleryEnabled: boolean;
   wishesEnabled: boolean;
   giftEnabled: boolean;
+  storyEnabled: boolean;
   viewCounterEnabled: boolean;
   maintenanceMode: boolean;
   passwordProtectionEnabled: boolean;
@@ -28,11 +29,45 @@ export interface InvitationFormInput {
   heroImageUrl: string | null;
   brideImageUrl: string | null;
   groomImageUrl: string | null;
+  logoImageUrl: string | null;
   galleryImageUrls: string[];
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+  groomInstagramUrl: string | null;
+  brideInstagramUrl: string | null;
+  groomFatherName: string | null;
+  groomMotherName: string | null;
+  brideFatherName: string | null;
+  brideMotherName: string | null;
+  giftDescription: string | null;
+  thankYouMessage: string | null;
+  introVerse: string | null;
+  introVerseSource: string | null;
+  events: InvitationEventInput[];
+  gifts: InvitationGiftInput[];
+  story: LoveStoryItem[];
   heroImageFile: File | null;
   brideImageFile: File | null;
   groomImageFile: File | null;
+  logoImageFile: File | null;
   galleryImageFiles: File[];
+}
+
+export interface InvitationEventInput {
+  name: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  venueName: string;
+  venueAddress: string;
+  mapsUrl: string;
+}
+
+export interface InvitationGiftInput {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  qrisUrl: string | null;
 }
 
 const storageBucket =
@@ -99,6 +134,51 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     const raw = value(name);
     return raw ? new Date(raw).toISOString() : null;
   };
+  const values = (name: string) => formData
+    .getAll(name)
+    .map((item) => String(item || '').trim());
+  const eventNames = values('eventName');
+  const eventDates = values('eventDate');
+  const eventStartTimes = values('eventStartTime');
+  const eventEndTimes = values('eventEndTime');
+  const eventVenueNames = values('eventVenueName');
+  const eventVenueAddresses = values('eventVenueAddress');
+  const eventMapsUrls = values('eventMapsUrl');
+  const storyTitles = values('storyTitle');
+  const storyDescriptions = values('storyDescription');
+  const giftBankNames = values('giftBankName');
+  const giftAccountNumbers = values('giftAccountNumber');
+  const giftAccountNames = values('giftAccountName');
+  const giftQrisUrls = values('giftQrisUrl');
+  const events = eventNames
+    .slice(0, 3)
+    .map((name, index) => ({
+      name,
+      date: eventDates[index] ? new Date(eventDates[index]).toISOString() : '',
+      startTime: eventStartTimes[index] || '',
+      endTime: eventEndTimes[index] || '',
+      venueName: eventVenueNames[index] || '',
+      venueAddress: eventVenueAddresses[index] || '',
+      mapsUrl: eventMapsUrls[index] || ''
+    }))
+    .filter((event) => event.name || event.date || event.venueName || event.venueAddress || event.mapsUrl);
+  const primaryEvent = events[0];
+  const story = storyTitles
+    .slice(0, 3)
+    .map((title, index) => ({
+      title,
+      description: storyDescriptions[index] || ''
+    }))
+    .filter((item) => item.title || item.description);
+  const gifts = giftBankNames
+    .slice(0, 3)
+    .map((bankName, index) => ({
+      bankName,
+      accountNumber: giftAccountNumbers[index] || '',
+      accountName: giftAccountNames[index] || '',
+      qrisUrl: giftQrisUrls[index] || null
+    }))
+    .filter((gift) => gift.bankName || gift.accountNumber || gift.accountName || gift.qrisUrl);
 
   return {
     slug: value('slug'),
@@ -106,10 +186,10 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     groomName: value('groomName'),
     brideFullName: value('brideFullName'),
     groomFullName: value('groomFullName'),
-    weddingDate: dateValue('weddingDate'),
-    venueName: value('venueName'),
-    venueAddress: value('venueAddress'),
-    mapsUrl: value('mapsUrl'),
+    weddingDate: primaryEvent?.date || dateValue('weddingDate'),
+    venueName: primaryEvent?.venueName || value('venueName'),
+    venueAddress: primaryEvent?.venueAddress || value('venueAddress'),
+    mapsUrl: primaryEvent?.mapsUrl || value('mapsUrl'),
     musicUrl: nullableValue('musicUrl'),
     template: value('template') || 'noir',
     status: value('status') || 'draft',
@@ -119,6 +199,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     galleryEnabled: checked('galleryEnabled'),
     wishesEnabled: checked('wishesEnabled'),
     giftEnabled: checked('giftEnabled'),
+    storyEnabled: checked('storyEnabled'),
     viewCounterEnabled: checked('viewCounterEnabled'),
     maintenanceMode: checked('maintenanceMode'),
     passwordProtectionEnabled: checked('passwordProtectionEnabled'),
@@ -127,10 +208,27 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     heroImageUrl: nullableValue('heroImageUrl'),
     brideImageUrl: nullableValue('brideImageUrl'),
     groomImageUrl: nullableValue('groomImageUrl'),
+    logoImageUrl: nullableValue('logoImageUrl'),
     galleryImageUrls: textareaList('galleryImageUrls'),
+    instagramUrl: nullableValue('instagramUrl'),
+    whatsappUrl: nullableValue('whatsappUrl'),
+    groomInstagramUrl: nullableValue('groomInstagramUrl'),
+    brideInstagramUrl: nullableValue('brideInstagramUrl'),
+    groomFatherName: nullableValue('groomFatherName'),
+    groomMotherName: nullableValue('groomMotherName'),
+    brideFatherName: nullableValue('brideFatherName'),
+    brideMotherName: nullableValue('brideMotherName'),
+    giftDescription: nullableValue('giftDescription'),
+    thankYouMessage: nullableValue('thankYouMessage'),
+    introVerse: nullableValue('introVerse'),
+    introVerseSource: nullableValue('introVerseSource'),
+    events,
+    gifts,
+    story,
     heroImageFile: fileValue('heroImageFile'),
     brideImageFile: fileValue('brideImageFile'),
     groomImageFile: fileValue('groomImageFile'),
+    logoImageFile: fileValue('logoImageFile'),
     galleryImageFiles: fileList('galleryImageFiles')
   };
 }
@@ -155,6 +253,39 @@ export function validateInvitationForm(input: InvitationFormInput) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug)) {
     throw new Error('Slug must use lowercase letters, numbers, and hyphens only.');
   }
+
+  if (!input.events.length) {
+    throw new Error('At least one event is required.');
+  }
+
+  input.events.forEach((event, index) => {
+    const eventNumber = index + 1;
+    const requiredEventFields = [
+      [`event ${eventNumber} name`, event.name],
+      [`event ${eventNumber} date`, event.date],
+      [`event ${eventNumber} venue name`, event.venueName],
+      [`event ${eventNumber} venue address`, event.venueAddress],
+      [`event ${eventNumber} maps URL`, event.mapsUrl]
+    ];
+
+    for (const [label, value] of requiredEventFields) {
+      if (!value) throw new Error(`${label} is required.`);
+    }
+  });
+
+  input.story.forEach((story, index) => {
+    const storyNumber = index + 1;
+    if (!story.title) throw new Error(`story ${storyNumber} title is required.`);
+    if (!story.description) throw new Error(`story ${storyNumber} description is required.`);
+  });
+
+  input.gifts.forEach((gift, index) => {
+    const giftNumber = index + 1;
+    if (!(gift.bankName || gift.accountNumber || gift.accountName || gift.qrisUrl)) return;
+    if (!gift.bankName) throw new Error(`gift ${giftNumber} bank name is required.`);
+    if (!gift.accountNumber) throw new Error(`gift ${giftNumber} account number is required.`);
+    if (!gift.accountName) throw new Error(`gift ${giftNumber} account name is required.`);
+  });
 }
 
 function isUploadFile(value: FormDataEntryValue): value is File {
@@ -238,7 +369,7 @@ async function resolveUploadedImages(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   input: InvitationFormInput
 ): Promise<InvitationFormInput> {
-  const [heroImageUrl, brideImageUrl, groomImageUrl, galleryImageUrls] = await Promise.all([
+  const [heroImageUrl, brideImageUrl, groomImageUrl, logoImageUrl, galleryImageUrls] = await Promise.all([
     input.heroImageFile
       ? uploadImageFile(supabase, input.slug, 'hero', input.heroImageFile)
       : Promise.resolve(input.heroImageUrl),
@@ -248,6 +379,9 @@ async function resolveUploadedImages(
     input.groomImageFile
       ? uploadImageFile(supabase, input.slug, 'couple', input.groomImageFile)
       : Promise.resolve(input.groomImageUrl),
+    input.logoImageFile
+      ? uploadImageFile(supabase, input.slug, 'logo', input.logoImageFile)
+      : Promise.resolve(input.logoImageUrl),
     Promise.all(input.galleryImageFiles.map((file) => uploadImageFile(supabase, input.slug, 'gallery', file)))
   ]);
 
@@ -256,6 +390,7 @@ async function resolveUploadedImages(
     heroImageUrl,
     brideImageUrl,
     groomImageUrl,
+    logoImageUrl,
     galleryImageUrls: [
       ...input.galleryImageUrls,
       ...galleryImageUrls
@@ -274,9 +409,11 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
 
   const assets = {
     ...(themeConfig.assets || {}),
+    coverImage: input.heroImageUrl || undefined,
     heroImage: input.heroImageUrl || undefined,
     brideImage: input.brideImageUrl || undefined,
-    groomImage: input.groomImageUrl || undefined
+    groomImage: input.groomImageUrl || undefined,
+    logoImage: input.logoImageUrl || undefined
   };
 
   Object.keys(assets).forEach((key) => {
@@ -289,7 +426,62 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     delete themeConfig.assets;
   }
 
+  const content = {
+    ...(themeConfig.content || {}),
+    instagramUrl: input.instagramUrl || undefined,
+    whatsappUrl: input.whatsappUrl || undefined,
+    groomInstagramUrl: input.groomInstagramUrl || undefined,
+    brideInstagramUrl: input.brideInstagramUrl || undefined,
+    groomFatherName: input.groomFatherName || undefined,
+    groomMotherName: input.groomMotherName || undefined,
+    brideFatherName: input.brideFatherName || undefined,
+    brideMotherName: input.brideMotherName || undefined,
+    giftDescription: input.giftDescription || undefined,
+    closingMessage: input.thankYouMessage || undefined,
+    verse: input.introVerse || undefined,
+    verseSource: input.introVerseSource || undefined
+  };
+
+  Object.keys(content).forEach((key) => {
+    if (!content[key as keyof typeof content]) delete content[key as keyof typeof content];
+  });
+
+  if (Object.keys(content).length) {
+    themeConfig.content = content;
+  } else {
+    delete themeConfig.content;
+  }
+
   return themeConfig;
+}
+
+function buildSections(baseSections: any, input: InvitationFormInput): SectionToggles {
+  const defaults: SectionToggles = {
+    hero: true,
+    countdown: true,
+    coupleInfo: true,
+    eventDetails: true,
+    story: true,
+    gallery: true,
+    rsvp: true,
+    wishes: true,
+    gift: true,
+    music: true,
+    share: true,
+    livestream: true
+  };
+
+  return {
+    ...defaults,
+    ...(baseSections || {}),
+    countdown: input.countdownEnabled,
+    story: input.storyEnabled,
+    gallery: input.galleryEnabled,
+    rsvp: input.rsvpEnabled,
+    wishes: input.wishesEnabled,
+    gift: input.giftEnabled,
+    music: input.musicEnabled
+  };
 }
 
 async function replaceGalleryImages(
@@ -319,6 +511,67 @@ async function replaceGalleryImages(
   if (insertError) throw toDashboardError(insertError, 'Failed to save gallery images.');
 }
 
+async function replaceWeddingEvents(
+  supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
+  weddingId: string,
+  events: InvitationEventInput[]
+) {
+  const { error: deleteError } = await supabase
+    .from('wedding_events')
+    .delete()
+    .eq('wedding_id', weddingId);
+
+  if (deleteError) throw toDashboardError(deleteError, 'Failed to clear wedding events.');
+
+  const rows = events.slice(0, 3).map((event, index) => ({
+    wedding_id: weddingId,
+    event_name: event.name,
+    event_date: event.date,
+    start_time: event.startTime || '',
+    end_time: event.endTime || 'Selesai',
+    venue_name: event.venueName,
+    venue_address: event.venueAddress,
+    maps_url: event.mapsUrl,
+    sort_order: index + 1
+  }));
+
+  const { error: insertError } = await supabase
+    .from('wedding_events')
+    .insert(rows);
+
+  if (insertError) throw toDashboardError(insertError, 'Failed to save wedding events.');
+}
+
+async function replaceGiftAccounts(
+  supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
+  weddingId: string,
+  gifts: InvitationGiftInput[]
+) {
+  const { error: deleteError } = await supabase
+    .from('gift_accounts')
+    .delete()
+    .eq('wedding_id', weddingId);
+
+  if (deleteError) throw toDashboardError(deleteError, 'Failed to clear gift accounts.');
+
+  if (!gifts.length) return;
+
+  const rows = gifts.slice(0, 3).map((gift, index) => ({
+    wedding_id: weddingId,
+    bank_name: gift.bankName,
+    account_number: gift.accountNumber,
+    account_name: gift.accountName,
+    qris_url: gift.qrisUrl || null,
+    sort_order: index + 1
+  }));
+
+  const { error: insertError } = await supabase
+    .from('gift_accounts')
+    .insert(rows);
+
+  if (insertError) throw toDashboardError(insertError, 'Failed to save gift accounts.');
+}
+
 function extractStoragePath(url: string | null | undefined) {
   if (!url) return null;
 
@@ -337,9 +590,11 @@ function extractStoragePath(url: string | null | undefined) {
 function collectAssetPaths(themeConfig: any) {
   const assets = themeConfig?.assets || {};
   return [
+    extractStoragePath(assets.coverImage),
     extractStoragePath(assets.heroImage),
     extractStoragePath(assets.brideImage),
-    extractStoragePath(assets.groomImage)
+    extractStoragePath(assets.groomImage),
+    extractStoragePath(assets.logoImage)
   ].filter(Boolean) as string[];
 }
 
@@ -445,7 +700,7 @@ export async function createInvitation(input: InvitationFormInput) {
       venue_name: resolvedInput.venueName,
       venue_address: resolvedInput.venueAddress,
       maps_url: resolvedInput.mapsUrl,
-      story: [],
+      story: resolvedInput.story,
       music_url: resolvedInput.musicUrl,
       template: resolvedInput.template,
       status: resolvedInput.status
@@ -470,11 +725,14 @@ export async function createInvitation(input: InvitationFormInput) {
       password_protection_enabled: resolvedInput.passwordProtectionEnabled,
       access_password: resolvedInput.accessPassword,
       expiration_date: resolvedInput.expirationDate,
+      sections: buildSections(null, resolvedInput),
       theme_config: buildThemeConfig(null, resolvedInput)
     });
 
   if (settingsError) throw toDashboardError(settingsError, 'Failed to create invitation settings.');
+  await replaceWeddingEvents(supabase, wedding.id, resolvedInput.events);
   await replaceGalleryImages(supabase, wedding.id, resolvedInput.galleryImageUrls);
+  await replaceGiftAccounts(supabase, wedding.id, resolvedInput.gifts);
 
   return wedding.slug as string;
 }
@@ -496,6 +754,7 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
       venue_name: resolvedInput.venueName,
       venue_address: resolvedInput.venueAddress,
       maps_url: resolvedInput.mapsUrl,
+      story: resolvedInput.story,
       music_url: resolvedInput.musicUrl,
       template: resolvedInput.template,
       status: resolvedInput.status
@@ -506,7 +765,7 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
 
   const { data: currentSettings, error: currentSettingsError } = await supabase
     .from('invitation_settings')
-    .select('theme_config')
+    .select('theme_config, sections')
     .eq('wedding_id', weddingId)
     .maybeSingle();
 
@@ -528,12 +787,15 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
       password_protection_enabled: resolvedInput.passwordProtectionEnabled,
       access_password: resolvedInput.accessPassword,
       expiration_date: resolvedInput.expirationDate,
+      sections: buildSections((currentSettings as any)?.sections, resolvedInput),
       theme_config: buildThemeConfig((currentSettings as any)?.theme_config, resolvedInput)
     })
     .eq('wedding_id', weddingId);
 
   if (settingsError) throw toDashboardError(settingsError, 'Failed to update invitation settings.');
+  await replaceWeddingEvents(supabase, weddingId, resolvedInput.events);
   await replaceGalleryImages(supabase, weddingId, resolvedInput.galleryImageUrls);
+  await replaceGiftAccounts(supabase, weddingId, resolvedInput.gifts);
 
   return resolvedInput.slug;
 }

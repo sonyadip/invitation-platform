@@ -14,9 +14,21 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const payload = await request.json();
     const { weddingId, name, attendance, count, message } = payload;
+    console.log('[Noir RSVP API CHECK] raw payload:', payload);
+    console.log('[Noir RSVP API] submit request', {
+      weddingId,
+      name,
+      attendance,
+      hasMessage: Boolean(message)
+    });
 
     if (!weddingId) {
       return jsonResponse({ error: 'ID Pernikahan (weddingId) wajib disertakan.' }, 400);
+    }
+
+    const normalizedMessage = message ? String(message).trim().slice(0, 500) : '';
+    if (!normalizedMessage) {
+      return jsonResponse({ error: 'Ucapan wajib diisi agar dapat ditampilkan di daftar wishes.' }, 400);
     }
 
     // 1. Fetch dynamic settings to verify toggle & expiration state
@@ -25,8 +37,14 @@ export const POST: APIRoute = async ({ request }) => {
       .select('rsvp_enabled, expiration_date')
       .eq('wedding_id', weddingId)
       .maybeSingle();
+    console.log('[Noir RSVP API CHECK] settings lookup result:', {
+      weddingId,
+      settings,
+      settingsError
+    });
 
     if (settingsError || !settings) {
+      console.error('[Noir RSVP API] settings lookup failed', { weddingId, settingsError });
       return jsonResponse({ error: 'Pengaturan undangan tidak valid atau tidak ditemukan.' }, 404);
     }
 
@@ -42,23 +60,38 @@ export const POST: APIRoute = async ({ request }) => {
 
     // 4. Sanitize and validate parameters using our security engine
     const validated = validateRSVPInput(name, attendance, count);
+    console.log('[Noir RSVP API CHECK] validated payload:', validated);
 
     // 5. Store validated RSVP response into Supabase
+    const insertPayload = {
+      wedding_id: weddingId,
+      guest_name: validated.name,
+      attendance_status: validated.status,
+      guest_count: validated.count,
+      message: normalizedMessage
+    };
+    console.log('[Noir RSVP API CHECK] insert payload:', insertPayload);
+
     const { data: insertedRSVP, error: insertError } = await supabase
       .from('rsvps')
-      .insert({
-        wedding_id: weddingId,
-        guest_name: validated.name,
-        attendance_status: validated.status,
-        guest_count: validated.count,
-        message: message ? String(message).trim().slice(0, 500) : null // Safe message trim cap
-      })
-      .select('guest_name, attendance_status, message, created_at')
+      .insert(insertPayload)
+      .select('*')
       .single();
+    console.log('[Noir RSVP API CHECK] insert result:', {
+      insertedRSVP,
+      insertError
+    });
 
     if (insertError) {
+      console.error('[Noir RSVP API] insert failed', { weddingId, insertError });
       throw insertError;
     }
+
+    console.log('[Noir RSVP API] submit response', {
+      weddingId,
+      id: insertedRSVP.id,
+      hasMessage: Boolean(insertedRSVP.message)
+    });
 
     return jsonResponse({
       success: true,
