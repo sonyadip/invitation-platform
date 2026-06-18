@@ -1,4 +1,4 @@
-const root = document.querySelector('[data-template-root]');
+const root = document.querySelector('body.template-sage [data-template-root]');
 const cover = root?.querySelector('[data-template-cover]');
 const openBtn = root?.querySelector('[data-template-open]');
 const layout = root?.querySelector('[data-template-layout]');

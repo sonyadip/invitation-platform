@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 
 @font-face {
   font-family: 'CVR';
@@ -187,7 +187,7 @@ body.template-ochre {
     display: inline;
     margin: 0 4px;
     color: var(--template-accent);
-    font-family: 'Alex Brush', cursive;
+    font-family: 'Great Vibes', cursive;
     font-size: 51.2px;
     font-style: normal;
   }
@@ -291,7 +291,7 @@ body.template-ochre {
   .sidebar-section__sep {
     margin: -10px 0;
     color: var(--template-accent);
-    font-family: 'Alex Brush', cursive;
+    font-family: 'Great Vibes', cursive;
     font-size: 72px;
     line-height: 1;
   }
@@ -501,7 +501,7 @@ body.template-ochre {
     flex-shrink: 0;
     padding: 10px 0;
     color: var(--template-accent);
-    font-family: 'Alex Brush', cursive;
+    font-family: 'Great Vibes', cursive;
     font-size: 80px;
     line-height: 1;
     text-align: center;
@@ -539,7 +539,7 @@ body.template-ochre {
     z-index: 10;
     padding-top: 48px;
     color: #ffffff;
-    font-family: 'Alex Brush', cursive;
+    font-family: 'Great Vibes', cursive;
     font-size: 56px;
     line-height: 1.2;
   }
@@ -1484,9 +1484,9 @@ body.template-ochre {
   .thankyou-section__title {
     margin: 0 0 42px;
     color: var(--template-text);
-    font-family: 'Alex Brush', cursive;
+    font-family: 'Great Vibes', cursive;
     font-size: 68.8px;
-    line-height: 0.72;
+    line-height: 0.6;
     transform: rotate(-7deg);
   }
 
@@ -1523,10 +1523,9 @@ body.template-ochre {
   }
 
   .thankyou-section__brand {
-    color: var(--template-text);
-    font-family: 'CVR', sans-serif;
-    font-size: 23.2px;
-    letter-spacing: 1px;
+    height: 20px;
+    width: auto;
+    filter: brightness(0) invert(1);
   }
 
   .thankyou-section__socials {
@@ -1844,4 +1843,3 @@ body.template-ochre {
     transform: translateY(0);
   }
 }
-

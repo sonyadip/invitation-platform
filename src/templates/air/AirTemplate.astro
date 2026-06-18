@@ -1,0 +1,416 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { FullInvitationData } from '../../types';
+import airHeroOne from './assets/air-hero-1.webp';
+import airHeroTwo from './assets/air-hero-2.webp';
+import airHeroThree from './assets/air-hero-3.webp';
+import airDetailOne from './assets/air-detail-1.webp';
+import airDetailTwo from './assets/air-detail-2.webp';
+import coupleBride from './assets/couple-bride.jpg';
+import coupleGroom from './assets/couple-groom.jpg';
+import galleryOne from './assets/gallery-1.jpg';
+import galleryTwo from './assets/gallery-2.jpg';
+import galleryThree from './assets/gallery-3.jpg';
+import galleryFour from './assets/gallery-4.jpg';
+import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import './style.scss';
+
+interface Props {
+  data: FullInvitationData;
+  guestName: string | null;
+}
+
+const { data, guestName } = Astro.props;
+const { wedding, settings, events, gallery, gifts, wishes } = data;
+const sections = settings.sections;
+const themeConfig = (settings.theme_config || {
+  theme: {},
+  layout: { galleryColumns: 3 },
+  assets: {}
+}) as any;
+
+const overrideSettings = {
+  ...settings,
+  theme_config: {
+    ...themeConfig,
+    theme: {
+      ...themeConfig.theme,
+      primaryColor: '#0b0b0b',
+      secondaryColor: '#ffffff',
+      textColor: '#111111',
+      bgColor: '#f3f4f1',
+      fontHeading: 'Onest, Arial, sans-serif',
+      fontBody: 'Onest, Arial, sans-serif'
+    }
+  }
+};
+
+const themeAssets = themeConfig.assets || {};
+const heroSlides = [
+  themeAssets.heroImage || airHeroOne.src,
+  themeAssets.heroImageTwo || airHeroTwo.src,
+  themeAssets.heroImageThree || airHeroThree.src
+].filter(Boolean);
+const brideImage = themeAssets.brideImage || coupleBride.src;
+const groomImage = themeAssets.groomImage || coupleGroom.src;
+
+const formattedDate = new Date(wedding.wedding_date).toLocaleDateString('id-ID', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const formatDate = (iso: string) => new Date(iso).toLocaleDateString('id-ID', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const activeEvents = events && events.length > 0
+  ? events
+  : [{
+      id: 'fallback',
+      event_name: 'Akad Nikah',
+      event_date: wedding.wedding_date,
+      start_time: '09:00',
+      end_time: 'Selesai',
+      venue_name: wedding.venue_name,
+      venue_address: wedding.venue_address,
+      maps_url: wedding.maps_url,
+      sort_order: 0,
+      wedding_id: wedding.id,
+      created_at: ''
+    }];
+
+const padDatePart = (value: number) => String(value).padStart(2, '0');
+
+const buildCalendarDate = (dateInput: string, timeInput?: string) => {
+  const date = new Date(dateInput);
+  const [hour = '09', minute = '00'] = timeInput && /^\d{1,2}:\d{2}$/.test(timeInput)
+    ? timeInput.split(':')
+    : ['09', '00'];
+
+  date.setHours(Number(hour), Number(minute), 0, 0);
+
+  return [
+    date.getFullYear(),
+    padDatePart(date.getMonth() + 1),
+    padDatePart(date.getDate()),
+    'T',
+    padDatePart(date.getHours()),
+    padDatePart(date.getMinutes()),
+    '00'
+  ].join('');
+};
+
+const buildGoogleCalendarUrl = () => {
+  const event = activeEvents[0];
+  const startDate = new Date(event.event_date);
+  const startTime = /^\d{1,2}:\d{2}$/.test(event.start_time) ? event.start_time : '09:00';
+  let endTime = /^\d{1,2}:\d{2}$/.test(event.end_time) ? event.end_time : '';
+
+  if (!endTime) {
+    const fallbackEnd = new Date(startDate);
+    const [hour, minute] = startTime.split(':');
+    fallbackEnd.setHours(Number(hour) + 2, Number(minute), 0, 0);
+    endTime = `${padDatePart(fallbackEnd.getHours())}:${padDatePart(fallbackEnd.getMinutes())}`;
+  }
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `Wedding of ${wedding.groom_name} & ${wedding.bride_name}`,
+    dates: `${buildCalendarDate(event.event_date, startTime)}/${buildCalendarDate(event.event_date, endTime)}`,
+    details: `Wedding invitation for ${wedding.groom_name} and ${wedding.bride_name}.`,
+    location: `${event.venue_name}, ${event.venue_address}`,
+    ctz: 'Asia/Makassar'
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
+const activeGallery = gallery && gallery.length > 0
+  ? gallery.map((image, index) => ({
+      id: image.id,
+      image_url: image.image_url,
+      variant: index % 5 === 0 ? 'wide' : 'square'
+    }))
+  : [
+      { id: '1', image_url: galleryOne.src, variant: 'wide' },
+      { id: '2', image_url: galleryTwo.src, variant: 'square' },
+      { id: '3', image_url: galleryThree.src, variant: 'square' },
+      { id: '4', image_url: galleryFour.src, variant: 'wide' },
+      { id: '5', image_url: airDetailOne.src, variant: 'square' },
+      { id: '6', image_url: airDetailTwo.src, variant: 'square' }
+    ];
+
+const formatWishDate = (isoStr: string) => new Date(isoStr).toLocaleDateString('id-ID', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+});
+
+const displayedWishes = wishes ? wishes.slice(0, 3) : [];
+const isWishesEmpty = !wishes || wishes.length === 0;
+const hasMoreWishes = wishes ? wishes.length > displayedWishes.length : false;
+
+const activeGifts = gifts && gifts.length > 0
+  ? gifts
+  : [
+      { id: '1', bank_name: 'BCA', account_number: '1234567890', account_name: wedding.groom_name, qris_url: null },
+      { id: '2', bank_name: 'Mandiri', account_number: '0987654321', account_name: wedding.bride_name, qris_url: null }
+    ];
+---
+
+<BaseLayout wedding={wedding} settings={overrideSettings} to={guestName} templateClass="template-air">
+  <div class="air-root" data-template-root>
+    <div class="air-cover" data-template-cover>
+      <div class="air-cover__slides" data-air-hero-slider>
+        {heroSlides.map((slide, index) => (
+          <img class={`air-cover__slide ${index === 0 ? 'is-active' : ''}`} src={slide} alt="" aria-hidden="true" />
+        ))}
+      </div>
+      <div class="air-cover__top">
+        <span>AIR WEDDING</span>
+        <span>{formattedDate}</span>
+      </div>
+      <div class="air-cover__content">
+        <p>The Wedding Of</p>
+        <h1>{wedding.groom_name}<span>&amp;</span>{wedding.bride_name}</h1>
+        {guestName && (
+          <div class="air-cover__guest">
+            <span>Dear</span>
+            <strong>{guestName}</strong>
+          </div>
+        )}
+        <button class="air-btn air-btn--light" data-template-open type="button">Open Invitation</button>
+      </div>
+    </div>
+
+    <div class="air-layout" data-template-layout>
+      <header class="air-header">
+        <a href="#air-hero" class="air-brand" aria-label="Back to top">AIR</a>
+        <nav class="air-nav" aria-label="Invitation sections">
+          <a href="#air-couple">Couple</a>
+          <a href="#air-events">Date</a>
+          <a href="#air-gallery">Gallery</a>
+          <a href="#air-rsvp">RSVP</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="air-hero" id="air-hero">
+          <div class="air-hero__media" data-air-hero-slider>
+            {heroSlides.map((slide, index) => (
+              <img class={`air-hero__slide ${index === 0 ? 'is-active' : ''}`} src={slide} alt="" aria-hidden="true" />
+            ))}
+          </div>
+          <div class="air-hero__content" data-animate="fade-up">
+            <p class="air-kicker">The wedding of</p>
+            <h2>{wedding.groom_name}<span>{wedding.bride_name}</span></h2>
+            <div class="air-hero__meta">
+              <span>{formattedDate}</span>
+              <a href="#air-events">See Details</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="air-intro">
+          <div class="air-intro__logo" aria-hidden="true">
+            <span>A</span><span>I</span><span>R</span>
+          </div>
+          <p data-animate="fade-up">
+            Dengan penuh rasa syukur, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberi doa restu pada hari pernikahan kami.
+          </p>
+        </section>
+
+        {sections.coupleInfo && (
+          <section class="air-section air-couple" id="air-couple">
+            <div class="air-section__head" data-animate="fade-up">
+              <span>01</span>
+              <h3>Couple</h3>
+            </div>
+            <div class="air-couple__grid">
+              <article class="air-person" data-animate="fade-up">
+                <img src={groomImage} alt={wedding.groom_name} loading="lazy" />
+                <div>
+                  <span>Groom</span>
+                  <h4>{wedding.groom_full_name}</h4>
+                  <p>Putra dari keluarga mempelai pria</p>
+                </div>
+              </article>
+              <article class="air-person air-person--offset" data-animate="fade-up">
+                <img src={brideImage} alt={wedding.bride_name} loading="lazy" />
+                <div>
+                  <span>Bride</span>
+                  <h4>{wedding.bride_full_name}</h4>
+                  <p>Putri dari keluarga mempelai wanita</p>
+                </div>
+              </article>
+            </div>
+          </section>
+        )}
+
+        {sections.eventDetails && (
+          <section class="air-section air-events" id="air-events">
+            <div class="air-section__head" data-animate="fade-up">
+              <span>02</span>
+              <h3>Save the Date</h3>
+            </div>
+            <div class="air-events__grid">
+              {activeEvents.map((evt) => (
+                <article class="air-event-card" data-animate="fade-up">
+                  <span class="air-event-card__label">{evt.event_name}</span>
+                  <h4>{formatDate(evt.event_date)}</h4>
+                  <p>{evt.start_time} - {evt.end_time}</p>
+                  <strong>{evt.venue_name}</strong>
+                  <p>{evt.venue_address}</p>
+                  <a class="air-btn" href={evt.maps_url} target="_blank" rel="noopener noreferrer">Open Maps</a>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {sections.countdown && settings.countdown_enabled && (
+          <section class="air-countdown" data-animate="fade-up">
+            <div>
+              <span>Countdown</span>
+              <h3>Menuju hari bahagia</h3>
+            </div>
+            <div class="air-countdown__grid" data-countdown-timer data-date={wedding.wedding_date}>
+              <div><strong data-countdown-days>00</strong><span>Hari</span></div>
+              <div><strong data-countdown-hours>00</strong><span>Jam</span></div>
+              <div><strong data-countdown-minutes>00</strong><span>Menit</span></div>
+              <div><strong data-countdown-seconds>00</strong><span>Detik</span></div>
+            </div>
+            <a class="air-btn air-btn--dark" href={buildGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer">Save Calendar</a>
+          </section>
+        )}
+
+        {sections.gallery && settings.gallery_enabled && (
+          <section class="air-section air-gallery" id="air-gallery">
+            <div class="air-section__head" data-animate="fade-up">
+              <span>03</span>
+              <h3>Gallery</h3>
+            </div>
+            <div class="air-gallery__grid">
+              {activeGallery.map((image) => (
+                <a class={`air-gallery__item air-gallery__item--${image.variant}`} href={image.image_url} data-fancybox="air-gallery" data-animate="fade-up">
+                  <img src={image.image_url} alt="Wedding gallery" loading="lazy" />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {sections.rsvp && settings.rsvp_enabled && (
+          <section class="air-section air-rsvp" id="air-rsvp" data-rsvp-section>
+            <div class="air-section__head" data-animate="fade-up">
+              <span>04</span>
+              <h3>RSVP & Wishes</h3>
+            </div>
+            <div class="air-rsvp__grid">
+              <div class="air-rsvp__panel" data-animate="fade-up">
+                <div class="rsvp-success" data-rsvp-success style="display:none;">
+                  <h4>Terima Kasih</h4>
+                  <p>Konfirmasi dan ucapan Anda sudah tersimpan.</p>
+                </div>
+                <form class="air-form" data-rsvp-form>
+                  <input type="hidden" name="weddingId" value={wedding.id} />
+                  <input type="text" name="name" required placeholder="Nama" />
+                  <select name="attendance" required data-rsvp-attendance>
+                    <option value="" disabled selected>Konfirmasi Kehadiran</option>
+                    <option value="attending">Hadir</option>
+                    <option value="declined">Tidak Hadir</option>
+                  </select>
+                  <textarea name="message" rows="5" placeholder="Ucapan"></textarea>
+                  <div class="rsvp-form__error" data-rsvp-error style="display:none;"></div>
+                  <button class="air-btn air-btn--dark" type="submit" data-rsvp-submit>Submit</button>
+                </form>
+              </div>
+              <div class="air-wishes" data-wishes-list>
+                <div class="wishes-empty" data-wishes-empty style={isWishesEmpty ? '' : 'display:none;'}>
+                  Belum ada ucapan. Jadilah yang pertama memberikan doa restu.
+                </div>
+                {displayedWishes.map((wish) => (
+                  <article class="wish-card" data-animate="fade-up">
+                    <div class="wish-card__header">
+                      <div class="wish-card__meta">
+                        <span class="wish-card__name">{wish.guest_name}</span>
+                        <span class={`wish-card__badge ${wish.attendance_status === 'attending' ? 'wish-card__badge--attend' : 'wish-card__badge--absent'}`}>
+                          {wish.attendance_status === 'attending' ? 'Hadir' : 'Absen'}
+                        </span>
+                      </div>
+                      <span class="wish-card__date">{formatWishDate(wish.created_at)}</span>
+                    </div>
+                    <p class="wish-card__message">{wish.message}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+            {hasMoreWishes && (
+              <button class="air-btn wishes-load-more" data-wishes-load-more data-offset={displayedWishes.length} data-wedding-id={wedding.id}>Load More</button>
+            )}
+          </section>
+        )}
+
+        {sections.gift && settings.gift_enabled && (
+          <section class="air-section air-gift" data-gift-section>
+            <div class="air-section__head" data-animate="fade-up">
+              <span>05</span>
+              <h3>Wedding Gift</h3>
+            </div>
+            <button class="air-btn air-btn--dark" data-gift-toggle type="button">Lihat Hadiah Pernikahan</button>
+            <div class="air-gift__grid" data-gift-grid hidden>
+              {activeGifts.map((gift) => (
+                <article class="air-gift-card" data-animate="fade-up">
+                  <span>{gift.bank_name}</span>
+                  <strong>{gift.account_number}</strong>
+                  <p>a.n. {gift.account_name}</p>
+                  <button class="air-btn" data-copy-btn data-value={gift.account_number} type="button"><span>Salin</span></button>
+                  {gift.qris_url && (
+                    <button class="air-btn" data-qris-btn data-url={gift.qris_url} type="button"><span>Tampilkan QRIS</span></button>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section class="air-thanks">
+          <img src={airDetailOne.src} alt="" aria-hidden="true" />
+          <div data-animate="fade-up">
+            <span>Thank you</span>
+            <h3>{wedding.groom_name} &amp; {wedding.bride_name}</h3>
+            <p>Merupakan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+          </div>
+        </section>
+      </main>
+
+      {sections.music && (
+        <div class="audio-toggle" data-template-audio-toggle title="Play/Pause Music">
+          <span></span>
+          {settings.music_enabled && wedding.music_url && (
+            <audio data-template-audio loop src={wedding.music_url}></audio>
+          )}
+        </div>
+      )}
+
+      <div class="qris-lightbox" data-qris-lightbox>
+        <div class="qris-lightbox__card" data-qris-card>
+          <button class="qris-lightbox__close" data-qris-close aria-label="Close QRIS">x</button>
+          <h4>Scan QRIS Transfer</h4>
+          <img src="" alt="QRIS Scan" data-qris-img />
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import './script.js';
+</script>

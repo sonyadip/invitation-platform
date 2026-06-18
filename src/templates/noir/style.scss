@@ -197,6 +197,10 @@ body.template-noir {
     font-style: normal;
     letter-spacing: 1px;
     line-height: 1.25;
+
+    @media (max-width: 450px) {
+      font-size: 30px;
+    }
   }
 
   .cover-section__amp {

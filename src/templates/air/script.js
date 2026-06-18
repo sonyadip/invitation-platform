@@ -1,4 +1,4 @@
-const root = document.querySelector('body.template-ochre [data-template-root]');
+const root = document.querySelector('body.template-air [data-template-root]');
 const cover = root?.querySelector('[data-template-cover]');
 const openBtn = root?.querySelector('[data-template-open]');
 const layout = root?.querySelector('[data-template-layout]');
@@ -125,10 +125,33 @@ async function initGalleryLightbox() {
     const { Fancybox } = await import('@fancyapps/ui');
     const galleryRoot = root instanceof Element ? root : document.body;
 
-    Fancybox.bind(galleryRoot, '[data-fancybox="ochre-gallery"]');
+    Fancybox.bind(galleryRoot, '[data-fancybox="air-gallery"]');
   } catch (error) {
     console.error('Failed to initialize gallery lightbox:', error);
   }
+}
+
+function initHeroSlideshows() {
+  const sliders = Array.from(root?.querySelectorAll('[data-air-hero-slider]') || []);
+  if (!sliders.length) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  sliders.forEach((slider) => {
+    const slides = Array.from(slider.querySelectorAll('.air-cover__slide, .air-hero__slide'));
+    if (slides.length <= 1) return;
+
+    let activeIndex = Math.max(slides.findIndex((slide) => slide.classList.contains('is-active')), 0);
+    slides[activeIndex]?.classList.add('is-active');
+
+    if (reduceMotion) return;
+
+    setInterval(() => {
+      slides[activeIndex]?.classList.remove('is-active');
+      activeIndex = (activeIndex + 1) % slides.length;
+      slides[activeIndex]?.classList.add('is-active');
+    }, 4300);
+  });
 }
 
 function createWishCard({ name, attendance, message, createdAt }) {
@@ -359,9 +382,8 @@ function initGiftInteractions() {
 
 initCountdown();
 initRevealAnimations();
+initHeroSlideshows();
 initGalleryLightbox();
 initRSVPForm();
 initWishesLoadMore();
 initGiftInteractions();
-
-
