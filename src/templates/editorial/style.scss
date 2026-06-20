@@ -286,7 +286,6 @@ body.template-editorial {
       height: 100%;
       object-fit: cover;
       object-position: center;
-      transform: scale(1.04);
     }
   }
 
@@ -1959,6 +1958,12 @@ body.template-editorial {
       overflow: hidden;
     }
 
+    .page-bg {
+      width: 480px;
+      right: 0;
+      left: auto;
+    }
+
     .sidebar-section-wrap {
       position: relative;
       display: block;
@@ -1989,11 +1994,13 @@ body.template-editorial {
     }
 
     main {
+      position: relative;
       width: 480px;
       min-height: 100vh;
       flex-shrink: 0;
       margin-left: auto;
       box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
+      background-color: var(--editorial-bg);
     }
   }
 
@@ -2008,4 +2015,8 @@ body.template-editorial {
       animation-duration: 0.01ms !important;
     }
   }
+}
+
+.template-editorial #cinematic-letters {
+  font-family: var(--font-heading);
 }

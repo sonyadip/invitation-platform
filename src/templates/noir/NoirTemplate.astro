@@ -1,4 +1,5 @@
 ---
+import CinematicIntro from '../../components/common/CinematicIntro.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
@@ -214,6 +215,11 @@ const activeGifts = gifts && gifts.length > 0
 
 <BaseLayout wedding={wedding} settings={overrideSettings} to={guestName} templateClass="template-noir">
   <div class="invitation-root" data-template-root>
+    <CinematicIntro
+      groomName={wedding.groom_name}
+      brideName={wedding.bride_name}
+      coverImage={heroImage}
+    />
     <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
       <img class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" />
@@ -225,16 +231,13 @@ const activeGifts = gifts && gifts.length > 0
           {wedding.bride_name}
         </h2>
         <div class="cover-section__divider"></div>
-        {guestName && (
-          <div class="cover-section__guest">
-            <p class="cover-section__guest-label">Dear,</p>
-            <p class="cover-section__guest-name">{guestName}</p>
-          </div>
-        )}
-        <div class="cover-section__spacer"></div>
-        <button class="cover-section__btn" data-template-open aria-label="Open Invitation">
-          Open Invitation
-        </button>
+        <div class="cover-section__guest">
+          <p class="cover-section__guest-label">Kepada Yth.</p>
+          <p class="cover-section__guest-name">{guestName || 'Nama Tamu'}</p>
+          <button class="cover-section__btn" data-template-open aria-label="Open Invitation">
+            Open Invitation
+          </button>
+        </div>
       </div>
     </div>
 
@@ -245,7 +248,7 @@ const activeGifts = gifts && gifts.length > 0
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
           <img class="section-bg section-bg--sidebar" src={heroImage} alt="" aria-hidden="true" />
-          <div class="sidebar-section__inner" data-animate="fade-up">
+          <div class="sidebar-section__inner" data-animate="fade-up" style="--animate-delay: 300ms;">
             <p class="sidebar-section__eyebrow">The Wedding Of</p>
             <h2 class="sidebar-section__groom">{wedding.groom_name}</h2>
             <div class="sidebar-section__sep">&amp;</div>
@@ -267,7 +270,7 @@ const activeGifts = gifts && gifts.length > 0
               <img class={`hero-section__slide ${index === 0 ? 'is-active' : ''}`} src={slide} alt="" />
             ))}
           </div>
-          <div class="hero-section__inner" data-animate="fade-up">
+          <div class="hero-section__inner" data-animate="fade-up" style="--animate-delay: 400ms;">
             <p class="hero-section__eyebrow">The Wedding Of</p>
             <h3 class="hero-section__groom">{wedding.groom_name}</h3>
             <div class="hero-section__divider"><span>&amp;</span></div>
@@ -283,7 +286,7 @@ const activeGifts = gifts && gifts.length > 0
         </div>
 
         <!-- Opening verse -->
-        <div class="opening-section" data-animate="fade-up">
+        <div class="opening-section" data-animate="fade-up" style="--animate-delay: 300ms;">
           <div class="opening-section__ornament"></div>
           <p class="opening-section__verse">
             "Ihaiva stam mā vi yaustam, Visvām āyur vyasnutam. Krindantau putrair naptrbhih, Modamānau sve grhe."
@@ -295,7 +298,7 @@ const activeGifts = gifts && gifts.length > 0
 
           <!-- ===== COUPLE SECTION ===== -->
           {sections.coupleInfo && (
-            <section class="couple-section" id="mempelai" data-animate="fade-up">
+            <section class="couple-section" id="mempelai">
               {/* <div class="couple-section__greeting">
                 <p>
                   <strong>Assalamu'alaikum Warahmatullahi Wabarakatuh</strong><br /><br />
@@ -306,7 +309,7 @@ const activeGifts = gifts && gifts.length > 0
 
               <div class="couple-section__row">
                 <!-- Bride card -->
-                <div class="person-card" data-animate="fade-right">
+                <div class="person-card" data-animate="fade-right" style="--animate-delay: 500ms;">
                   <div class="person-card__photo-wrap">
                     <img
                       class="person-card__photo"
@@ -336,10 +339,10 @@ const activeGifts = gifts && gifts.length > 0
                 </div>
 
                 <!-- Ampersand -->
-                <div class="couple-section__amp" data-animate="zoom-in">&amp;</div>
+                <div class="couple-section__amp" data-animate="zoom-in" style="--animate-delay: 500ms;">&amp;</div>
 
                 <!-- Groom card -->
-                <div class="person-card" data-animate="fade-left">
+                <div class="person-card" data-animate="fade-left" style="--animate-delay: 800ms;">
                   <div class="person-card__photo-wrap">
                     <img
                       class="person-card__photo"
@@ -374,14 +377,14 @@ const activeGifts = gifts && gifts.length > 0
           <!-- ===== EVENT DETAILS ===== -->
           {sections.eventDetails && (
             <section class="events-section">
-              <div class="events-section__header" data-animate="fade-up" data-stagger-heading>
+              <div class="events-section__header" data-animate="fade-up" data-stagger-heading style="--animate-delay: 200ms;">
                 {/* <p class="section-eyebrow">Wedding Events</p> */}
                 <h3 class="section-title">Save<br>The Date</h3>
               </div>
 
               <div class="events-section__cards">
-                {activeEvents.map((evt) => (
-                  <div class="event-card" data-animate="fade-up">
+                {activeEvents.map((evt, index) => (
+                  <div class="event-card" data-animate="fade-up" style={`--animate-delay: ${300 + index * 250}ms;`}>
                     <div class="event-card__icon">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -420,10 +423,10 @@ const activeGifts = gifts && gifts.length > 0
 
           <!-- ===== COUNTDOWN ===== -->
         {sections.countdown && (
-          <div class="countdown-section" data-animate="fade-up">
+          <div class="countdown-section">
             {/* <h2 class="countdown-section__title">Save The Date</h2> */}
             {settings.countdown_enabled && (
-              <div class="countdown-section__timer" data-animate="fade-up">
+              <div class="countdown-section__timer" data-animate="fade-up" style="--animate-delay: 300ms;">
                 <div class="countdown-card glassmorphism">
                   <div class="countdown-grid" data-countdown-timer data-date={wedding.wedding_date}>
                     <div class="countdown-item">
@@ -452,6 +455,7 @@ const activeGifts = gifts && gifts.length > 0
               rel="noopener noreferrer"
               class="countdown-section__calendar-btn"
               data-animate="zoom-in"
+              style="--animate-delay: 500ms;"
               aria-label="Save wedding date to Google Calendar"
             >
               Save to Google Calendar
@@ -460,8 +464,8 @@ const activeGifts = gifts && gifts.length > 0
         )}
 
           <!-- ===== VIDEO ===== -->
-          <section class="video-section" data-animate="blur-up">
-            <div class="video-section__frame" data-noir-video>
+          <section class="video-section">
+            <div class="video-section__frame" data-noir-video data-animate="blur-up" style="--animate-delay: 300ms;">
               <video class="video-section__media" src={videoUrl} poster={videoPoster} playsinline preload="metadata"></video>
               <button class="video-section__play" type="button" data-noir-video-play aria-label="Play wedding video">
                 <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -477,17 +481,18 @@ const activeGifts = gifts && gifts.length > 0
               <>
                 <section class="gallery-section">
                   <div class="gallery-container">
-                    <div class="gallery-header" data-animate="fade-up" data-stagger-heading>
+                    <div class="gallery-header" data-animate="fade-up" data-stagger-heading style="--animate-delay: 200ms;">
                       <h2 class="section-title">Our Gallery</h2>
                       <div class="section-rule"></div>
                     </div>
 
                     <div class={`gallery-grid ${galleryColClass}`}>
-                      {activeGallery.map((img) => (
+                      {activeGallery.map((img, index) => (
                         <a
                           href={img.image_url}
                           class={`gallery-item gallery-item--${img.variant}`}
                           data-animate="zoom-in"
+                          style={`--animate-delay: ${200 + (index % galleryColumns) * 200}ms;`}
                           data-fancybox="noir-gallery"
                         >
                           <img src={img.image_url} alt="Wedding Gallery Moment" loading="lazy" class="gallery-item__img" />
@@ -510,14 +515,14 @@ const activeGifts = gifts && gifts.length > 0
           <!-- ===== RSVP & WISHES ===== -->
           {sections.rsvp && (
             settings.rsvp_enabled && (
-              <section class="rsvp-section" data-animate="fade-up" data-rsvp-section>
+              <section class="rsvp-section" data-rsvp-section>
                 <div class="rsvp-container">
-                  <div class="rsvp-header" data-animate="fade-up" data-stagger-heading>
+                  <div class="rsvp-header" data-animate="fade-up" data-stagger-heading style="--animate-delay: 200ms;">
                     <h3 class="section-title">RSVP & Wishes</h3>
                     <p class="rsvp-subtitle">Mohon konfirmasi kehadiran Anda dan berikan doa restu.</p>
                   </div>
 
-                  <div class="rsvp-panel" data-animate="fade-up">
+                  <div class="rsvp-panel" data-animate="fade-up" style="--animate-delay: 400ms;">
                     <div class="rsvp-card">
                       <div class="rsvp-success" data-rsvp-success style="display:none;">
                         <div class="rsvp-success__icon">
@@ -557,10 +562,11 @@ const activeGifts = gifts && gifts.length > 0
                         <span>Belum ada ucapan. Jadilah yang pertama memberikan doa restu!</span>
                       </div>
 
-                      {displayedWishes.map((wish) => (
+                      {displayedWishes.map((wish, index) => (
                         <div
                           class="wish-card animate-fade-in-up"
                           data-animate="fade-up"
+                          style={`--animate-delay: ${200 + index * 200}ms;`}
                           data-wish-id={wish.id}
                           data-wish-key={wish.id || `${wish.created_at}|${wish.guest_name}|${wish.message || ''}`}
                         >
@@ -592,17 +598,17 @@ const activeGifts = gifts && gifts.length > 0
           {sections.gift && (
             settings.gift_enabled && (
               <>
-                <section class="gift-section" data-animate="fade-up" data-gift-section>
+                <section class="gift-section" data-gift-section>
                   <div class="gift-container">
-                    <div class="gift-header" data-animate="fade-up" data-stagger-heading>
+                    <div class="gift-header" data-animate="fade-up" data-stagger-heading style="--animate-delay: 200ms;">
                       <h3 class="section-title">Wedding Gift</h3>
                       <p class="gift-desc">{giftDescription}</p>
                       <div class="section-rule"></div>
                     </div>
 
                     <div class="gift-grid" data-gift-grid>
-                      {activeGifts.map((gift) => (
-                        <div class="gift-card" data-animate="fade-up">
+                      {activeGifts.map((gift, index) => (
+                        <div class="gift-card" data-animate="fade-up" style={`--animate-delay: ${300 + index * 250}ms;`}>
                           <div class="gift-card__body">
                             <span class="gift-card__bank">{gift.bank_name}</span>
                             <p class="gift-card__number">{gift.account_number}</p>
@@ -653,7 +659,7 @@ const activeGifts = gifts && gifts.length > 0
         <!-- Thank You -->
         <section class="thankyou-section">
           <img class="thankyou-section__bg" src={heroImage} alt="" aria-hidden="true" />
-          <div class="thankyou-section__inner" data-animate="fade-up">
+          <div class="thankyou-section__inner" data-animate="fade-up" style="--animate-delay: 300ms;">
             <h2 class="thankyou-section__title">Terima Kasih</h2>
             <div class="thankyou-section__socials">
               <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link">

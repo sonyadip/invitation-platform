@@ -77,5 +77,25 @@ const theme = settings.theme_config.theme;
     style={`color: ${theme.textColor}`}
   >
     <slot />
+    <script>
+      const openBtns = document.querySelectorAll("[data-template-open]");
+      openBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const docEl = document.documentElement as HTMLElement & {
+            webkitRequestFullscreen?: () => Promise<void>;
+            msRequestFullscreen?: () => Promise<void>;
+          };
+          if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch((err) => {
+              console.warn("Fullscreen error:", err.message);
+            });
+          } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+          } else if (docEl.msRequestFullscreen) {
+            docEl.msRequestFullscreen();
+          }
+        });
+      });
+    </script>
   </body>
 </html>

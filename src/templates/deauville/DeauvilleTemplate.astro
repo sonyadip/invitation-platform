@@ -1,4 +1,5 @@
 ---
+import CinematicIntro from "../../components/common/CinematicIntro.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import type { FullInvitationData } from "../../types";
 import { getPlatformSettings } from "../../services/platform-settings";
@@ -77,8 +78,8 @@ const videoPoster =
 
 const defaultText = {
   verse:
-    "Dan diantara ayat-ayat-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu merasa nyaman kepadanya, dan dijadikan-Nya di antaramu mawadah dan rahmah. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir.",
-  verseSource: "(Q.S. Ar-Rum: 21)",
+    "Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu.",
+  verseSource: "(Rgveda : X.85.42)",
   groomParents: "Putra dari Bapak Mempelai & Ibu Mempelai",
   brideParents: "Putri dari Bapak Mempelai & Ibu Mempelai",
   giftDescription:
@@ -93,8 +94,12 @@ const defaultText = {
 };
 const text = { ...defaultText, ...themeContent };
 const platformSettings = await getPlatformSettings();
-const instagramUrl = text.instagramUrl && text.instagramUrl !== '#' ? text.instagramUrl : (platformSettings.instagram_url || '#');
-const whatsappUrl = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
+const instagramUrl =
+  text.instagramUrl && text.instagramUrl !== "#"
+    ? text.instagramUrl
+    : platformSettings.instagram_url || "#";
+const whatsappUrl =
+  themeContent.whatsappUrl || platformSettings.whatsapp_url || "";
 const groomInstagramUrl = text.groomInstagramUrl || instagramUrl;
 const brideInstagramUrl = text.brideInstagramUrl || instagramUrl;
 const buildParentText = (
@@ -276,45 +281,62 @@ const activeGifts =
   templateClass="template-deauville"
 >
   <div class="invitation-root" data-template-root>
-    <div class="invitation-layout" data-template-layout>
-      <aside class="sidebar-section-wrap" aria-hidden="true">
-        <div class="sidebar-section__frame">
-          <img src={closingImage} alt="" />
+    <CinematicIntro
+      groomName={wedding.groom_name}
+      brideName={wedding.bride_name}
+      coverImage={coverImage}
+      fontClass="deauville-name--glasvia"
+    />
+    <section class="cover-section" data-template-cover>
+      <img
+        class="cover-section__bg"
+        src={coverImage}
+        alt=""
+        aria-hidden="true"
+      />
+      <div class="cover-section__body">
+        <div class="cover-section__title-block">
+          <p>The Wedding Of</p>
+          <h1>
+            <span class="deauville-name deauville-name--glasvia"
+              >{wedding.groom_name}</span
+            >
+            <!-- <em>AND</em> -->
+            <span class="deauville-name deauville-name--letterx"
+              >{wedding.bride_name}</span
+            >
+          </h1>
         </div>
-      </aside>
+        <div class="cover-section__guest">
+          <span>Kepada Yth:</span>
+          <strong>{guestName || "Nama Tamu"}</strong>
+          <button
+            class="template-btn template-btn--light"
+            data-template-open
+            type="button">Buka Undangan</button
+          >
+        </div>
+      </div>
+    </section>
 
-      <main class="invitation-main">
-        <section class="cover-section" data-template-cover>
-          <img
-            class="cover-section__bg"
-            src={coverImage}
-            alt=""
-            aria-hidden="true"
-          />
-          <div class="cover-section__body">
-            <div class="cover-section__title-block">
-              <p>The Wedding Of</p>
-              <h1>
-                <span class="deauville-name deauville-name--glasvia"
-                  >{wedding.groom_name}</span
-                >
-                <!-- <em>AND</em> -->
-                <span class="deauville-name deauville-name--letterx"
-                  >{wedding.bride_name}</span
-                >
-              </h1>
-            </div>
-            <div class="cover-section__guest">
-              <span>Kepada Yth:</span>
-              <strong>{guestName || "Nama Tamu"}</strong>
-              <button
-                class="template-btn template-btn--light"
-                data-template-open
-                type="button">Buka Undangan</button
-              >
+    <div class="invitation-layout" data-template-layout>
+      <div class="sidebar-section-wrap">
+        <aside class="sidebar-section">
+          <img class="section-bg section-bg--sidebar" src={coverImage} alt="" aria-hidden="true" />
+          <div class="sidebar-section__inner" data-animate>
+            <p class="sidebar-section__eyebrow">The Wedding Of</p>
+            <h2 class="sidebar-section__groom deauville-name--glasvia">{wedding.groom_name}</h2>
+            <div class="sidebar-section__sep">&amp;</div>
+            <h2 class="sidebar-section__bride deauville-name--letterx">{wedding.bride_name}</h2>
+            <div class="sidebar-section__divider">
+              <span class="sidebar-section__date">{formattedDate}</span>
             </div>
           </div>
-        </section>
+        </aside>
+      </div>
+
+      <main class="invitation-main">
+
 
         <section class="hero-section snap-section">
           <div class="template-slider" data-template-slider>

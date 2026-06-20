@@ -33,6 +33,7 @@ body.template-noir {
   --template-text: #ffffff;
   --template-text-dim: rgba(255, 255, 255, 0.65);
   --template-border: rgba(255, 255, 255, 0.1);
+  background-color: var(--template-bg);
 }
 
 body.template-noir.template-no-scroll {
@@ -147,11 +148,11 @@ body.template-noir {
     position: fixed;
     inset: 0;
     z-index: 999;
-    display: flex;
-    align-items: stretch;
-    justify-content: flex-start;
+    display: grid;
+    place-items: stretch;
     padding: 30px;
     overflow: hidden;
+    text-align: center;
 
     &::after {
       content: '';
@@ -171,9 +172,11 @@ body.template-noir {
     max-width: 360px;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 14px;
-    padding: 40px 30px 30px;
-    animation: coverIntro 1.35s cubic-bezier(0.19, 1, 0.22, 1) both;
+    margin: 0 auto;
+    padding: 45px 30px 50px;
+    animation: coverIntro 2.7s cubic-bezier(0.19, 1, 0.22, 1) both;
   }
 
   .cover-section__spacer {
@@ -221,13 +224,12 @@ body.template-noir {
 
   .cover-section__guest {
     display: flex;
-    width: 100%;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px 16px;
-    border-left: 2px solid var(--template-accent);
-    border-radius: 4px;
-    background-color: var(--template-bg-soft);
+    justify-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    text-align: center;
+    height: 100%;
   }
 
   .cover-section__guest-label {
@@ -241,9 +243,9 @@ body.template-noir {
   .cover-section__guest-name {
     color: #ffffff;
     font-family: 'CVR', sans-serif;
-    font-size: 20.8px;
+    font-size: 24px;
     font-weight: 400;
-    font-style: italic;
+    font-style: normal;
     letter-spacing: 0.5px;
   }
 
@@ -390,8 +392,8 @@ body.template-noir {
     object-position: bottom;
     transform: scale(1.04);
     transition:
-      opacity 1.4s ease,
-      transform 6s ease;
+      opacity 2.8s ease,
+      transform 10s ease;
   }
 
   .hero-section__slide.is-active {
@@ -458,7 +460,7 @@ body.template-noir {
 
     a {
       display: inline-block;
-      animation: noir-bounce 2s ease-in-out infinite;
+      animation: noir-bounce 3.5s ease-in-out infinite;
       color: rgba(255, 255, 255, 0.5);
       text-decoration: none;
       transition: opacity 0.25s ease, color 0.25s ease;
@@ -700,25 +702,25 @@ body.template-noir {
     opacity: 0;
     transform: translateY(14px);
     transition:
-      opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
     transition-delay: var(--countdown-delay, 0ms);
   }
 
   .countdown-item:nth-child(1) {
-    --countdown-delay: 120ms;
+    --countdown-delay: 240ms;
   }
 
   .countdown-item:nth-child(2) {
-    --countdown-delay: 260ms;
+    --countdown-delay: 520ms;
   }
 
   .countdown-item:nth-child(3) {
-    --countdown-delay: 400ms;
+    --countdown-delay: 800ms;
   }
 
   .countdown-item:nth-child(4) {
-    --countdown-delay: 540ms;
+    --countdown-delay: 1080ms;
   }
 
   .countdown-section__timer.is-animated .countdown-item {
@@ -776,9 +778,9 @@ body.template-noir {
     background-color: #000000;
     transform: scale(1.02);
     transition:
-      filter 1.4s cubic-bezier(0.16, 1, 0.3, 1),
-      opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+      filter 2.8s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 2.8s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 2.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .video-section[data-animate='blur-up'] .video-section__frame {
@@ -819,7 +821,7 @@ body.template-noir {
     transform: translate(-50%, -50%);
     box-shadow: none;
     backdrop-filter: blur(12px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.5s ease, transform 0.5s ease;
   }
 
   .video-section__play svg {
@@ -1224,7 +1226,7 @@ body.template-noir {
     background-color: var(--template-bg-soft);
     color: var(--template-text);
     font-size: 15.2px;
-    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease;
   }
 
   .rsvp-form__input::placeholder,
@@ -1271,7 +1273,7 @@ body.template-noir {
     font-weight: 600;
     letter-spacing: 1px;
     text-transform: uppercase;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.5s ease;
   }
 
   .rsvp-form__submit {
@@ -1319,7 +1321,7 @@ body.template-noir {
     background-color: rgba(255, 255, 255, 0.035);
     color: var(--template-text);
     box-shadow: none;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.5s ease;
   }
 
   .wish-card__header {
@@ -1506,7 +1508,7 @@ body.template-noir {
     text-transform: uppercase;
     white-space: nowrap;
     line-height: 0;
-    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, opacity 200ms ease;
+    transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, opacity 400ms ease;
   }
 
   .gift-btn:hover,
@@ -1534,7 +1536,7 @@ body.template-noir {
     background-color: rgba(0, 0, 0, 0.8);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.6s ease;
   }
 
   .qris-lightbox__card {
@@ -1551,7 +1553,7 @@ body.template-noir {
     text-align: center;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
     transform: scale(0.95);
-    transition: transform 0.3s ease;
+    transition: transform 0.6s ease;
   }
 
   .qris-lightbox__close {
@@ -1568,7 +1570,7 @@ body.template-noir {
     background-color: rgba(17, 17, 17, 0.84);
     color: #ffffff;
     cursor: pointer;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.5s ease;
   }
 
   .qris-lightbox__close svg {
@@ -1684,7 +1686,7 @@ body.template-noir {
     background-color: rgba(255, 255, 255, 0.07);
     color: var(--template-text);
     cursor: pointer;
-    transition: background 0.25s ease, border-color 0.25s ease;
+    transition: background 0.5s ease, border-color 0.5s ease;
   }
 
   .social-link svg {
@@ -1727,7 +1729,7 @@ body.template-noir {
     cursor: pointer;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(8px);
-    transition: opacity 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    transition: opacity 0.5s ease, border-color 0.5s ease, color 0.5s ease;
   }
 
   .audio-toggle.audio-toggle--playing {
@@ -1736,18 +1738,18 @@ body.template-noir {
   }
 
   .audio-toggle.audio-toggle--playing svg {
-    animation: noir-spin 4s linear infinite;
+    animation: noir-spin 8s linear infinite;
   }
 
   .animate-fade-in-up {
-    animation: fadeInUp 0.4s ease forwards;
+    animation: fadeInUp 0.8s ease forwards;
   }
 
   [data-animate] {
     opacity: 0;
     transition:
-      opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 7s cubic-bezier(0.16, 1, 0.3, 1);
     transition-delay: var(--animate-delay, 0ms);
     will-change: opacity, transform;
   }
@@ -1781,21 +1783,21 @@ body.template-noir {
     opacity: 0;
     transform: translateY(12px);
     transition:
-      opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 4.5s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 4.5s cubic-bezier(0.16, 1, 0.3, 1);
     transition-delay: var(--heading-delay, 0ms);
   }
 
   [data-stagger-heading]>*:nth-child(1) {
-    --heading-delay: 120ms;
+    --heading-delay: 240ms;
   }
 
   [data-stagger-heading]>*:nth-child(2) {
-    --heading-delay: 260ms;
+    --heading-delay: 520ms;
   }
 
   [data-stagger-heading]>*:nth-child(3) {
-    --heading-delay: 400ms;
+    --heading-delay: 800ms;
   }
 
   [data-stagger-heading].is-animated>* {
@@ -1967,9 +1969,6 @@ body.template-noir {
   @media (min-width: 1024px) {
     .cover-section__body {
       max-width: 440px;
-      margin-left: auto;
-      align-items: center;
-      text-align: center;
     }
 
     .invitation-layout {
@@ -2054,4 +2053,8 @@ body.template-noir {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.template-noir #cinematic-letters {
+  font-family: var(--font-heading);
 }

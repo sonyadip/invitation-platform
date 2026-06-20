@@ -1,4 +1,5 @@
 ---
+import CinematicIntro from '../../components/common/CinematicIntro.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
@@ -62,8 +63,8 @@ const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || 'https://inter
 const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || saveDatePhoto.src;
 
 const defaultText = {
-  verse: 'Dan diantara ayat-ayat-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu merasa nyaman kepadanya, dan dijadikan-Nya di antaramu mawadah dan rahmah. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir.',
-  verseSource: '(Q.S. Ar-Rum: 21)',
+  verse: 'Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu.',
+  verseSource: '(Rgveda : X.85.42)',
   groomParents: 'Putra dari Bapak Mempelai & Ibu Mempelai',
   brideParents: 'Putri dari Bapak Mempelai & Ibu Mempelai',
   giftDescription: 'Tanpa mengurangi rasa hormat, bagi tamu yang ingin mengirimkan hadiah kasih dapat melalui rekening berikut.',
@@ -217,6 +218,11 @@ const activeGifts = gifts && gifts.length > 0
 
 <BaseLayout wedding={wedding} settings={overrideSettings} to={guestName} templateClass="template-editorial">
   <div class="invitation-root" data-template-root>
+    <CinematicIntro
+      groomName={wedding.groom_name}
+      brideName={wedding.bride_name}
+      coverImage={coverImage}
+    />
     <div class="page-bg" data-template-slider aria-hidden="true">
       {heroSlides.map((slide, index) => (
         <img class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} src={slide} alt="" data-cover-slide={slide === coverImage ? 'true' : 'false'} />
@@ -230,7 +236,7 @@ const activeGifts = gifts && gifts.length > 0
         <span class="cover-section__eyebrow">The Wedding of</span>
         <h1 class="cover-section__title">{wedding.groom_name} &amp; {wedding.bride_name}</h1>
         <time class="cover-section__date">{formattedDate}</time>
-        <p class="cover-section__guest-label">Dear</p>
+        <p class="cover-section__guest-label">Kepada Yth.</p>
         <strong class="cover-section__guest-name">{guestName || 'Tamu Undangan'}</strong>
         <button class="template-btn template-btn--cover" data-template-open type="button">Open Invitation</button>
       </div>

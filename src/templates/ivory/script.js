@@ -9,7 +9,6 @@ let heroSlideshowStarted = false;
 const debugIvory = (event, payload = {}) => {
   console.log(`[Ivory RSVP] ${event}`, payload);
 };
-console.log("test");
 if (layout instanceof HTMLElement) layout.style.display = 'none';
 if (cover instanceof HTMLElement) document.body.classList.add('template-no-scroll');
 

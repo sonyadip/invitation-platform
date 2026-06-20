@@ -30,7 +30,7 @@ openBtn?.addEventListener('click', () => {
     document.body.classList.remove('template-no-scroll', 'template-cover-active');
     document.body.style.height = '';
     triggerOpeningAnimations();
-  }, 1000);
+  }, 2000);
 
   if (song instanceof HTMLAudioElement) {
     song.play().catch(() => { });
@@ -61,7 +61,7 @@ function triggerOpeningAnimations() {
   items.forEach((item, index) => {
     if (!(item instanceof HTMLElement)) return;
     item.classList.remove('is-animated');
-    item.style.setProperty('--opening-delay', `${0.2 + (index * 0.35)}s`);
+    item.style.setProperty('--opening-delay', `${0.0 + (index * 0.35)}s`);
     if (reduceMotion) {
       item.classList.add('is-animated');
       return;
@@ -91,7 +91,7 @@ function initSliders() {
       slides[activeIndex]?.classList.remove('is-active');
       activeIndex = (activeIndex + 1) % slides.length;
       slides[activeIndex]?.classList.add('is-active');
-    }, 3600);
+    }, 4000);
   });
 }
 
@@ -119,7 +119,7 @@ function initRevealAnimations() {
 
   animatedItems.forEach((item, index) => {
     if (item instanceof HTMLElement) {
-      item.style.setProperty('--animate-delay', `${Math.min(index % 3, 2) * 140}ms`);
+      item.style.setProperty('--animate-delay', `${Math.min(index % 3, 2) * 200}ms`);
     }
     observer.observe(item);
   });
@@ -559,9 +559,9 @@ function initFullpageScroll() {
 
   window.addEventListener('wheel', (e) => {
     if (document.body.style.overflow === 'hidden' || document.body.classList.contains('template-no-scroll')) {
-      return; 
+      return;
     }
-    
+
     const scrollable = e.target.closest('textarea, [data-wishes-list], [data-gift-grid]');
     if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
       return;
@@ -591,9 +591,9 @@ function initFullpageScroll() {
 
   window.addEventListener('touchmove', (e) => {
     if (document.body.style.overflow === 'hidden' || document.body.classList.contains('template-no-scroll')) {
-      return; 
+      return;
     }
-    
+
     const scrollable = e.target.closest('textarea, [data-wishes-list], [data-gift-grid]');
     if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
       return;
@@ -607,7 +607,7 @@ function initFullpageScroll() {
     const touchEndY = e.touches[0].clientY;
     const diff = touchStartY - touchEndY;
 
-    if (Math.abs(diff) > 40) { 
+    if (Math.abs(diff) > 40) {
       if (diff > 0) {
         if (currentSectionIndex < allSections.length - 1) {
           currentSectionIndex++;
@@ -626,7 +626,7 @@ function initFullpageScroll() {
 
   window.addEventListener('keydown', (e) => {
     if (document.body.style.overflow === 'hidden' || document.body.classList.contains('template-no-scroll')) {
-      return; 
+      return;
     }
 
     const targetTag = e.target.tagName.toLowerCase();
@@ -683,7 +683,7 @@ function initFullpageScroll() {
         document.documentElement.style.scrollBehavior = originalScrollBehavior;
         setTimeout(() => {
           isScrolling = false;
-        }, 100); 
+        }, 100);
       }
     }
 

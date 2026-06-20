@@ -1,0 +1,211 @@
+---
+export interface Props {
+  groomName: string;
+  brideName: string;
+  coverImage: string;
+  fontClass?: string;
+  textColor?: string;
+}
+
+const { 
+  groomName, 
+  brideName, 
+  coverImage, 
+  fontClass = "", 
+  textColor = "#ffffff" 
+} = Astro.props;
+---
+
+<div id="cinematic-preloader" class="cinematic-preloader">
+  <div class="cinematic-center-wrap">
+    <div class="cinematic-letters" id="cinematic-letters" style={`color: ${textColor};`}>
+      <span id="cinematic-top" class={fontClass}>{groomName}</span>
+      <div id="cinematic-image-wrap" class="cinematic-image-wrap">
+        <div class="cinematic-popup-clone">
+          <img class="cinematic-bg-zoom" src={coverImage} alt="" />
+        </div>
+      </div>
+      <span id="cinematic-bottom" class={fontClass}>{brideName}</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { animate } from "framer-motion";
+
+  const preloader = document.getElementById("cinematic-preloader");
+  const layout = document.querySelector(".invitation-layout") as HTMLElement;
+  const imgWrap = document.getElementById("cinematic-image-wrap");
+  const img = document.querySelector(".cinematic-bg-zoom");
+  const topText = document.getElementById("cinematic-top");
+  const bottomText = document.getElementById("cinematic-bottom");
+
+  if (preloader && imgWrap && img && topText && bottomText) {
+    const startCinematic = () => {
+      // Phase 0: Names Fade In (Staggered from bottom)
+      animate(
+        topText,
+        { opacity: [0, 1], y: [40, 0] },
+        { duration: 1.4, ease: [0.33, 1, 0.68, 1] }
+      );
+      setTimeout(() => {
+        animate(
+          bottomText,
+          { opacity: [0, 1], y: [40, 0] },
+          { duration: 1.3, ease: [0.33, 1, 0.68, 1] }
+        );
+      }, 400);
+
+      // Phase 1: Reveal Image Placeholder
+      setTimeout(() => {
+        animate(
+          imgWrap,
+          { height: window.innerWidth > 768 ? "300px" : "200px" },
+          { duration: 1.8, ease: [0.76, 0, 0.24, 1] }
+        );
+
+        animate(img, { scale: 1 }, { duration: 1, ease: [0.33, 1, 0.68, 1] });
+      }, 1800);
+
+      // Phase 2: Expand to Full Screen / Target Size
+      setTimeout(() => {
+        animate(topText, { opacity: 0, y: -40 }, { duration: 2, ease: "easeInOut" });
+        animate(bottomText, { opacity: 0, y: 40 }, { duration: 2, ease: "easeInOut" });
+
+        animate(
+          imgWrap,
+          {
+            width: "100vw",
+            height: "100dvh",
+            borderRadius: "0px",
+          },
+          { duration: 2.5, ease: [0.76, 0, 0.24, 1] }
+        );
+      }, 4000);
+
+      // Phase 3: Swap to real layout and trigger template animations
+      setTimeout(() => {
+        if (layout) {
+          layout.style.opacity = "1"; // Instant show to prevent crossfade dip
+        }
+        document.body.classList.add("is-intro-finished");
+
+        animate(
+          preloader,
+          { opacity: 0 },
+          {
+            duration: 1.2,
+            ease: "easeInOut",
+            onComplete: () => preloader.remove(),
+          }
+        );
+      }, 6000);
+    };
+
+    if (document.readyState === "complete") {
+      startCinematic();
+    } else {
+      window.addEventListener("load", startCinematic);
+    }
+  }
+</script>
+
+<style is:global lang="scss">
+  /* Global hiding of layout until intro finishes, only if preloader exists */
+  body:has(#cinematic-preloader):not(.is-intro-finished) .invitation-layout {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+
+  .cinematic-preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background-color: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .cinematic-center-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cinematic-letters {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    font-size: clamp(3.5rem, 8vw, 6rem);
+    line-height: 1;
+  }
+
+  #cinematic-top, #cinematic-bottom {
+    flex: 1;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    flex-shrink: 1;
+    opacity: 0;
+  }
+
+  #cinematic-top {
+    align-items: flex-end;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  #cinematic-bottom {
+    align-items: flex-start;
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .cinematic-image-wrap {
+    height: 0px;
+    width: clamp(12rem, 30vw, 20rem);
+    overflow: hidden;
+    margin: 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    will-change: width, height, transform, border-radius;
+    flex-shrink: 0;
+  }
+
+  .cinematic-popup-clone {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  
+  .cinematic-bg-zoom {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    transform: scale(1.3);
+    will-change: transform;
+  }
+
+  .cinematic-popup-clone::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    content: "";
+    background: rgba(49, 49, 49, 0.42);
+  }
+</style>
