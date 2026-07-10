@@ -77,9 +77,11 @@ export interface SlugReportDetail {
     expirationDate: string | null;
     passwordProtectionEnabled: boolean;
     assets: {
+      heroVideo: string;
       heroImage: string;
       brideImage: string;
       groomImage: string;
+      logoImage: string;
     };
     content: {
       instagramUrl: string;
@@ -418,9 +420,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       expirationDate: settings.expiration_date,
       passwordProtectionEnabled: Boolean(settings.password_protection_enabled),
       assets: {
+        heroVideo: assets.heroVideo || '',
         heroImage: assets.coverImage || assets.heroImage || '',
         brideImage: assets.brideImage || '',
-        groomImage: assets.groomImage || ''
+        groomImage: assets.groomImage || '',
+        logoImage: assets.logoImage || ''
       },
       content: {
         instagramUrl: content.instagramUrl || '',

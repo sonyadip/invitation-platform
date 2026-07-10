@@ -1,0 +1,45 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: string | ImageMetadata | undefined | null;
+  alt: string;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  width?: number | string;
+  height?: number | string;
+  [key: string]: any;
+}
+
+const { src, alt, class: className, loading = 'lazy', fetchpriority, width, height, ...rest } = Astro.props;
+
+// If src is falsy, just render nothing or a placeholder
+if (!src) return null;
+
+const isString = typeof src === 'string';
+---
+
+{isString ? (
+  <img 
+    src={src as string} 
+    alt={alt} 
+    class={className} 
+    loading={loading} 
+    fetchpriority={fetchpriority} 
+    width={width} 
+    height={height} 
+    {...rest} 
+  />
+) : (
+  <Image 
+    src={src as any} 
+    alt={alt} 
+    class={className} 
+    loading={loading} 
+    fetchpriority={fetchpriority} 
+    width={width as any} 
+    height={height as any} 
+    {...rest} 
+  />
+)}

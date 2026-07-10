@@ -26,6 +26,7 @@ export interface InvitationFormInput {
   passwordProtectionEnabled: boolean;
   accessPassword: string | null;
   expirationDate: string | null;
+  heroVideoUrl: string | null;
   heroImageUrl: string | null;
   brideImageUrl: string | null;
   groomImageUrl: string | null;
@@ -205,6 +206,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     passwordProtectionEnabled: checked('passwordProtectionEnabled'),
     accessPassword: nullableValue('accessPassword'),
     expirationDate: nullableDateValue('expirationDate'),
+    heroVideoUrl: nullableValue('heroVideoUrl'),
     heroImageUrl: nullableValue('heroImageUrl'),
     brideImageUrl: nullableValue('brideImageUrl'),
     groomImageUrl: nullableValue('groomImageUrl'),
@@ -409,6 +411,7 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
 
   const assets = {
     ...(themeConfig.assets || {}),
+    heroVideo: input.heroVideoUrl || undefined,
     coverImage: input.heroImageUrl || undefined,
     heroImage: input.heroImageUrl || undefined,
     brideImage: input.brideImageUrl || undefined,

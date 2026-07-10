@@ -1,6 +1,7 @@
 ---
 import CinematicIntro from '../../components/common/CinematicIntro.astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SmartImage from "../../components/common/SmartImage.astro";
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
 import coverPhoto from './assets/cover.jpg';
@@ -12,6 +13,17 @@ import saveDatePhoto from './assets/save-date.jpg';
 import closingPhoto from './assets/closing.jpg';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import './style.scss';
+
+import {
+  buildParentText,
+  formatDate,
+  formatEventDate,
+  buildGoogleCalendarUrl,
+  formatWishDate
+} from '../../utils/template-helpers';
+import CountdownTimer from '../../components/common/CountdownTimer.astro';
+import GiftGrid from '../../components/common/GiftGrid.astro';
+import QRISLightbox from '../../components/common/QRISLightbox.astro';
 
 interface Props {
   data: FullInvitationData;
@@ -42,13 +54,13 @@ const overrideSettings = {
 const themeAssets = themeConfig.assets || {};
 const themeContent = themeConfig.content || {};
 const heroSlides = [
-  themeAssets.heroImage || groomPhoto.src,
-  themeAssets.heroImageTwo || bridePhoto.src,
-  themeAssets.heroImageThree || eventPhoto.src,
-  themeAssets.eventImage || eventPhoto.src,
-  themeAssets.rsvpImage || rsvpPhoto.src,
-  themeAssets.countdownImage || saveDatePhoto.src,
-  themeAssets.closingImage || closingPhoto.src
+  themeAssets.heroImage || groomPhoto,
+  themeAssets.heroImageTwo || bridePhoto,
+  themeAssets.heroImageThree || eventPhoto,
+  themeAssets.eventImage || eventPhoto,
+  themeAssets.rsvpImage || rsvpPhoto,
+  themeAssets.countdownImage || saveDatePhoto,
+  themeAssets.closingImage || closingPhoto
 ].filter((slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index);
 
 const coverImage = themeAssets.coverImage || coverPhoto.src;
@@ -81,19 +93,6 @@ const instagramUrl = text.instagramUrl && text.instagramUrl !== '#' ? text.insta
 const whatsappUrl = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
 const groomInstagramUrl = text.groomInstagramUrl || instagramUrl;
 const brideInstagramUrl = text.brideInstagramUrl || instagramUrl;
-const buildParentText = (
-  roleText: string,
-  fatherName: string | undefined,
-  motherName: string | undefined,
-  fallbackText: string
-) => {
-  const parents = [
-    fatherName ? `Bapak ${fatherName}` : '',
-    motherName ? `Ibu ${motherName}` : ''
-  ].filter(Boolean).join(' & ');
-
-  return parents ? `${roleText} ${parents}` : fallbackText;
-};
 const groomParentsText = buildParentText(
   'Putra dari',
   text.groomFatherName,
@@ -106,21 +105,6 @@ const brideParentsText = buildParentText(
   text.brideMotherName,
   text.brideParents
 );
-
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString('id-ID', {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-});
-
-const formatEventDate = (iso: string) => {
-  const date = new Date(iso);
-  return {
-    weekday: date.toLocaleDateString('id-ID', { weekday: 'long' }),
-    date: date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-  };
-};
 
 const formattedDate = formatDate(wedding.wedding_date);
 const activeEvents = events && events.length > 0
@@ -139,47 +123,11 @@ const activeEvents = events && events.length > 0
       created_at: ''
     }];
 
-const padDatePart = (value: number) => String(value).padStart(2, '0');
-const buildCalendarDate = (dateInput: string, timeInput?: string) => {
-  const date = new Date(dateInput);
-  const [hour = '09', minute = '00'] = timeInput && /^\d{1,2}:\d{2}$/.test(timeInput)
-    ? timeInput.split(':')
-    : ['09', '00'];
-
-  date.setHours(Number(hour), Number(minute), 0, 0);
-
-  return [
-    date.getFullYear(),
-    padDatePart(date.getMonth() + 1),
-    padDatePart(date.getDate()),
-    'T',
-    padDatePart(date.getHours()),
-    padDatePart(date.getMinutes()),
-    '00'
-  ].join('');
-};
-
-const buildGoogleCalendarUrl = () => {
-  const event = activeEvents[0];
-  const startTime = /^\d{1,2}:\d{2}$/.test(event.start_time) ? event.start_time : '09:00';
-  const endTime = /^\d{1,2}:\d{2}$/.test(event.end_time) ? event.end_time : '11:00';
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: `Wedding of ${wedding.groom_name} & ${wedding.bride_name}`,
-    dates: `${buildCalendarDate(event.event_date, startTime)}/${buildCalendarDate(event.event_date, endTime)}`,
-    details: `Wedding invitation for ${wedding.groom_name} and ${wedding.bride_name}.`,
-    location: `${event.venue_name}, ${event.venue_address}`,
-    ctz: 'Asia/Makassar'
-  });
-
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-};
-
 const fallbackGallery = [
   coverPhoto, groomPhoto, bridePhoto, eventPhoto, rsvpPhoto, saveDatePhoto, closingPhoto
 ].map((image, index) => ({
   id: String(index + 1),
-  image_url: image.src,
+  image_url: image,
   variant: index === 0 || index === 5 ? 'full-16x10' : 'half'
 }));
 
@@ -200,13 +148,6 @@ const galleryColClass = galleryColumns === 2
 const displayedWishes = wishes ? wishes.slice(0, 4) : [];
 const isWishesEmpty = !wishes || wishes.length === 0;
 const hasMoreWishes = wishes ? wishes.length > displayedWishes.length : false;
-const formatWishDate = (isoStr: string) => new Date(isoStr).toLocaleDateString('id-ID', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit'
-});
 
 const activeGifts = gifts && gifts.length > 0
   ? gifts
@@ -224,13 +165,17 @@ const activeGifts = gifts && gifts.length > 0
       coverImage={coverImage}
     />
     <div class="page-bg" data-template-slider aria-hidden="true">
-      {heroSlides.map((slide, index) => (
-        <img class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} src={slide} alt="" data-cover-slide={slide === coverImage ? 'true' : 'false'} />
-      ))}
+      {themeAssets.heroVideo ? (
+        <video class="template-slide is-active" src={themeAssets.heroVideo} autoplay loop muted playsinline></video>
+      ) : (
+        heroSlides.map((slide, index) => (
+          <SmartImage class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} src={slide} alt="" data-cover-slide={slide === coverImage ? 'true' : 'false'} />
+        ))
+      )}
     </div>
 
     <section class="cover-section" data-template-cover>
-      <img src={coverImage} alt="" aria-hidden="true" />
+      <SmartImage src={coverImage} alt="" aria-hidden="true" />
       <div class="cover-section__overlay"></div>
       <div class="cover-section__content">
         <span class="cover-section__eyebrow">The Wedding of</span>
@@ -245,7 +190,7 @@ const activeGifts = gifts && gifts.length > 0
     <div class="invitation-layout" data-template-layout>
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
-          <img class="section-bg section-bg--sidebar" src={coverImage} alt="" aria-hidden="true" />
+          <SmartImage class="section-bg section-bg--sidebar" src={coverImage} alt="" aria-hidden="true" />
           <div class="sidebar-section__inner" data-animate>
             <p class="sidebar-section__eyebrow">The Wedding Of</p>
             <h2 class="sidebar-section__groom">{wedding.groom_name}</h2>
@@ -272,11 +217,11 @@ const activeGifts = gifts && gifts.length > 0
 
         {sections.coupleInfo && (
           <section class="couple-section">
-            <article class="couple-section__person" data-animate>
-              <img class="couple-section__image" src={groomImage} alt={wedding.groom_name} loading="lazy" />
-              <h3 class="couple-section__name">{wedding.groom_full_name || wedding.groom_name}</h3>
-              <p class="couple-section__parents">{groomParentsText}</p>
-              <a class="couple-section__social" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`}>
+            <article class="couple-section__person">
+              <SmartImage class="couple-section__image" src={groomImage} alt={wedding.groom_name} loading="lazy" data-animate />
+              <h3 class="couple-section__name" data-animate>{wedding.groom_full_name || wedding.groom_name}</h3>
+              <p class="couple-section__parents" data-animate>{groomParentsText}</p>
+              <a class="couple-section__social" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`} data-animate>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
                   <rect x="3" y="3" width="18" height="18" rx="5"></rect>
                   <circle cx="12" cy="12" r="4"></circle>
@@ -285,11 +230,11 @@ const activeGifts = gifts && gifts.length > 0
                 <span>Instagram</span>
               </a>
             </article>
-            <article class="couple-section__person" data-animate>
-              <img class="couple-section__image" src={brideImage} alt={wedding.bride_name} loading="lazy" />
-              <h3 class="couple-section__name">{wedding.bride_full_name || wedding.bride_name}</h3>
-              <p class="couple-section__parents">{brideParentsText}</p>
-              <a class="couple-section__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`}>
+            <article class="couple-section__person">
+              <SmartImage class="couple-section__image" src={brideImage} alt={wedding.bride_name} loading="lazy" data-animate />
+              <h3 class="couple-section__name" data-animate>{wedding.bride_full_name || wedding.bride_name}</h3>
+              <p class="couple-section__parents" data-animate>{brideParentsText}</p>
+              <a class="couple-section__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`} data-animate>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
                   <rect x="3" y="3" width="18" height="18" rx="5"></rect>
                   <circle cx="12" cy="12" r="4"></circle>
@@ -320,7 +265,7 @@ const activeGifts = gifts && gifts.length > 0
         {sections.eventDetails && (
           <section class="event-row">
             <div class="event-row__media" data-animate>
-              <img src={eventImage} alt="" loading="lazy" />
+              <SmartImage src={eventImage} alt="" loading="lazy" />
             </div>
             <div class="event-row__content">
               {activeEvents.map((event) => {
@@ -351,28 +296,9 @@ const activeGifts = gifts && gifts.length > 0
         {sections.countdown && settings.countdown_enabled && (
           <section class="countdown-section" data-animate>
             <div class="countdown-section__timer" data-animate>
-              <div class="countdown-card">
-                <div class="countdown-grid" data-countdown-timer data-date={wedding.wedding_date}>
-                  <div class="countdown-item">
-                    <span class="countdown-item__value" data-countdown-days>00</span>
-                    <span class="countdown-item__label">Hari</span>
-                  </div>
-                  <div class="countdown-item">
-                    <span class="countdown-item__value" data-countdown-hours>00</span>
-                    <span class="countdown-item__label">Jam</span>
-                  </div>
-                  <div class="countdown-item">
-                    <span class="countdown-item__value" data-countdown-minutes>00</span>
-                    <span class="countdown-item__label">Menit</span>
-                  </div>
-                  <div class="countdown-item">
-                    <span class="countdown-item__value" data-countdown-seconds>00</span>
-                    <span class="countdown-item__label">Detik</span>
-                  </div>
-                </div>
-              </div>
+              <CountdownTimer date={wedding.wedding_date} />
             </div>
-            <a class="countdown-section__calendar-btn" href={buildGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer">
+            <a class="countdown-section__calendar-btn" href={buildGoogleCalendarUrl(wedding as any, activeEvents[0] as any)} target="_blank" rel="noopener noreferrer">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="18" rx="2"></rect>
                 <path d="M16 2v4M8 2v4M3 10h18"></path>
@@ -408,7 +334,7 @@ const activeGifts = gifts && gifts.length > 0
                     data-fancybox="gallery-section"
                     data-animate
                   >
-                    <img src={image.image_url} alt="Wedding gallery" loading="lazy" class="gallery-item__img" />
+                    <SmartImage src={image.image_url} alt="Wedding gallery" loading="lazy" class="gallery-item__img" />
                     <div class="gallery-item__overlay">
                       <div class="gallery-item__zoom">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -434,33 +360,7 @@ const activeGifts = gifts && gifts.length > 0
 
               <button class="gift-toggle-btn" data-gift-toggle type="button" aria-expanded="false">Lihat Hadiah Pernikahan</button>
 
-              <div class="gift-grid" data-gift-grid hidden>
-                {activeGifts.map((gift) => (
-                  <div class="gift-card" data-animate>
-                    <div class="gift-card__body">
-                      <span class="gift-card__bank">{gift.bank_name}</span>
-                      <p class="gift-card__number">{gift.account_number}</p>
-                      <p class="gift-card__holder">a.n. {gift.account_name}</p>
-                    </div>
-                    <div class="gift-card__actions">
-                      <button class="gift-btn gift-btn--copy" data-copy-btn data-value={gift.account_number} type="button">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                        </svg>
-                        <span>Salin</span>
-                      </button>
-                      {gift.qris_url && (
-                        <button class="gift-btn gift-btn--qris" data-qris-btn data-url={gift.qris_url} type="button">
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
-                          </svg>
-                          <span>Tampilkan QRIS</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <GiftGrid gifts={activeGifts} />
             </div>
           </section>
         )}
@@ -468,7 +368,7 @@ const activeGifts = gifts && gifts.length > 0
         {sections.rsvp && settings.rsvp_enabled && (
           <section class="rsvp-row" data-rsvp-section>
             <div class="rsvp-row__media" data-animate>
-              <img src={rsvpImage} alt="" loading="lazy" />
+              <SmartImage src={rsvpImage} alt="" loading="lazy" />
             </div>
             <div class="rsvp-row__content">
               <section class="rsvp-section" data-animate>
@@ -552,14 +452,14 @@ const activeGifts = gifts && gifts.length > 0
 
         <section class="closing-row">
           <div class="closing-row__media" data-animate>
-            <img src={closingImage} alt="" loading="lazy" />
+            <SmartImage src={closingImage} alt="" loading="lazy" />
           </div>
           <div class="closing-row__content" data-animate>
             <h3 class="closing-row__title">Terima kasih</h3>
             <p class="closing-row__message">{text.closingMessage}</p>
             <h4 class="closing-row__names">{wedding.groom_name} &amp; {wedding.bride_name}</h4>
             <footer class="thankyou-section__footer">
-              <img src="/images/senadda-logo.png" alt="Senadda" class="thankyou-section__brand" />
+              <SmartImage src="/images/senadda-logo.png" alt="Senadda" class="thankyou-section__brand" />
               <div class="thankyou-section__socials">
                 <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
@@ -589,20 +489,7 @@ const activeGifts = gifts && gifts.length > 0
         </button>
       )}
 
-      <div class="qris-lightbox" data-qris-lightbox>
-        <div class="qris-lightbox__card" data-qris-card>
-          <button class="qris-lightbox__close" data-qris-close aria-label="Close QRIS">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-          <h4 class="qris-lightbox__title">Scan QRIS Transfer</h4>
-          <div class="qris-lightbox__img-frame">
-            <img src="" alt="QRIS Scan" class="qris-lightbox__img" data-qris-img />
-          </div>
-          <p class="qris-lightbox__note">Silakan gunakan aplikasi perbankan atau e-wallet untuk memindai kode QRIS.</p>
-        </div>
-      </div>
+      <QRISLightbox />
     </div>
   </div>
 </BaseLayout>

@@ -1,0 +1,46 @@
+---
+---
+<div class="qris-lightbox" data-qris-lightbox>
+  <div class="qris-lightbox__card" data-qris-card>
+    <button class="qris-lightbox__close" data-qris-close aria-label="Close QRIS">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+    <h4 class="qris-lightbox__title">Scan QRIS Transfer</h4>
+    <div class="qris-lightbox__img-frame">
+      <img src="" alt="QRIS Scan" class="qris-lightbox__img" data-qris-img />
+    </div>
+    <p class="qris-lightbox__note">Silakan gunakan aplikasi perbankan atau e-wallet untuk memindai kode QRIS.</p>
+  </div>
+</div>
+
+<script>
+  function initQRISClose() {
+    const qrisLightboxes = document.querySelectorAll('[data-qris-lightbox]');
+    
+    qrisLightboxes.forEach(qrisLightbox => {
+      if (!(qrisLightbox instanceof HTMLElement)) return;
+      if (qrisLightbox.dataset.closeInitialized === 'true') return;
+      qrisLightbox.dataset.closeInitialized = 'true';
+
+      const qrisClose = qrisLightbox.querySelector('[data-qris-close]');
+      const qrisCard = qrisLightbox.querySelector('[data-qris-card]');
+      
+      const closeQRIS = () => {
+        qrisLightbox.style.opacity = '0';
+        qrisLightbox.style.pointerEvents = 'none';
+        if (qrisCard instanceof HTMLElement) qrisCard.style.transform = 'scale(0.96)';
+        document.body.style.overflow = '';
+      };
+
+      qrisClose?.addEventListener('click', closeQRIS);
+      qrisLightbox?.addEventListener('click', (event) => {
+        if (event.target === qrisLightbox) closeQRIS();
+      });
+    });
+  }
+  
+  document.addEventListener('astro:page-load', initQRISClose);
+  initQRISClose();
+</script>

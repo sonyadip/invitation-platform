@@ -40,6 +40,7 @@ const defaults = {
   passwordProtectionEnabled: false,
   accessPassword: '',
   expirationDate: '',
+  heroVideoUrl: '',
   heroImageUrl: '',
   brideImageUrl: '',
   groomImageUrl: '',
@@ -92,6 +93,7 @@ if (Astro.request.method === 'POST') {
     accessPassword: parsed.accessPassword || '',
     musicUrl: parsed.musicUrl || '',
     expirationDate: parsed.expirationDate || '',
+    heroVideoUrl: parsed.heroVideoUrl || '',
     heroImageUrl: parsed.heroImageUrl || '',
     brideImageUrl: parsed.brideImageUrl || '',
     groomImageUrl: parsed.groomImageUrl || '',
@@ -182,6 +184,7 @@ if (Astro.request.method === 'POST') {
             <label class="wide">Upload Logo Image<input type="file" name="logoImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
             <label class="wide">Popup / Hero Image URL<input name="heroImageUrl" value={values.heroImageUrl} placeholder="https://example.com/hero.jpg" /></label>
             <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+            <label class="wide">Hero Video URL<input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" /></label>
             <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{values.introVerse}</textarea></label>
             <label>Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(Rgveda : X.85.42)" /></label>
             <label>Instagram URL<input name="instagramUrl" value={values.instagramUrl} placeholder="https://www.instagram.com/username" /></label>

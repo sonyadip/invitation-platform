@@ -101,7 +101,7 @@ body.template-air {
   .air-event-card__label,
   .air-countdown span,
   .air-person span,
-  .air-gift-card span,
+  .gift-card__bank,
   .air-thanks span {
     margin: 0;
     color: currentColor;
@@ -323,7 +323,7 @@ body.template-air {
   .air-event-card p,
   .air-thanks p,
   .wish-card__message,
-  .air-gift-card p {
+  .gift-card__holder {
     margin: 0;
     color: var(--air-muted);
     line-height: 1.55;
@@ -374,13 +374,13 @@ body.template-air {
     font-size: clamp(34px, 6vw, 84px);
   }
   
-  .air-countdown__grid {
+  .countdown-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     border: 1px solid var(--air-line);
   }
   
-  .air-countdown__grid div {
+  .countdown-item {
     display: grid;
     gap: 8px;
     padding: 22px 12px;
@@ -388,16 +388,16 @@ body.template-air {
     border-right: 1px solid var(--air-line);
   }
   
-  .air-countdown__grid div:last-child {
+  .countdown-item:last-child {
     border-right: 0;
   }
   
-  .air-countdown__grid strong {
+  .countdown-item__value {
     font-size: clamp(28px, 5vw, 62px);
     font-weight: 600;
   }
   
-  .air-countdown__grid span {
+  .countdown-item__label {
     color: var(--air-muted);
   }
   
@@ -437,7 +437,7 @@ body.template-air {
   }
   
   .air-rsvp__panel,
-  .air-gift-card,
+  .gift-card,
   .wish-card {
     padding: clamp(20px, 3vw, 34px);
     border: 1px solid var(--air-line);
@@ -506,21 +506,52 @@ body.template-air {
     background: var(--air-white);
   }
   
-  .air-gift__grid {
+  .gift-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 14px;
     margin-top: 22px;
   }
   
-  .air-gift-card {
+  .gift-card {
     display: grid;
     gap: 12px;
   }
   
-  .air-gift-card strong {
+  .gift-card__number {
     font-size: clamp(28px, 4vw, 52px);
     font-weight: 600;
+  }
+
+  .gift-card__body, .gift-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gift-btn {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+    color: currentColor;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    gap: 8px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
   
   .air-thanks {
@@ -640,6 +671,7 @@ body.template-air {
     transition: transform 220ms ease;
   }
   
+  .qris-lightbox__img-frame img, .qris-lightbox__img,
   .qris-lightbox__card img {
     width: 100%;
   }
@@ -653,6 +685,9 @@ body.template-air {
     cursor: pointer;
     font-size: 20px;
   }
+  
+  .qris-lightbox__title { margin: 0 0 15px; font-weight: 600; }
+  .qris-lightbox__note { margin: 15px 0 0; font-size: 12px; color: var(--air-muted); }
   
   [data-animate] {
     opacity: 0;
@@ -702,15 +737,15 @@ body.template-air {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   
-    .air-countdown__grid {
+    .countdown-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   
-    .air-countdown__grid div:nth-child(2) {
+    .countdown-item:nth-child(2) {
       border-right: 0;
     }
   
-    .air-countdown__grid div:nth-child(-n + 2) {
+    .countdown-item:nth-child(-n + 2) {
       border-bottom: 1px solid var(--air-line);
     }
   }

@@ -1,5 +1,6 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SmartImage from "../../components/common/SmartImage.astro";
 import type { FullInvitationData } from '../../types';
 import bgHero from './assets/bg-hero.webp';
 import coupleBride from './assets/couple-bride.jpg';
@@ -15,6 +16,17 @@ import galleryEight from './assets/gallery-8.webp';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import './style.scss';
 
+import {
+  buildParentText,
+  formatDate,
+  formatEventDate,
+  buildGoogleCalendarUrl,
+  formatWishDate
+} from '../../utils/template-helpers';
+import CountdownTimer from '../../components/common/CountdownTimer.astro';
+import GiftGrid from '../../components/common/GiftGrid.astro';
+import QRISLightbox from '../../components/common/QRISLightbox.astro';
+
 interface Props {
   data: FullInvitationData;
   guestName: string | null;
@@ -25,14 +37,14 @@ const { wedding, settings, events, gallery, gifts, wishes } = data;
 const sections = settings.sections;
 // Override gallery with custom local images for Sage template
 const customGallery = [
-  { id: '1', image_url: galleryOne.src, variant: 'full-16x10' },
-  { id: '2', image_url: galleryTwo.src, variant: 'half' },
-  { id: '3', image_url: galleryThree.src, variant: 'half' },
-  { id: '4', image_url: galleryFour.src, variant: 'half' },
-  { id: '5', image_url: galleryFive.src, variant: 'half' },
-  { id: '6', image_url: gallerySix.src, variant: 'full-16x10' },
-  { id: '7', image_url: gallerySeven.src, variant: 'half' },
-  { id: '8', image_url: galleryEight.src, variant: 'half' }
+  { id: '1', image_url: galleryOne, variant: 'full-16x10' },
+  { id: '2', image_url: galleryTwo, variant: 'half' },
+  { id: '3', image_url: galleryThree, variant: 'half' },
+  { id: '4', image_url: galleryFour, variant: 'half' },
+  { id: '5', image_url: galleryFive, variant: 'half' },
+  { id: '6', image_url: gallerySix, variant: 'full-16x10' },
+  { id: '7', image_url: gallerySeven, variant: 'half' },
+  { id: '8', image_url: galleryEight, variant: 'half' }
 ];
 const themeConfig = (settings.theme_config || {
   theme: {},
@@ -57,16 +69,7 @@ const overrideSettings = {
   }
 };
 
-const formattedDate = new Date(wedding.wedding_date).toLocaleDateString('id-ID', {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-});
-
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString('id-ID', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-});
+const formattedDate = formatDate(wedding.wedding_date);
 
 const activeEvents = events && events.length > 0
   ? events
@@ -84,53 +87,7 @@ const activeEvents = events && events.length > 0
       created_at: ''
     }];
 
-const padDatePart = (value: number) => String(value).padStart(2, '0');
-
-const buildCalendarDate = (dateInput: string, timeInput?: string) => {
-  const date = new Date(dateInput);
-  const [hour = '09', minute = '00'] = timeInput && /^\d{1,2}:\d{2}$/.test(timeInput)
-    ? timeInput.split(':')
-    : ['09', '00'];
-
-  date.setHours(Number(hour), Number(minute), 0, 0);
-
-  return [
-    date.getFullYear(),
-    padDatePart(date.getMonth() + 1),
-    padDatePart(date.getDate()),
-    'T',
-    padDatePart(date.getHours()),
-    padDatePart(date.getMinutes()),
-    '00'
-  ].join('');
-};
-
-const buildGoogleCalendarUrl = () => {
-  const event = activeEvents[0];
-  const startDate = new Date(event.event_date);
-  const startTime = /^\d{1,2}:\d{2}$/.test(event.start_time) ? event.start_time : '09:00';
-  let endTime = /^\d{1,2}:\d{2}$/.test(event.end_time) ? event.end_time : '';
-
-  if (!endTime) {
-    const fallbackEnd = new Date(startDate);
-    const [hour, minute] = startTime.split(':');
-    fallbackEnd.setHours(Number(hour) + 2, Number(minute), 0, 0);
-    endTime = `${padDatePart(fallbackEnd.getHours())}:${padDatePart(fallbackEnd.getMinutes())}`;
-  }
-
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: `Wedding of ${wedding.groom_name} & ${wedding.bride_name}`,
-    dates: `${buildCalendarDate(event.event_date, startTime)}/${buildCalendarDate(event.event_date, endTime)}`,
-    details: `Wedding invitation for ${wedding.groom_name} and ${wedding.bride_name}.`,
-    location: `${event.venue_name}, ${event.venue_address}`,
-    ctz: 'Asia/Makassar'
-  });
-
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-};
-
-const googleCalendarUrl = buildGoogleCalendarUrl();
+const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, activeEvents[0] as any);
 
 const themeAssets = themeConfig.assets || {};
 const heroImage = themeAssets.heroImage || bgHero.src;
@@ -150,14 +107,6 @@ const galleryColClass = galleryColumns === 2
     ? 'gallery-grid--col4'
     : 'gallery-grid--col3';
 
-const formatWishDate = (isoStr: string) => new Date(isoStr).toLocaleDateString('id-ID', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit'
-});
-
 const isWishesEmpty = !wishes || wishes.length === 0;
 const displayedWishes = wishes ? wishes.slice(0, 3) : [];
 const hasMoreWishes = wishes ? wishes.length > displayedWishes.length : false;
@@ -175,7 +124,7 @@ const activeGifts = gifts && gifts.length > 0
   <div class="invitation-root" data-template-root>
     <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
-      <img class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" />
+      <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" />
       <div class="cover-section__body">
         <p class="cover-section__eyebrow">The Wedding Of</p>
         <h2 class="cover-section__names">
@@ -203,7 +152,7 @@ const activeGifts = gifts && gifts.length > 0
       <!-- LEFT FIXED SIDEBAR (desktop only) -->
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
-          <img class="section-bg section-bg--sidebar" src={heroImage} alt="" aria-hidden="true" />
+          <SmartImage class="section-bg section-bg--sidebar" src={heroImage} alt="" aria-hidden="true" />
           <div class="sidebar-section__inner" data-animate="fade-up">
             <p class="sidebar-section__eyebrow">The Wedding Of</p>
             <h2 class="sidebar-section__groom">{wedding.groom_name}</h2>
@@ -221,7 +170,7 @@ const activeGifts = gifts && gifts.length > 0
 
         <!-- Hero (right column top) -->
         <div class="hero-section">
-          <img class="section-bg section-bg--hero" src={heroImage} alt="" aria-hidden="true" />
+          <SmartImage class="section-bg section-bg--hero" src={heroImage} alt="" aria-hidden="true" />
           <div class="hero-section__inner" data-animate="fade-up">
             <p class="hero-section__eyebrow">The Wedding Of</p>
             <h3 class="hero-section__groom">{wedding.groom_name}</h3>
@@ -263,7 +212,7 @@ const activeGifts = gifts && gifts.length > 0
                 <!-- Bride card -->
                 <div class="person-card" data-animate="fade-right">
                   <div class="person-card__photo-wrap">
-                    <img
+                    <SmartImage
                       class="person-card__photo"
                       src={brideImage}
                       alt={wedding.bride_name}
@@ -281,7 +230,7 @@ const activeGifts = gifts && gifts.length > 0
                 <!-- Groom card -->
                 <div class="person-card" data-animate="fade-left">
                   <div class="person-card__photo-wrap">
-                    <img
+                    <SmartImage
                       class="person-card__photo"
                       src={groomImage}
                       alt={wedding.groom_name}
@@ -349,24 +298,7 @@ const activeGifts = gifts && gifts.length > 0
             {settings.countdown_enabled && (
               <div class="countdown-section__timer" data-animate="fade-up">
                 <div class="countdown-card glassmorphism">
-                  <div class="countdown-grid" data-countdown-timer data-date={wedding.wedding_date}>
-                    <div class="countdown-item">
-                      <span class="countdown-item__value" data-countdown-days>00</span>
-                      <span class="countdown-item__label">Hari</span>
-                    </div>
-                    <div class="countdown-item">
-                      <span class="countdown-item__value" data-countdown-hours>00</span>
-                      <span class="countdown-item__label">Jam</span>
-                    </div>
-                    <div class="countdown-item">
-                      <span class="countdown-item__value" data-countdown-minutes>00</span>
-                      <span class="countdown-item__label">Menit</span>
-                    </div>
-                    <div class="countdown-item">
-                      <span class="countdown-item__value" data-countdown-seconds>00</span>
-                      <span class="countdown-item__label">Detik</span>
-                    </div>
-                  </div>
+                  <CountdownTimer date={wedding.wedding_date} />
                 </div>
               </div>
             )}
@@ -402,7 +334,7 @@ const activeGifts = gifts && gifts.length > 0
                           data-animate="zoom-in"
                           data-fancybox="sage-gallery"
                         >
-                          <img src={img.image_url} alt="Wedding Gallery Moment" loading="lazy" class="gallery-item__img" />
+                          <SmartImage src={img.image_url} alt="Wedding Gallery Moment" loading="lazy" class="gallery-item__img" />
                           <div class="gallery-item__overlay">
                             <div class="gallery-item__zoom">
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -511,50 +443,11 @@ const activeGifts = gifts && gifts.length > 0
 
                     <button class="gift-toggle-btn" data-gift-toggle type="button">Lihat Hadiah Pernikahan</button>
 
-                    <div class="gift-grid" data-gift-grid hidden>
-                      {activeGifts.map((gift) => (
-                        <div class="gift-card" data-animate="fade-up">
-                          <div class="gift-card__body">
-                            <span class="gift-card__bank">{gift.bank_name}</span>
-                            <p class="gift-card__number">{gift.account_number}</p>
-                            <p class="gift-card__holder">a.n. {gift.account_name}</p>
-                          </div>
-                          <div class="gift-card__actions">
-                            <button class="gift-btn gift-btn--copy" data-copy-btn data-value={gift.account_number}>
-                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                              </svg>
-                              <span>Salin</span>
-                            </button>
-                            {gift.qris_url && (
-                              <button class="gift-btn gift-btn--qris" data-qris-btn data-url={gift.qris_url}>
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
-                                </svg>
-                                <span>Tampilkan QRIS</span>
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <GiftGrid gifts={activeGifts} hidden={true} />
                   </div>
                 </section>
 
-                <div class="qris-lightbox" data-qris-lightbox>
-                  <div class="qris-lightbox__card" data-qris-card>
-                    <button class="qris-lightbox__close" data-qris-close aria-label="Close QRIS">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                      </svg>
-                    </button>
-                    <h4 class="qris-lightbox__title">Scan QRIS Transfer</h4>
-                    <div class="qris-lightbox__img-frame">
-                      <img src="" alt="QRIS Scan" class="qris-lightbox__img" data-qris-img />
-                    </div>
-                    <p class="qris-lightbox__note">Silakan gunakan aplikasi perbankan atau e-wallet Anda untuk memindai kode QRIS di atas.</p>
-                  </div>
-                </div>
+                <QRISLightbox />
               </>
             )
           )}
@@ -563,7 +456,7 @@ const activeGifts = gifts && gifts.length > 0
 
         <!-- Thank You -->
         <section class="thankyou-section" data-animate="fade-up">
-          <img class="thankyou-section__bg" src={heroImage} alt="" aria-hidden="true" />
+          <SmartImage class="thankyou-section__bg" src={heroImage} alt="" aria-hidden="true" />
           <div class="thankyou-section__content" data-animate="fade-up">
             <p class="thankyou-section__title">Thank<br />you</p>
             <p class="thankyou-section__message">
@@ -572,7 +465,7 @@ const activeGifts = gifts && gifts.length > 0
             <p class="thankyou-section__names">- {wedding.groom_name} &amp; {wedding.bride_name}</p>
           </div>
           <div class="thankyou-section__footer">
-            <img src="/images/senadda-logo.png" alt="Senadda" class="thankyou-section__brand" />
+            <SmartImage src="/images/senadda-logo.png" alt="Senadda" class="thankyou-section__brand" />
             <div class="thankyou-section__socials">
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" xmlns="http://www.w3.org/2000/svg">

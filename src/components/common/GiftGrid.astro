@@ -1,0 +1,88 @@
+---
+import type { GiftAccount } from '../../types';
+
+interface Props {
+  gifts: GiftAccount[];
+}
+const { gifts } = Astro.props;
+---
+<div class="gift-grid" data-gift-grid hidden>
+  {gifts.map((gift) => (
+    <article class="gift-card" data-animate>
+      <div class="gift-card__body">
+        <span class="gift-card__bank">{gift.bank_name}</span>
+        <p class="gift-card__number">{gift.account_number}</p>
+        <p class="gift-card__holder">a.n. {gift.account_name}</p>
+      </div>
+      <div class="gift-card__actions">
+        <button class="gift-btn gift-btn--copy" data-copy-btn data-value={gift.account_number} type="button">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+          </svg>
+          <span>Salin</span>
+        </button>
+        {gift.qris_url && (
+          <button class="gift-btn gift-btn--qris" data-qris-btn data-url={gift.qris_url} type="button">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+            </svg>
+            <span>Tampilkan QRIS</span>
+          </button>
+        )}
+      </div>
+    </article>
+  ))}
+</div>
+
+<script>
+  function initGiftInteractions() {
+    const copyBtns = document.querySelectorAll('[data-copy-btn]');
+    const qrisBtns = document.querySelectorAll('[data-qris-btn]');
+    
+    copyBtns.forEach((btn) => {
+      if ((btn as HTMLElement).dataset.initialized === 'true') return;
+      (btn as HTMLElement).dataset.initialized = 'true';
+      
+      btn.addEventListener('click', async () => {
+        const value = btn.getAttribute('data-value') || '';
+        const textSpan = btn.querySelector('span');
+        const originalText = textSpan?.textContent || 'Salin';
+
+        try {
+          await navigator.clipboard.writeText(value);
+          btn.classList.add('is-copied');
+          if (textSpan) textSpan.textContent = 'Tersalin';
+          setTimeout(() => {
+            btn.classList.remove('is-copied');
+            if (textSpan) textSpan.textContent = originalText;
+          }, 1800);
+        } catch (error) {
+          console.error('Failed to copy:', error);
+        }
+      });
+    });
+
+    qrisBtns.forEach((btn) => {
+      if ((btn as HTMLElement).dataset.initialized === 'true') return;
+      (btn as HTMLElement).dataset.initialized = 'true';
+      
+      btn.addEventListener('click', () => {
+        const url = btn.getAttribute('data-url') || '';
+        const qrisLightbox = document.querySelector('[data-qris-lightbox]') as HTMLElement;
+        const qrisImg = document.querySelector('[data-qris-img]') as HTMLImageElement;
+        const qrisCard = document.querySelector('[data-qris-card]') as HTMLElement;
+        
+        if (!qrisLightbox || !qrisImg) return;
+
+        qrisImg.src = url;
+        qrisLightbox.style.opacity = '1';
+        qrisLightbox.style.pointerEvents = 'auto';
+        if (qrisCard) qrisCard.style.transform = 'scale(1)';
+        document.body.style.overflow = 'hidden';
+      });
+    });
+  }
+  
+  document.addEventListener('astro:page-load', initGiftInteractions);
+  initGiftInteractions();
+</script>

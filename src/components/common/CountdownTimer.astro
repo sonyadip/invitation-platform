@@ -1,0 +1,69 @@
+---
+interface Props {
+  date: string;
+}
+const { date } = Astro.props;
+---
+<div class="countdown-grid" data-countdown-timer data-date={date}>
+  <div class="countdown-item">
+    <span class="countdown-item__value" data-countdown-days>00</span>
+    <span class="countdown-item__label">Hari</span>
+  </div>
+  <div class="countdown-item">
+    <span class="countdown-item__value" data-countdown-hours>00</span>
+    <span class="countdown-item__label">Jam</span>
+  </div>
+  <div class="countdown-item">
+    <span class="countdown-item__value" data-countdown-minutes>00</span>
+    <span class="countdown-item__label">Menit</span>
+  </div>
+  <div class="countdown-item">
+    <span class="countdown-item__value" data-countdown-seconds>00</span>
+    <span class="countdown-item__label">Detik</span>
+  </div>
+</div>
+
+<script>
+  function initCountdown() {
+    const timers = document.querySelectorAll('[data-countdown-timer]');
+    
+    timers.forEach(timer => {
+      if (!(timer instanceof HTMLElement)) return;
+      if (timer.dataset.initialized === 'true') return;
+      timer.dataset.initialized = 'true';
+
+      const targetDate = new Date(timer.dataset.date || '').getTime();
+      const days = timer.querySelector('[data-countdown-days]');
+      const hours = timer.querySelector('[data-countdown-hours]');
+      const minutes = timer.querySelector('[data-countdown-minutes]');
+      const seconds = timer.querySelector('[data-countdown-seconds]');
+      const pad = (num: number) => String(num).padStart(2, '0');
+      const setText = (el: Element | null, value: string) => {
+        if (el) el.textContent = value;
+      };
+
+      const update = () => {
+        const difference = targetDate - Date.now();
+        if (!Number.isFinite(targetDate) || difference <= 0) {
+          setText(days, '00');
+          setText(hours, '00');
+          setText(minutes, '00');
+          setText(seconds, '00');
+          if (intervalId) clearInterval(intervalId);
+          return;
+        }
+
+        setText(days, pad(Math.floor(difference / (1000 * 60 * 60 * 24))));
+        setText(hours, pad(Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))));
+        setText(minutes, pad(Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))));
+        setText(seconds, pad(Math.floor((difference % (1000 * 60)) / 1000)));
+      };
+
+      let intervalId = setInterval(update, 1000);
+      update();
+    });
+  }
+
+  document.addEventListener('astro:page-load', initCountdown);
+  initCountdown();
+</script>

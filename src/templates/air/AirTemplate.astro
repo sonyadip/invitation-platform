@@ -15,6 +15,14 @@ import galleryFour from './assets/gallery-4.jpg';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import './style.scss';
 
+import {
+  formatDate,
+  buildGoogleCalendarUrl
+} from '../../utils/template-helpers';
+import CountdownTimer from '../../components/common/CountdownTimer.astro';
+import GiftGrid from '../../components/common/GiftGrid.astro';
+import QRISLightbox from '../../components/common/QRISLightbox.astro';
+
 interface Props {
   data: FullInvitationData;
   guestName: string | null;
@@ -54,19 +62,7 @@ const heroSlides = [
 const brideImage = themeAssets.brideImage || coupleBride.src;
 const groomImage = themeAssets.groomImage || coupleGroom.src;
 
-const formattedDate = new Date(wedding.wedding_date).toLocaleDateString('id-ID', {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-});
-
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString('id-ID', {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-});
+const formattedDate = formatDate(wedding.wedding_date);
 
 const activeEvents = events && events.length > 0
   ? events
@@ -84,51 +80,7 @@ const activeEvents = events && events.length > 0
       created_at: ''
     }];
 
-const padDatePart = (value: number) => String(value).padStart(2, '0');
-
-const buildCalendarDate = (dateInput: string, timeInput?: string) => {
-  const date = new Date(dateInput);
-  const [hour = '09', minute = '00'] = timeInput && /^\d{1,2}:\d{2}$/.test(timeInput)
-    ? timeInput.split(':')
-    : ['09', '00'];
-
-  date.setHours(Number(hour), Number(minute), 0, 0);
-
-  return [
-    date.getFullYear(),
-    padDatePart(date.getMonth() + 1),
-    padDatePart(date.getDate()),
-    'T',
-    padDatePart(date.getHours()),
-    padDatePart(date.getMinutes()),
-    '00'
-  ].join('');
-};
-
-const buildGoogleCalendarUrl = () => {
-  const event = activeEvents[0];
-  const startDate = new Date(event.event_date);
-  const startTime = /^\d{1,2}:\d{2}$/.test(event.start_time) ? event.start_time : '09:00';
-  let endTime = /^\d{1,2}:\d{2}$/.test(event.end_time) ? event.end_time : '';
-
-  if (!endTime) {
-    const fallbackEnd = new Date(startDate);
-    const [hour, minute] = startTime.split(':');
-    fallbackEnd.setHours(Number(hour) + 2, Number(minute), 0, 0);
-    endTime = `${padDatePart(fallbackEnd.getHours())}:${padDatePart(fallbackEnd.getMinutes())}`;
-  }
-
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: `Wedding of ${wedding.groom_name} & ${wedding.bride_name}`,
-    dates: `${buildCalendarDate(event.event_date, startTime)}/${buildCalendarDate(event.event_date, endTime)}`,
-    details: `Wedding invitation for ${wedding.groom_name} and ${wedding.bride_name}.`,
-    location: `${event.venue_name}, ${event.venue_address}`,
-    ctz: 'Asia/Makassar'
-  });
-
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-};
+const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, activeEvents[0] as any);
 
 const activeGallery = gallery && gallery.length > 0
   ? gallery.map((image, index) => ({
@@ -144,14 +96,6 @@ const activeGallery = gallery && gallery.length > 0
       { id: '5', image_url: airDetailOne.src, variant: 'square' },
       { id: '6', image_url: airDetailTwo.src, variant: 'square' }
     ];
-
-const formatWishDate = (isoStr: string) => new Date(isoStr).toLocaleDateString('id-ID', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit'
-});
 
 const displayedWishes = wishes ? wishes.slice(0, 3) : [];
 const isWishesEmpty = !wishes || wishes.length === 0;
@@ -281,13 +225,8 @@ const activeGifts = gifts && gifts.length > 0
               <span>Countdown</span>
               <h3>Menuju hari bahagia</h3>
             </div>
-            <div class="air-countdown__grid" data-countdown-timer data-date={wedding.wedding_date}>
-              <div><strong data-countdown-days>00</strong><span>Hari</span></div>
-              <div><strong data-countdown-hours>00</strong><span>Jam</span></div>
-              <div><strong data-countdown-minutes>00</strong><span>Menit</span></div>
-              <div><strong data-countdown-seconds>00</strong><span>Detik</span></div>
-            </div>
-            <a class="air-btn air-btn--dark" href={buildGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer">Save Calendar</a>
+            <CountdownTimer date={wedding.wedding_date} />
+            <a class="air-btn air-btn--dark" href={googleCalendarUrl} target="_blank" rel="noopener noreferrer">Save Calendar</a>
           </section>
         )}
 
@@ -345,7 +284,9 @@ const activeGifts = gifts && gifts.length > 0
                           {wish.attendance_status === 'attending' ? 'Hadir' : 'Absen'}
                         </span>
                       </div>
-                      <span class="wish-card__date">{formatWishDate(wish.created_at)}</span>
+                      <span class="wish-card__date">
+                        {new Date(wish.created_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                     <p class="wish-card__message">{wish.message}</p>
                   </article>
@@ -365,19 +306,7 @@ const activeGifts = gifts && gifts.length > 0
               <h3>Wedding Gift</h3>
             </div>
             <button class="air-btn air-btn--dark" data-gift-toggle type="button">Lihat Hadiah Pernikahan</button>
-            <div class="air-gift__grid" data-gift-grid hidden>
-              {activeGifts.map((gift) => (
-                <article class="air-gift-card" data-animate="fade-up">
-                  <span>{gift.bank_name}</span>
-                  <strong>{gift.account_number}</strong>
-                  <p>a.n. {gift.account_name}</p>
-                  <button class="air-btn" data-copy-btn data-value={gift.account_number} type="button"><span>Salin</span></button>
-                  {gift.qris_url && (
-                    <button class="air-btn" data-qris-btn data-url={gift.qris_url} type="button"><span>Tampilkan QRIS</span></button>
-                  )}
-                </article>
-              ))}
-            </div>
+            <GiftGrid gifts={activeGifts} hidden={true} />
           </section>
         )}
 
@@ -400,13 +329,7 @@ const activeGifts = gifts && gifts.length > 0
         </div>
       )}
 
-      <div class="qris-lightbox" data-qris-lightbox>
-        <div class="qris-lightbox__card" data-qris-card>
-          <button class="qris-lightbox__close" data-qris-close aria-label="Close QRIS">x</button>
-          <h4>Scan QRIS Transfer</h4>
-          <img src="" alt="QRIS Scan" data-qris-img />
-        </div>
-      </div>
+      <QRISLightbox />
     </div>
   </div>
 </BaseLayout>

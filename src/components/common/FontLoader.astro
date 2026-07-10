@@ -13,10 +13,26 @@ const formatFont = (font: string) => {
 const headingParam = formatFont(fontHeading || 'Playfair Display');
 const bodyParam = formatFont(fontBody || 'Inter');
 
+const customFonts = ['Roller+Coaster'];
+const fontsToLoad = [];
+
+if (!customFonts.includes(headingParam)) {
+  fontsToLoad.push(`family=${headingParam}:ital,wght@0,300;0,400;0,600;0,700;1,400`);
+}
+if (!customFonts.includes(bodyParam)) {
+  fontsToLoad.push(`family=${bodyParam}:wght@300;400;500;600;700`);
+}
+
 // Generate premium loading string covering standard styling weights
-const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${headingParam}:ital,wght@0,300;0,400;0,600;0,700;1,400&family=${bodyParam}:wght@300;400;500;600;700&display=swap`;
+const googleFontsUrl = fontsToLoad.length > 0 
+  ? `https://fonts.googleapis.com/css2?${fontsToLoad.join('&')}&display=swap`
+  : null;
 ---
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href={googleFontsUrl} rel="stylesheet" />
+{googleFontsUrl && (
+  <>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href={googleFontsUrl} rel="stylesheet" />
+  </>
+)}

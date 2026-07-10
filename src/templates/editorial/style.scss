@@ -19,7 +19,7 @@
 @mixin editorial-body-copy {
   color: var(--editorial-white);
   font-family: var(--font-body);
-  font-size: clamp(13.76px, 1.06vw, 15.2px);
+  font-size: clamp(12px, 1.06vw, 15.2px);
   font-weight: 300;
   line-height: 1.78;
 }
@@ -328,7 +328,7 @@ body.template-editorial {
     @include editorial-name-heading;
     max-width: 100%;
     margin: 10px 0 0;
-    font-size: clamp(36px, 9.4vw, 62.4px);
+    font-size: clamp(40px, 9.4vw, 62.4px);
     line-height: 0.95;
     white-space: nowrap;
   }
@@ -337,7 +337,7 @@ body.template-editorial {
     @include editorial-name-heading;
     max-width: 100%;
     margin: 10px 0 0;
-    font-size: clamp(36px, 9.4vw, 62.4px);
+    font-size: clamp(40px, 9.4vw, 62.4px);
     line-height: 0.95;
     white-space: nowrap;
   }
@@ -449,6 +449,7 @@ body.template-editorial {
     display: block;
     font-style: italic;
     font-weight: 700;
+    margin-top: 10px;
   }
 
   /* Couple */
@@ -537,7 +538,7 @@ body.template-editorial {
   .story-section__item-title {
     margin: 0 0 4px;
     font-family: var(--font-body);
-    font-size: 13.76px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.55px;
   }
@@ -1631,7 +1632,7 @@ body.template-editorial {
   }
 
   .thankyou-section__brand {
-    height: 20px;
+    height: 11px;
     width: auto;
     filter: brightness(0) invert(1);
   }
@@ -1640,7 +1641,7 @@ body.template-editorial {
     margin: 0;
     color: rgba(245, 242, 238, 0.72);
     font-family: var(--font-body);
-    font-size: 11.2px;
+    font-size: 9px;
     font-weight: 500;
     letter-spacing: 1.35px;
     line-height: 1.4;
@@ -1777,7 +1778,7 @@ body.template-editorial {
   /* Interaction */
   [data-animate] {
     opacity: 0;
-    transition: opacity 850ms ease var(--animate-delay, 0ms);
+    transition: opacity 1200ms ease var(--animate-delay, 0ms);
   }
 
   [data-animate].is-animated {
@@ -1786,7 +1787,7 @@ body.template-editorial {
 
   /* Mobile composition defaults */
   .page-bg::after {
-    background: rgba(0, 0, 0, 0.72);
+    background: rgba(0, 0, 0, 0.6);
   }
 
   .cover-section__content {
@@ -1798,7 +1799,7 @@ body.template-editorial {
   }
 
   .cover-section__date {
-    font-size: 13.76px;
+    font-size: 12px;
     line-height: 1.4;
   }
 
