@@ -218,6 +218,44 @@ function initFullpageScroll() {
     }
   }, { passive: false });
 
+  let windowHeight = window.innerHeight;
+  window.addEventListener('resize', () => {
+    if (document.body.style.overflow === 'hidden' || document.body.classList.contains('template-no-scroll')) {
+      return;
+    }
+    
+    clearTimeout(window.resizeSnapTimeout);
+    window.resizeSnapTimeout = setTimeout(() => {
+      // Re-snap when window height increases (e.g. mobile keyboard closes) or orientation changes
+      if (window.innerHeight > windowHeight || Math.abs(window.innerHeight - windowHeight) > 100) {
+        if (!isScrolling && allSections[currentSectionIndex]) {
+          // Temporarily disable isScrolling block for immediate snap
+          const tempIsScrolling = isScrolling;
+          isScrolling = false;
+          scrollToSection(currentSectionIndex);
+          isScrolling = tempIsScrolling;
+        }
+      }
+      windowHeight = window.innerHeight;
+    }, 250);
+  }, { passive: true });
+
+  // Also handle focusout for forms as a fallback
+  window.addEventListener('focusout', (e) => {
+    const targetTag = e.target.tagName?.toLowerCase();
+    if (targetTag === 'textarea' || targetTag === 'input' || targetTag === 'select') {
+      setTimeout(() => {
+        // Only snap if no other input is currently focused
+        if (!['textarea', 'input', 'select'].includes(document.activeElement?.tagName?.toLowerCase())) {
+          const tempIsScrolling = isScrolling;
+          isScrolling = false;
+          scrollToSection(currentSectionIndex);
+          isScrolling = tempIsScrolling;
+        }
+      }, 300);
+    }
+  });
+
   function scrollToSection(index) {
     if (isScrolling) return;
     isScrolling = true;

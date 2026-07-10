@@ -330,7 +330,7 @@ const activeGifts = gifts && gifts.length > 0
                 {activeGallery.map((image) => (
                   <a
                     class={`gallery-item gallery-item--${image.variant}`}
-                    href={image.image_url}
+                    href={typeof image.image_url === 'string' ? image.image_url : image.image_url.src}
                     data-fancybox="gallery-section"
                     data-animate
                   >

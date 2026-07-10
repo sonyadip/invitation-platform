@@ -238,8 +238,8 @@ const activeGifts = gifts && gifts.length > 0
             </div>
             <div class="air-gallery__grid">
               {activeGallery.map((image) => (
-                <a class={`air-gallery__item air-gallery__item--${image.variant}`} href={image.image_url} data-fancybox="air-gallery" data-animate="fade-up">
-                  <img src={image.image_url} alt="Wedding gallery" loading="lazy" />
+                <a class={`air-gallery__item air-gallery__item--${image.variant}`} href={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} data-fancybox="air-gallery" data-animate="fade-up">
+                  <img src={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} alt="Wedding gallery" loading="lazy" />
                 </a>
               ))}
             </div>

@@ -350,7 +350,7 @@ const activeGifts = gifts && gifts.length > 0
                     <div class={`gallery-grid ${galleryColClass}`}>
                       {activeGallery.map((img) => (
                         <a
-                          href={img.image_url}
+                          href={typeof img.image_url === 'string' ? img.image_url : img.image_url.src}
                           class={`gallery-item gallery-item--${img.variant}`}
                           data-animate="zoom-in"
                           data-fancybox="ivory-gallery"
