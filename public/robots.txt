@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /demo/
+Disallow: /preview/
+Disallow: /index-old
+
+Sitemap: https://senadda.id/sitemap-index.xml
