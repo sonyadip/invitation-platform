@@ -10,7 +10,10 @@ export function resolveInvitationIdentifier(url: URL, slug?: string) {
   const isCloudflarePreview =
     host.endsWith('.pages.dev') ||
     host.endsWith('.workers.dev');
-  const isDomain = !isLocal && !isCloudflarePreview;
+    
+  const isMainDomain = host === 'senadda.id' || host === 'www.senadda.id';
+  
+  const isDomain = !isLocal && !isCloudflarePreview && !isMainDomain;
 
   return {
     identifier: isDomain ? host : (slug || ''),
