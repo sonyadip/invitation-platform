@@ -27,7 +27,7 @@ const TABLE = 'platform_settings';
 
 const defaults: PlatformSettings = {
   site_name: 'Senadda',
-  site_tagline: 'Undangan Digital Pernikahan',
+  site_tagline: 'Undangan Pernikahan Digital',
   logo_url: '/images/senadda-logo.png',
   logo_dark_url: '',
   whatsapp_url: 'https://wa.me/6281234567890',
@@ -37,12 +37,12 @@ const defaults: PlatformSettings = {
   tiktok_url: '',
   youtube_url: '',
   home_heading_1: 'Undangan',
-  home_heading_2: 'Digital',
-  home_heading_3: 'Pernikahan',
-  home_description: 'Bagikan momen bahagia Anda lewat undangan digital yang elegan, tanpa batas jarak dan waktu.',
+  home_heading_2: 'Pernikahan',
+  home_heading_3: 'Digital',
+  home_description: 'Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu.',
   home_cta_label: 'Mulai Konsultasi',
-  meta_title: 'Senadda - Undangan Digital Pernikahan',
-  meta_description: 'Layanan undangan digital dan website acara dengan desain elegan, personal, dan mudah dibagikan.',
+  meta_title: 'Senadda - Undangan Pernikahan Digital',
+  meta_description: 'Layanan undangan pernikahan digital dengan desain elegan, personal, dan mudah dibagikan.',
 };
 
 /**
