@@ -43,11 +43,7 @@ export function initGiftInteractions(root: Element | Document = document) {
   const giftToggle = root.querySelector('[data-gift-toggle]');
   const giftGrid = root.querySelector('[data-gift-grid]');
   const copyBtns = root.querySelectorAll('[data-copy-btn]') || [];
-  const qrisBtns = root.querySelectorAll('[data-qris-btn]') || [];
-  const qrisLightbox = root.querySelector('[data-qris-lightbox]');
-  const qrisCard = root.querySelector('[data-qris-card]');
-  const qrisClose = root.querySelector('[data-qris-close]');
-  const qrisImg = root.querySelector('[data-qris-img]');
+
 
   if (giftToggle instanceof HTMLButtonElement && giftGrid instanceof HTMLElement) {
     if (giftToggle.dataset.bound !== 'true') {
@@ -55,17 +51,20 @@ export function initGiftInteractions(root: Element | Document = document) {
       giftToggle.addEventListener('click', () => {
         if (!(giftGrid instanceof HTMLElement)) return;
         const isHidden = giftGrid.hasAttribute('hidden');
+        const span = giftToggle.querySelector('span');
         if (isHidden) {
           giftGrid.removeAttribute('hidden');
           giftGrid.classList.add('is-open');
           giftGrid.querySelectorAll('[data-animate]').forEach((item) => item.classList.add('is-animated'));
           giftToggle.setAttribute('aria-expanded', 'true');
-          giftToggle.textContent = 'Sembunyikan Hadiah Pernikahan';
+          if (span) span.textContent = 'Sembunyikan Hadiah Pernikahan';
+          else giftToggle.textContent = 'Sembunyikan Hadiah Pernikahan';
         } else {
           giftGrid.setAttribute('hidden', '');
           giftGrid.classList.remove('is-open');
           giftToggle.setAttribute('aria-expanded', 'false');
-          giftToggle.textContent = 'Lihat Hadiah Pernikahan';
+          if (span) span.textContent = 'Lihat Hadiah Pernikahan';
+          else giftToggle.textContent = 'Lihat Hadiah Pernikahan';
         }
       });
     }
@@ -94,48 +93,21 @@ export function initGiftInteractions(root: Element | Document = document) {
     });
   });
 
-  const closeQRIS = () => {
-    if (!(qrisLightbox instanceof HTMLElement)) return;
-    qrisLightbox.style.opacity = '0';
-    qrisLightbox.style.pointerEvents = 'none';
-    if (qrisCard instanceof HTMLElement) qrisCard.style.transform = 'scale(0.96)';
-    document.body.style.overflow = '';
-  };
 
-  qrisBtns.forEach((btn) => {
-    if ((btn as HTMLElement).dataset.bound === 'true') return;
-    (btn as HTMLElement).dataset.bound = 'true';
-
-    btn.addEventListener('click', () => {
-      const url = btn.getAttribute('data-url') || '';
-      if (!(qrisLightbox instanceof HTMLElement) || !(qrisImg instanceof HTMLImageElement)) return;
-
-      qrisImg.src = url;
-      qrisLightbox.style.opacity = '1';
-      qrisLightbox.style.pointerEvents = 'auto';
-      if (qrisCard instanceof HTMLElement) qrisCard.style.transform = 'scale(1)';
-      document.body.style.overflow = 'hidden';
-    });
-  });
-
-  if (qrisClose && (qrisClose as HTMLElement).dataset.bound !== 'true') {
-    (qrisClose as HTMLElement).dataset.bound = 'true';
-    qrisClose.addEventListener('click', closeQRIS);
-  }
-
-  if (qrisLightbox && (qrisLightbox as HTMLElement).dataset.bound !== 'true') {
-    (qrisLightbox as HTMLElement).dataset.bound = 'true';
-    qrisLightbox.addEventListener('click', (event) => {
-      if (event.target === qrisLightbox) closeQRIS();
-    });
-  }
 }
 
-export async function initGalleryLightbox(root: Element | Document = document) {
+export async function initGalleryLightbox(root: Element | Document = document, groupName: string = 'gallery-section') {
   try {
-    const { Fancybox } = await import('@fancyapps/ui');
-    const galleryRoot = root instanceof Element ? root : document.body;
-    Fancybox.bind(galleryRoot, '[data-fancybox="gallery-section"]');
+    await import('glightbox/dist/css/glightbox.min.css');
+    const GLightbox = (await import('glightbox')).default;
+    
+    GLightbox({
+      selector: `[data-fancybox="${groupName}"], [data-fancybox="gallery-section"], [data-fancybox]`,
+      touchNavigation: true,
+      loop: true,
+      zoomable: true,
+      draggable: true
+    });
   } catch (error) {
     console.error('Failed to initialize gallery lightbox:', error);
   }

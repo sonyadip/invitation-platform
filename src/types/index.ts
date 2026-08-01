@@ -127,6 +127,7 @@ export interface GiftAccount {
   id: string;
   wedding_id: string;
   bank_name: string; // e.g. BCA, Mandiri, QRIS
+  bank_logo?: string; // Optional URL for bank logo
   account_number: string;
   account_name: string;
   qris_url: string | null;

@@ -25,6 +25,7 @@ export interface InvitationFormInput {
   maintenanceMode: boolean;
   passwordProtectionEnabled: boolean;
   accessPassword: string | null;
+  clientPassword: string | null;
   expirationDate: string | null;
   heroVideoUrl: string | null;
   heroImageUrl: string | null;
@@ -205,6 +206,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     maintenanceMode: checked('maintenanceMode'),
     passwordProtectionEnabled: checked('passwordProtectionEnabled'),
     accessPassword: nullableValue('accessPassword'),
+    clientPassword: nullableValue('clientPassword'),
     expirationDate: nullableDateValue('expirationDate'),
     heroVideoUrl: nullableValue('heroVideoUrl'),
     heroImageUrl: nullableValue('heroImageUrl'),
@@ -691,23 +693,30 @@ export async function createInvitation(input: InvitationFormInput) {
   const supabase = await getSupabaseAdmin();
   const resolvedInput = await resolveUploadedImages(supabase, input);
 
+  const weddingInsertData: any = {
+    slug: resolvedInput.slug,
+    bride_name: resolvedInput.brideName,
+    groom_name: resolvedInput.groomName,
+    bride_full_name: resolvedInput.brideFullName,
+    groom_full_name: resolvedInput.groomFullName,
+    wedding_date: resolvedInput.weddingDate,
+    venue_name: resolvedInput.venueName,
+    venue_address: resolvedInput.venueAddress,
+    maps_url: resolvedInput.mapsUrl,
+    story: resolvedInput.story,
+    music_url: resolvedInput.musicUrl,
+    template: resolvedInput.template,
+    status: resolvedInput.status
+  };
+
+  if (resolvedInput.clientPassword && resolvedInput.clientPassword.trim() !== '') {
+    const { hashPasswordSHA256 } = await import('../utils/security');
+    weddingInsertData.client_password_hash = await hashPasswordSHA256(resolvedInput.clientPassword);
+  }
+
   const { data: wedding, error: weddingError } = await supabase
     .from('weddings')
-    .insert({
-      slug: resolvedInput.slug,
-      bride_name: resolvedInput.brideName,
-      groom_name: resolvedInput.groomName,
-      bride_full_name: resolvedInput.brideFullName,
-      groom_full_name: resolvedInput.groomFullName,
-      wedding_date: resolvedInput.weddingDate,
-      venue_name: resolvedInput.venueName,
-      venue_address: resolvedInput.venueAddress,
-      maps_url: resolvedInput.mapsUrl,
-      story: resolvedInput.story,
-      music_url: resolvedInput.musicUrl,
-      template: resolvedInput.template,
-      status: resolvedInput.status
-    })
+    .insert(weddingInsertData)
     .select('id, slug')
     .single();
 
@@ -745,23 +754,30 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
   const supabase = await getSupabaseAdmin();
   const resolvedInput = await resolveUploadedImages(supabase, input);
 
+  const weddingUpdateData: any = {
+    slug: resolvedInput.slug,
+    bride_name: resolvedInput.brideName,
+    groom_name: resolvedInput.groomName,
+    bride_full_name: resolvedInput.brideFullName,
+    groom_full_name: resolvedInput.groomFullName,
+    wedding_date: resolvedInput.weddingDate,
+    venue_name: resolvedInput.venueName,
+    venue_address: resolvedInput.venueAddress,
+    maps_url: resolvedInput.mapsUrl,
+    story: resolvedInput.story,
+    music_url: resolvedInput.musicUrl,
+    template: resolvedInput.template,
+    status: resolvedInput.status
+  };
+
+  if (resolvedInput.clientPassword && resolvedInput.clientPassword.trim() !== '') {
+    const { hashPasswordSHA256 } = await import('../utils/security');
+    weddingUpdateData.client_password_hash = await hashPasswordSHA256(resolvedInput.clientPassword);
+  }
+
   const { error: weddingError } = await supabase
     .from('weddings')
-    .update({
-      slug: resolvedInput.slug,
-      bride_name: resolvedInput.brideName,
-      groom_name: resolvedInput.groomName,
-      bride_full_name: resolvedInput.brideFullName,
-      groom_full_name: resolvedInput.groomFullName,
-      wedding_date: resolvedInput.weddingDate,
-      venue_name: resolvedInput.venueName,
-      venue_address: resolvedInput.venueAddress,
-      maps_url: resolvedInput.mapsUrl,
-      story: resolvedInput.story,
-      music_url: resolvedInput.musicUrl,
-      template: resolvedInput.template,
-      status: resolvedInput.status
-    })
+    .update(weddingUpdateData)
     .eq('id', weddingId);
 
   if (weddingError) throw toDashboardError(weddingError, 'Failed to update wedding.');

@@ -34,6 +34,7 @@ CREATE TABLE weddings (
     music_url TEXT NULL,
     template VARCHAR(50) NOT NULL DEFAULT 'noir', -- folder key in src/templates, e.g. noir or sage
     status wedding_status NOT NULL DEFAULT 'draft',
+    client_password_hash VARCHAR(255) NULL,
     deleted_at TIMESTAMPTZ NULL,
     deleted_by VARCHAR(255) NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

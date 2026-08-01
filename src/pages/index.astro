@@ -1,13 +1,14 @@
 ---
 export const prerender = false;
 
-import airCover from "../templates/air/assets/air-hero-1.webp";
-import deauvilleCover from "../templates/deauville/assets/deauville-event.jpg";
+import airCover from "../templates/air/assets/cover.webp";
+import deauvilleCover from "../templates/deauville/assets/cover.webp";
 import ivoryCover from "../templates/ivory/assets/bg-hero.webp";
-import noirCover from "../templates/noir/assets/bg-hero.webp";
+import noirCover from "../templates/noir/assets/cover.webp";
 import ochreMotionCover from "../templates/ochre/assets/gallery-8.webp";
 import sageCover from "../templates/sage/assets/bg-hero.webp";
-import editorialCover from "../templates/editorial/assets/save-date.jpg";
+import editorialCover from "../templates/editorial/assets/cover.webp";
+import lumiereCover from "../templates/lumiere/assets/cover.webp";
 import { getPlatformSettings } from "../services/platform-settings";
 
 const siteSettings = await getPlatformSettings();
@@ -20,19 +21,43 @@ const navItems = [
 ];
 
 const headingWords = [
-  siteSettings.home_heading_1 || "Selaras",
-  siteSettings.home_heading_2 || "Hangat",
-  siteSettings.home_heading_3 || "Personal",
+  siteSettings.home_heading_1 || "Undangan",
+  siteSettings.home_heading_2 || "Digital",
+  siteSettings.home_heading_3 || "Pernikahan",
 ];
 
 const templateCards = [
+  {
+    key: "lumiere",
+    name: "Lumiere",
+    tone: "Classic elegant",
+    copy: "Klasik, anggun, dan bercahaya.",
+    price: "Rp 150.000",
+    image: lumiereCover.src,
+  },
   {
     key: "deauville",
     name: "Deauville",
     tone: "Romantic journal",
     copy: "Romantis, personal, dan editorial.",
-    price: "Rp 100.000",
+    price: "Rp 125.000",
     image: deauvilleCover.src,
+  },
+  {
+    key: "air",
+    name: "Air",
+    tone: "Clean airy",
+    copy: "Ringan, luas, dan modern.",
+    price: "Rp 125.000",
+    image: airCover.src,
+  },
+  {
+    key: "editorial",
+    name: "Editorial",
+    tone: "Romantic journal",
+    copy: "Romantis, personal, dan editorial.",
+    price: "Rp 125.000",
+    image: editorialCover.src,
   },
   {
     key: "noir",
@@ -42,30 +67,6 @@ const templateCards = [
     price: "Rp 100.000",
     image: noirCover.src,
   },
-  {
-    key: "editorial",
-    name: "Editorial",
-    tone: "Romantic journal",
-    copy: "Romantis, personal, dan editorial.",
-    price: "Rp 100.000",
-    image: editorialCover.src,
-  },
-  // {
-  //   key: "ochre",
-  //   name: "Ochre",
-  //   tone: "Warm premium",
-  //   copy: "Hangat, premium, dan berkarakter.",
-  //   price: "Rp 100.000",
-  //   image: ochreMotionCover.src,
-  // },
-  // {
-  //   key: "air",
-  //   name: "Air",
-  //   tone: "Clean airy",
-  //   copy: "Ringan, luas, dan modern.",
-  //   price: "Rp 100.000",
-  //   image: airCover.src,
-  // },
 ];
 
 const stats = [
@@ -125,19 +126,20 @@ const heroMotionCards = templateCards;
           }
         </div>
 
-        <a
+        <button
           class="nav-action motion-down"
           style="--i: 4"
-          href={bookingUrl}
-          target="_blank"
-          rel="noreferrer"
+          id="login-btn"
+          aria-haspopup="dialog"
+          aria-expanded="false"
         >
-          {siteSettings.home_cta_label || "Mulai Konsultasi"}
+          Login
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 17 17 7"></path>
-            <path d="M8 7h9v9"></path>
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10 17 15 12 10 7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
           </svg>
-        </a>
+        </button>
       </nav>
 
       <div class="hero-shell-placeholder" aria-hidden="true"></div>
@@ -208,7 +210,7 @@ const heroMotionCards = templateCards;
 
             <div class="bottom-content__main">
               <p class="description motion-up" style="--i: 7">
-                {siteSettings.home_description || "Undangan digital yang rapi, hangat, dan mudah dibagikan."}
+                {siteSettings.home_description || "Bagikan momen bahagia Anda lewat undangan digital yang elegan, tanpa batas jarak dan waktu."}
               </p>
               <h1 aria-label={headingWords.join(' ')}>
                 {
@@ -284,9 +286,77 @@ const heroMotionCards = templateCards;
           rel="noreferrer">Hubungi via WhatsApp</a
         >
       </section>
+      <dialog id="login-modal" class="login-modal">
+        <div class="login-modal__backdrop" id="login-modal-close"></div>
+        <div class="login-modal__content">
+          <button class="login-modal__close-btn" id="login-modal-close-btn" aria-label="Tutup">
+            <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+          <div class="login-modal__header">
+            <h2>Login</h2>
+            <p>Masuk ke dashboard akun Anda.</p>
+          </div>
+          
+          <form id="login-form-unified" class="login-modal__form" method="POST" action="/api/auth/login">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" name="username" required placeholder="Masukkan username" />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" required placeholder="••••••••" />
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+          </form>
+        </div>
+      </dialog>
     </main>
 
     <script>
+      const loginBtn = document.getElementById("login-btn");
+      const loginModal = document.getElementById("login-modal");
+      const loginModalClose = document.getElementById("login-modal-close");
+      const loginModalCloseBtn = document.getElementById("login-modal-close-btn");
+      const loginFormUnified = document.getElementById("login-form-unified");
+
+      if (loginBtn && loginModal && loginModalClose && loginModalCloseBtn) {
+        loginBtn.addEventListener("click", () => {
+          loginModal.setAttribute("open", "true");
+          document.body.style.overflow = "hidden";
+        });
+
+        const closeModal = () => {
+          loginModal.removeAttribute("open");
+          document.body.style.overflow = "";
+        };
+
+        loginModalClose.addEventListener("click", closeModal);
+        loginModalCloseBtn.addEventListener("click", closeModal);
+      }
+      
+      if (loginFormUnified) {
+        // Handle auto-open for ?login=admin or ?login=client
+        const urlParams = new URLSearchParams(window.location.search);
+        const loginType = urlParams.get('login');
+        if (loginType === 'admin' || loginType === 'client') {
+          loginBtn.click();
+          if (loginType === 'admin') {
+            document.getElementById("username").value = "admin";
+          }
+          
+          if (urlParams.get('error') === '1') {
+            if (!document.getElementById("admin-error")) {
+              const errorMsg = document.createElement("p");
+              errorMsg.id = "admin-error";
+              errorMsg.style.color = "#b91c1c";
+              errorMsg.style.fontSize = "13px";
+              errorMsg.style.marginTop = "0.5rem";
+              errorMsg.innerText = "Username atau Password salah.";
+              loginFormUnified.insertBefore(errorMsg, loginFormUnified.querySelector(".submit-btn"));
+            }
+          }
+        }
+      }
       if ("scrollRestoration" in history) {
         history.scrollRestoration = "manual";
       }
@@ -301,8 +371,8 @@ const heroMotionCards = templateCards;
       );
       const anchorLinks = document.querySelectorAll('a[href^="#"]');
 
-      const heroRevealDuration = 1800;
-      const heroRevealInterval = 3500;
+      const heroRevealDuration = 3600;
+      const heroRevealInterval = 6000;
       const heroIntroRevealDuration = 650;
       const heroIntroRevealInterval = 820;
 
@@ -594,6 +664,140 @@ const heroMotionCards = templateCards;
     box-sizing: border-box;
   }
 
+  .login-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    width: 100%;
+    height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: none;
+    background: transparent;
+  }
+  
+  .login-modal[open] {
+    display: flex;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .login-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: -1;
+  }
+
+  .login-modal__content {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  }
+
+  .login-modal__close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--grey);
+    transition: color 0.2s ease;
+    padding: 0.25rem;
+    border-radius: 50%;
+  }
+
+  .login-modal__close-btn:hover {
+    color: var(--black);
+    background: var(--soft-parchment);
+  }
+
+  .login-modal__header h2 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+    color: var(--black);
+  }
+
+  .login-modal__header p {
+    font-size: 0.9rem;
+    color: var(--muted-clay);
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--deep-charcoal);
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    background: var(--white);
+    color: var(--black);
+    transition: all 0.2s ease;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(169, 120, 95, 0.1);
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 0.75rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+
+  .submit-btn:hover {
+    background: var(--deep-charcoal);
+  }
+
+  .submit-btn:active {
+    transform: scale(0.98);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
   html,
   body {
     margin: 0;
@@ -784,7 +988,7 @@ const heroMotionCards = templateCards;
   body.intro-hold .hero-motion__card img,
   body.intro-ring-shrink .hero-motion__card img {
     --hero-image-parallax: 0px;
-    transform: translate3d(0, 0, 0) scale(1.08);
+    transform: translate3d(0, 0, 0) scale(1.05);
     transition: transform 1.25s cubic-bezier(0.76, 0, 0.24, 1);
   }
 
@@ -805,7 +1009,7 @@ const heroMotionCards = templateCards;
     overflow: hidden;
     background: var(--soft-parchment);
     clip-path: inset(0 0 100% 0);
-    transition: clip-path var(--hero-reveal-duration, 1800ms)
+    transition: clip-path var(--hero-reveal-duration, 3600ms)
       cubic-bezier(0.76, 0, 0.24, 1);
     will-change: clip-path;
   }
@@ -828,7 +1032,7 @@ const heroMotionCards = templateCards;
     height: 100%;
     object-fit: cover;
     filter: saturate(0.94) contrast(1.04);
-    transform: translate3d(0, var(--hero-image-parallax), 0) scale(1.14);
+    transform: translate3d(0, var(--hero-image-parallax), 0) scale(1.05);
     transition: transform 0.12s linear;
     will-change: transform;
   }
@@ -1083,10 +1287,10 @@ const heroMotionCards = templateCards;
     display: grid;
     justify-items: end;
     font-family: var(--font-heading);
-    font-size: clamp(56px, 9vw, 152px);
+    font-size: clamp(42px, 7vw, 110px);
     font-weight: 400;
     letter-spacing: -0.04em;
-    line-height: 0.95;
+    line-height: 1.0;
     text-align: right;
   }
 
@@ -1579,8 +1783,8 @@ const heroMotionCards = templateCards;
     }
 
     h1 {
-      font-size: clamp(40px, 13vw, 64px);
-      line-height: 0.92;
+      font-size: clamp(32px, 11vw, 48px);
+      line-height: 1.0;
     }
     .template-list {
       gap: 24px;

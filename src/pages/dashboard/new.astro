@@ -5,17 +5,11 @@ import { hashPasswordSHA256 } from '../../utils/security';
 
 export const prerender = false;
 
-const dashboardPassword =
-  import.meta.env.DASHBOARD_PASSWORD ||
-  (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') ||
-  '';
-const cookieName = 'dashboard_unlocked';
 const templateOptions = listTemplateKeys();
-const isUnlocked = !dashboardPassword ||
-  Astro.cookies.get(cookieName)?.value === await hashPasswordSHA256(dashboardPassword);
+const authRole = Astro.cookies.get('auth_role')?.value;
 
-if (!isUnlocked) {
-  return Astro.redirect('/dashboard');
+if (authRole !== 'admin') {
+  return Astro.redirect('/?login=admin');
 }
 
 let errorMessage = '';
@@ -39,6 +33,7 @@ const defaults = {
   maintenanceMode: false,
   passwordProtectionEnabled: false,
   accessPassword: '',
+  clientPassword: '',
   expirationDate: '',
   heroVideoUrl: '',
   heroImageUrl: '',
@@ -69,9 +64,9 @@ const defaults = {
     { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' }
   ],
   story: [
-    { title: 'AWAL BERTEMU', description: '' },
-    { title: 'MENJALIN HUBUNGAN', description: '' },
-    { title: 'MENIKAH', description: '' }
+    { title: '', description: '' },
+    { title: '', description: '' },
+    { title: '', description: '' }
   ]
 };
 
@@ -91,6 +86,7 @@ if (Astro.request.method === 'POST') {
   values = {
     ...parsed,
     accessPassword: parsed.accessPassword || '',
+    clientPassword: parsed.clientPassword || '',
     musicUrl: parsed.musicUrl || '',
     expirationDate: parsed.expirationDate || '',
     heroVideoUrl: parsed.heroVideoUrl || '',
@@ -301,7 +297,8 @@ if (Astro.request.method === 'POST') {
             <label><input type="checkbox" name="passwordProtectionEnabled" checked={values.passwordProtectionEnabled} /> Password Protection</label>
           </div>
           <div class="form-grid">
-            <label>Access Password<input name="accessPassword" value={values.accessPassword} /></label>
+            <label>Access Password (Guest)<input name="accessPassword" value={values.accessPassword} /></label>
+            <label>Client Dashboard Password<input name="clientPassword" value={values.clientPassword} /></label>
             <label>Expiration Date<input type="datetime-local" name="expirationDate" value={values.expirationDate} /></label>
           </div>
         </section>
@@ -403,3 +400,4 @@ if (Astro.request.method === 'POST') {
     .form-grid, .toggle-grid, .couple-grid { grid-template-columns: 1fr; }
   }
 </style>
+

@@ -1,0 +1,187 @@
+---
+export interface Props {
+  groomName: string;
+  brideName: string;
+  coverImage?: string; // Kept for compatibility but not used in pure minimalist version
+  fontClass?: string;
+  textColor?: string;
+}
+
+const {
+  groomName,
+  brideName,
+  textColor = "#ffffff",
+} = Astro.props;
+
+// Create monogram from first letters
+const getInitial = (name: string) => (name ? name.charAt(0).toUpperCase() : "");
+const monogram = `${getInitial(groomName)}${getInitial(brideName)}`;
+---
+
+<div id="intro-awal" style={`color: ${textColor};`}>
+  <div class="intro-container">
+    <h2 class="monogram intro-element">{monogram}</h2>
+    <h2 class="subtitle intro-element">Wedding Invitation</h2>
+    <h2 class="names intro-element">{groomName} & {brideName}</h2>
+    <h2 class="progresbar intro-element">0%</h2>
+  </div>
+</div>
+
+<script>
+  import { animate, stagger } from "framer-motion";
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const intro = document.getElementById("intro-awal");
+    const progresbar = document.querySelector(".progresbar");
+    const layout = document.querySelector("[data-template-layout]") as HTMLElement;
+    const elements = document.querySelectorAll(".intro-element");
+    const minDisplayTime = 3000; // 3 seconds counting time
+
+    // Hide layout initially
+    if (layout) {
+      layout.style.opacity = "0";
+    }
+
+    if (intro && progresbar && elements.length > 0) {
+      // 1. Staggered fade in for all elements
+      animate(
+        elements,
+        { opacity: [0, 1], y: [15, 0] },
+        { 
+          duration: 1.2, 
+          ease: [0.33, 1, 0.68, 1], 
+          delay: stagger(0.25) // Each element appears 250ms after the previous
+        }
+      );
+
+      // 2. Synchronize progress bar
+      let progress = 0;
+      const interval = 10;
+      const steps = minDisplayTime / interval;
+      const stepIncrement = 100 / steps;
+
+      const progressInterval = setInterval(() => {
+        progress += stepIncrement;
+        progresbar.textContent = `${Math.min(Math.floor(progress), 100)}%`;
+
+        if (progress >= 100) {
+          clearInterval(progressInterval);
+        }
+      }, interval);
+
+      // 3. Close intro after counting is done + a small delay
+      setTimeout(() => {
+        // Fade out text elements elegantly
+        animate(
+          elements,
+          { opacity: 0 },
+          { 
+            duration: 1, 
+            ease: "easeInOut"
+          }
+        );
+
+        // Fade out the black background
+        setTimeout(() => {
+          animate(
+            intro,
+            { opacity: 0 },
+            { 
+              duration: 1.2, 
+              ease: "easeInOut",
+              onComplete: () => {
+                intro.remove();
+              }
+            }
+          );
+
+          // Show actual layout
+          if (layout) {
+            layout.style.transition = "opacity 1.5s ease";
+            layout.style.opacity = "1";
+          }
+          document.body.classList.add("is-intro-finished");
+
+        }, 800); // Start background fade out before text is completely gone
+      }, minDisplayTime + 400); // Wait 400ms after reaching 100%
+    }
+  });
+</script>
+
+<style is:global>
+  @import url('https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&family=Inter:wght@300;400;500&display=swap');
+
+  /* Global hiding of layout until intro finishes */
+  body:has(#intro-awal):not(.is-intro-finished) [data-template-layout] {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+  body:has(#intro-awal):not(.is-intro-finished) {
+    overflow: hidden;
+  }
+
+  #intro-awal { 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    z-index: 99999;
+    background-color: #000000;
+    align-items: center;
+    justify-content: center;
+    will-change: opacity;
+  }
+
+  .intro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .intro-element {
+    opacity: 0; /* Hidden initially for framer-motion */
+    will-change: opacity, transform;
+  }
+
+  .monogram {
+    font-family: 'Baskervville', serif;
+    font-size: clamp(4.5rem, 15vw, 6.5rem);
+    margin: 0 0 2.5rem 0;
+    font-weight: normal;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-family: 'Baskervville', serif;
+    font-size: clamp(0.9rem, 3vw, 1.05rem);
+    margin: 0 0 1rem 0;
+    font-weight: normal;
+    letter-spacing: 0.08em;
+  }
+
+  .names {
+    font-family: 'Baskervville', serif;
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    margin: 0 0 4rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: normal;
+  }
+
+  .progresbar {
+    color: #fff !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-align: center;
+    margin: 0;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

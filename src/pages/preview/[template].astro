@@ -25,7 +25,7 @@ const data: FullInvitationData = {
       { year: '2019', title: 'Pertama Bertemu', description: 'Sebuah pertemuan sederhana yang menjadi awal cerita kami.' },
       { year: '2026', title: 'Hari Bahagia', description: 'Kami mengundang keluarga dan sahabat untuk merayakan momen ini.' }
     ],
-    music_url: null,
+    music_url: '/audio/banda-neira-sampai-jadi-debu.mp3',
     template: templateKey,
     status: 'published',
     deleted_at: null,
@@ -37,7 +37,7 @@ const data: FullInvitationData = {
     id: `settings-${templateKey}`,
     wedding_id: `preview-${templateKey}`,
     rsvp_enabled: true,
-    music_enabled: false,
+    music_enabled: true,
     music_autoplay: false,
     countdown_enabled: true,
     gallery_enabled: true,
@@ -59,7 +59,7 @@ const data: FullInvitationData = {
       rsvp: true,
       wishes: true,
       gift: true,
-      music: false,
+      music: true,
       share: true,
       livestream: false
     },
@@ -76,7 +76,9 @@ const data: FullInvitationData = {
         heroStyle: 'centered',
         galleryColumns: 3
       },
-      assets: {}
+      assets: {
+        heroImage: ['lumiere', 'editorial'].includes(templateKey) ? '/images/preview-video.mp4' : undefined
+      }
     },
     created_at: now,
     updated_at: now
@@ -95,19 +97,23 @@ const data: FullInvitationData = {
       sort_order: 1,
       created_at: now
     },
-    {
-      id: 'event-2',
-      wedding_id: `preview-${templateKey}`,
-      event_name: 'Resepsi',
-      event_date: weddingDate,
-      start_time: '18:00',
-      end_time: 'Selesai',
-      venue_name: 'The Royal Garden',
-      venue_address: 'Jl. Pantai Indah No. 8, Bali',
-      maps_url: 'https://maps.google.com',
-      sort_order: 2,
-      created_at: now
-    }
+    ...(templateKey === 'blush'
+      ? []
+      : [
+          {
+            id: 'event-2',
+            wedding_id: `preview-${templateKey}`,
+            event_name: 'Resepsi',
+            event_date: weddingDate,
+            start_time: '18:00',
+            end_time: 'Selesai',
+            venue_name: 'The Royal Garden',
+            venue_address: 'Jl. Pantai Indah No. 8, Bali',
+            maps_url: 'https://maps.google.com',
+            sort_order: 2,
+            created_at: now
+          }
+        ])
   ],
   gallery: [],
   gifts: [

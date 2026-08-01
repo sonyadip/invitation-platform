@@ -34,7 +34,7 @@ const {
   import { animate } from "framer-motion";
 
   const preloader = document.getElementById("cinematic-preloader");
-  const layout = document.querySelector(".invitation-layout") as HTMLElement;
+  const layout = document.querySelector("[data-template-layout]") as HTMLElement;
   const imgWrap = document.getElementById("cinematic-image-wrap");
   const img = document.querySelector(".cinematic-bg-zoom");
   const topText = document.getElementById("cinematic-top");
@@ -112,7 +112,7 @@ const {
 
 <style is:global lang="scss">
   /* Global hiding of layout until intro finishes, only if preloader exists */
-  body:has(#cinematic-preloader):not(.is-intro-finished) .invitation-layout {
+  body:has(#cinematic-preloader):not(.is-intro-finished) [data-template-layout] {
     opacity: 0 !important;
     pointer-events: none;
   }
@@ -141,6 +141,7 @@ const {
     justify-content: center;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     font-size: clamp(3.5rem, 8vw, 6rem);
     line-height: 1;
   }
@@ -190,11 +191,11 @@ const {
     flex-direction: column;
   }
   
-  .cinematic-bg-zoom {
+  .cinematic-preloader img.cinematic-bg-zoom {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover;
     z-index: -2;
     transform: scale(1.3);

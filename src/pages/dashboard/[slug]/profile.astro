@@ -1,0 +1,138 @@
+---
+const { slug } = Astro.params;
+const authRole = Astro.cookies.get('auth_role')?.value;
+const authSlug = Astro.cookies.get('auth_slug')?.value;
+
+if (!authRole || (authRole === 'client' && authSlug !== slug)) {
+  return Astro.redirect('/?login=client');
+}
+
+import ClientLayout from "../../../layouts/ClientLayout.astro";
+import { getSlugReportDetail } from "../../../services/dashboard-report";
+
+const report = await getSlugReportDetail(slug);
+if (!report) {
+  return Astro.redirect('/dashboard');
+}
+
+const profileData = {
+  name: report.summary.coupleName,
+  template: report.summary.template,
+  activeSince: new Date(report.summary.createdAt).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
+  status: report.summary.status,
+};
+
+const coverImage = report.settings?.assets?.coverImage || 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+---
+
+<ClientLayout title="Profil">
+  <!-- Profile Header Section -->
+  <section class="flex flex-col items-center mb-10 text-center fade-in-bottom">
+    <div class="relative mb-4">
+      <div class="w-24 h-24 rounded-full border-2 border-primary-container p-1 bg-surface-container">
+        <div class="w-full h-full rounded-full overflow-hidden bg-white shadow-sm">
+          <img class="w-full h-full object-cover" src={coverImage} alt="Profile" />
+        </div>
+      </div>
+      <div class="absolute bottom-0 right-0 bg-primary text-on-primary w-8 h-8 rounded-full flex items-center justify-center border-2 border-surface shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">edit</span>
+      </div>
+    </div>
+    <h2 class="font-headline-md text-headline-md text-on-surface">{profileData.name}</h2>
+    <p class="font-label-sm text-label-sm text-outline mt-1">Dibuat pada {profileData.activeSince}</p>
+  </section>
+
+  <!-- Wedding Details Form -->
+  <section class="space-y-6 mb-10 fade-in-bottom" style="animation-delay: 0.1s">
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)]">
+      <h3 class="font-label-md text-label-md text-primary mb-6 uppercase tracking-wider border-b border-tertiary/10 pb-2">Informasi Undangan</h3>
+      <div class="space-y-4">
+        <!-- Field: Nama Pasangan -->
+        <div>
+          <label class="block font-label-md text-label-md text-secondary mb-2 uppercase">Nama Pasangan</label>
+          <div class="w-full p-4 bg-surface-container-low rounded-lg text-on-surface font-body-md border border-transparent">
+            {profileData.name}
+          </div>
+        </div>
+        <!-- Field: Tema Undangan -->
+        <div>
+          <label class="block font-label-md text-label-md text-secondary mb-2 uppercase">Tema Undangan</label>
+          <div class="w-full p-4 bg-surface-container-low rounded-lg flex justify-between items-center text-on-surface font-body-md border border-transparent">
+            <span>{profileData.template.toUpperCase()}</span>
+            <span class="material-symbols-outlined text-outline text-[20px]">palette</span>
+          </div>
+        </div>
+        <!-- Field: Status -->
+        <div>
+          <label class="block font-label-md text-label-md text-secondary mb-2 uppercase">Status Undangan</label>
+          <div class="flex items-center">
+            {profileData.status === 'published' ? (
+              <span class="px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-label-md font-bold flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                PUBLISHED
+              </span>
+            ) : (
+              <span class="px-4 py-1.5 rounded-full bg-amber-50 text-amber-700 text-label-md font-bold flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
+                DRAFT
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <p class="mt-6 font-label-sm text-label-sm text-outline italic text-center">
+        *Perubahan detail undangan dan foto hanya dapat dilakukan oleh Admin.
+      </p>
+    </div>
+  </section>
+
+  <!-- Security Section -->
+  <section class="mb-10 fade-in-bottom" style="animation-delay: 0.2s">
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)]">
+      <div class="flex items-start gap-4 mb-4">
+        <div class="p-3 bg-secondary-fixed rounded-lg text-primary">
+          <span class="material-symbols-outlined">security</span>
+        </div>
+        <div>
+          <h3 class="font-headline-md text-[20px] text-on-surface">Keamanan Akun</h3>
+          <p class="font-body-md text-secondary mt-1">Kelola kata sandi dan pengaturan keamanan profil Anda melalui tim administrator kami.</p>
+        </div>
+      </div>
+      <a href="https://wa.me/" target="_blank" class="w-full h-12 flex items-center justify-center gap-2 border border-primary text-primary rounded-full font-label-md uppercase tracking-widest hover:bg-primary/5 transition-all active:scale-95">
+        Hubungi Admin
+        <span class="material-symbols-outlined text-[18px]">launch</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Concierge / Premium Support Widget -->
+  <section class="mb-6 fade-in-bottom" style="animation-delay: 0.3s">
+    <div class="relative overflow-hidden bg-gradient-to-br from-surface-container-lowest to-secondary-fixed rounded-[24px] p-8 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] border border-primary/5">
+      <div class="relative z-10">
+        <h3 class="font-headline-md text-headline-md text-primary italic mb-2">SENADDA Premium</h3>
+        <p class="font-body-md text-on-surface-variant mb-6">Nikmati fitur lengkap untuk momen spesial Anda dengan dukungan penuh digital concierge kami.</p>
+        <div class="flex flex-col gap-3">
+          <a class="flex items-center gap-4 group" href="https://senadda.com" target="_blank">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-primary text-[20px]">language</span>
+            </div>
+            <span class="font-body-md text-on-surface border-b border-transparent group-hover:border-primary transition-all">Kunjungi Website</span>
+          </a>
+          <a class="flex items-center gap-4 group" href="https://instagram.com/senadda.id" target="_blank">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-primary text-[20px]">share</span>
+            </div>
+            <span class="font-body-md text-on-surface border-b border-transparent group-hover:border-primary transition-all">Instagram @senadda.id</span>
+          </a>
+        </div>
+      </div>
+      <!-- Decorative element -->
+      <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
+    </div>
+  </section>
+
+  <!-- Version Info -->
+  <div class="text-center pb-8 fade-in-bottom" style="animation-delay: 0.4s">
+    <p class="font-label-sm text-label-sm text-outline-variant">Senadda App v2.4.0</p>
+  </div>
+</ClientLayout>

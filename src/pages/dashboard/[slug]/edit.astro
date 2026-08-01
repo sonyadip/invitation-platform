@@ -12,17 +12,11 @@ import { hashPasswordSHA256 } from '../../../utils/security';
 export const prerender = false;
 
 const { slug } = Astro.params;
-const dashboardPassword =
-  import.meta.env.DASHBOARD_PASSWORD ||
-  (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') ||
-  '';
-const cookieName = 'dashboard_unlocked';
 const templateOptions = listTemplateKeys();
-const isUnlocked = !dashboardPassword ||
-  Astro.cookies.get(cookieName)?.value === await hashPasswordSHA256(dashboardPassword);
+const authRole = Astro.cookies.get('auth_role')?.value;
 
-if (!isUnlocked) {
-  return Astro.redirect('/dashboard');
+if (authRole !== 'admin') {
+  return Astro.redirect('/?login=admin');
 }
 
 const toLocalInput = (value: string | null) => {
@@ -103,9 +97,9 @@ const eventValues = [
 ].slice(0, 3);
 const storyValues = [
   ...(detail.wedding.story.length ? detail.wedding.story : [
-    { title: 'AWAL BERTEMU', description: '' },
-    { title: 'MENJALIN HUBUNGAN', description: '' },
-    { title: 'MENIKAH', description: '' }
+    { title: '', description: '' },
+    { title: '', description: '' },
+    { title: '', description: '' }
   ]),
   { title: '', description: '' },
   { title: '', description: '' }
@@ -294,7 +288,8 @@ const giftValues = [
             <label><input type="checkbox" name="passwordProtectionEnabled" checked={settings?.passwordProtectionEnabled ?? false} /> Password Protection</label>
           </div>
           <div class="form-grid">
-            <label>Access Password<input name="accessPassword" /></label>
+            <label>Access Password<input name="accessPassword" value={settings?.accessPassword || ''} /></label>
+            <label>Client Password<input name="clientPassword" placeholder="Keep empty to keep existing" /></label>
             <label>Expiration Date<input type="datetime-local" name="expirationDate" value={toLocalInput(settings?.expirationDate || null)} /></label>
           </div>
         </section>

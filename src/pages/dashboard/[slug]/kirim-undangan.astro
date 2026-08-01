@@ -1,0 +1,158 @@
+---
+const { slug } = Astro.params;
+const authRole = Astro.cookies.get('auth_role')?.value;
+const authSlug = Astro.cookies.get('auth_slug')?.value;
+
+if (!authRole || (authRole === 'client' && authSlug !== slug)) {
+  return Astro.redirect('/?login=client');
+}
+
+import ClientLayout from "../../../layouts/ClientLayout.astro";
+import { getSlugReportDetail } from "../../../services/dashboard-report";
+
+const report = await getSlugReportDetail(slug);
+if (!report) {
+  return Astro.redirect('/dashboard');
+}
+
+const coupleName = report.summary.coupleName;
+const link = `${Astro.url.origin}/${slug}`;
+
+const categories = ["Formal", "Muslim", "Nasrani", "Hindu", "Keluarga", "Rekan Kerja"];
+const guests = [
+  { name: "Keluarga Mbah Parjo", status: "Terkirim" },
+  { name: "Jojo", status: "Terkirim" },
+  { name: "IzarWp", status: "Belum Dikirim" },
+  { name: "Shofwan & Partner", status: "Terkirim" },
+  { name: "Ghina dan Partner", status: "Belum Dikirim" },
+  { name: "Ameilia", status: "Belum Dikirim" },
+];
+---
+
+<ClientLayout title="Kirim Undangan">
+  <!-- Header Section -->
+  <section class="mb-8 fade-in-bottom">
+    <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Kirim Undangan</h2>
+    <p class="font-body-md text-secondary">Personalisasi pesan dan kirim undangan digital Anda kepada tamu terkasih.</p>
+  </section>
+
+  <!-- Template Selector -->
+  <section class="mb-6 fade-in-bottom" style="animation-delay: 0.1s">
+    <label class="font-label-md text-label-md text-outline uppercase mb-3 block">Pilih Kategori Pesan</label>
+    <div class="flex overflow-x-auto gap-3 pb-4 hide-scrollbar -mx-4 px-4" id="category-filters">
+      {categories.map((cat, i) => (
+        <button class={`flex-none px-6 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 ${i === 0 ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-container-high text-secondary hover:bg-surface-container-highest'}`}>
+          {cat}
+        </button>
+      ))}
+    </div>
+  </section>
+
+  <!-- Message Preview Card -->
+  <section class="mb-10 fade-in-bottom" style="animation-delay: 0.2s">
+    <div class="bg-surface-container-lowest rounded-[24px] p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-label-md text-label-md text-primary">PRATINJAU PESAN</span>
+        <button class="text-primary hover:bg-primary-container/10 p-2 rounded-full transition-colors flex items-center">
+          <span class="material-symbols-outlined text-[20px]">edit</span>
+        </button>
+      </div>
+      <div class="bg-surface p-4 rounded-xl border border-outline-variant/30">
+        <p class="font-body-md text-on-surface-variant leading-relaxed whitespace-pre-wrap" id="wa-template">Kepada Yth. *[NAMA]*,
+
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami ({coupleName}).
+
+Berikut link undangan kami:
+<span class="text-primary underline font-medium">{link}?to=[NAMA_URL]</span>
+
+Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guest List Section -->
+  <section class="fade-in-bottom" style="animation-delay: 0.3s">
+    <div class="flex justify-between items-end mb-6">
+      <h3 class="font-headline-md text-headline-md text-on-surface">Daftar Tamu</h3>
+      <span class="font-label-sm text-label-sm text-outline">{guests.length} Tamu</span>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="relative mb-6">
+      <input class="w-full h-12 pl-12 pr-4 bg-surface-container-low border-none rounded-full font-body-md focus:ring-2 focus:ring-primary transition-all" placeholder="Cari nama tamu..." type="text"/>
+      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+    </div>
+
+    <!-- Guest Cards Container -->
+    <div class="space-y-4">
+      {guests.map((guest, i) => (
+        <div class="bg-surface-container-lowest rounded-[24px] p-5 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] border border-transparent hover:border-outline-variant/20 transition-all">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h4 class="font-body-lg font-bold text-on-surface">{guest.name}</h4>
+              <div class="flex items-center gap-1.5 mt-1">
+                <div class={`w-2 h-2 rounded-full ${guest.status === 'Terkirim' ? 'bg-green-500' : 'bg-orange-400'}`}></div>
+                <span class="font-label-sm text-label-sm text-secondary">{guest.status}</span>
+              </div>
+            </div>
+            <div class="bg-surface-container-high px-3 py-1 rounded-full">
+              <span class="font-label-sm text-label-sm text-outline">{categories[i % categories.length]}</span>
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button class="flex-1 h-11 flex items-center justify-center gap-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary/5 active:scale-95 transition-all" onclick={`navigator.clipboard.writeText(document.getElementById('wa-template').innerText.replace(/\\[NAMA\\]/g, '${guest.name}').replace(/\\[NAMA_URL\\]/g, encodeURIComponent('${guest.name}'))); alert('Pesan disalin!')`}>
+              <span class="material-symbols-outlined text-[18px]">content_copy</span>
+              Salin
+            </button>
+            <button class="flex-1 h-11 flex items-center justify-center gap-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-md hover:bg-primary-container active:scale-95 transition-all" onclick={`window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(document.getElementById('wa-template').innerText.replace(/\\[NAMA\\]/g, '${guest.name}').replace(/\\[NAMA_URL\\]/g, encodeURIComponent('${guest.name}'))), '_blank')`}>
+              <span class="material-symbols-outlined text-[18px]">send</span>
+              Kirim WA
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Concierge Widget -->
+  <section class="mt-12 mb-8 fade-in-bottom" style="animation-delay: 0.4s">
+    <div class="bg-gradient-to-br from-surface-container-lowest to-primary-fixed/20 p-6 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex items-center gap-4 border border-primary/10">
+      <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+        <span class="material-symbols-outlined text-on-primary">support_agent</span>
+      </div>
+      <div>
+        <h5 class="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">Butuh Bantuan?</h5>
+        <p class="font-label-sm text-label-sm text-secondary leading-tight">Hubungi Digital Concierge untuk manajemen tamu otomatis.</p>
+      </div>
+      <span class="material-symbols-outlined text-primary ml-auto">chevron_right</span>
+    </div>
+  </section>
+  
+  <style>
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const templateBtns = document.querySelectorAll('#category-filters button');
+      templateBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          templateBtns.forEach(b => {
+            b.classList.remove('bg-primary', 'text-on-primary', 'shadow-md');
+            b.classList.add('bg-surface-container-high', 'text-secondary');
+          });
+          btn.classList.add('bg-primary', 'text-on-primary', 'shadow-md');
+          btn.classList.remove('bg-surface-container-high', 'text-secondary');
+        });
+      });
+    });
+  </script>
+</ClientLayout>

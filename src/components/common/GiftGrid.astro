@@ -3,14 +3,33 @@ import type { GiftAccount } from '../../types';
 
 interface Props {
   gifts: GiftAccount[];
+  hidden?: boolean;
 }
-const { gifts } = Astro.props;
+const { gifts, hidden = false } = Astro.props;
 ---
-<div class="gift-grid" data-gift-grid hidden>
-  {gifts.map((gift) => (
+<div class="gift-grid" data-gift-grid hidden={hidden}>
+  {gifts.map((gift) => {
+    let logoUrl = gift.bank_logo;
+    if (!logoUrl) {
+      const b = gift.bank_name.toLowerCase();
+      if (b.includes("bca")) logoUrl = "/images/banks/bca.svg";
+      else if (b.includes("bni")) logoUrl = "/images/banks/bni.svg";
+      else if (b.includes("bri")) logoUrl = "/images/banks/bri.svg";
+      else if (b.includes("bsi")) logoUrl = "/images/banks/bsi.svg";
+      else if (b.includes("cimb")) logoUrl = "/images/banks/cimb_niaga.svg";
+      else if (b.includes("danamon")) logoUrl = "/images/banks/danamon.svg";
+      else if (b.includes("mandiri")) logoUrl = "/images/banks/mandiri.svg";
+      else if (b.includes("permata")) logoUrl = "/images/banks/permata_bank.svg";
+    }
+    
+    return (
     <article class="gift-card" data-animate>
       <div class="gift-card__body">
-        <span class="gift-card__bank">{gift.bank_name}</span>
+        {logoUrl ? (
+          <img src={logoUrl} alt={gift.bank_name} class="gift-card__bank-logo" />
+        ) : (
+          <span class="gift-card__bank">{gift.bank_name}</span>
+        )}
         <p class="gift-card__number">{gift.account_number}</p>
         <p class="gift-card__holder">a.n. {gift.account_name}</p>
       </div>
@@ -21,24 +40,16 @@ const { gifts } = Astro.props;
           </svg>
           <span>Salin</span>
         </button>
-        {gift.qris_url && (
-          <button class="gift-btn gift-btn--qris" data-qris-btn data-url={gift.qris_url} type="button">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
-            </svg>
-            <span>Tampilkan QRIS</span>
-          </button>
-        )}
+        
       </div>
     </article>
-  ))}
+    );
+  })}
 </div>
 
 <script>
   function initGiftInteractions() {
     const copyBtns = document.querySelectorAll('[data-copy-btn]');
-    const qrisBtns = document.querySelectorAll('[data-qris-btn]');
-    
     copyBtns.forEach((btn) => {
       if ((btn as HTMLElement).dataset.initialized === 'true') return;
       (btn as HTMLElement).dataset.initialized = 'true';
@@ -59,26 +70,6 @@ const { gifts } = Astro.props;
         } catch (error) {
           console.error('Failed to copy:', error);
         }
-      });
-    });
-
-    qrisBtns.forEach((btn) => {
-      if ((btn as HTMLElement).dataset.initialized === 'true') return;
-      (btn as HTMLElement).dataset.initialized = 'true';
-      
-      btn.addEventListener('click', () => {
-        const url = btn.getAttribute('data-url') || '';
-        const qrisLightbox = document.querySelector('[data-qris-lightbox]') as HTMLElement;
-        const qrisImg = document.querySelector('[data-qris-img]') as HTMLImageElement;
-        const qrisCard = document.querySelector('[data-qris-card]') as HTMLElement;
-        
-        if (!qrisLightbox || !qrisImg) return;
-
-        qrisImg.src = url;
-        qrisLightbox.style.opacity = '1';
-        qrisLightbox.style.pointerEvents = 'auto';
-        if (qrisCard) qrisCard.style.transform = 'scale(1)';
-        document.body.style.overflow = 'hidden';
       });
     });
   }

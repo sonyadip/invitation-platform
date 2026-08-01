@@ -27,8 +27,6 @@ import {
 } from '../../utils/template-helpers';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
 import GiftGrid from '../../components/common/GiftGrid.astro';
-import QRISLightbox from '../../components/common/QRISLightbox.astro';
-
 interface Props {
   data: FullInvitationData;
   guestName: string | null;
@@ -397,9 +395,9 @@ const activeGifts = gifts && gifts.length > 0
 
           <!-- ===== VIDEO ===== -->
           <section class="video-section">
-            <div class="video-section__frame" data-noir-video data-animate="blur-up" style="--animate-delay: 300ms;">
+            <div class="video-section__frame" data-template-video data-animate="blur-up" style="--animate-delay: 300ms;">
               <video class="video-section__media" src={videoUrl} poster={videoPoster} playsinline preload="metadata"></video>
-              <button class="video-section__play" type="button" data-noir-video-play aria-label="Play wedding video">
+              <button class="video-section__play" type="button" data-template-video-play aria-label="Play wedding video">
                 <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z"></path>
                 </svg>
@@ -425,7 +423,7 @@ const activeGifts = gifts && gifts.length > 0
                           class={`gallery-item gallery-item--${img.variant}`}
                           data-animate="zoom-in"
                           style={`--animate-delay: ${200 + (index % galleryColumns) * 200}ms;`}
-                          data-fancybox="noir-gallery"
+                          data-fancybox="gallery-section"
                         >
                           <SmartImage src={img.image_url} alt="Wedding Gallery Moment" loading="lazy" class="gallery-item__img" />
                           <div class="gallery-item__overlay">
@@ -542,8 +540,7 @@ const activeGifts = gifts && gifts.length > 0
                   </div>
                 </section>
 
-                <QRISLightbox />
-              </>
+                </>
             )
           )}
 
@@ -575,9 +572,12 @@ const activeGifts = gifts && gifts.length > 0
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M12.04 2.5a9.43 9.43 0 0 0-8.16 14.14L2.5 21.5l4.98-1.31a9.43 9.43 0 1 0 4.56-17.69Zm0 17.14a7.71 7.71 0 0 1-3.93-1.08l-.28-.17-2.95.77.79-2.88-.18-.3a7.72 7.72 0 1 1 6.55 3.66Zm4.23-5.78c-.23-.12-1.37-.68-1.58-.75-.21-.08-.37-.12-.52.12-.16.23-.6.75-.74.9-.14.16-.27.18-.5.06-.23-.12-.98-.36-1.86-1.15-.69-.61-1.15-1.36-1.28-1.59-.14-.23-.02-.36.1-.48.11-.11.23-.27.35-.41.12-.14.16-.23.23-.39.08-.16.04-.29-.02-.41-.06-.12-.52-1.25-.71-1.71-.19-.45-.38-.39-.52-.4h-.45c-.16 0-.41.06-.62.29-.21.23-.81.79-.81 1.93 0 1.14.83 2.24.95 2.4.12.16 1.64 2.5 3.98 3.51.56.24.99.38 1.33.49.56.18 1.07.15 1.47.09.45-.07 1.37-.56 1.57-1.1.19-.54.19-1 .14-1.1-.06-.1-.21-.16-.44-.28Z"
+                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Zm4.23-5.78c-.23-.12-1.37-.68-1.58-.75-.21-.08-.37-.12-.52.12-.16.23-.6.75-.74.9-.14.16-.27.18-.5.06-.23-.12-.98-.36-1.86-1.15-.69-.61-1.15-1.36-1.28-1.59-.14-.23-.02-.36.1-.48.11-.11.23-.27.35-.41.12-.14.16-.23.23-.39.08-.16.04-.29-.02-.41-.06-.12-.52-1.25-.71-1.71-.19-.45-.38-.39-.52-.4h-.45c-.16 0-.41.06-.62.29-.21.23-.81.79-.81 1.93 0 1.14.83 2.24.95 2.4.12.16 1.64 2.5 3.98 3.51.56.24.99.38 1.33.49.56.18 1.07.15 1.47.09.45-.07 1.37-.56 1.57-1.1.19-.54.19-1 .14-1.1-.06-.1-.21-.16-.44-.28Z"
                   ></path>
                 </svg>
+              </a>
+              <a href="/" aria-label="Website" class="social-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path></svg>
               </a>
             </div>
             <p class="thankyou-section__brand-text">wedding invitation by <span>Senadda</span></p>
@@ -589,16 +589,20 @@ const activeGifts = gifts && gifts.length > 0
 
     <!-- Floating Audio Player -->
     {sections.music && (
-      <div class="audio-toggle" data-template-audio-toggle title="Play/Pause Music">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
-          <path d="M9 18V5l12-2v13"></path>
-          <circle cx="6" cy="18" r="3"></circle>
-          <circle cx="18" cy="16" r="3"></circle>
-        </svg>
-        {settings.music_enabled && wedding.music_url && (
-          <audio data-template-audio loop src={wedding.music_url}></audio>
-        )}
-      </div>
+              <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
+          <div class="audio-icon-wrapper">
+            <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <svg class="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+          </div>
+          {settings.music_enabled && wedding.music_url && (
+            <audio data-template-audio loop src={wedding.music_url}></audio>
+          )}
+        </button>
     )}
 
   </div>
@@ -607,3 +611,6 @@ const activeGifts = gifts && gifts.length > 0
 <script>
   import './script.js';
 </script>
+
+
+

@@ -26,6 +26,8 @@ pnpm-debug.log*
 #skills
 .codex/
 .agent/
+.agents/
+graphify-out/
 
 # wrangler
 .wrangler/

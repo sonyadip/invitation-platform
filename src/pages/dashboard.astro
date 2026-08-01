@@ -27,28 +27,12 @@ const formatUnknownError = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-if (dashboardPassword && postAction === 'login') {
-  const password = String(postFormData?.get('password') || '');
-  const enteredHash = await hashPasswordSHA256(password);
-  const passwordHash = await hashPasswordSHA256(dashboardPassword);
+const authRole = Astro.cookies.get('auth_role')?.value;
+const isUnlocked = authRole === 'admin';
 
-  if (enteredHash === passwordHash) {
-    Astro.cookies.set(cookieName, enteredHash, {
-      path: '/dashboard',
-      maxAge: 60 * 60 * 8,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict'
-    });
-
-    return Astro.redirect('/dashboard');
-  }
-
-  errorMessage = 'Password salah.';
+if (!isUnlocked) {
+  return Astro.redirect('/?login=admin');
 }
-
-const isUnlocked = !dashboardPassword ||
-  Astro.cookies.get(cookieName)?.value === await hashPasswordSHA256(dashboardPassword);
 
 if (isUnlocked && postAction === 'duplicate') {
   try {

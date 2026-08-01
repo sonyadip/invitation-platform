@@ -1,0 +1,212 @@
+---
+const { slug } = Astro.params;
+const authRole = Astro.cookies.get('auth_role')?.value;
+const authSlug = Astro.cookies.get('auth_slug')?.value;
+
+if (!authRole || (authRole === 'client' && authSlug !== slug)) {
+  return Astro.redirect('/?login=client');
+}
+
+import ClientLayout from "../../../layouts/ClientLayout.astro";
+import { getSlugReportDetail } from "../../../services/dashboard-report";
+
+const report = await getSlugReportDetail(slug);
+if (!report) {
+  return Astro.redirect('/dashboard');
+}
+
+const coupleName = report.summary.coupleName;
+const weddingDate = report.wedding.weddingDate;
+const link = `${Astro.url.origin}/${slug}`;
+const coverImage = report.settings?.assets?.coverImage || 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+---
+
+<ClientLayout title="Dashboard">
+  <!-- Hero Section -->
+  <section class="fade-in-bottom">
+    <div class="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden shadow-[0px_4px_20px_rgba(166,137,102,0.08)] bg-white group">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
+      <div class="absolute inset-0 bg-cover bg-center" style={`background-image: url('${coverImage}')`}></div>
+      <div class="absolute bottom-0 left-0 w-full p-8 z-20 text-white">
+        <p class="font-label-md text-label-md uppercase tracking-[0.2em] mb-2 text-white/80">The Wedding of</p>
+        <h1 class="font-headline-lg-mobile text-headline-lg-mobile leading-tight">{coupleName}</h1>
+        <div class="mt-4 flex items-center gap-3">
+          <div class="h-[1px] flex-1 bg-white/30"></div>
+          <span class="font-label-sm text-label-sm opacity-80 italic">
+            {new Date(weddingDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </span>
+          <div class="h-[1px] flex-1 bg-white/30"></div>
+        </div>
+        <div class="mt-4 text-center">
+          <a href={link} target="_blank" class="text-xs text-white/90 underline tracking-wider">{link}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Countdown Timer -->
+  <section class="fade-in-bottom" style="animation-delay: 0.1s">
+    <div class="bg-surface-container-lowest rounded-[24px] p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] text-center">
+      <h3 class="font-label-md text-label-md text-primary mb-4 uppercase tracking-widest">Hitung Mundur</h3>
+      <div class="flex justify-around items-center">
+        <div>
+          <div class="font-headline-md text-headline-md text-primary" id="cd-days">00</div>
+          <div class="font-label-sm text-label-sm text-outline">Hari</div>
+        </div>
+        <div class="text-outline-variant">:</div>
+        <div>
+          <div class="font-headline-md text-headline-md text-primary" id="cd-hours">00</div>
+          <div class="font-label-sm text-label-sm text-outline">Jam</div>
+        </div>
+        <div class="text-outline-variant">:</div>
+        <div>
+          <div class="font-headline-md text-headline-md text-primary" id="cd-minutes">00</div>
+          <div class="font-label-sm text-label-sm text-outline">Menit</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Grid -->
+  <section class="grid grid-cols-2 gap-4 fade-in-bottom" style="animation-delay: 0.2s">
+    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="event_available">event_available</span>
+      </div>
+      <div>
+        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.rsvpCount}</div>
+        <div class="font-label-sm text-label-sm text-outline">Total RSVP</div>
+      </div>
+    </div>
+    
+    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="group">group</span>
+      </div>
+      <div>
+        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.guestCount}</div>
+        <div class="font-label-sm text-label-sm text-outline">Total Pax</div>
+      </div>
+    </div>
+    
+    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="forum">forum</span>
+      </div>
+      <div>
+        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.wishesCount}</div>
+        <div class="font-label-sm text-label-sm text-outline">Total Ucapan</div>
+      </div>
+    </div>
+    
+    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="visibility">visibility</span>
+      </div>
+      <div>
+        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.viewCount}</div>
+        <div class="font-label-sm text-label-sm text-outline">Total Views</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rangkaian Acara -->
+  <section class="fade-in-bottom" style="animation-delay: 0.3s">
+    <div class="flex justify-between items-end mb-4">
+      <h2 class="font-headline-md text-headline-md text-on-surface">Rangkaian Acara</h2>
+    </div>
+    <div class="space-y-4">
+      {report.events.map((event, index) => (
+        <div class={`bg-surface-container-lowest rounded-[24px] p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] border-l-4 ${index % 2 === 0 ? 'border-primary' : 'border-primary/40'}`}>
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h4 class="font-headline-md text-headline-md text-on-surface text-[18px]">{event.name}</h4>
+              <p class="font-body-md text-body-md text-outline">{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            </div>
+            <div class={`${index % 2 === 0 ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'} px-3 py-1 rounded-full font-label-sm text-label-sm`}>
+              {event.startTime}
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-outline mb-6">
+            <span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+            <span class="font-label-md text-label-md truncate">{event.venueName}</span>
+          </div>
+          {event.mapsUrl && (
+            <a href={event.mapsUrl} target="_blank" class="w-full h-12 rounded-full border border-primary text-primary font-label-md text-label-md flex items-center justify-center gap-2 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-[20px]" data-icon="map">map</span>
+              Lihat Lokasi
+            </a>
+          )}
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Wishes Section -->
+  <section class="fade-in-bottom" style="animation-delay: 0.4s">
+    <h2 class="font-headline-md text-headline-md text-on-surface mb-4">Wishes</h2>
+    <div class="space-y-4">
+      {report.rsvps.filter(r => r.message).slice(0, 5).map((rsvp, index) => (
+        <div class="bg-white p-6 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] relative overflow-hidden">
+          {index === 0 && (
+            <div class="absolute top-0 right-0 p-4 opacity-5">
+              <span class="material-symbols-outlined text-6xl" data-icon="format_quote">format_quote</span>
+            </div>
+          )}
+          <div class="flex items-center gap-4 mb-3">
+            <div class={`w-10 h-10 rounded-full ${index % 2 === 0 ? 'bg-secondary-fixed text-primary' : 'bg-tertiary-fixed text-tertiary'} flex items-center justify-center font-bold uppercase`}>
+              {rsvp.guestName.substring(0, 2)}
+            </div>
+            <div>
+              <p class="font-label-md text-label-md text-on-surface">{rsvp.guestName}</p>
+              <p class="text-[10px] text-outline">{new Date(rsvp.createdAt).toLocaleDateString('id-ID')}</p>
+            </div>
+          </div>
+          <p class="font-body-md text-body-md text-secondary italic">"{rsvp.message}"</p>
+        </div>
+      ))}
+      {report.rsvps.filter(r => r.message).length === 0 && (
+        <p class="font-body-md text-outline">Belum ada ucapan.</p>
+      )}
+    </div>
+  </section>
+
+  <!-- Concierge Widget -->
+  <section class="fade-in-bottom" style="animation-delay: 0.5s">
+    <div class="bg-gradient-to-br from-surface-container-lowest to-tertiary-fixed p-8 rounded-[32px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col items-center text-center">
+      <span class="material-symbols-outlined text-primary text-4xl mb-4" data-icon="auto_awesome">auto_awesome</span>
+      <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Perlu Bantuan?</h3>
+      <p class="font-body-md text-body-md text-outline mb-6">Concierge kami siap membantu kelancaran acara Anda 24/7.</p>
+      <a href="https://wa.me/6281234567890" target="_blank" class="px-8 flex items-center justify-center h-12 bg-primary text-white rounded-full font-label-md text-label-md shadow-lg shadow-primary/20 active:scale-95 transition-all">
+          Hubungi Admin
+      </a>
+    </div>
+  </section>
+  
+  <script define:vars={{ weddingDate }}>
+    function updateCountdown() {
+      if (!weddingDate) return;
+      const target = new Date(weddingDate).getTime();
+      const now = new Date().getTime();
+      const diff = target - now;
+
+      if (diff < 0) {
+        if(document.getElementById('cd-days')) document.getElementById('cd-days').innerText = '0';
+        if(document.getElementById('cd-hours')) document.getElementById('cd-hours').innerText = '0';
+        if(document.getElementById('cd-minutes')) document.getElementById('cd-minutes').innerText = '0';
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      if(document.getElementById('cd-days')) document.getElementById('cd-days').innerText = days;
+      if(document.getElementById('cd-hours')) document.getElementById('cd-hours').innerText = hours;
+      if(document.getElementById('cd-minutes')) document.getElementById('cd-minutes').innerText = minutes;
+    }
+    
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</ClientLayout>

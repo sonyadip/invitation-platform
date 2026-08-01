@@ -18,9 +18,20 @@ const { src, alt, class: className, loading = 'lazy', fetchpriority, width, heig
 if (!src) return null;
 
 const isString = typeof src === 'string';
+const isVideo = isString && (src.endsWith('.mp4') || src.endsWith('.webm'));
 ---
 
-{isString ? (
+{isVideo ? (
+  <video
+    src={src as string}
+    class={className}
+    autoplay
+    loop
+    muted
+    playsinline
+    {...rest}
+  ></video>
+) : isString ? (
   <img 
     src={src as string} 
     alt={alt} 
