@@ -9,9 +9,10 @@ interface Props {
   settings: InvitationSettings;
   to?: string | null;
   templateClass?: string;
+  image?: string;
 }
 
-const { title, wedding, settings, to, templateClass } = Astro.props;
+const { title, wedding, settings, to, templateClass, image } = Astro.props;
 
 const brideName = wedding.bride_name;
 const groomName = wedding.groom_name;
@@ -28,6 +29,7 @@ const theme = settings.theme_config.theme;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
     <meta name="generator" content={Astro.generator} />
 
     <!-- Dynamic Fonts Injection -->
@@ -39,15 +41,19 @@ const theme = settings.theme_config.theme;
 
     <!-- Open Graph (Facebook / WhatsApp) -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
     <meta name="robots" content="noindex, nofollow" />
     <meta property="og:title" content={docTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={defaultTitle} />
+    {image && <meta property="og:image" content={new URL(image, Astro.url).toString()} />}
+    {image && <meta property="og:image:secure_url" content={new URL(image, Astro.url).toString()} />}
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={docTitle} />
     <meta name="twitter:description" content={description} />
+    {image && <meta name="twitter:image" content={new URL(image, Astro.url).toString()} />}
 
     <!-- Dynamic Theme Styling Injection -->
     <style

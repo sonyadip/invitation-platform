@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem } from '../types';
 
 export interface SlugReport {
@@ -16,6 +17,7 @@ export interface SlugReport {
   rsvpCount: number;
   attendingCount: number;
   declinedCount: number;
+  tentativeCount: number;
   guestCount: number;
   wishesCount: number;
   latestRsvpAt: string | null;
@@ -124,6 +126,13 @@ export interface SlugReportDetail {
     message: string | null;
     createdAt: string;
   }>;
+  sentInvitations: Array<{
+    id: string;
+    guestName: string;
+    phone: string | null;
+    createdAt: string;
+  }>;
+  waTemplates: any;
   dailyViews: Array<{
     date: string;
     count: number;
@@ -135,6 +144,7 @@ interface CountBucket {
   rsvps: number;
   attending: number;
   declined: number;
+  tentative: number;
   guests: number;
   wishes: number;
   latestRsvpAt: string | null;
@@ -145,6 +155,7 @@ const emptyBucket = (): CountBucket => ({
   rsvps: 0,
   attending: 0,
   declined: 0,
+  tentative: 0,
   guests: 0,
   wishes: 0,
   latestRsvpAt: null
@@ -208,6 +219,7 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
     bucket.guests += Number.isFinite(guestCount) ? guestCount : 0;
     if (row.attendance_status === 'attending') bucket.attending += 1;
     if (row.attendance_status === 'declined') bucket.declined += 1;
+    if (row.attendance_status === 'tentative') bucket.tentative += 1;
     if (row.message) bucket.wishes += 1;
     if (!bucket.latestRsvpAt || new Date(row.created_at) > new Date(bucket.latestRsvpAt)) {
       bucket.latestRsvpAt = row.created_at;
@@ -234,6 +246,7 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
       rsvpCount: bucket.rsvps,
       attendingCount: bucket.attending,
       declinedCount: bucket.declined,
+      tentativeCount: bucket.tentative,
       guestCount: bucket.guests,
       wishesCount: bucket.wishes,
       latestRsvpAt: bucket.latestRsvpAt,
@@ -256,6 +269,7 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
       acc.rsvps += report.rsvpCount;
       acc.attending += report.attendingCount;
       acc.declined += report.declinedCount;
+      acc.tentative += report.tentativeCount;
       acc.guests += report.guestCount;
       acc.wishes += report.wishesCount;
       return acc;
@@ -269,6 +283,7 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
       rsvps: 0,
       attending: 0,
       declined: 0,
+      tentative: 0,
       guests: 0,
       wishes: 0,
       deleted: deletedReports.length
@@ -294,10 +309,12 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   if (weddingError) throw weddingError;
   if (!wedding) return null;
 
-  const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvpsRes, viewsRes] = await Promise.all([
+  const adminSupabase = await getSupabaseAdmin();
+
+  const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvpsRes, viewsRes, guestsRes] = await Promise.all([
     supabase
       .from('invitation_settings')
-      .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, sections, theme_config')
+      .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, sections, theme_config, wa_templates')
       .eq('wedding_id', wedding.id)
       .maybeSingle(),
     supabase
@@ -330,6 +347,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .from('invitation_views')
       .select('created_at')
       .eq('wedding_id', wedding.id)
+      .order('created_at', { ascending: false }),
+    adminSupabase
+      .from('sent_invitations')
+      .select('id, guest_name, phone, created_at')
+      .eq('wedding_id', wedding.id)
       .order('created_at', { ascending: false })
   ]);
 
@@ -340,15 +362,24 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   if (giftsRes.error) throw giftsRes.error;
   if (rsvpsRes.error) throw rsvpsRes.error;
   if (viewsRes.error) throw viewsRes.error;
+  if (guestsRes.error) throw guestsRes.error;
 
   const settings = settingsRes.data as any;
   const assets = settings?.theme_config?.assets || {};
   const content = settings?.theme_config?.content || {};
+  const waTemplates = settings?.wa_templates || { "Formal": "", "Teman": "", "Keluarga": "" };
   const rsvps = (rsvpsRes.data || []) as any[];
   const views = (viewsRes.data || []) as any[];
+  const sentInvitations = ((guestsRes.data || []) as any[]).map((g) => ({
+    id: g.id,
+    guestName: g.guest_name,
+    phone: g.phone || '',
+    createdAt: g.created_at
+  }));
   const isExpired = Boolean(settings?.expiration_date && new Date(settings.expiration_date) < now);
   const attendingCount = rsvps.filter((item) => item.attendance_status === 'attending').length;
   const declinedCount = rsvps.filter((item) => item.attendance_status === 'declined').length;
+  const tentativeCount = rsvps.filter((item) => item.attendance_status === 'tentative').length;
   const guestCount = rsvps.reduce((total, item) => total + Number(item.guest_count || 0), 0);
   const wishesCount = rsvps.filter((item) => item.message).length;
   const latestRsvpAt = rsvps[0]?.created_at || null;
@@ -378,6 +409,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     rsvpCount: rsvps.length,
     attendingCount,
     declinedCount,
+    tentativeCount,
     guestCount,
     wishesCount,
     latestRsvpAt,
@@ -467,6 +499,8 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       message: rsvp.message,
       createdAt: rsvp.created_at
     })),
+    sentInvitations,
+    waTemplates,
     dailyViews
   };
 }

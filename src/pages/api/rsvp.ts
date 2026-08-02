@@ -27,9 +27,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const normalizedMessage = message ? String(message).trim().slice(0, 500) : '';
-    if (!normalizedMessage) {
-      return jsonResponse({ error: 'Ucapan wajib diisi agar dapat ditampilkan di daftar wishes.' }, 400);
-    }
 
     // 1. Fetch dynamic settings to verify toggle & expiration state
     const { data: settings, error: settingsError } = await supabase

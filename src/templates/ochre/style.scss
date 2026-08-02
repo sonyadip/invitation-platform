@@ -1192,6 +1192,11 @@ body.template-ochre {
     color: #ffffff;
   }
 
+  .wish-card__badge--tentative {
+    background-color: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+  }
+
   .wish-card__date {
     color: var(--template-text-dim);
     font-size: 10px;

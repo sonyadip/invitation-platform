@@ -40,6 +40,15 @@ if (Astro.request.method === 'POST') {
       home_heading_3: val('home_heading_3'),
       home_description: val('home_description'),
       home_cta_label: val('home_cta_label'),
+      home_templates_eyebrow: val('home_templates_eyebrow'),
+      home_templates_heading: val('home_templates_heading'),
+      home_booking_eyebrow: val('home_booking_eyebrow'),
+      home_booking_heading: val('home_booking_heading'),
+      home_booking_cta: val('home_booking_cta'),
+      home_hero_seal_text: val('home_hero_seal_text'),
+      home_stat_number: val('home_stat_number'),
+      home_stat_label: val('home_stat_label'),
+      home_template_cards: JSON.parse(val('home_template_cards') || '[]'),
       meta_title: val('meta_title'),
       meta_description: val('meta_description'),
     });
@@ -169,11 +178,89 @@ const settings = await getPlatformSettings();
             </label>
             <label>
               Label CTA (Tombol Utama)
-              <input name="home_cta_label" value={settings.home_cta_label} placeholder="Mulai Konsultasi" />
+              <input name="home_cta_label" value={settings.home_cta_label} placeholder="Lihat Koleksi" />
+            </label>
+            <label class="wide">
+              Teks Segel Animasi
+              <input name="home_hero_seal_text" value={settings.home_hero_seal_text} placeholder="SENADDA • DIGITAL STUDIO • UNDANGAN •" />
             </label>
             <label class="wide">
               Deskripsi Hero
               <textarea name="home_description" rows="3">{settings.home_description}</textarea>
+            </label>
+          </div>
+        </section>
+
+        <!-- KONTEN STATISTIK -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">📈</span>
+            <div>
+              <h2>Statistik (Hero)</h2>
+              <p>Angka dan label untuk statistik yang muncul di hero section.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label>
+              Angka Statistik
+              <input name="home_stat_number" value={settings.home_stat_number} placeholder="5+" />
+            </label>
+            <label>
+              Label Statistik
+              <input name="home_stat_label" value={settings.home_stat_label} placeholder="Koleksi Eksklusif" />
+            </label>
+          </div>
+        </section>
+
+        <!-- KONTEN TEMPLATE -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">🎨</span>
+            <div>
+              <h2>Koleksi Desain</h2>
+              <p>Teks untuk section koleksi desain (templates).</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label>
+              Label Kecil (Eyebrow)
+              <input name="home_templates_eyebrow" value={settings.home_templates_eyebrow} placeholder="Koleksi Desain" />
+            </label>
+            <label>
+              Heading
+              <input name="home_templates_heading" value={settings.home_templates_heading} placeholder="Pilih Nuansa." />
+            </label>
+            <div class="wide repeater-field">
+              <label>Data Kartu Desain</label>
+              <input type="hidden" name="home_template_cards" id="template_cards_input" value={JSON.stringify(settings.home_template_cards)} />
+              <div id="template_cards_container" class="repeater-container"></div>
+              <button type="button" id="add_template_card_btn" class="secondary-action" style="margin-top: 10px;">+ Tambah Kartu</button>
+              <span class="hint" style="display:block; margin-top: 8px;">Default template key: lumiere, deauville, air, editorial, noir, sage, ochre, ivory. Jika image kosong, gambar bawaan template akan digunakan.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- KONTEN BOOKING -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">💬</span>
+            <div>
+              <h2>Section Booking</h2>
+              <p>Teks untuk section hubungi kami / booking.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label>
+              Label Kecil (Eyebrow)
+              <input name="home_booking_eyebrow" value={settings.home_booking_eyebrow} placeholder="Langkah Selanjutnya" />
+            </label>
+            <label>
+              Heading
+              <input name="home_booking_heading" value={settings.home_booking_heading} placeholder="Ceritakan undangan Anda." />
+            </label>
+            <label class="wide">
+              Label Tombol WhatsApp
+              <input name="home_booking_cta" value={settings.home_booking_cta} placeholder="Hubungi via WhatsApp" />
             </label>
           </div>
         </section>
@@ -205,6 +292,79 @@ const settings = await getPlatformSettings();
         </footer>
       </form>
     </main>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('template_cards_container');
+        const input = document.getElementById('template_cards_input');
+        const addBtn = document.getElementById('add_template_card_btn');
+        const form = document.querySelector('.form-panel');
+        
+        let cards = [];
+        try {
+          cards = JSON.parse(input.value || '[]');
+        } catch (e) {
+          cards = [];
+        }
+        
+        function render() {
+          container.innerHTML = '';
+          cards.forEach((card, index) => {
+            const row = document.createElement('div');
+            row.className = 'repeater-row';
+            row.innerHTML = `
+              <div class="repeater-grid">
+                <label>
+                  Key (Tema)
+                  <input type="text" placeholder="lumiere" value="${card.key || ''}" data-idx="${index}" data-field="key" />
+                </label>
+                <label>
+                  Nama Kartu
+                  <input type="text" placeholder="Lumiere" value="${card.name || ''}" data-idx="${index}" data-field="name" />
+                </label>
+                <label>
+                  Harga
+                  <input type="text" placeholder="Rp 150.000" value="${card.price || ''}" data-idx="${index}" data-field="price" />
+                </label>
+                <label>
+                  Image URL
+                  <input type="text" placeholder="(Opsional)" value="${card.image || ''}" data-idx="${index}" data-field="image" />
+                </label>
+              </div>
+              <button type="button" class="remove-btn" data-idx="${index}">Hapus</button>
+            `;
+            container.appendChild(row);
+          });
+        }
+
+        container.addEventListener('input', (e) => {
+          const target = e.target;
+          if (target.dataset.idx !== undefined) {
+            cards[target.dataset.idx][target.dataset.field] = target.value;
+          }
+        });
+
+        container.addEventListener('click', (e) => {
+          if (e.target.classList.contains('remove-btn')) {
+            const idx = e.target.dataset.idx;
+            cards.splice(idx, 1);
+            render();
+          }
+        });
+
+        addBtn.addEventListener('click', () => {
+          cards.push({ key: '', name: '', price: '', image: '' });
+          render();
+        });
+
+        form.addEventListener('submit', () => {
+          const validCards = cards.filter(c => c.key || c.name);
+          input.value = JSON.stringify(validCards);
+        });
+
+        render();
+      });
+    </script>
   </body>
 </html>
 
@@ -414,5 +574,47 @@ const settings = await getPlatformSettings();
     .header { align-items: flex-start; flex-direction: column; }
     .form-grid { grid-template-columns: 1fr; }
     section { padding: 18px; }
+    :global(.repeater-grid) { grid-template-columns: 1fr; }
+    :global(.repeater-row) { flex-direction: column; }
+    :global(.remove-btn) { width: 100%; }
   }
+  
+  .repeater-field { grid-column: 1 / -1; margin-top: 10px; }
+  .repeater-container { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+  
+  :global(.repeater-row) {
+    display: flex; gap: 16px; align-items: flex-end;
+    padding: 18px; background: #fafbfc; border: 1px solid #eef0f4; border-radius: 8px;
+  }
+  :global(.repeater-grid) {
+    flex: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
+  }
+  :global(.repeater-grid label) {
+    display: grid;
+    gap: 7px;
+    color: #394150;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  :global(.repeater-grid input) {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 400;
+    color: #20242c;
+    transition: border-color 0.15s;
+  }
+  :global(.repeater-grid input:focus) {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+  :global(.remove-btn) {
+    background: #fee2e2; color: #991b1b; border: none; padding: 0 16px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 700; min-height: 42px; transition: background 0.15s;
+  }
+  :global(.remove-btn:hover) { background: #fecaca; }
 </style>

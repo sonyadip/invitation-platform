@@ -205,6 +205,7 @@ const activeGifts =
   settings={overrideSettings}
   to={guestName}
   templateClass="template-deauville"
+  image={coverImage}
 >
   <div class="invitation-root" data-template-root>
     <CinematicIntro
@@ -513,16 +514,23 @@ const activeGifts =
                 <input type="hidden" name="weddingId" value={wedding.id} />
                 <input type="text" name="name" required placeholder="Nama" />
                 <select name="attendance" required data-rsvp-attendance>
-                  <option value="" disabled selected>
+                  <option value="" disabled>
                     Konfirmasi Kehadiran
                   </option>
-                  <option value="attending">Hadir</option>
+                  <option value="attending" selected>Hadir</option>
+                      <option value="tentative">Ragu</option>
                   <option value="declined">Tidak Hadir</option>
+                </select>
+                <select name="count">
+                  <option value="1" selected>1 Orang</option>
+                  <option value="2">2 Orang</option>
+                  <option value="3">3 Orang</option>
+                  <option value="4">4 Orang</option>
+                  <option value="5">5 Orang</option>
                 </select>
                 <textarea
                   name="message"
                   rows="5"
-                  required
                   placeholder="Ucapan"
                 />
                 <div
@@ -564,7 +572,7 @@ const activeGifts =
                       <div class="wish-card__meta">
                         <span class="wish-card__name">{wish.guest_name}</span>
                         <span
-                          class={`wish-card__badge ${wish.attendance_status === "attending" ? "wish-card__badge--attend" : "wish-card__badge--absent"}`}
+                          class={`wish-card__badge ${wish.attendance_status === "attending" ? "wish-card__badge--attend" : wish.attendance_status === "tentative" ? "wish-card__badge--tentative" : "wish-card__badge--absent"}`}
                         >
                           {wish.attendance_status === "attending"
                             ? "Hadir"

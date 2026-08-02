@@ -33,14 +33,16 @@ export interface InvitationFormInput {
   groomImageUrl: string | null;
   logoImageUrl: string | null;
   galleryImageUrls: string[];
+  galleryVideoUrls: string[];
   instagramUrl: string | null;
-  whatsappUrl: string | null;
   groomInstagramUrl: string | null;
   brideInstagramUrl: string | null;
   groomFatherName: string | null;
   groomMotherName: string | null;
+  groomChildNumber: string | null;
   brideFatherName: string | null;
   brideMotherName: string | null;
+  brideChildNumber: string | null;
   giftDescription: string | null;
   thankYouMessage: string | null;
   introVerse: string | null;
@@ -152,8 +154,9 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
   const giftAccountNumbers = values('giftAccountNumber');
   const giftAccountNames = values('giftAccountName');
   const giftQrisUrls = values('giftQrisUrl');
+  const galleryImageUrlValues = values('galleryImageUrl');
+  const galleryVideoUrlValues = values('galleryVideoUrl');
   const events = eventNames
-    .slice(0, 3)
     .map((name, index) => ({
       name,
       date: eventDates[index] ? new Date(eventDates[index]).toISOString() : '',
@@ -166,14 +169,12 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     .filter((event) => event.name || event.date || event.venueName || event.venueAddress || event.mapsUrl);
   const primaryEvent = events[0];
   const story = storyTitles
-    .slice(0, 3)
     .map((title, index) => ({
       title,
       description: storyDescriptions[index] || ''
     }))
     .filter((item) => item.title || item.description);
   const gifts = giftBankNames
-    .slice(0, 3)
     .map((bankName, index) => ({
       bankName,
       accountNumber: giftAccountNumbers[index] || '',
@@ -207,21 +208,30 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     passwordProtectionEnabled: checked('passwordProtectionEnabled'),
     accessPassword: nullableValue('accessPassword'),
     clientPassword: nullableValue('clientPassword'),
-    expirationDate: nullableDateValue('expirationDate'),
+    expirationDate: nullableDateValue('expirationDate') || (() => {
+      if (events.length > 0 && events[0].date) {
+        const d = new Date(events[0].date);
+        d.setMonth(d.getMonth() + 1);
+        return d.toISOString();
+      }
+      return null;
+    })(),
     heroVideoUrl: nullableValue('heroVideoUrl'),
     heroImageUrl: nullableValue('heroImageUrl'),
     brideImageUrl: nullableValue('brideImageUrl'),
     groomImageUrl: nullableValue('groomImageUrl'),
     logoImageUrl: nullableValue('logoImageUrl'),
-    galleryImageUrls: textareaList('galleryImageUrls'),
+    galleryImageUrls: galleryImageUrlValues.filter(Boolean),
+    galleryVideoUrls: galleryVideoUrlValues.filter(Boolean),
     instagramUrl: nullableValue('instagramUrl'),
-    whatsappUrl: nullableValue('whatsappUrl'),
     groomInstagramUrl: nullableValue('groomInstagramUrl'),
     brideInstagramUrl: nullableValue('brideInstagramUrl'),
     groomFatherName: nullableValue('groomFatherName'),
     groomMotherName: nullableValue('groomMotherName'),
+    groomChildNumber: nullableValue('groomChildNumber'),
     brideFatherName: nullableValue('brideFatherName'),
     brideMotherName: nullableValue('brideMotherName'),
+    brideChildNumber: nullableValue('brideChildNumber'),
     giftDescription: nullableValue('giftDescription'),
     thankYouMessage: nullableValue('thankYouMessage'),
     introVerse: nullableValue('introVerse'),
@@ -434,13 +444,15 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
   const content = {
     ...(themeConfig.content || {}),
     instagramUrl: input.instagramUrl || undefined,
-    whatsappUrl: input.whatsappUrl || undefined,
     groomInstagramUrl: input.groomInstagramUrl || undefined,
     brideInstagramUrl: input.brideInstagramUrl || undefined,
     groomFatherName: input.groomFatherName || undefined,
     groomMotherName: input.groomMotherName || undefined,
+    groomChildNumber: input.groomChildNumber || undefined,
     brideFatherName: input.brideFatherName || undefined,
     brideMotherName: input.brideMotherName || undefined,
+    brideChildNumber: input.brideChildNumber || undefined,
+    galleryVideoUrls: input.galleryVideoUrls?.length ? input.galleryVideoUrls : undefined,
     giftDescription: input.giftDescription || undefined,
     closingMessage: input.thankYouMessage || undefined,
     verse: input.introVerse || undefined,
@@ -528,7 +540,7 @@ async function replaceWeddingEvents(
 
   if (deleteError) throw toDashboardError(deleteError, 'Failed to clear wedding events.');
 
-  const rows = events.slice(0, 3).map((event, index) => ({
+  const rows = events.map((event, index) => ({
     wedding_id: weddingId,
     event_name: event.name,
     event_date: event.date,
@@ -561,7 +573,7 @@ async function replaceGiftAccounts(
 
   if (!gifts.length) return;
 
-  const rows = gifts.slice(0, 3).map((gift, index) => ({
+  const rows = gifts.map((gift, index) => ({
     wedding_id: weddingId,
     bank_name: gift.bankName,
     account_number: gift.accountNumber,

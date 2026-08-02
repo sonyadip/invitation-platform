@@ -122,7 +122,13 @@ const activeGifts = gifts && gifts.length > 0
 
 ---
 
-<BaseLayout wedding={wedding} settings={overrideSettings} to={guestName} templateClass="template-ivory">
+<BaseLayout
+  wedding={wedding}
+  settings={overrideSettings}
+  to={guestName}
+  templateClass="template-ivory"
+  image={heroImage}
+>
   <div class="invitation-root" data-template-root>
     <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
@@ -399,13 +405,23 @@ const activeGifts = gifts && gifts.length > 0
                         </div>
                         <div class="rsvp-form__field">
                           <select id="rsvp-attendance" name="attendance" required class="rsvp-form__select" data-rsvp-attendance>
-                            <option value="" disabled selected>Konfirmasi Kehadiran</option>
-                            <option value="attending">Hadir</option>
+                            <option value="" disabled>Konfirmasi Kehadiran</option>
+                            <option value="attending" selected>Hadir</option>
+                      <option value="tentative">Ragu</option>
                             <option value="declined">Tidak Hadir</option>
                           </select>
                         </div>
                         <div class="rsvp-form__field">
-                          <textarea id="rsvp-message" name="message" rows="4" required placeholder="Ucapan" class="rsvp-form__textarea"></textarea>
+                          <select name="count" class="rsvp-form__select">
+                            <option value="1" selected>1 Orang</option>
+                            <option value="2">2 Orang</option>
+                            <option value="3">3 Orang</option>
+                            <option value="4">4 Orang</option>
+                            <option value="5">5 Orang</option>
+                          </select>
+                        </div>
+                        <div class="rsvp-form__field">
+                          <textarea id="rsvp-message" name="message" rows="4" placeholder="Ucapan" class="rsvp-form__textarea"></textarea>
                         </div>
                         <div class="rsvp-form__error" data-rsvp-error style="display:none;"></div>
                         <button type="submit" class="rsvp-form__submit" data-rsvp-submit>Submit</button>
@@ -430,8 +446,8 @@ const activeGifts = gifts && gifts.length > 0
                           <div class="wish-card__header">
                             <div class="wish-card__meta">
                               <span class="wish-card__name">{wish.guest_name}</span>
-                              <span class={`wish-card__badge ${wish.attendance_status === 'attending' ? 'wish-card__badge--attend' : 'wish-card__badge--absent'}`}>
-                                {wish.attendance_status === 'attending' ? 'Hadir' : 'Absen'}
+                              <span class={`wish-card__badge ${wish.attendance_status === "attending" ? "wish-card__badge--attend" : wish.attendance_status === "tentative" ? "wish-card__badge--tentative" : "wish-card__badge--absent"}`}>
+                                {wish.attendance_status === "attending" ? "Hadir" : wish.attendance_status === "tentative" ? "Ragu" : "Absen"}
                               </span>
                             </div>
                             <span class="wish-card__date">

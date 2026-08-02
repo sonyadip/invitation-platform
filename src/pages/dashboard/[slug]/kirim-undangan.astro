@@ -18,141 +18,550 @@ if (!report) {
 const coupleName = report.summary.coupleName;
 const link = `${Astro.url.origin}/${slug}`;
 
-const categories = ["Formal", "Muslim", "Nasrani", "Hindu", "Keluarga", "Rekan Kerja"];
-const guests = [
-  { name: "Keluarga Mbah Parjo", status: "Terkirim" },
-  { name: "Jojo", status: "Terkirim" },
-  { name: "IzarWp", status: "Belum Dikirim" },
-  { name: "Shofwan & Partner", status: "Terkirim" },
-  { name: "Ghina dan Partner", status: "Belum Dikirim" },
-  { name: "Ameilia", status: "Belum Dikirim" },
-];
+const categories = ["Formal", "Teman", "Keluarga"];
+const initialGuests = report.sentInvitations || [];
+const initialTemplates = report.waTemplates || {};
+const weddingId = report.summary.weddingId;
 ---
 
 <ClientLayout title="Kirim Undangan">
-  <!-- Header Section -->
-  <section class="mb-8 fade-in-bottom">
-    <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Kirim Undangan</h2>
-    <p class="font-body-md text-secondary">Personalisasi pesan dan kirim undangan digital Anda kepada tamu terkasih.</p>
-  </section>
-
-  <!-- Template Selector -->
-  <section class="mb-6 fade-in-bottom" style="animation-delay: 0.1s">
-    <label class="font-label-md text-label-md text-outline uppercase mb-3 block">Pilih Kategori Pesan</label>
-    <div class="flex overflow-x-auto gap-3 pb-4 hide-scrollbar -mx-4 px-4" id="category-filters">
-      {categories.map((cat, i) => (
-        <button class={`flex-none px-6 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 ${i === 0 ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-container-high text-secondary hover:bg-surface-container-highest'}`}>
-          {cat}
-        </button>
-      ))}
-    </div>
-  </section>
-
-  <!-- Message Preview Card -->
-  <section class="mb-10 fade-in-bottom" style="animation-delay: 0.2s">
-    <div class="bg-surface-container-lowest rounded-[24px] p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] relative overflow-hidden">
-      <div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
-      <div class="flex justify-between items-center mb-4">
-        <span class="font-label-md text-label-md text-primary">PRATINJAU PESAN</span>
-        <button class="text-primary hover:bg-primary-container/10 p-2 rounded-full transition-colors flex items-center">
-          <span class="material-symbols-outlined text-[20px]">edit</span>
-        </button>
-      </div>
-      <div class="bg-surface p-4 rounded-xl border border-outline-variant/30">
-        <p class="font-body-md text-on-surface-variant leading-relaxed whitespace-pre-wrap" id="wa-template">Kepada Yth. *[NAMA]*,
-
-Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami ({coupleName}).
-
-Berikut link undangan kami:
-<span class="text-primary underline font-medium">{link}?to=[NAMA_URL]</span>
-
-Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Guest List Section -->
-  <section class="fade-in-bottom" style="animation-delay: 0.3s">
-    <div class="flex justify-between items-end mb-6">
-      <h3 class="font-headline-md text-headline-md text-on-surface">Daftar Tamu</h3>
-      <span class="font-label-sm text-label-sm text-outline">{guests.length} Tamu</span>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="relative mb-6">
-      <input class="w-full h-12 pl-12 pr-4 bg-surface-container-low border-none rounded-full font-body-md focus:ring-2 focus:ring-primary transition-all" placeholder="Cari nama tamu..." type="text"/>
-      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
-    </div>
-
-    <!-- Guest Cards Container -->
-    <div class="space-y-4">
-      {guests.map((guest, i) => (
-        <div class="bg-surface-container-lowest rounded-[24px] p-5 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] border border-transparent hover:border-outline-variant/20 transition-all">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h4 class="font-body-lg font-bold text-on-surface">{guest.name}</h4>
-              <div class="flex items-center gap-1.5 mt-1">
-                <div class={`w-2 h-2 rounded-full ${guest.status === 'Terkirim' ? 'bg-green-500' : 'bg-orange-400'}`}></div>
-                <span class="font-label-sm text-label-sm text-secondary">{guest.status}</span>
-              </div>
-            </div>
-            <div class="bg-surface-container-high px-3 py-1 rounded-full">
-              <span class="font-label-sm text-label-sm text-outline">{categories[i % categories.length]}</span>
-            </div>
-          </div>
-          
-          <div class="flex gap-3">
-            <button class="flex-1 h-11 flex items-center justify-center gap-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary/5 active:scale-95 transition-all" onclick={`navigator.clipboard.writeText(document.getElementById('wa-template').innerText.replace(/\\[NAMA\\]/g, '${guest.name}').replace(/\\[NAMA_URL\\]/g, encodeURIComponent('${guest.name}'))); alert('Pesan disalin!')`}>
-              <span class="material-symbols-outlined text-[18px]">content_copy</span>
-              Salin
-            </button>
-            <button class="flex-1 h-11 flex items-center justify-center gap-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-md hover:bg-primary-container active:scale-95 transition-all" onclick={`window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(document.getElementById('wa-template').innerText.replace(/\\[NAMA\\]/g, '${guest.name}').replace(/\\[NAMA_URL\\]/g, encodeURIComponent('${guest.name}'))), '_blank')`}>
-              <span class="material-symbols-outlined text-[18px]">send</span>
-              Kirim WA
-            </button>
-          </div>
+  <div class="kirim-undangan-layout">
+    <!-- Left Column: Template Ucapan -->
+    <section class="bento-card fade-in-bottom animate-on-scroll kirim-left kirim-template">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="bento-card__title kirim-template__title" style="margin: 0;">Template Pesan</h3>
+        <div style="display: flex; gap: 8px;">
+          <button id="template-cancel-btn" class="filter-btn filter-btn--outline" style="height: 32px; padding: 0 16px; font-size: 12px; margin: 0; display: none;">Batal</button>
+          <button id="template-edit-btn" class="btn-primary" style="height: 32px; padding: 0 16px; font-size: 12px; margin: 0;">Edit</button>
         </div>
-      ))}
-    </div>
-  </section>
+      </div>
+      
+      <div class="filter-scroll no-scrollbar" id="category-filters">
+        {categories.map((cat, i) => (
+          <button class={`filter-btn ${i === 0 ? 'filter-btn--active' : 'filter-btn--outline'}`}>
+            {cat}
+          </button>
+        ))}
+      </div>
 
-  <!-- Concierge Widget -->
-  <section class="mt-12 mb-8 fade-in-bottom" style="animation-delay: 0.4s">
-    <div class="bg-gradient-to-br from-surface-container-lowest to-primary-fixed/20 p-6 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex items-center gap-4 border border-primary/10">
-      <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-        <span class="material-symbols-outlined text-on-primary">support_agent</span>
+      <div class="kirim-template__preview-wrapper">
+        <textarea id="wa-template-editor" style="display: none; width: 100%; height: 100%; min-height: 250px; padding: 12px; font-family: inherit; font-size: 14px; border-radius: 8px; border: 1px solid var(--color-outline-variant); resize: none;"></textarea>
+        <p class="preview-card__text kirim-template__text" id="wa-template" style="white-space: pre-wrap;"></p>
       </div>
-      <div>
-        <h5 class="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">Butuh Bantuan?</h5>
-        <p class="font-label-sm text-label-sm text-secondary leading-tight">Hubungi Digital Concierge untuk manajemen tamu otomatis.</p>
+      <p class="kirim-template__hint">Gunakan kode <strong>[NAMA]</strong> dan <strong>[LINK]</strong> (Otomatis berubah).</p>
+    </section>
+
+    <!-- Right Column: Daftar Tamu -->
+    <section class="bento-card fade-in-bottom animate-on-scroll kirim-right">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="bento-card__title" style="margin: 0;">Daftar Tamu</h3>
+        <button id="import-guest-btn" class="filter-btn filter-btn--outline rsvp-filter-btn rsvp-export-btn">
+          <span class="material-symbols-outlined rsvp-filter-icon">upload_file</span> Import CSV
+        </button>
+        <input type="file" id="import-guest-input" accept=".csv" style="display: none;" />
       </div>
-      <span class="material-symbols-outlined text-primary ml-auto">chevron_right</span>
-    </div>
-  </section>
+
+      <!-- Search Bar -->
+      <div class="kirim-search">
+        <input class="form-input kirim-search__input" placeholder="Ketik Nama Tamu..." type="text" />
+        <input class="form-input kirim-search__input-wa" placeholder="No WA (Opsional)" type="tel" />
+        <button class="kirim-search__btn">
+          <span class="material-symbols-outlined kirim-search__icon">add</span>
+        </button>
+      </div>
+
+      <!-- Guest List -->
+      <div class="kirim-guests" id="kirim-guests-container">
+        <!-- Rendered via JS to support localStorage -->
+      </div>
+      
+      <!-- Pagination UI -->
+      <div class="pagination-wrapper" style="border-top: none; padding: 16px 0 0 0;">
+        <button class="pagination-btn" id="kirimPrev" disabled>Prev</button>
+        <div class="pagination-numbers" id="kirimPageNumbers"></div>
+        <button class="pagination-btn" id="kirimNext" disabled>Next</button>
+      </div>
+    </section>
+  </div>
   
-  <style>
-    .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-  </style>
-
-  <script>
+  <script is:inline define:vars={{ initialGuests, initialTemplates, weddingId }}>
     document.addEventListener('DOMContentLoaded', () => {
-      const templateBtns = document.querySelectorAll('#category-filters button');
-      templateBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          templateBtns.forEach(b => {
-            b.classList.remove('bg-primary', 'text-on-primary', 'shadow-md');
-            b.classList.add('bg-surface-container-high', 'text-secondary');
-          });
-          btn.classList.add('bg-primary', 'text-on-primary', 'shadow-md');
-          btn.classList.remove('bg-surface-container-high', 'text-secondary');
+      const guestsContainer = document.querySelector('.kirim-guests');
+      let guestsData = initialGuests.map(g => ({
+        id: g.id,
+        name: g.guestName || g.name,
+        phone: g.phone
+      }));
+      
+      let filteredData = [...guestsData];
+      let currentPage = 1;
+      const itemsPerPage = 10;
+      
+      function renderGuests() {
+        guestsContainer.innerHTML = '';
+        
+        let totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+        
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const paginatedData = filteredData.slice(start, end);
+        
+        paginatedData.forEach((guest, i) => {
+          const newRow = document.createElement('div');
+          newRow.className = `kirim-guests__item ${i < paginatedData.length - 1 ? 'kirim-guests__item--bordered' : ''}`;
+          newRow.dataset.id = guest.id;
+          
+          let waButtonHtml = '';
+          if (guest.phone) {
+            waButtonHtml = `<a href="#" data-phone="${guest.phone}" class="kirim-guests__btn-wa">Kirim WA</a>`;
+          }
+
+          newRow.innerHTML = `
+              <h4 class="kirim-guests__name">${guest.name}</h4>
+              <div class="kirim-guests__actions">
+                <button class="kirim-guests__btn-copy">Salin</button>
+                ${waButtonHtml}
+                <button class="kirim-guests__btn-delete">
+                  <span class="material-symbols-outlined kirim-guests__delete-icon">close</span>
+                </button>
+              </div>
+          `;
+          guestsContainer.appendChild(newRow);
         });
-      });
+
+        // Update Pagination UI
+        const prevBtn = document.getElementById('kirimPrev');
+        const nextBtn = document.getElementById('kirimNext');
+        const pageNumbers = document.getElementById('kirimPageNumbers');
+
+        if (prevBtn) prevBtn.disabled = currentPage === 1;
+        if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+
+        if (pageNumbers) {
+          pageNumbers.innerHTML = '';
+          
+          function createBtn(i) {
+            const btn = document.createElement('button');
+            btn.className = `pagination-num ${i === currentPage ? 'pagination-num--active' : ''}`;
+            btn.innerText = i;
+            btn.onclick = () => { currentPage = i; renderGuests(); };
+            return btn;
+          }
+          function createEllipsis() {
+            const span = document.createElement('span');
+            span.className = 'pagination-ellipsis';
+            span.innerText = '...';
+            return span;
+          }
+
+          if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pageNumbers.appendChild(createBtn(i));
+          } else {
+            if (currentPage <= 3) {
+              for (let i = 1; i <= 4; i++) pageNumbers.appendChild(createBtn(i));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(totalPages));
+            } else if (currentPage >= totalPages - 2) {
+              pageNumbers.appendChild(createBtn(1));
+              pageNumbers.appendChild(createEllipsis());
+              for (let i = totalPages - 3; i <= totalPages; i++) pageNumbers.appendChild(createBtn(i));
+            } else {
+              pageNumbers.appendChild(createBtn(1));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(currentPage - 1));
+              pageNumbers.appendChild(createBtn(currentPage));
+              pageNumbers.appendChild(createBtn(currentPage + 1));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(totalPages));
+            }
+          }
+        }
+      }
+
+      // --- TEMPLATE LOGIC ---
+      const defaultTemplates = {
+        "Formal": `Om Swastyastu,
+
+Kepada Yth. *[NAMA]*,
+
+Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa/Tuhan Yang Maha Esa, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pawiwahan (pernikahan) kami.
+
+Detail acara dan lokasi dapat dilihat melalui tautan undangan berikut:
+[LINK]
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.
+
+Om Shanti, Shanti, Shanti, Om.`,
+        "Teman": `Om Swastyastu,
+
+Halo *[NAMA]*!
+
+Semoga kabarmu baik ya. Kami ingin mengundang kamu untuk hadir di acara pawiwahan (pernikahan) kami.
+
+Cek detail acaranya melalui tautan ini:
+[LINK]
+
+Kehadiranmu bakal jadi kado terindah buat kami. Ditunggu kedatangannya ya!
+
+Om Shanti, Shanti, Shanti, Om.`,
+        "Keluarga": `Om Swastyastu,
+
+Kepada Yth. *[NAMA]*, keluarga besar yang kami cintai.
+
+Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud mengundang Bapak/Ibu/Keluarga untuk hadir pada acara pawiwahan (pernikahan) kami.
+
+Detail acara dapat dilihat melalui tautan undangan berikut:
+[LINK]
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Keluarga berkenan hadir untuk memberikan doa restu.
+
+Om Shanti, Shanti, Shanti, Om.`
+      };
+
+      let templates = {};
+      try {
+        templates = { ...initialTemplates };
+        for (const key in defaultTemplates) {
+            if (!templates[key]) templates[key] = defaultTemplates[key];
+        }
+      } catch(e) {
+        templates = { ...defaultTemplates };
+      }
+
+      function saveTemplates() {
+        fetch('/api/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ weddingId, templates })
+        }).catch(err => console.error("Gagal menyimpan template:", err));
+      }
+
+      let currentCategory = 'Formal';
+      let isEditingTemplate = false;
+
+      const templateP = document.getElementById('wa-template');
+      const templateEditor = document.getElementById('wa-template-editor');
+      const editBtn = document.getElementById('template-edit-btn');
+      const cancelBtn = document.getElementById('template-cancel-btn');
+      const filterContainer = document.getElementById('category-filters');
+
+      function renderTemplate() {
+        if (templateP) templateP.innerText = templates[currentCategory];
+      }
+      renderTemplate();
+
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          if (isEditingTemplate) {
+            // Save
+            templates[currentCategory] = templateEditor.value;
+            saveTemplates();
+            renderTemplate();
+            templateEditor.style.display = 'none';
+            templateP.style.display = 'block';
+            editBtn.innerText = 'Edit';
+            if (cancelBtn) cancelBtn.style.display = 'none';
+            filterContainer.style.pointerEvents = 'auto';
+            filterContainer.style.opacity = '1';
+          } else {
+            // Edit
+            templateEditor.value = templates[currentCategory];
+            templateEditor.style.display = 'block';
+            templateP.style.display = 'none';
+            editBtn.innerText = 'Simpan';
+            if (cancelBtn) cancelBtn.style.display = 'block';
+            filterContainer.style.pointerEvents = 'none';
+            filterContainer.style.opacity = '0.5';
+          }
+          isEditingTemplate = !isEditingTemplate;
+        });
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          templateEditor.style.display = 'none';
+          templateP.style.display = 'block';
+          editBtn.innerText = 'Edit';
+          cancelBtn.style.display = 'none';
+          filterContainer.style.pointerEvents = 'auto';
+          filterContainer.style.opacity = '1';
+          isEditingTemplate = false;
+        });
+      }
+
+      if (filterContainer) {
+        const btns = filterContainer.querySelectorAll('.filter-btn');
+        btns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (isEditingTemplate) return;
+            btns.forEach(b => {
+              b.classList.remove('filter-btn--active');
+              b.classList.add('filter-btn--outline');
+            });
+            btn.classList.add('filter-btn--active');
+            btn.classList.remove('filter-btn--outline');
+            currentCategory = btn.innerText.trim();
+            renderTemplate();
+          });
+        });
+      }
+
+      // --- TAMBAH & CARI TAMU ---
+      const addInput = document.querySelector('.kirim-search__input');
+      const addWaInput = document.querySelector('.kirim-search__input-wa');
+      const addBtn = document.querySelector('.kirim-search__btn');
+
+      // Fungsi Search Live
+      if (addInput) {
+        addInput.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase().trim();
+          filteredData = guestsData.filter(g => g.name.toLowerCase().includes(query));
+          currentPage = 1;
+          renderGuests();
+        });
+      }
+
+      async function addGuest() {
+        const name = addInput.value.trim();
+        let phone = addWaInput ? addWaInput.value.trim() : '';
+        if (!name) return;
+
+        addBtn.disabled = true;
+        addInput.disabled = true;
+        if (addWaInput) addWaInput.disabled = true;
+
+        if (phone.startsWith('0')) {
+          phone = '62' + phone.substring(1);
+        }
+        phone = phone.replace(/[^0-9]/g, '');
+
+        try {
+          const response = await fetch('/api/guests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ weddingId, name, phone })
+          });
+          const result = await response.json();
+          if (result.success && result.item) {
+            guestsData.unshift({
+              id: result.item.id,
+              name: result.item.guest_name,
+              phone: result.item.phone
+            });
+            
+            addInput.value = '';
+            if (addWaInput) addWaInput.value = '';
+            
+            filteredData = [...guestsData];
+            currentPage = 1;
+            renderGuests();
+          } else {
+            alert(result.error || 'Gagal menambahkan tamu');
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Terjadi kesalahan jaringan.');
+        } finally {
+          addBtn.disabled = false;
+          addInput.disabled = false;
+          if (addWaInput) addWaInput.disabled = false;
+          addInput.focus();
+        }
+      }
+
+      if (addBtn) addBtn.addEventListener('click', addGuest);
+      if (addInput) {
+        addInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') addGuest();
+        });
+      }
+
+      // --- HAPUS & SALIN (Event Delegation) ---
+      if (guestsContainer) {
+        guestsContainer.addEventListener('click', (e) => {
+          // Tombol Hapus
+          const deleteBtn = e.target.closest('.kirim-guests__btn-delete');
+          if (deleteBtn) {
+            const row = deleteBtn.closest('.kirim-guests__item');
+            if (row && row.dataset.id) {
+              const id = row.dataset.id;
+              
+              fetch('/api/guests', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+              }).catch(err => console.error("Gagal menghapus:", err));
+
+              guestsData = guestsData.filter(g => String(g.id) !== String(id));
+              
+              const query = addInput ? addInput.value.toLowerCase().trim() : '';
+              if (query) {
+                filteredData = guestsData.filter(g => g.name.toLowerCase().includes(query));
+              } else {
+                filteredData = [...guestsData];
+              }
+              renderGuests();
+            }
+            return;
+          }
+          
+          // Tombol Salin
+          const copyBtn = e.target.closest('.kirim-guests__btn-copy');
+          if (copyBtn) {
+             const row = copyBtn.closest('.kirim-guests__item');
+             const nameEl = row.querySelector('.kirim-guests__name');
+             const templateEl = document.getElementById('wa-template');
+             
+             if (nameEl && templateEl) {
+                let text = templateEl.innerText;
+                text = text.replace(/\[NAMA\]/g, nameEl.innerText);
+                text = text.replace(/\[LINK\]/g, window.location.origin + window.location.pathname + '?to=' + encodeURIComponent(nameEl.innerText));
+                
+                navigator.clipboard.writeText(text).then(() => {
+                   const originalText = copyBtn.innerText;
+                   copyBtn.innerText = 'Tersalin!';
+                   setTimeout(() => { copyBtn.innerText = originalText; }, 2000);
+                });
+             }
+             return;
+          }
+
+          // Tombol Kirim WA
+          const waBtn = e.target.closest('.kirim-guests__btn-wa');
+          if (waBtn) {
+             e.preventDefault();
+             const row = waBtn.closest('.kirim-guests__item');
+             const nameEl = row.querySelector('.kirim-guests__name');
+             const templateEl = document.getElementById('wa-template');
+             
+             if (nameEl && templateEl) {
+                let text = templateEl.innerText;
+                text = text.replace(/\[NAMA\]/g, nameEl.innerText);
+                text = text.replace(/\[LINK\]/g, window.location.origin + window.location.pathname + '?to=' + encodeURIComponent(nameEl.innerText));
+                
+                let phone = waBtn.getAttribute('data-phone') || '';
+                const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+                window.open(waUrl, '_blank');
+             }
+             return;
+          }
+        });
+      }
+
+      // --- IMPORT CSV LOGIC ---
+      const importBtn = document.getElementById('import-guest-btn');
+      const importInput = document.getElementById('import-guest-input');
+
+      if (importBtn && importInput) {
+        importBtn.addEventListener('click', () => {
+          importInput.click();
+        });
+
+        importInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const text = event.target.result;
+            const lines = text.split('\n');
+            
+            let startIndex = 0;
+            if (lines.length > 0 && lines[0].toLowerCase().includes('nama')) {
+              startIndex = 1;
+            }
+
+            let addedCount = 0;
+
+            const processBatch = async () => {
+              importInput.disabled = true;
+              importBtn.disabled = true;
+              importBtn.innerText = 'Mengimpor...';
+
+              let newGuests = [];
+              for (let i = lines.length - 1; i >= startIndex; i--) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const separator = line.includes(';') ? ';' : ',';
+                const parts = line.split(separator);
+                
+                let name = parts[0] ? parts[0].replace(/^"|"$/g, '').trim() : '';
+                let phone = parts[1] ? parts[1].replace(/^"|"$/g, '').trim() : '';
+                
+                if (!name) continue;
+
+                if (phone.startsWith('0')) {
+                  phone = '62' + phone.substring(1);
+                }
+                phone = phone.replace(/[^0-9]/g, '');
+
+                try {
+                  const response = await fetch('/api/guests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ weddingId, name, phone })
+                  });
+                  const result = await response.json();
+                  if (result.success && result.item) {
+                    newGuests.push({
+                      id: result.item.id,
+                      name: result.item.guest_name,
+                      phone: result.item.phone
+                    });
+                    addedCount++;
+                  }
+                } catch (e) {
+                  console.error("Gagal menambah tamu dari CSV", name, e);
+                }
+              }
+              
+              if (newGuests.length > 0) {
+                guestsData = [...newGuests, ...guestsData];
+                filteredData = [...guestsData];
+                currentPage = 1;
+                renderGuests();
+              }
+              
+              importInput.value = '';
+              importInput.disabled = false;
+              importBtn.disabled = false;
+              importBtn.innerHTML = '<span class="material-symbols-outlined rsvp-filter-icon">upload_file</span> Import CSV';
+              alert(`Berhasil mengimpor ${addedCount} tamu dari ${file.name}`);
+            };
+            
+            processBatch();
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      const prevBtn = document.getElementById('kirimPrev');
+      const nextBtn = document.getElementById('kirimNext');
+      
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (currentPage > 1) {
+            currentPage--;
+            renderGuests();
+          }
+        });
+      }
+      
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          let totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderGuests();
+          }
+        });
+      }
+
+      // Initialize on load
+      renderGuests();
     });
   </script>
 </ClientLayout>

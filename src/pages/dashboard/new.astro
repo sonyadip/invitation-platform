@@ -40,34 +40,24 @@ const defaults = {
   brideImageUrl: '',
   groomImageUrl: '',
   logoImageUrl: '',
-  galleryImageUrls: '',
+  galleryImageUrls: [] as string[],
+  galleryVideoUrls: [] as string[],
   instagramUrl: '',
-  whatsappUrl: '',
   groomInstagramUrl: '',
   brideInstagramUrl: '',
   groomFatherName: '',
   groomMotherName: '',
+  groomChildNumber: '',
   brideFatherName: '',
   brideMotherName: '',
+  brideChildNumber: '',
   giftDescription: '',
   thankYouMessage: '',
   introVerse: '',
   introVerseSource: '',
-  events: [
-    { name: 'Akad Nikah', date: '', startTime: '', endTime: 'Selesai', venueName: '', venueAddress: '', mapsUrl: '' },
-    { name: '', date: '', startTime: '', endTime: '', venueName: '', venueAddress: '', mapsUrl: '' },
-    { name: '', date: '', startTime: '', endTime: '', venueName: '', venueAddress: '', mapsUrl: '' }
-  ],
-  gifts: [
-    { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' },
-    { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' },
-    { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' }
-  ],
-  story: [
-    { title: '', description: '' },
-    { title: '', description: '' },
-    { title: '', description: '' }
-  ]
+  events: [] as any[],
+  gifts: [] as any[],
+  story: [] as any[]
 };
 
 const toLocalInput = (value: string | null) => {
@@ -94,7 +84,7 @@ if (Astro.request.method === 'POST') {
     brideImageUrl: parsed.brideImageUrl || '',
     groomImageUrl: parsed.groomImageUrl || '',
     logoImageUrl: parsed.logoImageUrl || '',
-    galleryImageUrls: parsed.galleryImageUrls.join('\n'),
+    galleryImageUrls: parsed.galleryImageUrls,
     instagramUrl: parsed.instagramUrl || '',
     whatsappUrl: parsed.whatsappUrl || '',
     groomInstagramUrl: parsed.groomInstagramUrl || '',
@@ -107,17 +97,9 @@ if (Astro.request.method === 'POST') {
     thankYouMessage: parsed.thankYouMessage || '',
     introVerse: parsed.introVerse || '',
     introVerseSource: parsed.introVerseSource || '',
-    events: parsed.events.length ? parsed.events : defaults.events,
-    gifts: parsed.gifts.length ? [
-      ...parsed.gifts.map((gift) => ({ ...gift, qrisUrl: gift.qrisUrl || '' })),
-      { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' },
-      { bankName: '', accountNumber: '', accountName: '', qrisUrl: '' }
-    ].slice(0, 3) : defaults.gifts,
-    story: parsed.story.length ? [
-      ...parsed.story,
-      { title: '', description: '' },
-      { title: '', description: '' }
-    ].slice(0, 3) : defaults.story
+    events: parsed.events,
+    gifts: parsed.gifts.map((gift) => ({ ...gift, qrisUrl: gift.qrisUrl || '' })),
+    story: parsed.story
   };
 
   try {
@@ -153,8 +135,8 @@ if (Astro.request.method === 'POST') {
 
       <form class="form-panel" method="POST" enctype="multipart/form-data">
         <section>
-          <h2>Publishing</h2>
-          <div class="form-grid">
+          <h2>Settings</h2>
+          <div class="form-grid" style="margin-bottom: 18px;">
             <label>Slug<input name="slug" value={values.slug} placeholder="wayan-ayu" required /></label>
             <label>Status
               <select name="status">
@@ -170,6 +152,21 @@ if (Astro.request.method === 'POST') {
                 ))}
               </select>
             </label>
+            <label>Access Password (Guest)<input name="accessPassword" value={values.accessPassword} /></label>
+            <label>Client Dashboard Password<input name="clientPassword" value={values.clientPassword} /></label>
+            <label>Expiration Date<input type="datetime-local" name="expirationDate" value={values.expirationDate} /></label>
+          </div>
+          <div class="toggle-grid">
+            <label><input type="checkbox" name="rsvpEnabled" checked={values.rsvpEnabled} /> RSVP</label>
+            <label><input type="checkbox" name="musicEnabled" checked={values.musicEnabled} /> Music</label>
+            <label><input type="checkbox" name="countdownEnabled" checked={values.countdownEnabled} /> Countdown</label>
+            <label><input type="checkbox" name="galleryEnabled" checked={values.galleryEnabled} /> Gallery</label>
+            <label><input type="checkbox" name="wishesEnabled" checked={values.wishesEnabled} /> Wishes</label>
+            <label><input type="checkbox" name="giftEnabled" checked={values.giftEnabled} /> Gift</label>
+            <label><input type="checkbox" name="storyEnabled" checked={values.storyEnabled} /> Our Story</label>
+            <label><input type="checkbox" name="viewCounterEnabled" checked={values.viewCounterEnabled} /> View Counter</label>
+            <label><input type="checkbox" name="maintenanceMode" checked={values.maintenanceMode} /> Maintenance</label>
+            <label><input type="checkbox" name="passwordProtectionEnabled" checked={values.passwordProtectionEnabled} /> Password Protection</label>
           </div>
         </section>
 
@@ -184,7 +181,6 @@ if (Astro.request.method === 'POST') {
             <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{values.introVerse}</textarea></label>
             <label>Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(Rgveda : X.85.42)" /></label>
             <label>Instagram URL<input name="instagramUrl" value={values.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
-            <label>WhatsApp URL<input name="whatsappUrl" value={values.whatsappUrl} placeholder="https://wa.me/6281234567890" /></label>
           </div>
         </section>
 
@@ -198,6 +194,7 @@ if (Astro.request.method === 'POST') {
                 <label>Groom Full Name<input name="groomFullName" value={values.groomFullName} required /></label>
                 <label>Groom Father Name<input name="groomFatherName" value={values.groomFatherName} placeholder="Groom father name" /></label>
                 <label>Groom Mother Name<input name="groomMotherName" value={values.groomMotherName} placeholder="Groom mother name" /></label>
+                <label>Groom Anak Ke-<input name="groomChildNumber" value={values.groomChildNumber || ''} placeholder="pertama" /></label>
                 <label>Groom Image URL<input name="groomImageUrl" value={values.groomImageUrl} placeholder="https://example.com/groom.jpg" /></label>
                 <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Groom Instagram URL<input name="groomInstagramUrl" value={values.groomInstagramUrl} placeholder="https://www.instagram.com/username" /></label>
@@ -210,6 +207,7 @@ if (Astro.request.method === 'POST') {
                 <label>Bride Full Name<input name="brideFullName" value={values.brideFullName} required /></label>
                 <label>Bride Father Name<input name="brideFatherName" value={values.brideFatherName} placeholder="Bride father name" /></label>
                 <label>Bride Mother Name<input name="brideMotherName" value={values.brideMotherName} placeholder="Bride mother name" /></label>
+                <label>Bride Anak Ke-<input name="brideChildNumber" value={values.brideChildNumber || ''} placeholder="kedua" /></label>
                 <label>Bride Image URL<input name="brideImageUrl" value={values.brideImageUrl} placeholder="https://example.com/bride.jpg" /></label>
                 <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Bride Instagram URL<input name="brideInstagramUrl" value={values.brideInstagramUrl} placeholder="https://www.instagram.com/username" /></label>
@@ -220,10 +218,10 @@ if (Astro.request.method === 'POST') {
 
         <section>
           <h2>Events</h2>
-          <div class="event-list">
+          <div class="event-list" id="events_container">
             {values.events.map((event, index) => (
-              <fieldset class="event-card">
-                <legend>Event {index + 1}</legend>
+              <fieldset class="event-card repeater-item">
+                <legend>Event <span class="idx">{index + 1}</span></legend>
                 <div class="form-grid">
                   <label>Event Name<input name="eventName" value={event.name} required={index === 0} placeholder="Akad Nikah" /></label>
                   <label>Date<input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} /></label>
@@ -233,75 +231,81 @@ if (Astro.request.method === 'POST') {
                   <label>Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
                   <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
                 </div>
+                {index > 0 && <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Event</button>}
               </fieldset>
             ))}
           </div>
+          <button type="button" id="add_event_btn" class="secondary-action" style="margin-top: 16px;">+ Tambah Event</button>
         </section>
 
         <section data-setting-target="storyEnabled">
           <h2>Our Story</h2>
-          <div class="story-list">
+          <div class="story-list" id="stories_container">
             {values.story.map((story, index) => (
-              <fieldset class="story-card">
-                <legend>Story {index + 1}</legend>
+              <fieldset class="story-card repeater-item">
+                <legend>Story <span class="idx">{index + 1}</span></legend>
                 <div class="form-grid">
                   <label>Title<input name="storyTitle" value={story.title} placeholder="AWAL BERTEMU" /></label>
                   <label class="wide">Description<textarea name="storyDescription" rows="3">{story.description}</textarea></label>
                 </div>
+                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Story</button>
               </fieldset>
             ))}
           </div>
+          <button type="button" id="add_story_btn" class="secondary-action" style="margin-top: 16px;">+ Tambah Story</button>
         </section>
 
         <section data-setting-target="galleryEnabled">
           <h2>Gallery</h2>
-          <div class="form-grid">
-            <label class="wide">Gallery Image URLs<textarea name="galleryImageUrls" rows="6" placeholder={"https://example.com/gallery-1.jpg\nhttps://example.com/gallery-2.jpg"}>{values.galleryImageUrls}</textarea></label>
+          <div class="gallery-list" id="gallery_container">
+            {(Array.isArray(values.galleryImageUrls) ? values.galleryImageUrls : []).map((url, index) => (
+              <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+                <label style="flex: 1; margin: 0;">Image URL <span class="idx">{index + 1}</span><input name="galleryImageUrl" value={url} placeholder="https://example.com/gallery.jpg" /></label>
+                <button type="button" class="remove-btn secondary-action">Hapus</button>
+              </div>
+            ))}
+          </div>
+          <button type="button" id="add_gallery_btn" class="secondary-action" style="margin-top: 10px; margin-bottom: 16px;">+ Tambah Image URL</button>
+          <div class="form-grid" style="margin-bottom: 24px;">
             <label class="wide">Upload Gallery Images<input type="file" name="galleryImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple /></label>
           </div>
+
+          <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 15px;">Gallery Videos</h3>
+          <div class="gallery-video-list" id="gallery_videos_container">
+            {(Array.isArray(values.galleryVideoUrls) ? values.galleryVideoUrls : []).map((url, index) => (
+              <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+                <label style="flex: 1; margin: 0;">Video URL <span class="idx">{index + 1}</span><input name="galleryVideoUrl" value={url} placeholder="https://www.youtube.com/watch?v=..." /></label>
+                <button type="button" class="remove-btn secondary-action">Hapus</button>
+              </div>
+            ))}
+          </div>
+          <button type="button" id="add_gallery_video_btn" class="secondary-action" style="margin-top: 10px;">+ Tambah Video URL</button>
         </section>
 
         <section>
           <h2>Gift & Thank You</h2>
-          <div class="gift-list">
+          <div class="gift-list" id="gifts_container">
             {values.gifts.map((gift, index) => (
-              <fieldset class="gift-card-form">
-                <legend>Gift Card {index + 1}</legend>
+              <fieldset class="gift-card-form repeater-item">
+                <legend>Gift Card <span class="idx">{index + 1}</span></legend>
                 <div class="form-grid">
                   <label>Bank Name<input name="giftBankName" value={gift.bankName} placeholder="BCA" /></label>
                   <label>Account Number<input name="giftAccountNumber" value={gift.accountNumber} placeholder="1234567890" /></label>
                   <label>Account Name<input name="giftAccountName" value={gift.accountName} placeholder="Account holder name" /></label>
                   <label>QRIS URL<input name="giftQrisUrl" value={gift.qrisUrl} placeholder="https://example.com/qris.png" /></label>
                 </div>
+                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Gift Card</button>
               </fieldset>
             ))}
-            <div class="form-grid">
-              <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4">{values.giftDescription}</textarea></label>
-              <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4">{values.thankYouMessage}</textarea></label>
-            </div>
+          </div>
+          <button type="button" id="add_gift_btn" class="secondary-action" style="margin-top: 16px; margin-bottom: 24px;">+ Tambah Gift Card</button>
+          <div class="form-grid">
+            <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4">{values.giftDescription}</textarea></label>
+            <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4">{values.thankYouMessage}</textarea></label>
           </div>
         </section>
 
-        <section>
-          <h2>Settings</h2>
-          <div class="toggle-grid">
-            <label><input type="checkbox" name="rsvpEnabled" checked={values.rsvpEnabled} /> RSVP</label>
-            <label><input type="checkbox" name="musicEnabled" checked={values.musicEnabled} /> Music</label>
-            <label><input type="checkbox" name="countdownEnabled" checked={values.countdownEnabled} /> Countdown</label>
-            <label><input type="checkbox" name="galleryEnabled" checked={values.galleryEnabled} /> Gallery</label>
-            <label><input type="checkbox" name="wishesEnabled" checked={values.wishesEnabled} /> Wishes</label>
-            <label><input type="checkbox" name="giftEnabled" checked={values.giftEnabled} /> Gift</label>
-            <label><input type="checkbox" name="storyEnabled" checked={values.storyEnabled} /> Our Story</label>
-            <label><input type="checkbox" name="viewCounterEnabled" checked={values.viewCounterEnabled} /> View Counter</label>
-            <label><input type="checkbox" name="maintenanceMode" checked={values.maintenanceMode} /> Maintenance</label>
-            <label><input type="checkbox" name="passwordProtectionEnabled" checked={values.passwordProtectionEnabled} /> Password Protection</label>
-          </div>
-          <div class="form-grid">
-            <label>Access Password (Guest)<input name="accessPassword" value={values.accessPassword} /></label>
-            <label>Client Dashboard Password<input name="clientPassword" value={values.clientPassword} /></label>
-            <label>Expiration Date<input type="datetime-local" name="expirationDate" value={values.expirationDate} /></label>
-          </div>
-        </section>
+
 
         <section data-setting-target="musicEnabled">
           <h2>Music</h2>
@@ -316,7 +320,99 @@ if (Astro.request.method === 'POST') {
         </footer>
       </form>
     </main>
+    <template id="event_template">
+      <fieldset class="event-card repeater-item">
+        <legend>Event <span class="idx"></span></legend>
+        <div class="form-grid">
+          <label>Event Name<input name="eventName" placeholder="Akad Nikah" /></label>
+          <label>Date<input type="datetime-local" name="eventDate" /></label>
+          <label>Start Time<input type="time" name="eventStartTime" /></label>
+          <label>End Time<input name="eventEndTime" placeholder="Selesai" /></label>
+          <label>Venue Name<input name="eventVenueName" /></label>
+          <label>Maps URL<input name="eventMapsUrl" /></label>
+          <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3"></textarea></label>
+        </div>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Event</button>
+      </fieldset>
+    </template>
+
+    <template id="story_template">
+      <fieldset class="story-card repeater-item">
+        <legend>Story <span class="idx"></span></legend>
+        <div class="form-grid">
+          <label>Title<input name="storyTitle" placeholder="AWAL BERTEMU" /></label>
+          <label class="wide">Description<textarea name="storyDescription" rows="3"></textarea></label>
+        </div>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Story</button>
+      </fieldset>
+    </template>
+
+    <template id="gallery_template">
+      <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+        <label style="flex: 1; margin: 0;">Image URL <span class="idx"></span><input name="galleryImageUrl" placeholder="https://example.com/gallery.jpg" /></label>
+        <button type="button" class="remove-btn secondary-action">Hapus</button>
+      </div>
+    </template>
+
+    <template id="gallery_video_template">
+      <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+        <label style="flex: 1; margin: 0;">Video URL <span class="idx"></span><input name="galleryVideoUrl" placeholder="https://www.youtube.com/watch?v=..." /></label>
+        <button type="button" class="remove-btn secondary-action">Hapus</button>
+      </div>
+    </template>
+
+    <template id="gift_template">
+      <fieldset class="gift-card-form repeater-item">
+        <legend>Gift Card <span class="idx"></span></legend>
+        <div class="form-grid">
+          <label>Bank Name<input name="giftBankName" placeholder="BCA" /></label>
+          <label>Account Number<input name="giftAccountNumber" placeholder="1234567890" /></label>
+          <label>Account Name<input name="giftAccountName" placeholder="Account holder name" /></label>
+          <label>QRIS URL<input name="giftQrisUrl" placeholder="https://example.com/qris.png" /></label>
+        </div>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Gift Card</button>
+      </fieldset>
+    </template>
+
     <script>
+      function setupRepeater(containerId, btnId, templateId) {
+        const container = document.getElementById(containerId);
+        const btn = document.getElementById(btnId);
+        const template = document.getElementById(templateId);
+
+        if (!container || !btn || !template) return;
+
+        function updateIndexes() {
+          const items = container.querySelectorAll('.repeater-item');
+          items.forEach((item, index) => {
+            const idxSpan = item.querySelector('.idx');
+            if (idxSpan) idxSpan.textContent = index + 1;
+          });
+        }
+
+        btn.addEventListener('click', () => {
+          const clone = template.content.cloneNode(true);
+          container.appendChild(clone);
+          updateIndexes();
+        });
+
+        container.addEventListener('click', (e) => {
+          if (e.target.classList.contains('remove-btn')) {
+            const item = e.target.closest('.repeater-item');
+            if (item) {
+              item.remove();
+              updateIndexes();
+            }
+          }
+        });
+      }
+
+      setupRepeater('events_container', 'add_event_btn', 'event_template');
+      setupRepeater('stories_container', 'add_story_btn', 'story_template');
+      setupRepeater('gallery_container', 'add_gallery_btn', 'gallery_template');
+      setupRepeater('gallery_videos_container', 'add_gallery_video_btn', 'gallery_video_template');
+      setupRepeater('gifts_container', 'add_gift_btn', 'gift_template');
+
       const settingTargets = document.querySelectorAll('[data-setting-target]');
 
       function syncSettingTargets() {
@@ -350,6 +446,7 @@ if (Astro.request.method === 'POST') {
   .shell { width: min(1100px, 100%); margin: 0 auto; padding: 28px; }
   .header { margin-bottom: 22px; }
   .back-link { display: inline-flex; margin-bottom: 18px; color: #2563eb; font-size: 13px; font-weight: 700; text-decoration: none; }
+  .secondary-action { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d9dde5; border-radius: 6px; background: #ffffff; color: #394150; font-size: 13px; font-weight: 700; text-decoration: none; }
   .eyebrow { margin: 0 0 8px; color: #687080; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
   h1 { margin: 0 0 8px; font-size: 32px; }
   h2 { margin: 0 0 16px; font-size: 18px; }

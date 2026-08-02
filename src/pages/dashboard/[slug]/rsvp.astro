@@ -19,102 +19,306 @@ const guests = report.rsvps;
 ---
 
 <ClientLayout title="RSVP">
-  <!-- Header / Title -->
-  <div class="mb-6 fade-in-bottom">
-    <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">RSVP</h1>
-    <p class="font-body-md text-body-md text-outline">Kelola daftar kehadiran tamu undangan Anda.</p>
-  </div>
-
+  <div class="rsvp-layout">
+  
   <!-- Summary Grid -->
-  <div class="grid grid-cols-2 gap-4 mb-8 fade-in-bottom" style="animation-delay: 0.1s">
-    <div class="bg-surface-container-lowest p-4 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] bento-card">
-      <div class="font-headline-md text-headline-md text-on-surface mb-1">{report.summary.rsvpCount}</div>
-      <div class="font-label-sm text-label-sm text-outline">Total RSVP</div>
-    </div>
-    <div class="bg-surface-container-lowest p-4 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] bento-card border-l-4 border-[#1e4620]">
-      <div class="font-headline-md text-headline-md text-on-surface mb-1">{report.summary.attendingCount}</div>
-      <div class="font-label-sm text-label-sm text-[#1e4620]">Hadir</div>
-    </div>
-    <div class="bg-surface-container-lowest p-4 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] bento-card">
-      <div class="font-headline-md text-headline-md text-on-surface mb-1">{report.summary.guestCount}</div>
-      <div class="font-label-sm text-label-sm text-outline">Total Pax</div>
-    </div>
-    <div class="bg-surface-container-lowest p-4 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] bento-card border-l-4 border-[#8e1a1a]">
-      <div class="font-headline-md text-headline-md text-on-surface mb-1">{report.summary.declinedCount}</div>
-      <div class="font-label-sm text-label-sm text-[#8e1a1a]">Tidak Hadir</div>
+  <div class="rsvp-top fade-in-bottom animate-on-scroll">
+    <div class="bento-card" style="width: 100%;">
+      <h3 class="bento-card__title">Ringkasan RSVP</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="mail">mail</span>
+          </div>
+          <div class="stat-card__label">TOTAL RSVP</div>
+          <div class="stat-card__number">{report.summary.rsvpCount}</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+          </div>
+          <div class="stat-card__label">HADIR</div>
+          <div class="stat-card__number">{report.summary.attendingCount}</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="group">group</span>
+          </div>
+          <div class="stat-card__label">TOTAL PAX</div>
+          <div class="stat-card__number">{report.summary.guestCount}</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="cancel">cancel</span>
+          </div>
+          <div class="stat-card__label">TIDAK HADIR</div>
+          <div class="stat-card__number">{report.summary.declinedCount}</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Search & Filter Area -->
-  <div class="fade-in-bottom" style="animation-delay: 0.2s">
-    <div class="relative mb-4">
-      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
-      <input type="text" placeholder="Cari nama tamu..." class="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-3 pl-12 pr-4 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
+  <div class="bento-card fade-in-bottom animate-on-scroll" style="width: 100%;">
+    <!-- Search, Filter, Export Row -->
+    <div class="rsvp-controls">
+      <div class="search-wrapper rsvp-search-wrapper">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" id="rsvpSearch" placeholder="Cari nama tamu..." class="search-input">
+      </div>
+      <div class="rsvp-actions">
+        <select id="rsvpFilter" class="form-input rsvp-filter-select">
+          <option value="all">Semua Status</option>
+          <option value="attending">Hadir</option>
+          <option value="declined">Tidak Hadir</option>
+          <option value="pending">Pending</option>
+        </select>
+        <button id="rsvpExport" class="filter-btn filter-btn--outline rsvp-filter-btn rsvp-export-btn">
+          <span class="material-symbols-outlined rsvp-filter-icon">download</span>
+          Export
+        </button>
+      </div>
     </div>
-    <div class="flex items-center gap-2">
-      <button class="px-6 py-2 rounded-full border border-primary text-primary font-label-md text-label-md flex items-center gap-2">
-        <span class="material-symbols-outlined text-[18px]">filter_list</span>
-        Semua Status
-      </button>
-      <div class="flex-1 border-b border-tertiary opacity-10"></div>
-    </div>
-  </div>
 
-  <!-- Guest List -->
-  <div class="mt-6 space-y-3 fade-in-bottom" style="animation-delay: 0.3s">
     <!-- Header (Visual Guide) -->
-    <div class="grid grid-cols-[40px_1fr_100px_40px] px-4 py-2 text-outline font-label-sm text-label-sm uppercase tracking-widest">
+    <div class="rsvp-table__header">
       <span>No.</span>
       <span>Nama Tamu</span>
-      <span class="text-center">Status</span>
-      <span></span>
+      <span>Ucapan</span>
+      <span class="rsvp-table__header-col--center">Status</span>
+      <span class="rsvp-table__header-col--center">Pax</span>
     </div>
 
     <!-- Guest Items -->
-    <div class="bg-surface-container-lowest rounded-[24px] p-2 shadow-[0px_4px_20px_rgba(166,137,102,0.08)]">
+    <div class="rsvp-table" id="rsvpTable">
       {guests.length === 0 ? (
-        <div class="p-6 text-center text-outline font-body-md">Belum ada data RSVP</div>
+        <div class="rsvp-table__empty">Belum ada data RSVP</div>
       ) : (
         guests.map((guest, index) => (
-          <div>
-            <div class="grid grid-cols-[40px_1fr_100px_40px] items-center p-4">
-              <span class="font-label-md text-label-md text-outline">{(index + 1).toString().padStart(2, '0')}</span>
-              <div class="flex flex-col">
-                <span class="font-body-md font-bold text-on-surface truncate pr-2">{guest.guestName}</span>
-                <span class="font-label-sm text-label-sm text-outline">Pax: {guest.guestCount}</span>
+          <div class="rsvp-row-wrapper" data-name={guest.guestName.toLowerCase()} data-status={guest.attendanceStatus.toLowerCase()}>
+            <div class="rsvp-row">
+              <span class="rsvp-row__index">{(index + 1).toString().padStart(2, '0')}</span>
+              <div class="rsvp-row__info">
+                <span class="rsvp-row__name">{guest.guestName}</span>
               </div>
-              <div class="flex justify-center">
+              <div class="rsvp-row__message-col">
+                {guest.message ? (
+                  <span class="rsvp-row__message">"{guest.message}"</span>
+                ) : (
+                  <span class="rsvp-row__message rsvp-row__message--empty">-</span>
+                )}
+              </div>
+              <div class="rsvp-row__status">
                 {guest.attendanceStatus.toLowerCase() === 'attending' && (
-                  <span class="bg-[#e7f3ea] text-[#1e4620] px-3 py-1 rounded-full font-label-sm text-label-sm font-bold uppercase text-[10px]">Hadir</span>
+                  <span class="status-label status-label--attending">Hadir</span>
                 )}
                 {guest.attendanceStatus.toLowerCase() === 'declined' && (
-                  <span class="bg-[#fceef0] text-[#8e1a1a] px-3 py-1 rounded-full font-label-sm text-label-sm font-bold uppercase text-[10px]">Tdk Hadir</span>
+                  <span class="status-label status-label--declined">Tdk Hadir</span>
                 )}
                 {guest.attendanceStatus.toLowerCase() === 'pending' && (
-                  <span class="bg-secondary-container text-secondary px-3 py-1 rounded-full font-label-sm text-label-sm font-bold uppercase text-[10px]">Pending</span>
+                  <span class="status-label status-label--pending">Pending</span>
                 )}
               </div>
-              <button class="p-2 hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center">
-                <span class="material-symbols-outlined text-outline text-[20px]">edit</span>
-              </button>
+              <div class="rsvp-row__pax-col">
+                <span class="rsvp-row__pax-val">{guest.guestCount}</span>
+              </div>
             </div>
             {index < guests.length - 1 && (
-              <div class="mx-4 border-b border-surface-variant h-[1px]"></div>
+              <div class="rsvp-row__divider"></div>
             )}
           </div>
         ))
       )}
+    <!-- Pagination UI -->
+    <div class="pagination-wrapper">
+      <button class="pagination-btn" id="rsvpPrev" disabled>Prev</button>
+      <div class="pagination-numbers" id="rsvpPageNumbers"></div>
+      <button class="pagination-btn" id="rsvpNext" disabled>Next</button>
     </div>
+  </div>
+  
   </div>
 
-  <!-- Concierge Tip Widget -->
-  <div class="mt-8 p-6 rounded-[24px] bg-gradient-to-br from-secondary-fixed to-surface-container-low flex gap-4 items-center border border-outline-variant/30 fade-in-bottom" style="animation-delay: 0.4s">
-    <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0">
-      <span class="material-symbols-outlined text-on-primary">support_agent</span>
-    </div>
-    <div>
-      <h4 class="font-label-md text-label-md text-primary mb-1">Butuh Bantuan?</h4>
-      <p class="font-body-md text-on-surface-variant text-[14px]">Ingin mengirimkan pengingat RSVP ke tamu yang belum merespon?</p>
-    </div>
-  </div>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('rsvpSearch');
+      const filterSelect = document.getElementById('rsvpFilter');
+      const exportBtn = document.getElementById('rsvpExport');
+      const rows = document.querySelectorAll('.rsvp-row-wrapper');
+      
+      let currentPage = 1;
+      const itemsPerPage = 10;
+      let filteredRows = [];
+
+      function filterGuests() {
+        if(!searchInput || !filterSelect) return;
+        const query = searchInput.value.toLowerCase();
+        const status = filterSelect.value.toLowerCase();
+        
+        filteredRows = [];
+        
+        rows.forEach(row => {
+          const rowName = row.getAttribute('data-name') || '';
+          const rowStatus = row.getAttribute('data-status') || '';
+          
+          const matchesSearch = rowName.includes(query);
+          const matchesStatus = status === 'all' || rowStatus === status;
+
+          if (matchesSearch && matchesStatus) {
+            filteredRows.push(row);
+          } else {
+            row.style.display = 'none';
+          }
+        });
+        
+        currentPage = 1;
+        updatePagination();
+      }
+
+      function updatePagination() {
+        const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
+        
+        filteredRows.forEach((row, index) => {
+          const startIndex = (currentPage - 1) * itemsPerPage;
+          const endIndex = startIndex + itemsPerPage;
+          
+          if (index >= startIndex && index < endIndex) {
+            row.style.display = 'block';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        const prevBtn = document.getElementById('rsvpPrev');
+        const nextBtn = document.getElementById('rsvpNext');
+        const pageNumbers = document.getElementById('rsvpPageNumbers');
+
+        if (prevBtn) prevBtn.disabled = currentPage === 1;
+        if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+
+        if (pageNumbers) {
+          pageNumbers.innerHTML = '';
+          
+          function createBtn(i) {
+            const btn = document.createElement('button');
+            btn.className = `pagination-num ${i === currentPage ? 'pagination-num--active' : ''}`;
+            btn.innerText = i;
+            btn.onclick = () => { currentPage = i; updatePagination(); };
+            return btn;
+          }
+          function createEllipsis() {
+            const span = document.createElement('span');
+            span.className = 'pagination-ellipsis';
+            span.innerText = '...';
+            return span;
+          }
+
+          if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pageNumbers.appendChild(createBtn(i));
+          } else {
+            if (currentPage <= 3) {
+              for (let i = 1; i <= 4; i++) pageNumbers.appendChild(createBtn(i));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(totalPages));
+            } else if (currentPage >= totalPages - 2) {
+              pageNumbers.appendChild(createBtn(1));
+              pageNumbers.appendChild(createEllipsis());
+              for (let i = totalPages - 3; i <= totalPages; i++) pageNumbers.appendChild(createBtn(i));
+            } else {
+              pageNumbers.appendChild(createBtn(1));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(currentPage - 1));
+              pageNumbers.appendChild(createBtn(currentPage));
+              pageNumbers.appendChild(createBtn(currentPage + 1));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(totalPages));
+            }
+          }
+        }
+      }
+
+      const prevBtn = document.getElementById('rsvpPrev');
+      const nextBtn = document.getElementById('rsvpNext');
+      
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (currentPage > 1) {
+            currentPage--;
+            updatePagination();
+          }
+        });
+      }
+      
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
+          if (currentPage < totalPages) {
+            currentPage++;
+            updatePagination();
+          }
+        });
+      }
+
+      if (searchInput) searchInput.addEventListener('input', filterGuests);
+      if (filterSelect) filterSelect.addEventListener('change', filterGuests);
+      
+      // Initialize on load
+      filterGuests();
+
+      if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+          if (typeof XLSX === 'undefined') {
+            alert('Fitur export masih dimuat, silakan coba sebentar lagi.');
+            return;
+          }
+
+          const ws_data = [
+            ["No", "Nama Tamu", "Ucapan", "Status", "Pax"]
+          ];
+          let count = 1;
+          
+          // Export ALL filtered rows, not just the visible page
+          filteredRows.forEach(row => {
+            const nameEl = row.querySelector('.rsvp-row__name');
+            const statusAttr = row.getAttribute('data-status');
+            const paxEl = row.querySelector('.rsvp-row__pax-val');
+            const messageEl = row.querySelector('.rsvp-row__message');
+            
+            const name = nameEl ? nameEl.innerText : '';
+            let statusText = 'Pending';
+            if (statusAttr === 'attending') statusText = 'Hadir';
+            if (statusAttr === 'declined') statusText = 'Tidak Hadir';
+            const pax = paxEl ? parseInt(paxEl.innerText) || 0 : 0;
+            let message = messageEl ? messageEl.innerText : '';
+            if (message === '-') message = '';
+            
+            if (message.startsWith('"') && message.endsWith('"')) {
+               message = message.substring(1, message.length - 1);
+            }
+            
+            ws_data.push([count, name, message, statusText, pax]);
+            count++;
+          });
+
+          const ws = XLSX.utils.aoa_to_sheet(ws_data);
+          
+          // Set column widths agar rapi di Excel
+          ws['!cols'] = [
+            { wch: 5 },   // No
+            { wch: 30 },  // Nama Tamu
+            { wch: 50 },  // Ucapan
+            { wch: 15 },  // Status
+            { wch: 10 }   // Pax
+          ];
+
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "RSVP");
+          XLSX.writeFile(wb, "Data-RSVP.xlsx");
+        });
+      }
+    });
+  </script>
 </ClientLayout>

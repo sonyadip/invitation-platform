@@ -16,7 +16,7 @@ const bookingUrl = siteSettings.whatsapp_url || "https://wa.me/6281234567890";
 
 const navItems = [
   ["Koleksi", "#templates"],
-  ["Layanan", "#services"],
+  ["Fitur", "#features"],
   ["Konsultasi", "#booking"],
 ];
 
@@ -26,55 +26,61 @@ const headingWords = [
   siteSettings.home_heading_3 || "Digital",
 ];
 
-const templateCards = [
-  {
-    key: "lumiere",
-    name: "Lumiere",
-    tone: "Classic elegant",
-    copy: "Klasik, anggun, dan bercahaya.",
-    price: "Rp 150.000",
-    image: lumiereCover.src,
-  },
-  {
-    key: "deauville",
-    name: "Deauville",
-    tone: "Romantic journal",
-    copy: "Romantis, personal, dan editorial.",
-    price: "Rp 125.000",
-    image: deauvilleCover.src,
-  },
-  {
-    key: "air",
-    name: "Air",
-    tone: "Clean airy",
-    copy: "Ringan, luas, dan modern.",
-    price: "Rp 125.000",
-    image: airCover.src,
-  },
-  {
-    key: "editorial",
-    name: "Editorial",
-    tone: "Romantic journal",
-    copy: "Romantis, personal, dan editorial.",
-    price: "Rp 125.000",
-    image: editorialCover.src,
-  },
-  {
-    key: "noir",
-    name: "Noir",
-    tone: "Dark editorial",
-    copy: "Tegas, modern, dan berkelas.",
-    price: "Rp 100.000",
-    image: noirCover.src,
-  },
+const imageMap: Record<string, string> = {
+  lumiere: lumiereCover.src,
+  deauville: deauvilleCover.src,
+  air: airCover.src,
+  editorial: editorialCover.src,
+  noir: noirCover.src,
+  sage: sageCover.src,
+  ochre: ochreMotionCover.src,
+  ivory: ivoryCover.src
+};
+
+const defaultTemplateCards = [
+  { key: "lumiere", name: "Lumiere", price: "Rp 200.000", image: lumiereCover.src },
+  { key: "deauville", name: "Deauville", price: "Rp 175.000", image: deauvilleCover.src },
+  { key: "editorial", name: "Editorial", price: "Rp 175.000", image: editorialCover.src },
+  { key: "air", name: "Air", price: "Rp 125.000", image: airCover.src },
+  { key: "noir", name: "Noir", price: "Rp 125.000", image: noirCover.src },
 ];
 
+const templateCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
+  ? siteSettings.home_template_cards.map((c: any) => ({
+      ...c,
+      image: c.image || imageMap[c.key] || ''
+    }))
+  : defaultTemplateCards;
+
 const stats = [
-  [`${templateCards.length}+`, "Koleksi\nEksklusif"],
+  [siteSettings.home_stat_number || `${templateCards.length}+`, siteSettings.home_stat_label || "Koleksi\nEksklusif"],
   // ["24J", "Proses\nPengerjaan"],
 ];
 
 const heroMotionCards = templateCards;
+
+const features = [
+  "Tamu Tanpa Batas",
+  "RSVP & Ucapan",
+  "Amplop Digital",
+  "Navigasi Maps",
+  "Total 12 Foto",
+  "Musik Latar",
+  "Hitung Mundur",
+  "Kisah Cinta",
+  "Total 1 Video",
+  "Simpan Kalender",
+  "Link Instagram",
+  "Aktif 1 Bulan",
+  "Dashboard Analytics",
+  "Export Data Tamu",
+];
+
+const addons = [
+  { name: "Prioritas 24 jam", price: "+ 50.000" },
+  { name: "Tambah Foto", price: "+ 5.000 / foto" },
+  { name: "Tambah Video", price: "+ 20.000 / video" },
+];
 ---
 
 <!doctype html>
@@ -86,6 +92,7 @@ const heroMotionCards = templateCards;
     <!-- Primary Meta Tags -->
     <title>{siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital"}</title>
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
     <meta name="title" content={siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital"} />
     <meta name="description" content={siteSettings.meta_description || "Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu."} />
     <meta name="keywords" content="undangan digital, undangan pernikahan online, senadda, senadda.id, wedding invitation, platform undangan, undangan digital pernikahan, undangan pernikahan digital" />
@@ -193,7 +200,7 @@ const heroMotionCards = templateCards;
                 </defs>
                 <text>
                   <textPath href="#hero-motion-seal-path" startOffset="0%">
-                    SENADDA • DIGITAL STUDIO • UNDANGAN •
+                    {siteSettings.home_hero_seal_text || "SENADDA • DIGITAL STUDIO • UNDANGAN •"}
                   </textPath>
                 </text>
               </svg>
@@ -219,7 +226,7 @@ const heroMotionCards = templateCards;
           <div class="bottom-content" aria-label="Hero content">
             <div class="bottom-content__top">
               <a class="hero-cta motion-up" style="--i: 6" href="#templates">
-                Lihat Koleksi
+                {siteSettings.home_cta_label || "Lihat Koleksi"}
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M7 17 17 7"></path>
                   <path d="M8 7h9v9"></path>
@@ -253,8 +260,8 @@ const heroMotionCards = templateCards;
         data-section
       >
         <div class="section-heading">
-          <p>Koleksi Desain</p>
-          <h2>Pilih Nuansa.</h2>
+          <p>{siteSettings.home_templates_eyebrow || "Koleksi Desain"}</p>
+          <h2>{siteSettings.home_templates_heading || "Pilih Nuansa."}</h2>
         </div>
 
         <div class="template-grid">
@@ -292,17 +299,431 @@ const heroMotionCards = templateCards;
         </div>
       </section>
 
+      <section
+        class="dashboard-showcase section-observe"
+        id="dashboard"
+        data-section
+      >
+        <div class="section-heading-centered reveal-blur">
+          <p style="color: var(--accent); font-size: 11px; margin-bottom: 6px;">Dashboard</p>
+          <h2 style="color: var(--black);">Kelola Undanganmu.</h2>
+        </div>
+
+        <div class="dashboard-tabs">
+          <div class="dashboard-tabs__nav">
+            <span class="dashboard-tabs__indicator"></span>
+            <button class="dashboard-tabs__btn is-active" data-tab="home">
+              <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Dashboard
+            </button>
+            <button class="dashboard-tabs__btn" data-tab="kirim">
+              <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Kirim Undangan
+            </button>
+            <button class="dashboard-tabs__btn" data-tab="rsvp">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              RSVP
+            </button>
+          </div>
+
+          <div class="dashboard-tabs__panels">
+            <div class="dashboard-tabs__panel is-active" data-panel="home">
+              <div class="dashboard-tabs__screenshot">
+                <img src="/images/dashboard/dashboard-home.png" alt="Dashboard Home" loading="eager" />
+              </div>
+              <div class="dashboard-tabs__info">
+                <h3>Pantau Semuanya</h3>
+                <p>Lihat ringkasan lengkap undangan: statistik RSVP, jumlah tamu, countdown hari H, rangkaian acara, dan ucapan terbaru dalam satu halaman.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-tabs__panel" data-panel="kirim">
+              <div class="dashboard-tabs__screenshot">
+                <img src="/images/dashboard/dashboard-kirim.png" alt="Kirim Undangan" loading="eager" />
+              </div>
+              <div class="dashboard-tabs__info">
+                <h3>Kirim dengan Mudah</h3>
+                <p>Pilih template pesan sesuai nada (Formal, Teman, Keluarga), kelola daftar tamu, dan kirim undangan langsung via WhatsApp. Satu klik, langsung terkirim.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-tabs__panel" data-panel="rsvp">
+              <div class="dashboard-tabs__screenshot">
+                <img src="/images/dashboard/dashboard-rsvp.png" alt="RSVP" loading="eager" />
+              </div>
+              <div class="dashboard-tabs__info">
+                <h3>Lacak Kehadiran</h3>
+                <p>Ringkasan RSVP real-time: siapa yang hadir, berapa total pax, filter berdasarkan status, dan export data tamu kapan saja.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="features-list section-observe"
+        id="features"
+        data-section
+      >
+        <div class="features-container">
+          <div class="section-heading-centered reveal-blur">
+            <h2>Features</h2>
+          </div>
+
+          <ul class="features-grid-simple">
+            {
+              features.map((feature, index) => (
+                <li class="feature-item dark-item" style={`--feature-i: ${index}`}>
+                  <div class="addon-left">
+                    <svg viewBox="0 0 24 24" class="check-box-icon" fill="none" stroke="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <path d="M9 12l2 2 4-4" />
+                    </svg>
+                    {feature}
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="section-heading-centered reveal-blur" style="margin-top: 60px;">
+            <h2>Addon</h2>
+          </div>
+
+          <ul class="addon-list">
+            {
+              addons.map((addon, index) => (
+                <li class="feature-item dark-item" style={`--feature-i: ${index + features.length}`}>
+                  <div class="addon-left">
+                    <svg viewBox="0 0 24 24" class="check-box-icon" fill="none" stroke="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    </svg>
+                    {addon.name}
+                  </div>
+                  <span class="addon-price">{addon.price}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <section class="faq-section section-observe" id="faq" data-section>
+        <div class="faq-section-inner">
+          <div class="section-heading-centered reveal-blur" style="margin-bottom: 50px;">
+            <h2 style="color: var(--black);">FAQ</h2>
+          </div>
+        
+        <style>
+        /* =========================================
+           -1. RESPONSIVE SECTION PADDING
+           ========================================= */
+        /* =========================================
+           -1. RESPONSIVE SECTION PADDING
+           ========================================= */
+        .faq-section {
+            background-color: var(--white);
+            position: relative;
+            z-index: 2;
+            padding: 110px 20px;
+        }
+        .faq-section-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .faq-section {
+                padding: 120px 48px;
+            }
+        }
+        @media (max-width: 640px) {
+            .faq-section {
+                padding: 60px 16px;
+            }
+        }
+
+        /* =========================================
+           0. RESET BOX SIZING
+           ========================================= */
+        .faq-container,
+        .faq-container *,
+        .faq-container *::before,
+        .faq-container *::after {
+            box-sizing: border-box !important;
+        }
+
+        /* =========================================
+           1. FAQ WRAPPER (Grid Fisik 2 Kolom)
+           ========================================= */
+        .faq-container {
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile: Tumpuk ke bawah */
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .faq-container {
+                grid-template-columns: repeat(2, 1fr); /* Desktop: 2 Kolom terpisah */
+                align-items: start; /* PENTING: Mencegah kolom melar mengikuti sebelah */
+            }
+        }
+
+        /* Pembungkus spesifik tiap kolom */
+        .faq-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px; /* Jarak atas-bawah antar FAQ */
+        }
+
+        /* =========================================
+           2. FAQ ITEM BOX
+           ========================================= */
+        .faq-item {
+            background-color: var(--white) !important; 
+            border: 1px solid var(--line) !important; 
+            border-radius: 6px;
+            overflow: hidden;
+            transition: border-color 0.3s var(--ease), opacity 1s var(--ease), transform 1.1s var(--ease), filter 1s var(--ease);
+            width: 100%;
+        }
+
+        .faq-item:hover {
+            border-color: var(--accent) !important;
+        }
+
+        .faq-item.active {
+            border-color: var(--accent) !important; 
+            box-shadow: 0 10px 30px rgba(23, 22, 15, 0.05) !important;
+        }
+
+        /* =========================================
+           3. TOMBOL PERTANYAAN
+           ========================================= */
+        .faq-btn {
+            width: 100%;
+            text-align: left;
+            background: transparent !important; 
+            border: none !important;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            cursor: pointer;
+            outline: none !important; 
+            box-shadow: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        .faq-btn:focus,
+        .faq-btn:active {
+            outline: none !important;
+            background: transparent !important;
+        }
+
+        .faq-question {
+            font-family: var(--font-body) !important;
+            font-size: 18px !important;
+            font-weight: 500 !important;
+            color: var(--black) !important; 
+            margin: 0 !important;
+            padding-right: 15px;
+            line-height: 1.4 !important;
+            transition: color 0.3s var(--ease);
+            flex: 1 1 auto !important; 
+            white-space: normal !important;
+            word-wrap: break-word !important; 
+            word-break: break-word !important;
+            min-width: 0 !important;
+        }
+
+        /* Ikon Animasi Plus/Minus */
+        .faq-icon {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .faq-icon::before,
+        .faq-icon::after {
+            content: '';
+            position: absolute;
+            background-color: var(--black) !important; 
+            transition: transform 0.4s var(--ease), background-color 0.4s var(--ease);
+        }
+        .faq-icon::before { top: 11px; left: 4px; right: 4px; height: 2px; }
+        .faq-icon::after { top: 4px; bottom: 4px; left: 11px; width: 2px; }
+
+        .faq-item.active .faq-icon::after {
+            transform: rotate(90deg);
+            background-color: var(--accent) !important;
+        }
+        .faq-item.active .faq-icon::before {
+            background-color: var(--accent) !important;
+        }
+
+        /* =========================================
+           4. AREA JAWABAN
+           ========================================= */
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s var(--ease);
+        }
+
+        .faq-answer {
+            font-family: var(--font-body) !important;
+            font-size: 15px !important;
+            color: var(--deep-charcoal) !important; 
+            line-height: 1.7 !important;
+            margin: 0 !important;
+            padding: 0 24px 24px 24px !important; 
+        }
+
+        /* =========================================
+           5. RESPONSIVE MOBILE
+           ========================================= */
+        @media (max-width: 767px) {
+            .faq-btn { padding: 20px 16px; }
+            .faq-question { font-size: 16px !important; line-height: 1.5 !important; }
+            .faq-answer { font-size: 14px !important; padding: 0 16px 20px 16px !important; }
+        }
+        </style>
+
+        <div class="faq-container">
+            <div class="faq-col">
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Waktu Pengerjaan Undangan</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content" style="">
+                        <p class="faq-answer">Proses pembuatan biasanya memakan waktu 3 hari setelah semua data dan foto kami terima dengan lengkap.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Pengganti Video Background</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Jika template memiliki background video tapi Anda tidak punya video, kami bisa menggantinya dengan fitur image slider (slideshow) yang akan memutar foto-foto Anda secara bergantian.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Fasilitas Revisi Minor</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Kami memberikan fasilitas revisi minor sepuasnya. Ini berlaku untuk perbaikan typo nama, ganti lagu, ganti foto, ganti quotes, penyesuaian lokasi, hingga menghapus section tertentu.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Fasilitas Revisi Mayor</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Untuk revisi mayor, kami sediakan jatah satu kali. Perlu dicatat, Anda tidak bisa mengganti tema undangan, tapi Anda diperbolehkan merombak ulang posisi atau susunan section-nya.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Masa Aktif Tautan Undangan</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Link undangan akan tetap aktif sampai satu bulan setelah acara selesai, jadi Anda masih punya banyak waktu untuk membaca ulang ucapan-ucapan dari para tamu.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-col">
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Cara Membagikan Undangan</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Anda akan mendapat akses dashboard khusus untuk memasukkan daftar nama tamu. Dari situ, sistem bisa langsung men-generate link unik per orang untuk Anda sebar via WhatsApp.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Cara Menulis Nama Tamu Manual</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Selain lewat dashboard, Anda bisa menulis nama tamu manual dengan menambahkan <code>?to=Nama+Tamu</code> di akhir link undangan. Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code> (ganti spasi dengan tanda +).</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Perubahan Setelah Undangan Dibagikan</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Kalau ada perubahan jadwal atau lokasi mendadak, infokan saja ke kami. Nanti link undangan yang sudah disebar akan otomatis ter-update mengikuti info yang baru.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">Konfirmasi Kehadiran &amp; Ucapan</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer">Di undangan ada form khusus agar tamu bisa mengirim ucapan dan mengonfirmasi kehadiran (RSVP). Semua datanya akan terekap otomatis dan bisa Anda pantau dari dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script is:inline>
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach(item => {
+                const btn = item.querySelector('.faq-btn');
+                const content = item.querySelector('.faq-content');
+
+                if (btn && content) {
+                    btn.addEventListener('click', () => {
+                        const isActive = item.classList.contains('active');
+
+                        // Tutup FAQ lain
+                        faqItems.forEach(otherItem => {
+                            otherItem.classList.remove('active');
+                            const otherContent = otherItem.querySelector('.faq-content');
+                            if (otherContent) otherContent.style.maxHeight = null;
+                        });
+
+                        // Buka yang di-klik
+                        if (!isActive) {
+                            item.classList.add('active');
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    });
+                }
+            });
+        });
+        </script>
+        </div>
+      </section>
+
       <section class="start section-observe" id="booking" data-section>
-        <p class="reveal-blur">Langkah Selanjutnya</p>
+        <p class="reveal-blur">{siteSettings.home_booking_eyebrow || "Langkah Selanjutnya"}</p>
         <h2 class="reveal-blur" style="--delay: 100ms">
-          Ceritakan undangan Anda.
+          {siteSettings.home_booking_heading || "Ceritakan undangan Anda."}
         </h2>
         <a
           class="start__button reveal-blur"
           style="--delay: 190ms"
           href={bookingUrl}
           target="_blank"
-          rel="noreferrer">Hubungi via WhatsApp</a
+          rel="noreferrer">{siteSettings.home_booking_cta || "Hubungi via WhatsApp"}</a
         >
       </section>
       <dialog id="login-modal" class="login-modal">
@@ -515,8 +936,8 @@ const heroMotionCards = templateCards;
         { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
       );
 
-      const sectionsToObserve = document.querySelectorAll(".section-observe");
-      sectionsToObserve.forEach((section) => revealObserver.observe(section));
+      const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
+      elementsToObserve.forEach((el) => revealObserver.observe(el));
 
       const scrollToTarget = (targetId) => {
         const target = document.querySelector(targetId);
@@ -647,6 +1068,42 @@ const heroMotionCards = templateCards;
         syncHeroFixed();
         setScrollState();
       });
+
+      /* Dashboard tabs — segmented control */
+      (() => {
+        const nav = document.querySelector('.dashboard-tabs__nav');
+        if (!nav) return;
+        const indicator = nav.querySelector('.dashboard-tabs__indicator');
+        const btns = nav.querySelectorAll('.dashboard-tabs__btn');
+
+        const moveIndicator = (btn) => {
+          const navPad = parseFloat(getComputedStyle(nav).paddingLeft);
+          indicator.style.width = btn.offsetWidth + 'px';
+          indicator.style.left = (btn.offsetLeft) + 'px';
+        };
+
+        // init on next frame so layout is settled
+        requestAnimationFrame(() => {
+          const activeBtn = nav.querySelector('.dashboard-tabs__btn.is-active');
+          if (activeBtn) moveIndicator(activeBtn);
+        });
+
+        btns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            btns.forEach(b => b.classList.remove('is-active'));
+            document.querySelectorAll('.dashboard-tabs__panel').forEach(p => p.classList.remove('is-active'));
+            btn.classList.add('is-active');
+            document.querySelector(`[data-panel="${tab}"]`).classList.add('is-active');
+            moveIndicator(btn);
+          });
+        });
+
+        window.addEventListener('resize', () => {
+          const cur = nav.querySelector('.dashboard-tabs__btn.is-active');
+          if (cur) moveIndicator(cur);
+        });
+      })();
     </script>
   </body>
 </html>
@@ -1257,7 +1714,7 @@ const heroMotionCards = templateCards;
   .stat-item p {
     font-size: 10px;
     line-height: 1.15;
-    white-space: pre-line;
+    max-width: 60%;
   }
 
   .bottom-content {
@@ -1426,17 +1883,15 @@ const heroMotionCards = templateCards;
       0
     );
     transition:
-      opacity 1s var(--ease),
-      transform 1.1s var(--ease);
-    transition-delay: calc(var(--template-i) * 150ms);
+      transform 1s var(--ease),
+      opacity 1s var(--ease);
     will-change: transform;
   }
   .template-card:hover {
     --template-hover-y: -3px;
     transition-duration: 0.3s;
-    transition-delay: 0s !important;
   }
-  .is-visible .template-card {
+  .template-card.is-visible {
     opacity: 1;
     --template-reveal-y: 0px;
   }
@@ -1481,7 +1936,7 @@ const heroMotionCards = templateCards;
     max-width: 92%;
     font-family: var(--font-heading);
     font-weight: 400;
-    font-size: clamp(32px, 4vw, 72px);
+    font-size: clamp(24px, 3.5vw, 48px);
     line-height: 0.95;
     letter-spacing: -0.03em;
   }
@@ -1493,12 +1948,12 @@ const heroMotionCards = templateCards;
   }
   .template-card__price {
     flex-shrink: 0;
-    color: rgba(0, 0, 0, 0.45);
+    color: var(--black);
     font-family: var(--font-body);
-    font-size: 10px;
+    font-size: 11px;
+    font-weight: 500;
     line-height: 1;
     letter-spacing: 0.06em;
-    padding-bottom: 0.16em;
   }
   .template-card__body p {
     color: var(--dark-grey);
@@ -1591,9 +2046,96 @@ const heroMotionCards = templateCards;
       transform 1.1s var(--ease);
     transition-delay: var(--delay, 0ms);
   }
-  .is-visible .reveal-blur {
+  .reveal-blur.is-visible {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  .features-list {
+    position: relative;
+    z-index: 2;
+    padding: 110px 20px;
+    background-color: #414238 !important;
+    scroll-margin-top: 84px;
+    color: var(--white);
+  }
+
+  .features-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .section-heading-centered {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .section-heading-centered h2 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(36px, 7vw, 64px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--white);
+  }
+
+  .features-grid-simple {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 40px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .addon-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .feature-item.dark-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--white);
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(16px);
+    transition: opacity 0.8s var(--ease), filter 0.8s var(--ease), transform 0.8s var(--ease);
+  }
+
+  .feature-item.is-visible {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+
+  .addon-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .check-box-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: var(--white);
+    stroke-width: 1.5;
+  }
+
+  .addon-price {
+    font-size: 14px;
+    opacity: 0.9;
   }
 
   @keyframes fadeDown {
@@ -1653,7 +2195,7 @@ const heroMotionCards = templateCards;
     .description {
       width: 180px;
     }
-    .template-list {
+    .template-list, .features-list {
       padding-inline: 32px;
     }
   }
@@ -1702,6 +2244,9 @@ const heroMotionCards = templateCards;
     }
     .template-list {
       padding: 120px 48px 100px;
+    }
+    .features-list {
+      padding: 120px 48px;
     }
   }
 
@@ -1809,7 +2354,10 @@ const heroMotionCards = templateCards;
     .template-list {
       gap: 24px;
       padding: 58px 12px 70px;
-      box-shadow: 0 2px 20px rgba(23, 22, 15, 0.08);
+      // box-shadow: 0 2px 20px rgba(23, 22, 15, 0.08);
+    }
+    .features-list {
+      padding: 60px 16px;
     }
     .section-heading {
       gap: 10px;
@@ -1828,6 +2376,27 @@ const heroMotionCards = templateCards;
       align-items: start;
       gap: 28px 10px;
       overflow: visible;
+    }
+    .features-grid-simple {
+      gap: 0 16px;
+    }
+    .feature-item.dark-item {
+      font-size: 13px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .addon-left {
+      gap: 10px;
+    }
+    .check-box-icon {
+      width: 18px;
+      height: 18px;
+    }
+    .addon-price {
+      font-size: 12px;
+    }
+    .section-heading-centered h2 {
+      font-size: clamp(32px, 11vw, 42px);
     }
     .template-card {
       --template-enter-y: 28px;
@@ -1857,12 +2426,13 @@ const heroMotionCards = templateCards;
     }
     .template-card__body strong {
       max-width: 100%;
-      font-size: clamp(24px, 6vw, 40px);
+      font-size: clamp(18px, 5vw, 28px);
       line-height: 0.92;
     }
     .template-card__price {
-      color: rgba(0, 0, 0, 0.5);
-      font-size: 9.5px;
+      color: var(--black);
+      font-size: 10.5px;
+      font-weight: 500;
       letter-spacing: 0.1em;
     }
     .template-card__body p {
@@ -1952,6 +2522,154 @@ const heroMotionCards = templateCards;
     }
     .hero-motion-seal svg {
       animation: none !important;
+    }
+  }
+
+  /* ── Dashboard Showcase ── */
+  .dashboard-showcase {
+    padding: 100px 20px 90px;
+    background: var(--white);
+    scroll-margin-top: 84px;
+  }
+
+  .dashboard-tabs {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dashboard-tabs__nav {
+    position: relative;
+    display: inline-flex;
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--soft-parchment);
+    margin-bottom: 40px;
+  }
+
+  .dashboard-tabs__indicator {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    border-radius: 9px;
+    background: var(--black);
+    transition: left 0.4s var(--ease), width 0.4s var(--ease);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dashboard-tabs__btn {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: 9px;
+    background: transparent;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--dark-grey);
+    cursor: pointer;
+    transition: color 0.35s var(--ease);
+  }
+  .dashboard-tabs__btn:focus,
+  .dashboard-tabs__btn:focus-visible,
+  .dashboard-tabs__btn:active {
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  .dashboard-tabs__btn.is-active:focus,
+  .dashboard-tabs__btn.is-active:focus-visible,
+  .dashboard-tabs__btn.is-active:active {
+    background: transparent;
+  }
+  .dashboard-tabs__btn svg {
+    width: 15px;
+    height: 15px;
+  }
+  .dashboard-tabs__btn:hover {
+    color: var(--black);
+  }
+  .dashboard-tabs__btn.is-active {
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .dashboard-tabs__panel {
+    display: none;
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .dashboard-tabs__panel.is-active {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    animation: dashPanelIn 0.5s var(--ease) forwards;
+  }
+
+  @keyframes dashPanelIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .dashboard-tabs__screenshot {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.08),
+      0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .dashboard-tabs__screenshot img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .dashboard-tabs__info {
+    text-align: center;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .dashboard-tabs__info h3 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(22px, 3vw, 32px);
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .dashboard-tabs__info p {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--dark-grey);
+  }
+
+  @media (max-width: 640px) {
+    .dashboard-showcase {
+      padding: 24px 16px 56px;
+    }
+    .dashboard-tabs__nav {
+      gap: 4px;
+    }
+    .dashboard-tabs__btn {
+      padding: 8px 14px;
+      font-size: 11px;
+    }
+    .dashboard-tabs__btn svg {
+      display: none;
     }
   }
 </style>

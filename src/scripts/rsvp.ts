@@ -143,13 +143,13 @@ export function initRSVPForm(root: Element | Document = document) {
       message: formData.get('message')
     };
 
-    if (!payload.weddingId || !payload.name || !payload.attendance || !String(payload.message || '').trim()) {
+    if (!payload.weddingId || !payload.name || !payload.attendance) {
       form.dataset.submitting = 'false';
       submitBtn.disabled = false;
       submitBtn.textContent = submitLabel;
       if (errorEl instanceof HTMLElement) {
         errorEl.style.display = 'block';
-        errorEl.textContent = 'Data RSVP belum lengkap. Isi nama, konfirmasi kehadiran, dan ucapan.';
+        errorEl.textContent = 'Data RSVP belum lengkap. Isi nama dan konfirmasi kehadiran.';
       }
       return;
     }

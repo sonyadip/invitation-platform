@@ -18,170 +18,226 @@ if (!report) {
 const coupleName = report.summary.coupleName;
 const weddingDate = report.wedding.weddingDate;
 const link = `${Astro.url.origin}/${slug}`;
-const coverImage = report.settings?.assets?.coverImage || 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+const templateName = report.summary.template || 'noir';
+const coverModules = import.meta.glob('../../../templates/*/assets/cover.{jpg,png,webp,jpeg}', { eager: true }) as Record<string, { default: { src: string } }>;
+const defaultCoverKey = Object.keys(coverModules).find(key => key.includes(`/${templateName}/assets/cover.`));
+const defaultCoverSrc = defaultCoverKey ? coverModules[defaultCoverKey].default.src : 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+
+const coverImage = report.settings?.assets?.heroImage || report.settings?.assets?.coverImage || defaultCoverSrc;
+
+const hadir = report.summary.attendingCount || 0;
+const tidakHadir = report.summary.declinedCount || 0;
+const ragu = report.summary.tentativeCount || 0;
+const totalTamu = report.summary.rsvpCount || 0;
+
+const hadirDeg = totalTamu > 0 ? Math.round((hadir / totalTamu) * 360) : 0;
+const tidakHadirDeg = totalTamu > 0 ? Math.round((tidakHadir / totalTamu) * 360) : 0;
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+const wishesWithMessage = report.rsvps.filter(r => r.message);
+const newWishesCount = wishesWithMessage.filter(r => {
+  const diff = Date.now() - new Date(r.createdAt).getTime();
+  return diff < 24 * 60 * 60 * 1000; // last 24h
+}).length;
 ---
 
 <ClientLayout title="Dashboard">
+  <div class="dashboard-bento-layout">
   <!-- Hero Section -->
   <section class="fade-in-bottom">
-    <div class="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden shadow-[0px_4px_20px_rgba(166,137,102,0.08)] bg-white group">
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
-      <div class="absolute inset-0 bg-cover bg-center" style={`background-image: url('${coverImage}')`}></div>
-      <div class="absolute bottom-0 left-0 w-full p-8 z-20 text-white">
-        <p class="font-label-md text-label-md uppercase tracking-[0.2em] mb-2 text-white/80">The Wedding of</p>
-        <h1 class="font-headline-lg-mobile text-headline-lg-mobile leading-tight">{coupleName}</h1>
-        <div class="mt-4 flex items-center gap-3">
-          <div class="h-[1px] flex-1 bg-white/30"></div>
-          <span class="font-label-sm text-label-sm opacity-80 italic">
-            {new Date(weddingDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </span>
-          <div class="h-[1px] flex-1 bg-white/30"></div>
+    <div class="hero-card">
+      <div class="hero-card__overlay"></div>
+      <div class="hero-card__bg" style={`background-image: url('${coverImage}')`}></div>
+      <div class="hero-card__content">
+        <h1 class="hero-card__title">{coupleName}</h1>
+        <a href={link} target="_blank" class="hero-card__link">{link.replace('https://', '')}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Grid -->
+  <section class="fade-in-bottom animate-on-scroll">
+    <div class="bento-card bento-card--overview">
+      <h3 class="bento-card__title">Overview</h3>
+      <div class="stats-grid stats-grid--dashboard">
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+          </div>
+          <div class="stat-card__label">TOTAL RSVP</div>
+          <div class="stat-card__number">{report.summary.rsvpCount}</div>
         </div>
-        <div class="mt-4 text-center">
-          <a href={link} target="_blank" class="text-xs text-white/90 underline tracking-wider">{link}</a>
+        
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="group">group</span>
+          </div>
+          <div class="stat-card__label">TOTAL PAX</div>
+          <div class="stat-card__number">{report.summary.guestCount}</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="forum">forum</span>
+          </div>
+          <div class="stat-card__label">UCAPAN</div>
+          <div class="stat-card__number">{report.summary.wishesCount}</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+          </div>
+          <div class="stat-card__label">PAGE VIEWS</div>
+          <div class="stat-card__number">{report.summary.viewCount}</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Countdown Timer -->
-  <section class="fade-in-bottom" style="animation-delay: 0.1s">
-    <div class="bg-surface-container-lowest rounded-[24px] p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] text-center">
-      <h3 class="font-label-md text-label-md text-primary mb-4 uppercase tracking-widest">Hitung Mundur</h3>
-      <div class="flex justify-around items-center">
-        <div>
-          <div class="font-headline-md text-headline-md text-primary" id="cd-days">00</div>
-          <div class="font-label-sm text-label-sm text-outline">Hari</div>
+  <section class="fade-in-bottom animate-on-scroll">
+    <div class="bento-card">
+      <div class="countdown-header-row">
+        <span class="countdown-label">Countdown:</span>
+        <span class="countdown-date">{new Date(weddingDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+      </div>
+      <div class="countdown-grid">
+        <div class="countdown-item">
+          <div class="countdown-item__number" id="cd-days">00</div>
+          <div class="countdown-item__label">HARI</div>
         </div>
-        <div class="text-outline-variant">:</div>
-        <div>
-          <div class="font-headline-md text-headline-md text-primary" id="cd-hours">00</div>
-          <div class="font-label-sm text-label-sm text-outline">Jam</div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <div class="countdown-item__number" id="cd-hours">00</div>
+          <div class="countdown-item__label">JAM</div>
         </div>
-        <div class="text-outline-variant">:</div>
-        <div>
-          <div class="font-headline-md text-headline-md text-primary" id="cd-minutes">00</div>
-          <div class="font-label-sm text-label-sm text-outline">Menit</div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <div class="countdown-item__number" id="cd-minutes">00</div>
+          <div class="countdown-item__label">MENIT</div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Stats Grid -->
-  <section class="grid grid-cols-2 gap-4 fade-in-bottom" style="animation-delay: 0.2s">
-    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
-      <div class="flex justify-between items-start">
-        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="event_available">event_available</span>
-      </div>
-      <div>
-        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.rsvpCount}</div>
-        <div class="font-label-sm text-label-sm text-outline">Total RSVP</div>
-      </div>
-    </div>
-    
-    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
-      <div class="flex justify-between items-start">
-        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="group">group</span>
-      </div>
-      <div>
-        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.guestCount}</div>
-        <div class="font-label-sm text-label-sm text-outline">Total Pax</div>
-      </div>
-    </div>
-    
-    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
-      <div class="flex justify-between items-start">
-        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="forum">forum</span>
-      </div>
-      <div>
-        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.wishesCount}</div>
-        <div class="font-label-sm text-label-sm text-outline">Total Ucapan</div>
-      </div>
-    </div>
-    
-    <div class="bg-surface-container-lowest p-5 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col justify-between h-32 bento-card">
-      <div class="flex justify-between items-start">
-        <span class="material-symbols-outlined text-primary text-[20px]" data-icon="visibility">visibility</span>
-      </div>
-      <div>
-        <div class="font-headline-md text-headline-md text-on-surface">{report.summary.viewCount}</div>
-        <div class="font-label-sm text-label-sm text-outline">Total Views</div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <div class="countdown-item__number" id="cd-seconds">00</div>
+          <div class="countdown-item__label">DETIK</div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Rangkaian Acara -->
-  <section class="fade-in-bottom" style="animation-delay: 0.3s">
-    <div class="flex justify-between items-end mb-4">
-      <h2 class="font-headline-md text-headline-md text-on-surface">Rangkaian Acara</h2>
+  <section class="fade-in-bottom animate-on-scroll">
+    <div class="bento-card">
+      <h3 class="bento-card__title">Rangkaian Acara</h3>
+      <div class="event-list">
+        {report.events.map((event, index) => (
+          <div class="event-item">
+            <div class="event-item__row1">
+              <div class="event-item__time-block">
+                <span class="material-symbols-outlined event-item__time-icon">schedule</span>
+                <span class="event-item__time">
+                  {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}
+                </span>
+              </div>
+              <span class="event-item__date">
+                {new Date(event.date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+            <div class="event-item__body">
+              <p class="event-item__name">{event.name}</p>
+              {event.venueAddress && <p class="event-item__address">{event.venueAddress}</p>}
+              {event.mapsUrl && (
+                <a href={event.mapsUrl} target="_blank" class="event-item__btn">Lihat Lokasi</a>
+              )}
+            </div>
+            {index < report.events.length - 1 && <div class="event-item__divider"></div>}
+          </div>
+        ))}
+      </div>
     </div>
-    <div class="space-y-4">
-      {report.events.map((event, index) => (
-        <div class={`bg-surface-container-lowest rounded-[24px] p-6 shadow-[0px_4px_20px_rgba(166,137,102,0.08)] border-l-4 ${index % 2 === 0 ? 'border-primary' : 'border-primary/40'}`}>
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h4 class="font-headline-md text-headline-md text-on-surface text-[18px]">{event.name}</h4>
-              <p class="font-body-md text-body-md text-outline">{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            </div>
-            <div class={`${index % 2 === 0 ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'} px-3 py-1 rounded-full font-label-sm text-label-sm`}>
-              {event.startTime}
+  </section>
+
+  <!-- Guest Stats Chart -->
+  <section class="fade-in-bottom animate-on-scroll">
+    <div class="bento-card">
+      <h3 class="bento-card__title">Statistik Tamu</h3>
+      <div class="guest-stats">
+        <div class="guest-stats__chart">
+          <div class="guest-stats__donut" style={`--hadir-deg: ${hadirDeg}deg; --tidak-hadir-deg: ${tidakHadirDeg}deg;`}>
+            <div class="guest-stats__donut-inner">
+              <span class="guest-stats__total-val">{totalTamu}</span>
+              <span class="guest-stats__total-lbl">TOTAL</span>
             </div>
           </div>
-          <div class="flex items-center gap-2 text-outline mb-6">
-            <span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
-            <span class="font-label-md text-label-md truncate">{event.venueName}</span>
-          </div>
-          {event.mapsUrl && (
-            <a href={event.mapsUrl} target="_blank" class="w-full h-12 rounded-full border border-primary text-primary font-label-md text-label-md flex items-center justify-center gap-2 active:scale-95 transition-all">
-              <span class="material-symbols-outlined text-[20px]" data-icon="map">map</span>
-              Lihat Lokasi
-            </a>
-          )}
         </div>
-      ))}
+        <div class="guest-stats__legend">
+          <div class="guest-stats__legend-item">
+            <div class="guest-stats__dot" style="background-color: #22c55e;"></div>
+            <span class="guest-stats__label">Hadir</span>
+            <span class="guest-stats__value">{hadir}</span>
+          </div>
+          <div class="guest-stats__legend-item">
+            <div class="guest-stats__dot" style="background-color: #ef4444;"></div>
+            <span class="guest-stats__label">Tidak Hadir</span>
+            <span class="guest-stats__value">{tidakHadir}</span>
+          </div>
+          <div class="guest-stats__legend-item">
+            <div class="guest-stats__dot" style="background-color: #9ca3af;"></div>
+            <span class="guest-stats__label">Ragu</span>
+            <span class="guest-stats__value">{ragu}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- Wishes Section -->
-  <section class="fade-in-bottom" style="animation-delay: 0.4s">
-    <h2 class="font-headline-md text-headline-md text-on-surface mb-4">Wishes</h2>
-    <div class="space-y-4">
-      {report.rsvps.filter(r => r.message).slice(0, 5).map((rsvp, index) => (
-        <div class="bg-white p-6 rounded-[24px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] relative overflow-hidden">
-          {index === 0 && (
-            <div class="absolute top-0 right-0 p-4 opacity-5">
-              <span class="material-symbols-outlined text-6xl" data-icon="format_quote">format_quote</span>
+  <section class="fade-in-bottom animate-on-scroll">
+    <div class="bento-card">
+      <div class="wish-header">
+        <h3 class="bento-card__title bento-card__title--no-margin">Ucapan</h3>
+        {newWishesCount > 0 && (
+          <span class="wish-new-badge">{newWishesCount} New</span>
+        )}
+      </div>
+      <div class="wishes-list">
+        {wishesWithMessage.slice(0, 2).map((rsvp, index, arr) => (
+          <div class="wish-item">
+            <div class="wish-item__header">
+              <div class="wish-item__left">
+                <span class="wish-item__name">{rsvp.guestName}</span>
+                <span class={`wish-item__status wish-item__status--${rsvp.attendanceStatus}`}>
+                  {rsvp.attendanceStatus === 'attending' ? 'HADIR' : rsvp.attendanceStatus === 'declined' ? 'TIDAK' : 'RAGU'}
+                </span>
+              </div>
+              <span class="wish-item__ago">{timeAgo(rsvp.createdAt)}</span>
             </div>
-          )}
-          <div class="flex items-center gap-4 mb-3">
-            <div class={`w-10 h-10 rounded-full ${index % 2 === 0 ? 'bg-secondary-fixed text-primary' : 'bg-tertiary-fixed text-tertiary'} flex items-center justify-center font-bold uppercase`}>
-              {rsvp.guestName.substring(0, 2)}
-            </div>
-            <div>
-              <p class="font-label-md text-label-md text-on-surface">{rsvp.guestName}</p>
-              <p class="text-[10px] text-outline">{new Date(rsvp.createdAt).toLocaleDateString('id-ID')}</p>
-            </div>
+            <p class="wish-item__message">"{rsvp.message}"</p>
+            {index < arr.length - 1 && <div class="wish-item__divider"></div>}
           </div>
-          <p class="font-body-md text-body-md text-secondary italic">"{rsvp.message}"</p>
-        </div>
-      ))}
-      {report.rsvps.filter(r => r.message).length === 0 && (
-        <p class="font-body-md text-outline">Belum ada ucapan.</p>
+        ))}
+        {wishesWithMessage.length === 0 && (
+          <p class="empty-state">Belum ada ucapan.</p>
+        )}
+      </div>
+      {wishesWithMessage.length > 0 && (
+        <a href={`/dashboard/${slug}/rsvp`} class="wish-see-all">
+          LIHAT SEMUA {report.summary.wishesCount} UCAPAN
+        </a>
       )}
     </div>
   </section>
 
-  <!-- Concierge Widget -->
-  <section class="fade-in-bottom" style="animation-delay: 0.5s">
-    <div class="bg-gradient-to-br from-surface-container-lowest to-tertiary-fixed p-8 rounded-[32px] shadow-[0px_4px_20px_rgba(166,137,102,0.08)] flex flex-col items-center text-center">
-      <span class="material-symbols-outlined text-primary text-4xl mb-4" data-icon="auto_awesome">auto_awesome</span>
-      <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Perlu Bantuan?</h3>
-      <p class="font-body-md text-body-md text-outline mb-6">Concierge kami siap membantu kelancaran acara Anda 24/7.</p>
-      <a href="https://wa.me/6281234567890" target="_blank" class="px-8 flex items-center justify-center h-12 bg-primary text-white rounded-full font-label-md text-label-md shadow-lg shadow-primary/20 active:scale-95 transition-all">
-          Hubungi Admin
-      </a>
-    </div>
-  </section>
+  </div>
   
   <script define:vars={{ weddingDate }}>
     function updateCountdown() {
@@ -190,20 +246,17 @@ const coverImage = report.settings?.assets?.coverImage || 'https://images.unspla
       const now = new Date().getTime();
       const diff = target - now;
 
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = String(val).padStart(2, '0'); };
+
       if (diff < 0) {
-        if(document.getElementById('cd-days')) document.getElementById('cd-days').innerText = '0';
-        if(document.getElementById('cd-hours')) document.getElementById('cd-hours').innerText = '0';
-        if(document.getElementById('cd-minutes')) document.getElementById('cd-minutes').innerText = '0';
+        ['cd-days','cd-hours','cd-minutes','cd-seconds'].forEach(id => set(id, 0));
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-      if(document.getElementById('cd-days')) document.getElementById('cd-days').innerText = days;
-      if(document.getElementById('cd-hours')) document.getElementById('cd-hours').innerText = hours;
-      if(document.getElementById('cd-minutes')) document.getElementById('cd-minutes').innerText = minutes;
+      set('cd-days',    Math.floor(diff / (1000 * 60 * 60 * 24)));
+      set('cd-hours',   Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+      set('cd-minutes', Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+      set('cd-seconds', Math.floor((diff % (1000 * 60)) / 1000));
     }
     
     setInterval(updateCountdown, 1000);

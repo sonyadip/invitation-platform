@@ -2,6 +2,7 @@
 const { title = "Dashboard" } = Astro.props;
 const slug = Astro.params.slug || "wayan-ayu"; // default fallback for safety
 const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/${slug}`, '')}`;
+import "../styles/dashboard.scss";
 ---
 <!DOCTYPE html>
 <html lang="id">
@@ -12,171 +13,55 @@ const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/
   <link rel="icon" type="image/jpeg" href="/logo.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://db.onlinewebfonts.com/c/4c4c08af466e9ad071b6d69cf44093df?family=SaolDisplay-Regular" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-  
-  <script is:inline src="https://cdn.tailwindcss.com"></script>
-  <script is:inline id="tailwind-config">
-    window.tailwind = window.tailwind || {};
-    window.tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          "colors": {
-              "surface-container-lowest": "#ffffff",
-              "outline": "#80756b",
-              "secondary-container": "#e1dfdb",
-              "error": "#ba1a1a",
-              "primary-container": "#8b704f",
-              "surface-bright": "#fcf9f8",
-              "on-primary-fixed-variant": "#594325",
-              "on-tertiary": "#ffffff",
-              "background": "#fcf9f8",
-              "on-primary-container": "#fffbff",
-              "on-surface": "#1b1c1c",
-              "on-tertiary-container": "#fffbff",
-              "surface-container-low": "#f6f3f2",
-              "tertiary-container": "#78746a",
-              "tertiary-fixed-dim": "#cbc6ba",
-              "surface": "#fcf9f8",
-              "secondary": "#5e5e5b",
-              "surface-container": "#f0eded",
-              "on-tertiary-fixed-variant": "#4a473e",
-              "secondary-fixed": "#e4e2dd",
-              "surface-tint": "#735a3a",
-              "on-secondary-fixed-variant": "#474744",
-              "surface-dim": "#dcd9d9",
-              "on-surface-variant": "#4e453c",
-              "on-secondary-container": "#63635f",
-              "on-background": "#1b1c1c",
-              "tertiary": "#5f5c52",
-              "on-primary-fixed": "#291801",
-              "tertiary-fixed": "#e8e2d6",
-              "inverse-surface": "#303030",
-              "error-container": "#ffdad6",
-              "on-tertiary-fixed": "#1e1c14",
-              "primary-fixed": "#ffddb6",
-              "outline-variant": "#d1c4b8",
-              "on-error-container": "#93000a",
-              "inverse-on-surface": "#f3f0f0",
-              "on-secondary": "#ffffff",
-              "primary": "#705838",
-              "secondary-fixed-dim": "#c8c6c2",
-              "surface-variant": "#e4e2e1",
-              "inverse-primary": "#e2c19b",
-              "on-primary": "#ffffff",
-              "on-secondary-fixed": "#1b1c19",
-              "on-error": "#ffffff",
-              "surface-container-high": "#eae7e7",
-              "surface-container-highest": "#e4e2e1",
-              "primary-fixed-dim": "#e2c19b"
-          },
-          "borderRadius": {
-              "DEFAULT": "0.25rem",
-              "lg": "0.5rem",
-              "xl": "0.75rem",
-              "full": "9999px"
-          },
-          "spacing": {
-              "container-max": "1280px",
-              "margin-desktop": "40px",
-              "unit": "8px",
-              "margin-mobile": "16px",
-              "gutter": "24px",
-              "section-gap": "64px"
-          },
-          "fontFamily": {
-              "body-md": ["Manrope"],
-              "headline-lg-mobile": ["Playfair Display"],
-              "headline-lg": ["Playfair Display"],
-              "headline-md": ["Playfair Display"],
-              "body-lg": ["Manrope"],
-              "label-sm": ["Manrope"],
-              "display-lg": ["Playfair Display"],
-              "label-md": ["Manrope"]
-          }
-        },
-      },
-    }
-  </script>
-  <style>
-    body {
-        background-color: #fcf9f8;
-        font-family: 'Manrope', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        min-height: max(884px, 100dvh);
-    }
-    .material-symbols-outlined {
-        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
-    .fade-in-bottom {
-        animation: fadeInBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes fadeInBottom {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    /* Hide scrollbar but keep functionality */
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-  </style>
 </head>
-<body class="font-body-md text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed pb-24">
+<body>
   
   <!-- TopAppBar -->
-  <header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface border-none transition-all duration-300 shadow-sm">
-    <div class="flex items-center gap-4">
-      <button id="menu-btn" class="p-2 flex items-center justify-center hover:bg-surface-container-low transition-colors scale-95 active:scale-90 rounded-full">
-        <span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+  <header class="dashboard-header" id="dashboard-header">
+    <div class="dashboard-header__left">
+      <button id="menu-btn" class="icon-btn">
+        <span class="material-symbols-outlined" data-icon="menu">menu</span>
       </button>
-      <div class="font-headline-md text-[20px] text-primary italic tracking-tight">Senadda</div>
+      <span class="dashboard-header__title">{title}</span>
     </div>
     
-    <div class="flex items-center gap-2">
-      <a href="/api/auth/logout" class="p-2 flex items-center justify-center hover:bg-surface-container-low transition-colors scale-95 active:scale-90 rounded-full" title="Logout">
-        <span class="material-symbols-outlined text-primary" data-icon="logout">logout</span>
+    <div class="dashboard-header__right">
+      <a href="/api/auth/logout" class="icon-btn" title="Logout">
+        <span class="material-symbols-outlined" data-icon="logout">logout</span>
       </a>
     </div>
   </header>
 
   <!-- Mobile Sidebar Drawer -->
-  <div id="mobile-drawer" class="fixed inset-0 z-[60] pointer-events-none">
-    <!-- Backdrop -->
-    <div id="drawer-backdrop" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300"></div>
+  <div id="mobile-drawer" class="dashboard-drawer-wrapper">
+    <div id="drawer-backdrop" class="dashboard-drawer__backdrop"></div>
     
-    <!-- Drawer Content -->
-    <div id="drawer-content" class="absolute top-0 left-0 h-full w-3/4 max-w-sm bg-surface shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col pointer-events-auto">
-      <div class="p-6 border-b border-surface-variant flex justify-between items-center">
-        <div class="font-headline-md text-[24px] text-primary italic tracking-tight">Senadda</div>
-        <button id="close-drawer" class="p-2 rounded-full hover:bg-surface-container-low transition-colors active:scale-95">
-          <span class="material-symbols-outlined text-primary">close</span>
+    <div id="drawer-content" class="dashboard-drawer__content">
+      <div class="dashboard-drawer__header">
+        <img src="/images/senadda-logo.png" alt="Senadda Logo" class="dashboard-logo" />
+        <button id="close-drawer" class="icon-btn">
+          <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div class="p-4 flex-1 overflow-y-auto space-y-2">
-        <a href={`/dashboard/${slug}`} class={`flex items-center gap-4 px-4 py-3 rounded-full ${currentPath === `/dashboard/${slug}` ? 'bg-primary-container/20 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low'} transition-colors`}>
+      <div class="dashboard-drawer__nav">
+        <a href={`/dashboard/${slug}`} class={`nav-link ${currentPath === `/dashboard/${slug}` ? 'nav-link--active' : ''}`}>
           <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}` ? "font-variation-settings: 'FILL' 1" : ""}>home</span>
           Dashboard
         </a>
-        <a href={`/dashboard/${slug}/kirim-undangan`} class={`flex items-center gap-4 px-4 py-3 rounded-full ${currentPath === `/dashboard/${slug}/kirim-undangan` ? 'bg-primary-container/20 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low'} transition-colors`}>
+        <a href={`/dashboard/${slug}/kirim-undangan`} class={`nav-link ${currentPath === `/dashboard/${slug}/kirim-undangan` ? 'nav-link--active' : ''}`}>
           <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/kirim-undangan` ? "font-variation-settings: 'FILL' 1" : ""}>send</span>
           Kirim Undangan
         </a>
-        <a href={`/dashboard/${slug}/rsvp`} class={`flex items-center gap-4 px-4 py-3 rounded-full ${currentPath === `/dashboard/${slug}/rsvp` ? 'bg-primary-container/20 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low'} transition-colors`}>
+        <a href={`/dashboard/${slug}/rsvp`} class={`nav-link ${currentPath === `/dashboard/${slug}/rsvp` ? 'nav-link--active' : ''}`}>
           <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/rsvp` ? "font-variation-settings: 'FILL' 1" : ""}>mail</span>
           RSVP
         </a>
-        <a href={`/dashboard/${slug}/profile`} class={`flex items-center gap-4 px-4 py-3 rounded-full ${currentPath === `/dashboard/${slug}/profile` ? 'bg-primary-container/20 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low'} transition-colors`}>
-          <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/profile` ? "font-variation-settings: 'FILL' 1" : ""}>person</span>
-          Profile
-        </a>
       </div>
-      <div class="p-4 border-t border-surface-variant">
-        <a href="/api/auth/logout" class="flex items-center gap-4 px-4 py-3 rounded-full text-error hover:bg-error/10 transition-colors">
+      <div class="dashboard-drawer__footer">
+        <a href="/api/auth/logout" class="nav-link nav-link--error">
           <span class="material-symbols-outlined">logout</span>
           Logout
         </a>
@@ -185,29 +70,25 @@ const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/
   </div>
 
   <!-- Navigation Bottom Bar (Mobile App Style) -->
-  <nav class="fixed bottom-0 w-full z-50 bg-surface-container-lowest border-t border-surface-container shadow-[0px_-4px_20px_rgba(166,137,102,0.05)]">
-    <div class="max-w-md mx-auto flex justify-around items-center h-20 px-2">
-      <a href={`/dashboard/${slug}`} class={`flex flex-col items-center gap-1 p-2 w-16 ${currentPath === `/dashboard/${slug}` ? 'text-primary' : 'text-outline'} transition-colors`}>
+  <nav class="dashboard-bottom-nav">
+    <div class="dashboard-bottom-nav__inner">
+      <a href={`/dashboard/${slug}`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}` ? 'bottom-nav-item--active' : ''}`}>
         <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}` ? "font-variation-settings: 'FILL' 1" : ""}>home</span>
-        <span class="text-[10px] font-semibold">Home</span>
+        <span class="bottom-nav-item__text">Home</span>
       </a>
-      <a href={`/dashboard/${slug}/rsvp`} class={`flex flex-col items-center gap-1 p-2 w-16 ${currentPath === `/dashboard/${slug}/rsvp` ? 'text-primary' : 'text-outline'} transition-colors`}>
+      <a href={`/dashboard/${slug}/rsvp`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/rsvp` ? 'bottom-nav-item--active' : ''}`}>
         <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/rsvp` ? "font-variation-settings: 'FILL' 1" : ""}>mail</span>
-        <span class="text-[10px] font-semibold">RSVP</span>
+        <span class="bottom-nav-item__text">RSVP</span>
       </a>
-      <a href={`/dashboard/${slug}/kirim-undangan`} class={`flex flex-col items-center gap-1 p-2 w-16 ${currentPath === `/dashboard/${slug}/kirim-undangan` ? 'text-primary' : 'text-outline'} transition-colors`}>
+      <a href={`/dashboard/${slug}/kirim-undangan`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/kirim-undangan` ? 'bottom-nav-item--active' : ''}`}>
         <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/kirim-undangan` ? "font-variation-settings: 'FILL' 1" : ""}>send</span>
-        <span class="text-[10px] font-semibold">Kirim</span>
-      </a>
-      <a href={`/dashboard/${slug}/profile`} class={`flex flex-col items-center gap-1 p-2 w-16 ${currentPath === `/dashboard/${slug}/profile` ? 'text-primary' : 'text-outline'} transition-colors`}>
-        <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/profile` ? "font-variation-settings: 'FILL' 1" : ""}>person</span>
-        <span class="text-[10px] font-semibold">Profile</span>
+        <span class="bottom-nav-item__text">Kirim</span>
       </a>
     </div>
   </nav>
 
   <!-- Main Content Wrapper (Mobile Container) -->
-  <main class="pt-24 pb-32 max-w-md mx-auto px-margin-mobile space-y-8">
+  <main class="dashboard-main">
     <slot />
   </main>
 
@@ -221,18 +102,16 @@ const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/
       const closeBtn = document.getElementById('close-drawer');
 
       function openDrawer() {
-        drawer.classList.remove('pointer-events-none');
-        backdrop.classList.remove('opacity-0');
-        backdrop.classList.add('opacity-100', 'pointer-events-auto');
-        content.classList.remove('-translate-x-full');
+        drawer.style.pointerEvents = 'auto';
+        backdrop.style.opacity = '1';
+        content.style.transform = 'translateX(0)';
       }
 
       function closeDrawer() {
-        backdrop.classList.remove('opacity-100', 'pointer-events-auto');
-        backdrop.classList.add('opacity-0');
-        content.classList.add('-translate-x-full');
+        backdrop.style.opacity = '0';
+        content.style.transform = 'translateX(-100%)';
         setTimeout(() => {
-          drawer.classList.add('pointer-events-none');
+          drawer.style.pointerEvents = 'none';
         }, 300);
       }
 
@@ -253,13 +132,13 @@ const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/
 
       // Tonal Layer scroll effect for Header
       window.addEventListener('scroll', () => {
-          const header = document.querySelector('header');
+          const header = document.getElementById('dashboard-header');
           if (window.scrollY > 20) {
-              header.classList.add('shadow-md', 'bg-white');
-              header.classList.remove('bg-surface', 'border-none');
+              header.style.backgroundColor = '#ffffff';
+              header.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
           } else {
-              header.classList.remove('shadow-md', 'bg-white');
-              header.classList.add('bg-surface', 'border-none');
+              header.style.backgroundColor = 'var(--color-surface)';
+              header.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
           }
       });
       

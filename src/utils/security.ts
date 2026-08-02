@@ -24,7 +24,7 @@ export function validateRSVPInput(name: string, status: string, countStr: string
     throw new Error('Nama tamu harus diisi (2 - 80 karakter).');
   }
 
-  if (status !== 'attending' && status !== 'declined') {
+  if (status !== 'attending' && status !== 'declined' && status !== 'tentative') {
     throw new Error('Status kehadiran tidak valid.');
   }
 
@@ -35,7 +35,7 @@ export function validateRSVPInput(name: string, status: string, countStr: string
 
   return {
     name: sanitizedName,
-    status: status as 'attending' | 'declined',
+    status: status as 'attending' | 'declined' | 'tentative',
     count
   };
 }
