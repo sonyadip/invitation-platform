@@ -4,7 +4,7 @@ Welcome agents! Senadda provides APIs for managing wedding invitations and RSVPs
 
 ## Registration
 
-To register an agent, visit our registration page at `https://senadda.id/agent/register` or follow the instructions in the OAuth authorization server metadata at `/.well-known/oauth-authorization-server`.
+To register an agent, visit our registration page at `https://senadda.id/agent/register` or follow the instructions in the OAuth authorization server metadata at `https://senadda.id/.well-known/oauth-authorization-server`.
 
 ## Access
 

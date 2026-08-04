@@ -8,6 +8,9 @@
   "agent_auth": {
     "skill": "https://senadda.id/auth.md",
     "register_uri": "https://senadda.id/agent/register",
+    "identity_endpoint": "https://senadda.id/agent/identity",
+    "claim_endpoint": "https://senadda.id/agent/identity/claim",
+    "events_endpoint": "https://senadda.id/agent/event/notify",
     "identity_types_supported": ["identity_assertion", "anonymous"],
     "identity_assertion": {
       "assertion_types_supported": ["urn:ietf:params:oauth:token-type:id-jag", "verified_email"],
@@ -17,6 +20,9 @@
     "anonymous": {
       "credential_types_supported": ["oauth_access_token"],
       "claim_uri": "https://senadda.id/agent/claim"
-    }
+    },
+    "events_supported": [
+      "https://schemas.workos.com/events/agent/auth/identity/assertion/revoked"
+    ]
   }
 }
