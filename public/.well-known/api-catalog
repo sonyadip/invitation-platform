@@ -1,0 +1,16 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://senadda.id/api",
+      "service-desc": [
+        {"href": "https://senadda.id/openapi.json", "type": "application/openapi+json"}
+      ],
+      "service-doc": [
+        {"href": "https://senadda.id/docs", "type": "text/html"}
+      ],
+      "status": [
+        {"href": "https://senadda.id/api/health", "type": "application/json"}
+      ]
+    }
+  ]
+}

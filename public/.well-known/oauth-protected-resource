@@ -1,0 +1,6 @@
+{
+  "resource": "https://senadda.id/api",
+  "authorization_servers": ["https://senadda.id"],
+  "scopes_supported": ["read", "write"],
+  "bearer_methods_supported": ["header"]
+}

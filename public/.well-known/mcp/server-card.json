@@ -1,0 +1,13 @@
+{
+  "serverInfo": {
+    "name": "Senadda Agent MCP Server",
+    "version": "1.0.0"
+  },
+  "transport": {
+    "type": "sse",
+    "endpoint": "https://senadda.id/mcp/sse"
+  },
+  "capabilities": {
+    "tools": true
+  }
+}
