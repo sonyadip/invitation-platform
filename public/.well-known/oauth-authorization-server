@@ -10,7 +10,13 @@
     "register_uri": "https://senadda.id/agent/register",
     "identity_types_supported": ["identity_assertion", "anonymous"],
     "identity_assertion": {
-      "assertion_types_supported": ["urn:ietf:params:oauth:token-type:id-jag", "verified_email"]
+      "assertion_types_supported": ["urn:ietf:params:oauth:token-type:id-jag", "verified_email"],
+      "credential_types_supported": ["oauth_access_token"],
+      "claim_uri": "https://senadda.id/agent/claim"
+    },
+    "anonymous": {
+      "credential_types_supported": ["oauth_access_token"],
+      "claim_uri": "https://senadda.id/agent/claim"
     }
   }
 }
