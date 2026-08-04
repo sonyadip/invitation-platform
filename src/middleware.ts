@@ -1,32 +1,36 @@
 import { defineMiddleware } from 'astro:middleware';
-import TurndownService from 'turndown';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const response = await next();
   const acceptHeader = context.request.headers.get('accept') || '';
   
-  if (acceptHeader.includes('text/markdown') && response.headers.get('content-type')?.includes('text/html')) {
-    const html = await response.text();
-    const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
-    const markdown = turndownService.turndown(html);
-    
-    // Create new headers based on the original response
-    const newHeaders = new Headers();
-    response.headers.forEach((value, key) => {
-      newHeaders.set(key, value);
-    });
-    
-    // We changed the body size and format, so these headers are no longer valid
-    newHeaders.delete('content-length');
-    newHeaders.delete('content-encoding');
-    newHeaders.set('Content-Type', 'text/markdown');
-    
+  // Turndown doesn't work in Cloudflare Workers due to lack of DOM.
+  // For the homepage, we can just return a lightweight, static Markdown string.
+  if (acceptHeader.includes('text/markdown') && (context.url.pathname === '/' || context.url.pathname === '')) {
+    const markdown = `# Senadda - Undangan Pernikahan Digital
+
+Selamat datang di Senadda, platform pembuatan undangan digital yang premium, elegan, dan eksklusif.
+
+## Koleksi Template
+- Lumiere (Rp 200.000)
+- Deauville (Rp 175.000)
+- Editorial (Rp 175.000)
+- Air (Rp 125.000)
+- Noir (Rp 125.000)
+
+## Konsultasi & Pemesanan
+Silakan hubungi kami melalui WhatsApp untuk pemesanan.
+
+## Dokumen Agen
+Silakan merujuk ke [/llms.txt](/llms.txt) untuk konteks lengkap agen AI.
+`;
+
     return new Response(markdown, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: newHeaders
+      status: 200,
+      headers: {
+        'Content-Type': 'text/markdown'
+      }
     });
   }
   
-  return response;
+  return next();
 });
