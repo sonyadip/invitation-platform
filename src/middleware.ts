@@ -16,6 +16,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       newHeaders.set(key, value);
     });
     
+    // We changed the body size and format, so these headers are no longer valid
+    newHeaders.delete('content-length');
+    newHeaders.delete('content-encoding');
     newHeaders.set('Content-Type', 'text/markdown');
     
     return new Response(markdown, {
