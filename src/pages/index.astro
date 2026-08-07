@@ -18,6 +18,7 @@ const bookingUrl = siteSettings.whatsapp_url || "https://wa.me/6281234567890";
 const navItems = [
   ["Koleksi", "#templates"],
   ["Fitur", "#features"],
+  ["FAQ", "#faq"],
   ["Konsultasi", "#booking"],
 ];
 
@@ -129,6 +130,7 @@ const addons = [
     <div class="intro-animation" data-intro aria-hidden="true"></div>
 
     <main>
+      <div id="main-content-wrapper">
       <nav class="hero-nav" aria-label="Navigasi utama">
         <a
           class="brand-logo motion-down"
@@ -143,31 +145,39 @@ const addons = [
           />
         </a>
 
-        <div class="nav-links" aria-label="Menu desktop">
-          {
-            navItems.map(([label, href], index) => (
-              <a class="motion-down" style={`--i: ${index + 1}`} href={href}>
-                {label}
-              </a>
-            ))
-          }
+        <div class="nav-right" style="display: flex; align-items: center; gap: 12px;">
+          <button
+            class="nav-action motion-down"
+            style="--i: 4"
+            id="login-btn"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+          >
+            Login
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </button>
         </div>
-
-        <button
-          class="nav-action motion-down"
-          style="--i: 4"
-          id="login-btn"
-          aria-haspopup="dialog"
-          aria-expanded="false"
-        >
-          Login
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-            <polyline points="10 17 15 12 10 7"></polyline>
-            <line x1="15" y1="12" x2="3" y2="12"></line>
-          </svg>
-        </button>
       </nav>
+
+      <div class="nav-links" aria-label="Menu desktop">
+        {
+          navItems.map(([label, href], index) => (
+            <a class="motion-down" style={`--i: ${index + 1}`} href={href}>
+              {label}
+            </a>
+          ))
+        }
+      </div>
+
+      <button class="menu-toggle motion-down" style="--i: 5" id="menu-toggle" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
 
       <div class="hero-shell-placeholder" aria-hidden="true"></div>
 
@@ -711,8 +721,9 @@ const addons = [
             });
         });
         </script>
-        </div>
       </section>
+      </div>
+    </main>
 
       <section class="start section-observe" id="booking" data-section>
         <p class="reveal-blur">{siteSettings.home_booking_eyebrow || "Langkah Selanjutnya"}</p>
@@ -751,14 +762,133 @@ const addons = [
           </form>
         </div>
       </dialog>
-    </main>
-
     <script>
       const loginBtn = document.getElementById("login-btn");
       const loginModal = document.getElementById("login-modal");
       const loginModalClose = document.getElementById("login-modal-close");
       const loginModalCloseBtn = document.getElementById("login-modal-close-btn");
       const loginFormUnified = document.getElementById("login-form-unified");
+      const menuToggle = document.getElementById("menu-toggle");
+      const navLinks = document.querySelector(".nav-links");
+
+      if (menuToggle && navLinks) {
+        const updateMenuPosition = () => {
+          if (window.innerWidth > 768) {
+            navLinks.style = '';
+            return;
+          }
+          const rect = menuToggle.getBoundingClientRect();
+          const menuHeight = navLinks.offsetHeight;
+          const menuWidth = navLinks.offsetWidth;
+          
+          let topPos;
+          if (rect.bottom + 12 + menuHeight > window.innerHeight) {
+             topPos = rect.top - menuHeight - 12; // place above
+          } else {
+             topPos = rect.bottom + 12; // place below
+          }
+          
+          let leftPos = rect.right - menuWidth;
+          if (leftPos < 12) leftPos = 12;
+          if (leftPos + menuWidth > window.innerWidth - 12) leftPos = window.innerWidth - menuWidth - 12;
+          
+          navLinks.style.position = 'fixed';
+          navLinks.style.top = `${topPos}px`;
+          navLinks.style.bottom = 'auto';
+          navLinks.style.left = `${leftPos}px`;
+          navLinks.style.right = 'auto';
+        };
+
+        let hasMoved = false;
+        let startX, startY, initialX, initialY;
+
+        const onPointerDown = (e) => {
+          if (e.button !== 0 && e.pointerType === 'mouse') return;
+          menuToggle.setPointerCapture(e.pointerId);
+          startX = e.clientX;
+          startY = e.clientY;
+          
+          menuToggle.style.transition = 'none'; // remove delay during drag
+          
+          const rect = menuToggle.getBoundingClientRect();
+          initialX = rect.left;
+          initialY = rect.top;
+          hasMoved = false;
+
+          menuToggle.addEventListener("pointermove", onPointerMove);
+          menuToggle.addEventListener("pointerup", onPointerUp);
+        };
+
+        const onPointerMove = (e) => {
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+          }
+
+          if (hasMoved) {
+            menuToggle.dataset.manuallyPositioned = "true";
+            let newX = initialX + dx;
+            let newY = initialY + dy;
+            
+            // Bounds checking
+            const maxX = window.innerWidth - menuToggle.offsetWidth;
+            const maxY = window.innerHeight - menuToggle.offsetHeight;
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+
+            menuToggle.style.left = `${newX}px`;
+            menuToggle.style.top = `${newY}px`;
+            menuToggle.style.right = 'auto';
+            menuToggle.style.bottom = 'auto';
+            
+            if (navLinks.classList.contains("is-open")) {
+              updateMenuPosition();
+            }
+          }
+        };
+
+        const onPointerUp = (e) => {
+          menuToggle.releasePointerCapture(e.pointerId);
+          menuToggle.removeEventListener("pointermove", onPointerMove);
+          menuToggle.removeEventListener("pointerup", onPointerUp);
+          
+          menuToggle.style.transition = ''; // restore transition
+
+          if (!hasMoved) {
+            navLinks.classList.toggle("is-open");
+            menuToggle.classList.toggle("is-open");
+            if (navLinks.classList.contains("is-open")) {
+              updateMenuPosition();
+            }
+          }
+          setTimeout(() => { hasMoved = false; }, 0);
+        };
+
+        menuToggle.addEventListener("pointerdown", onPointerDown);
+        menuToggle.addEventListener("dragstart", (e) => e.preventDefault());
+
+        navLinks.querySelectorAll("a").forEach(a => {
+          a.addEventListener("click", () => {
+            navLinks.classList.remove("is-open");
+            menuToggle.classList.remove("is-open");
+          });
+        });
+        
+        document.addEventListener("pointerdown", (e) => {
+          if (navLinks.classList.contains("is-open")) {
+            if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+              navLinks.classList.remove("is-open");
+              menuToggle.classList.remove("is-open");
+            }
+          }
+        });
+        
+        window.addEventListener("resize", () => {
+           if (navLinks.classList.contains("is-open")) updateMenuPosition();
+        });
+      }
 
       if (loginBtn && loginModal && loginModalClose && loginModalCloseBtn) {
         loginBtn.addEventListener("click", () => {
@@ -802,6 +932,20 @@ const addons = [
         history.scrollRestoration = "manual";
       }
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
+      const updateReveal = () => {
+        const main = document.querySelector("main");
+        const start = document.querySelector(".start");
+        if (main && start) {
+          main.style.paddingBottom = `${start.offsetHeight}px`;
+        }
+      };
+      window.addEventListener("resize", updateReveal);
+      window.addEventListener("load", updateReveal);
+      // Fallback timeout to ensure fonts/images are loaded if load event already fired
+      setTimeout(updateReveal, 100);
+      setTimeout(updateReveal, 500);
+      updateReveal();
 
       const sections = document.querySelectorAll("[data-section]");
       const parallaxItems = document.querySelectorAll("[data-parallax]");
@@ -911,10 +1055,48 @@ const addons = [
         const isScrollingDown =
           currentScrollY > lastScrollY && currentScrollY > heroHidePoint;
 
-        heroSection?.style.setProperty("--hero-scroll", String(heroProgress));
+        if (heroSection) {
+          heroSection.style.setProperty("--hero-scroll", String(heroProgress));
+          // Sembunyikan hero-shell jika sudah lewat jauh (mencegah bocor di transparan area .start)
+          if (currentScrollY > window.innerHeight * 2.5) {
+            heroSection.style.visibility = "hidden";
+          } else {
+            heroSection.style.visibility = "";
+          }
+        }
         document.body.classList.toggle("nav-hidden", isScrollingDown);
         document.body.classList.toggle("has-scrolled", currentScrollY > 8);
         lastScrollY = Math.max(currentScrollY, 0);
+
+        const menuBtn = document.getElementById("menu-toggle");
+        if (menuBtn && window.innerWidth <= 767 && menuBtn.dataset.manuallyPositioned !== "true") {
+          const wasScrolled = menuBtn.classList.contains("is-scrolled");
+          const isNowScrolled = heroProgress >= 0.7;
+          const nav = document.querySelector(".nav-links");
+          if (isNowScrolled && !wasScrolled) {
+            menuBtn.classList.add("is-scrolled");
+            menuBtn.style.left = '';
+            menuBtn.style.top = '';
+            if (nav) {
+              nav.classList.add("is-scrolled");
+              nav.style.left = '';
+              nav.style.top = '';
+              nav.style.bottom = '';
+              nav.style.right = '';
+            }
+          } else if (!isNowScrolled && wasScrolled) {
+            menuBtn.classList.remove("is-scrolled");
+            menuBtn.style.left = '';
+            menuBtn.style.top = '';
+            if (nav) {
+              nav.classList.remove("is-scrolled");
+              nav.style.left = '';
+              nav.style.top = '';
+              nav.style.bottom = '';
+              nav.style.right = '';
+            }
+          }
+        }
 
         parallaxItems.forEach((item) => {
           const rect = item.getBoundingClientRect();
@@ -941,9 +1123,20 @@ const addons = [
       elementsToObserve.forEach((el) => revealObserver.observe(el));
 
       const scrollToTarget = (targetId) => {
+        document.body.classList.remove("nav-hidden");
+        
+        if (targetId === "#booking") {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth"
+          });
+          const target = document.querySelector(targetId);
+          if (target) target.classList.add("is-visible");
+          return;
+        }
+
         const target = document.querySelector(targetId);
         if (!target) return;
-        document.body.classList.remove("nav-hidden");
         target.classList.add("is-visible");
 
         requestAnimationFrame(() => {
@@ -1325,22 +1518,23 @@ const addons = [
     stroke-width: 2;
   }
 
-  main {
+  #main-content-wrapper {
     position: relative;
-    z-index: 0;
+    z-index: 2;
     isolation: isolate;
     background: var(--white);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   }
 
-  body.intro-enter main,
-  body.intro-hold main,
-  body.intro-ring-shrink main,
-  body.intro-exit main,
-  body.intro-complete main {
+  body.intro-enter #main-content-wrapper,
+  body.intro-hold #main-content-wrapper,
+  body.intro-ring-shrink #main-content-wrapper,
+  body.intro-exit #main-content-wrapper,
+  body.intro-complete #main-content-wrapper {
     z-index: 220;
   }
 
-  .section-observe:not(.hero-shell) {
+  .section-observe:not(.hero-shell):not(.start) {
     position: relative;
     background: var(--white);
   }
@@ -1638,6 +1832,42 @@ const addons = [
 
   .has-scrolled .brand-logo {
     transform: scale(0.85);
+  }
+
+  .menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(247, 245, 234, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: none;
+    color: var(--ink-charcoal);
+    cursor: pointer;
+    padding: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, color 0.3s ease, top 0.4s ease, right 0.4s ease, left 0.4s ease;
+    z-index: 1000;
+    touch-action: none;
+  }
+  .menu-toggle:active {
+    transform: scale(0.92);
+  }
+  .menu-toggle.is-open {
+    background: var(--ink-charcoal);
+    color: var(--white);
+    border-color: transparent;
+  }
+  .menu-toggle svg {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .menu-toggle.is-open svg {
+    transform: rotate(90deg);
   }
 
   .nav-links {
@@ -2000,19 +2230,22 @@ const addons = [
   }
 
   .start {
-    position: relative;
-    z-index: 2;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 1 !important;
     display: grid;
     min-height: 74svh;
     place-items: center;
     gap: 18px;
-    padding: 80px 20px;
-    background: var(--white);
+    padding: 120px 48px;
+    background: #414238 !important;
     scroll-margin-top: 84px;
     text-align: center;
   }
   .start p {
-    color: var(--grey);
+    color: var(--soft-parchment);
     font-size: 11px;
   }
   .start h2 {
@@ -2022,21 +2255,23 @@ const addons = [
     font-size: clamp(56px, 9vw, 160px);
     line-height: 0.95;
     letter-spacing: -0.04em;
+    color: var(--white);
   }
   .start__button {
     display: inline-flex;
     min-height: 52px;
     align-items: center;
     padding: 0 28px;
+    margin-top: 10px;
     border-radius: 999px;
-    background: var(--black);
-    color: var(--white);
+    background: var(--white);
+    color: var(--black);
     font-size: 13px;
     letter-spacing: 1.4px;
     transition: background 0.3s ease;
   }
   .start__button:hover {
-    background: #333;
+    background: var(--soft-parchment);
   }
 
   .reveal-blur {
@@ -2217,6 +2452,17 @@ const addons = [
     }
     .nav-links {
       display: flex;
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+    .nav-hidden .nav-links {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -100%);
     }
     .stats-row {
       padding-block: 0;
@@ -2257,9 +2503,56 @@ const addons = [
     }
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 767px) {
     .hero-nav {
       padding: 14px 12px 10px;
+    }
+    .menu-toggle {
+      display: flex;
+      position: fixed;
+      top: 135px;
+      right: 12px;
+    }
+    .menu-toggle.is-scrolled {
+      top: calc(100dvh - 60px);
+      right: 12px;
+    }
+    .nav-links {
+      position: fixed;
+      top: 195px;
+      bottom: auto;
+      right: 12px;
+      width: calc(100% - 48px);
+      max-width: 280px;
+      background: rgba(247, 245, 234, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 24px;
+      display: flex;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.4);
+      z-index: 999;
+      
+      /* Animation states */
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px) scale(0.95);
+      transform-origin: bottom right;
+      transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s ease, bottom 0.4s ease, right 0.4s ease, left 0.4s ease;
+    }
+    .nav-links.is-scrolled {
+      top: auto;
+      bottom: 72px;
+      right: 12px;
+    }
+    .nav-links.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
     }
     .hero-motion-wrap {
       top: 135px;
@@ -2480,7 +2773,7 @@ const addons = [
     .start {
       min-height: 42svh;
       gap: 14px;
-      padding: 16px 12px 60px;
+      padding: 60px 16px;
     }
     .start p {
       font-size: 12px;

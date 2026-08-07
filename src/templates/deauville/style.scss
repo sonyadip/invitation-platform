@@ -1644,4 +1644,80 @@ body.template-deauville {
       letter-spacing: 3.5px;
     }
   }
+
+  // @media (max-height: 750px) {
+  //   .snap-section {
+  //     padding: 30px 24px;
+  //   }
+
+  //   .event-section__title {
+  //     font-size: clamp(38px, 9vw, 67px);
+  //   }
+    
+  //   .event-section__title-script {
+  //     font-size: clamp(44px, 8vw, 70px);
+  //     margin-top: -12px;
+  //   }
+
+  //   .event-card {
+  //     padding: 12px 16px;
+  //     gap: 4px;
+  //   }
+
+  //   .event-card__title {
+  //     font-size: 20px;
+  //     margin-bottom: 4px;
+  //   }
+
+  //   .countdown-section {
+  //     padding-top: 10px;
+  //     gap: 10px;
+  //   }
+
+  //   .countdown-item {
+  //     padding: 8px 4px 6px;
+  //   }
+    
+  //   .countdown-item__value {
+  //     font-size: 1.15rem;
+  //   }
+    
+  //   .countdown-item__label {
+  //     margin-top: 2px;
+  //   }
+
+  //   .gallery-section h3,
+  //   .gift-section h3,
+  //   .rsvp-section h3,
+  //   .thankyou-section h3 {
+  //     font-size: clamp(1.8rem, 10vw, 4.6rem);
+  //     margin-bottom: 12px;
+  //   }
+
+  //   .gallery-grid {
+  //     grid-auto-rows: 80px;
+  //   }
+
+  //   .rsvp-form {
+  //     gap: 6px;
+  //   }
+
+  //   .rsvp-form input,
+  //   .rsvp-form select {
+  //     min-height: 36px;
+  //   }
+
+  //   .rsvp-form textarea {
+  //     min-height: 60px;
+  //   }
+
+  //   .rsvp-section > p {
+  //     margin: 0 auto 10px;
+  //     font-size: 0.85em;
+  //   }
+
+  //   .wishes-list {
+  //     max-height: calc(100vh - 440px);
+  //   }
+  // }
 }

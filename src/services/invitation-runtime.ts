@@ -3,10 +3,13 @@ import { hashPasswordSHA256 } from '../utils/security';
 
 export function resolveInvitationIdentifier(url: URL, slug?: string) {
   const host = url.host;
+  const hostname = url.hostname;
   const isLocal =
     host.includes('localhost') ||
     host.includes('127.0.0.1') ||
-    host.includes('.internal');
+    host.includes('.internal') ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.');
   const isCloudflarePreview =
     host.endsWith('.pages.dev') ||
     host.endsWith('.workers.dev');
