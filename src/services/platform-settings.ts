@@ -5,6 +5,7 @@ export interface TemplateCard {
   key: string;
   name: string;
   price: string;
+  promoPrice?: string;
   image?: string;
 }
 
@@ -66,11 +67,11 @@ const defaults: PlatformSettings = {
   home_stat_number: '5+',
   home_stat_label: 'Koleksi\nEksklusif',
   home_template_cards: [
-    { key: "lumiere", name: "Lumiere", price: "Rp 200.000" },
-    { key: "deauville", name: "Deauville", price: "Rp 175.000" },
-    { key: "editorial", name: "Editorial", price: "Rp 175.000" },
-    { key: "air", name: "Air", price: "Rp 125.000" },
-    { key: "noir", name: "Noir", price: "Rp 125.000" },
+    { key: "lumiere", name: "Lumiere", price: "Rp 350.000", promoPrice: "Rp 200.000" },
+    { key: "deauville", name: "Deauville", price: "Rp 250.000", promoPrice: "Rp 175.000" },
+    { key: "editorial", name: "Editorial", price: "Rp 250.000", promoPrice: "Rp 175.000" },
+    { key: "air", name: "Air", price: "Rp 200.000", promoPrice: "Rp 125.000" },
+    { key: "noir", name: "Noir", price: "Rp 200.000", promoPrice: "Rp 125.000" },
   ],
   meta_title: 'Senadda - Undangan Pernikahan Digital',
   meta_description: 'Layanan undangan pernikahan digital dengan desain elegan, personal, dan mudah dibagikan.',

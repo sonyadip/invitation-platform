@@ -11,7 +11,8 @@ import {
   formatDate,
   formatEventDate,
   buildGoogleCalendarUrl,
-  formatWishDate
+  formatWishDate,
+  getYouTubeId
 } from '../../utils/template-helpers';
 
 import coverPhoto    from './assets/cover.jpg';
@@ -87,6 +88,7 @@ const weddingDateObj = new Date(wedding.wedding_date);
 const coverDateFormatted = `${String(weddingDateObj.getDate()).padStart(2, '0')}.${String(weddingDateObj.getMonth() + 1).padStart(2, '0')}.${String(weddingDateObj.getFullYear()).slice(-2)}`;
 
 const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || '';
+const youtubeId = getYouTubeId(themeAssets.heroVideo);
 
 const activeEvents = events && events.length > 0
   ? events
@@ -161,16 +163,43 @@ const activeStory = wedding.story && wedding.story.length > 0
       coverImage={coverImage}
     />
 
+    <style>
+      .yt-bg-container {
+        overflow: hidden;
+        pointer-events: none;
+        background-color: #000;
+      }
+      .yt-bg-container :global(iframe) {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100vw;
+        height: 56.25vw; /* 16:9 aspect ratio */
+        min-height: 100vh;
+        min-width: 177.77vh; /* 16:9 */
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+    </style>
+
     <!-- ── Background slideshow (same pattern as Editorial) ──────────────── -->
     <div class="page-bg" data-template-slider aria-hidden="true">
-      {heroSlides.map((slide, index) => (
-        <SmartImage
-          class={`template-slide ${index === 0 ? 'is-active' : ''}`}
-          src={slide}
-          alt=""
-          data-cover-slide={slide === coverImage ? 'true' : 'false'}
-        />
-      ))}
+      {themeAssets.heroVideo ? (
+        youtubeId ? (
+          <div class="template-slide is-active yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay></div>
+        ) : (
+          <video class="template-slide is-active" src={themeAssets.heroVideo} preload="none" loop muted playsinline data-template-autoplay style="object-fit:cover;"></video>
+        )
+      ) : (
+        heroSlides.map((slide, index) => (
+          <SmartImage
+            class={`template-slide ${index === 0 ? 'is-active' : ''}`}
+            src={slide}
+            alt=""
+            data-cover-slide={slide === coverImage ? 'true' : 'false'}
+          />
+        ))
+      )}
     </div>
 
     <!-- ══════════════════ COVER / HERO ══════════════════ -->
@@ -424,7 +453,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                         <video 
                           class="gallery-item__img" 
                           src={videoUrl} 
-                          autoplay 
+                          
                           loop 
                           muted 
                           playsinline 

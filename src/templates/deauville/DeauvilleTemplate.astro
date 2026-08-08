@@ -19,7 +19,8 @@ import {
   formatDate,
   formatEventDate,
   buildGoogleCalendarUrl,
-  formatWishDate
+  formatWishDate,
+  getYouTubeId
 } from "../../utils/template-helpers";
 import CountdownTimer from "../../components/common/CountdownTimer.astro";
 import GiftGrid from "../../components/common/GiftGrid.astro";
@@ -81,8 +82,8 @@ const closingImage = themeAssets.closingImage || deauvilleClosing.src;
 const countdownImage = themeAssets.countdownImage || deauvilleSaveDate.src;
 const videoUrl =
   themeAssets.videoUrl ||
-  themeAssets.heroVideo ||
   "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm";
+const youtubeId = getYouTubeId(themeAssets.heroVideo);
 const videoPoster =
   themeAssets.videoPoster || themeAssets.posterImage || countdownImage;
 
@@ -207,6 +208,25 @@ const activeGifts =
   templateClass="template-deauville"
   image={coverImage}
 >
+  <style>
+    .yt-bg-container {
+      overflow: hidden;
+      pointer-events: none;
+      background-color: #000;
+    }
+    .yt-bg-container :global(iframe) {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 56.25vw; /* 16:9 aspect ratio */
+      min-height: 100vh;
+      min-width: 177.77vh; /* 16:9 */
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+  </style>
+
   <div class="invitation-root" data-template-root>
     <CinematicIntro
       groomName={wedding.groom_name}
@@ -269,14 +289,11 @@ const activeGifts =
           <div class="template-slider" data-template-slider>
             {
               themeAssets.heroVideo ? (
-                <video
-                  class="template-slide is-active"
-                  src={themeAssets.heroVideo}
-                  autoplay
-                  loop
-                  muted
-                  playsinline
-                ></video>
+                youtubeId ? (
+                  <div class="template-slide is-active yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay></div>
+                ) : (
+                  <video preload="none" src={themeAssets.heroVideo} loop muted playsinline data-template-autoplay class="template-slide is-active" style="object-fit:cover;"></video>
+                )
               ) : (
                 heroSlides.map((slide, index) => (
                   <SmartImage

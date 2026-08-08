@@ -22,7 +22,7 @@ const {
       <span id="cinematic-top" class={fontClass}>{groomName}</span>
       <div id="cinematic-image-wrap" class="cinematic-image-wrap">
         <div class="cinematic-popup-clone">
-          <img class="cinematic-bg-zoom" src={coverImage} alt="" />
+          <img class="cinematic-bg-zoom" src={coverImage} alt="" fetchpriority="high" loading="eager" />
         </div>
       </div>
       <span id="cinematic-bottom" class={fontClass}>{brideName}</span>
@@ -102,11 +102,15 @@ const {
       }, 6000);
     };
 
-    if (document.readyState === "complete") {
+    let started = false;
+    const safeStart = () => {
+      if (started) return;
+      started = true;
       startCinematic();
-    } else {
-      window.addEventListener("load", startCinematic);
-    }
+    };
+
+    // Force start immediately without waiting for image load
+    setTimeout(safeStart, 50);
   }
 </script>
 

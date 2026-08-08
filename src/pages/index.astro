@@ -40,16 +40,17 @@ const imageMap: Record<string, string> = {
 };
 
 const defaultTemplateCards = [
-  { key: "lumiere", name: "Lumiere", price: "Rp 200.000", image: lumiereCover.src },
-  { key: "deauville", name: "Deauville", price: "Rp 175.000", image: deauvilleCover.src },
-  { key: "editorial", name: "Editorial", price: "Rp 175.000", image: editorialCover.src },
-  { key: "air", name: "Air", price: "Rp 125.000", image: airCover.src },
-  { key: "noir", name: "Noir", price: "Rp 125.000", image: noirCover.src },
+  { key: "lumiere", name: "Lumiere", price: "Rp 350.000", promoPrice: "Rp 200.000", image: lumiereCover.src },
+  { key: "deauville", name: "Deauville", price: "Rp 250.000", promoPrice: "Rp 175.000", image: deauvilleCover.src },
+  { key: "editorial", name: "Editorial", price: "Rp 250.000", promoPrice: "Rp 175.000", image: editorialCover.src },
+  { key: "air", name: "Air", price: "Rp 200.000", promoPrice: "Rp 125.000", image: airCover.src },
+  { key: "noir", name: "Noir", price: "Rp 200.000", promoPrice: "Rp 125.000", image: noirCover.src },
 ];
 
 const templateCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
   ? siteSettings.home_template_cards.map((c: any) => ({
       ...c,
+      promoPrice: c.promo_price || c.promoPrice || null,
       image: c.image || imageMap[c.key] || ''
     }))
   : defaultTemplateCards;
@@ -83,6 +84,44 @@ const addons = [
   { name: "Tambah Foto", price: "+ 5.000 / foto" },
   { name: "Tambah Video", price: "+ 20.000 / video" },
 ];
+
+const schemaData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://senadda.id/#website",
+      "url": "https://senadda.id/",
+      "name": siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital",
+      "description": siteSettings.meta_description || "Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu.",
+      "publisher": {
+        "@id": "https://senadda.id/#organization"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://senadda.id/#organization",
+      "name": "Senadda",
+      "url": "https://senadda.id/",
+      "logo": siteSettings.logo_url || "https://senadda.id/images/senadda-logo.png"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Senadda Platform Undangan Digital",
+      "operatingSystem": "Web browser",
+      "applicationCategory": "LifestyleApplication",
+      "description": siteSettings.meta_description || "Platform pembuatan undangan pernikahan digital yang elegan dan mudah digunakan.",
+      "url": "https://senadda.id",
+      "offers": {
+        "@type": "AggregateOffer",
+        "lowPrice": "125000",
+        "highPrice": "200000",
+        "priceCurrency": "IDR",
+        "offerCount": "5"
+      }
+    }
+  ]
+};
 ---
 
 <!doctype html>
@@ -97,9 +136,11 @@ const addons = [
     <link rel="apple-touch-icon" href="/logo.jpg" />
     <meta name="title" content={siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital"} />
     <meta name="description" content={siteSettings.meta_description || "Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu."} />
-    <meta name="keywords" content="undangan digital, undangan pernikahan online, senadda, senadda.id, wedding invitation, platform undangan, undangan digital pernikahan, undangan pernikahan digital" />
+    <meta name="keywords" content="undangan digital, undangan pernikahan online, senadda, senadda.id, wedding invitation, platform undangan, undangan digital pernikahan, undangan pernikahan digital, buat undangan digital, undangan website" />
     <meta name="author" content="Senadda" />
     <link rel="canonical" href="https://senadda.id/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta property="og:locale" content="id_ID" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -125,6 +166,9 @@ const addons = [
       href="https://db.onlinewebfonts.com/c/4c4c08af466e9ad071b6d69cf44093df?family=SaolDisplay-Regular"
       rel="stylesheet"
     />
+
+    <!-- Schema.org for Google and AI Search Engines -->
+    <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
   </head>
   <body id="top" class="intro-enter">
     <div class="intro-animation" data-intro aria-hidden="true"></div>
@@ -289,7 +333,14 @@ const addons = [
                 <div class="template-card__body">
                   <div class="template-card__meta">
                     <strong>{template.name}</strong>
-                    <span class="template-card__price">{template.price}</span>
+                    {template.promoPrice ? (
+                      <div class="template-card__price-wrapper">
+                        <span class="template-card__price template-card__price--original"><s>{template.price}</s></span>
+                        <span class="template-card__price template-card__price--promo">{template.promoPrice}</span>
+                      </div>
+                    ) : (
+                      <span class="template-card__price">{template.price}</span>
+                    )}
                   </div>
                   <div class="template-card__actions">
                     <a
@@ -782,15 +833,15 @@ const addons = [
           const menuWidth = navLinks.offsetWidth;
           
           let topPos;
-          if (rect.bottom + 12 + menuHeight > window.innerHeight) {
-             topPos = rect.top - menuHeight - 12; // place above
+          if (rect.bottom + 16 + menuHeight > window.innerHeight) {
+             topPos = rect.top - menuHeight - 16; // place above
           } else {
-             topPos = rect.bottom + 12; // place below
+             topPos = rect.bottom + 16; // place below
           }
           
           let leftPos = rect.right - menuWidth;
-          if (leftPos < 12) leftPos = 12;
-          if (leftPos + menuWidth > window.innerWidth - 12) leftPos = window.innerWidth - menuWidth - 12;
+          if (leftPos < 16) leftPos = 16;
+          if (leftPos + menuWidth > window.innerWidth - 16) leftPos = window.innerWidth - menuWidth - 16;
           
           navLinks.style.position = 'fixed';
           navLinks.style.top = `${topPos}px`;
@@ -1071,7 +1122,7 @@ const addons = [
         const menuBtn = document.getElementById("menu-toggle");
         if (menuBtn && window.innerWidth <= 767 && menuBtn.dataset.manuallyPositioned !== "true") {
           const wasScrolled = menuBtn.classList.contains("is-scrolled");
-          const isNowScrolled = heroProgress >= 0.7;
+          const isNowScrolled = heroProgress >= 0.4;
           const nav = document.querySelector(".nav-links");
           if (isNowScrolled && !wasScrolled) {
             menuBtn.classList.add("is-scrolled");
@@ -1297,8 +1348,98 @@ const addons = [
           const cur = nav.querySelector('.dashboard-tabs__btn.is-active');
           if (cur) moveIndicator(cur);
         });
+
+        // Promo Popup Logic
+        const popup = document.getElementById('promo-popup');
+        if (popup) {
+          const closeBtn = popup.querySelector('.promo-popup__close');
+          const ctaBtn = popup.querySelector('.promo-popup__cta');
+          const overlay = popup.querySelector('.promo-popup__overlay');
+          
+          if (!localStorage.getItem('senadda_promo_closed')) {
+            setTimeout(() => {
+              popup.classList.remove('hidden');
+              // small delay to allow display block to apply before animating opacity
+              setTimeout(() => popup.classList.add('is-visible'), 50);
+            }, 6100);
+          }
+          
+          const closePopup = () => {
+            popup.classList.remove('is-visible');
+            setTimeout(() => popup.classList.add('hidden'), 400);
+            localStorage.setItem('senadda_promo_closed', 'true');
+          };
+          
+          closeBtn.addEventListener('click', closePopup);
+          overlay.addEventListener('click', closePopup);
+          ctaBtn.addEventListener('click', () => {
+            closePopup();
+          });
+          
+          const PROMO_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
+          let endTime = localStorage.getItem('senadda_promo_end');
+          
+          if (!endTime) {
+            endTime = new Date().getTime() + PROMO_DURATION_MS;
+            localStorage.setItem('senadda_promo_end', endTime);
+          } else {
+            endTime = parseInt(endTime, 10);
+            // Evergreen: reset jika sudah lewat
+            if (new Date().getTime() > endTime) {
+              endTime = new Date().getTime() + PROMO_DURATION_MS;
+              localStorage.setItem('senadda_promo_end', endTime);
+            }
+          }
+          
+          const updateCountdown = () => {
+            const now = new Date().getTime();
+            let distance = endTime - now;
+            
+            if (distance < 0) {
+              // Reset lagi secara realtime jika waktunya pas habis saat user membuka halaman
+              endTime = new Date().getTime() + PROMO_DURATION_MS;
+              localStorage.setItem('senadda_promo_end', endTime);
+              distance = endTime - now;
+            }
+            
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('cd-days').innerText = d.toString().padStart(2, '0');
+            document.getElementById('cd-hours').innerText = h.toString().padStart(2, '0');
+            document.getElementById('cd-minutes').innerText = m.toString().padStart(2, '0');
+            document.getElementById('cd-seconds').innerText = s.toString().padStart(2, '0');
+          };
+          
+          updateCountdown();
+          setInterval(updateCountdown, 1000);
+        }
+
       })();
     </script>
+    <!-- Promo Popup -->
+    <div id="promo-popup" class="promo-popup hidden">
+      <div class="promo-popup__overlay"></div>
+      <div class="promo-popup__content">
+        <button class="promo-popup__close" aria-label="Close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+        </button>
+        <div class="promo-popup__badge">🚀 Promo Launching</div>
+        <h3>Harga Spesial!</h3>
+        <p>Dapatkan harga spesial untuk semua koleksi desain kami selama masa launching berlangsung.</p>
+        
+        <div class="promo-countdown" id="promo-countdown">
+          <div class="countdown-item"><span id="cd-days">00</span><small>Hari</small></div>
+          <div class="countdown-item"><span id="cd-hours">00</span><small>Jam</small></div>
+          <div class="countdown-item"><span id="cd-minutes">00</span><small>Menit</small></div>
+          <div class="countdown-item"><span id="cd-seconds">00</span><small>Detik</small></div>
+        </div>
+        
+        <a href="#templates" class="promo-popup__cta">Lihat Koleksi</a>
+      </div>
+    </div>
   </body>
 </html>
 
@@ -1876,6 +2017,7 @@ const addons = [
     gap: 36px;
     font-size: 13px;
     letter-spacing: 0.14em;
+    align-items: flex-end;
   }
 
   .nav-links a,
@@ -2185,6 +2327,23 @@ const addons = [
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0.06em;
+  }
+  .template-card__price-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .template-card__price--original {
+    color: var(--dark-grey);
+    font-size: 8px;
+    font-weight: 400;
+    opacity: 0.35;
+  }
+  .template-card__price--promo {
+    color: var(--black);
+    font-size: 11.5px;
+    font-weight: 600;
   }
   .template-card__body p {
     color: var(--dark-grey);
@@ -2505,25 +2664,39 @@ const addons = [
 
   @media (max-width: 767px) {
     .hero-nav {
-      padding: 14px 12px 10px;
+      padding: 14px 16px 12px;
     }
     .menu-toggle {
       display: flex;
       position: fixed;
-      top: 135px;
-      right: 12px;
+      top: calc(87px + max(215px, min(93.75vw, 437.5px)));
+      right: 16px;
+
+      @media (max-height: 900px) {
+        top: calc(87px + max(215px, min(93.75vw, 400px)));
+      }
+      @media (max-height: 800px) {
+        top: calc(87px + max(215px, min(93.75vw, 362.5px)));
+      }
+      @media (max-height: 700px) {
+        top: calc(87px + max(215px, min(93.75vw, 325px)));
+      }
     }
     .menu-toggle.is-scrolled {
-      top: calc(100dvh - 60px);
-      right: 12px;
+      top: calc(100dvh - 64px);
+      right: 16px;
     }
     .nav-links {
       position: fixed;
-      top: 195px;
+      top: calc(147px + max(215px, min(93.75vw, 437.5px)));
       bottom: auto;
-      right: 12px;
-      width: calc(100% - 48px);
-      max-width: 280px;
+
+      @media (max-height: 900px) { top: calc(147px + max(215px, min(93.75vw, 400px))); }
+      @media (max-height: 800px) { top: calc(147px + max(215px, min(93.75vw, 362.5px))); }
+      @media (max-height: 700px) { top: calc(147px + max(215px, min(93.75vw, 325px))); }
+      right: 16px;
+      width: calc(100% - 32px);
+      max-width: 150px;
       background: rgba(247, 245, 234, 0.85);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -2547,7 +2720,7 @@ const addons = [
     .nav-links.is-scrolled {
       top: auto;
       bottom: 72px;
-      right: 12px;
+      right: 16px;
     }
     .nav-links.is-open {
       opacity: 1;
@@ -2556,7 +2729,7 @@ const addons = [
     }
     .hero-motion-wrap {
       top: 135px;
-      left: 12px;
+      left: 16px;
       width: min(75vw, 350px);
       min-width: 172px;
 
@@ -2613,7 +2786,7 @@ const addons = [
       letter-spacing: 0.205em;
     }
     .stats-row {
-      padding-inline: 12px;
+      padding-inline: 16px;
     }
     .stats-row__inner {
       gap: 14px;
@@ -2624,7 +2797,7 @@ const addons = [
     }
     .bottom-content {
       gap: 20px;
-      padding: 0 12px 18px;
+      padding: 0 16px 18px;
 
       @media (max-height: 700px) {
         gap: 6px;
@@ -2647,7 +2820,7 @@ const addons = [
     }
     .template-list {
       gap: 24px;
-      padding: 58px 12px 70px;
+      padding: 58px 16px 70px;
       // box-shadow: 0 2px 20px rgba(23, 22, 15, 0.08);
     }
     .features-list {
@@ -2704,7 +2877,7 @@ const addons = [
     }
     .template-card__body {
       gap: 5px;
-      padding: 9px 0 0;
+      padding: 12px 0 0;
     }
     .template-card__actions a {
       min-height: 30px;
@@ -2725,9 +2898,15 @@ const addons = [
     }
     .template-card__price {
       color: var(--black);
-      font-size: 10.5px;
+      font-size: 12px;
       font-weight: 500;
-      letter-spacing: 0.1em;
+      // letter-spacing: 0.1em;
+    }
+    .template-card__price--original {
+      font-size: 10px;
+    }
+    .template-card__price--promo {
+      font-size: 12px;
     }
     .template-card__body p {
       font-size: 10px;
@@ -2978,6 +3157,141 @@ const addons = [
     .dashboard-tabs__btn svg {
       display: none;
     }
+  }
+
+  /* Promo Popup */
+  .promo-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .promo-popup.hidden {
+    display: none;
+  }
+  .promo-popup.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .promo-popup__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+  }
+  .promo-popup__content {
+    position: relative;
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .promo-popup.is-visible .promo-popup__content {
+    transform: translateY(0) scale(1);
+  }
+  .promo-popup__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #687080;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+  }
+  .promo-popup__close:hover {
+    background: #f4f5f7;
+    color: var(--black);
+  }
+  .promo-popup__badge {
+    display: inline-block;
+    background: rgba(229, 62, 62, 0.1);
+    color: #e53e3e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .promo-popup h3 {
+    font-size: 28px;
+    font-family: var(--font-heading);
+    margin: 0 0 12px 0;
+    color: var(--black);
+    line-height: 1.1;
+  }
+  .promo-popup p {
+    font-size: 14px;
+    color: var(--dark-grey);
+    margin: 0 0 28px 0;
+    line-height: 1.5;
+  }
+  .promo-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .countdown-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f4f5f7;
+    padding: 12px 14px;
+    border-radius: 12px;
+    min-width: 68px;
+  }
+  .countdown-item span {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--black);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .countdown-item small {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--dark-grey);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .promo-popup__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    background: var(--black);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .promo-popup__cta:hover {
+    background: #1f2937;
+    transform: translateY(-2px);
   }
 </style>
 

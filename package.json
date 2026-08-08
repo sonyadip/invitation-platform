@@ -21,8 +21,6 @@
     "astro": "^4.15.0",
     "framer-motion": "^12.40.0",
     "glightbox": "^3.3.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
     "ws": "^8.21.0"
   },
   "devDependencies": {

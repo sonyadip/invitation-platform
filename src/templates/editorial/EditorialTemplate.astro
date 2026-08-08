@@ -19,7 +19,8 @@ import {
   formatDate,
   formatEventDate,
   buildGoogleCalendarUrl,
-  formatWishDate
+  formatWishDate,
+  getYouTubeId
 } from '../../utils/template-helpers';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
 import GiftGrid from '../../components/common/GiftGrid.astro';
@@ -73,6 +74,7 @@ const closingImage = themeAssets.closingImage || closingPhoto.src;
 const countdownImage = themeAssets.countdownImage || saveDatePhoto.src;
 const initialHeroIndex = Math.max(heroSlides.findIndex((slide) => slide !== coverImage), 0);
 const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm';
+const youtubeId = getYouTubeId(themeAssets.heroVideo);
 const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || saveDatePhoto.src;
 
 const defaultText = {
@@ -165,6 +167,32 @@ const activeGifts = gifts && gifts.length > 0
   templateClass="template-editorial"
   image={heroImage}
 >
+  <style>
+    .template-slide.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      transition: opacity 1.8s ease, transform 6s cubic-bezier(0.2, 0, 0.2, 1);
+    }
+
+    .yt-bg-container {
+      overflow: hidden;
+      pointer-events: none;
+      background-color: #000;
+    }
+    .yt-bg-container :global(iframe) {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 56.25vw; /* 16:9 aspect ratio */
+      min-height: 100vh;
+      min-width: 177.77vh; /* 16:9 */
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+  </style>
+
   <div class="invitation-root" data-template-root>
     <CinematicIntro
       groomName={wedding.groom_name}
@@ -173,7 +201,11 @@ const activeGifts = gifts && gifts.length > 0
     />
     <div class="page-bg" data-template-slider aria-hidden="true">
       {themeAssets.heroVideo ? (
-        <video class="template-slide is-active" src={themeAssets.heroVideo} autoplay loop muted playsinline></video>
+        youtubeId ? (
+          <div class="template-slide is-active yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay></div>
+        ) : (
+          <video class="template-slide is-active" src={themeAssets.heroVideo} preload="none" loop muted playsinline data-template-autoplay></video>
+        )
       ) : (
         heroSlides.map((slide, index) => (
           <SmartImage class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} src={slide} alt="" data-cover-slide={slide === coverImage ? 'true' : 'false'} />

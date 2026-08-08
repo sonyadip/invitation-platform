@@ -81,3 +81,10 @@ export const getCompactDate = (iso: string): string => new Date(iso)
     year: "numeric",
   })
   .replace(/\//g, " . ");
+
+export const getYouTubeId = (url: string | undefined | null): string | null => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};

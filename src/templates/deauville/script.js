@@ -14,6 +14,71 @@ const song = root?.querySelector('[data-template-audio]');
 const audioBtn = root?.querySelector('[data-template-audio-toggle]');
 let isPlaying = false;
 
+// Variabel YouTube Player
+let ytPlayer = null;
+let ytReady = false;
+let ytDeferredPlay = false;
+
+if (document.querySelector('[data-yt-bg]')) {
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  const firstScriptTag = document.getElementsByTagName('script')[0];
+  if (firstScriptTag && firstScriptTag.parentNode) {
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  } else {
+    document.head.appendChild(tag);
+  }
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  const ytBgEls = document.querySelectorAll('[data-yt-bg]');
+  ytBgEls.forEach(ytBgEl => {
+    const videoId = ytBgEl.getAttribute('data-yt-bg');
+    if (!videoId) return;
+    
+    const playerDiv = document.createElement('div');
+    ytBgEl.appendChild(playerDiv);
+    
+    ytPlayer = new YT.Player(playerDiv, {
+      videoId: videoId,
+      playerVars: {
+        'autoplay': 0,
+        'controls': 0,
+        'loop': 1,
+        'playlist': videoId,
+        'playsinline': 1,
+        'mute': 1,
+        'rel': 0,
+        'showinfo': 0,
+        'modestbranding': 1,
+        'disablekb': 1
+      },
+      events: {
+        'onReady': (event) => {
+          ytReady = true;
+          event.target.mute();
+          if (ytDeferredPlay) {
+            event.target.playVideo();
+          }
+        },
+        'onStateChange': (event) => {
+          if (event.data === YT.PlayerState.ENDED) {
+            event.target.playVideo();
+          }
+        }
+      }
+    });
+  });
+};
+
+if (typeof document !== 'undefined') {
+  document.querySelectorAll('video').forEach(v => {
+    v.removeAttribute('autoplay');
+    v.pause();
+  });
+}
+
+
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
@@ -29,6 +94,8 @@ openBtn?.addEventListener('click', () => {
   if (cover instanceof HTMLElement) {
     cover.classList.add('is-opening');
   }
+
+  playAutoplayVideos();
 
   window.setTimeout(() => {
     if (cover instanceof HTMLElement) {
@@ -60,6 +127,23 @@ if (audioBtn && song instanceof HTMLAudioElement) {
 
     isPlaying = !isPlaying;
   });
+}
+
+function playAutoplayVideos() {
+  const videos = Array.from(root?.querySelectorAll('video') || []);
+  videos.forEach(video => {
+    if (video instanceof HTMLVideoElement) {
+      video.play().catch(() => {});
+    }
+  });
+
+  if (document.querySelector('[data-yt-bg]')) {
+    if (ytReady && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+      ytPlayer.playVideo();
+    } else {
+      ytDeferredPlay = true;
+    }
+  }
 }
 
 function triggerOpeningAnimations() {
