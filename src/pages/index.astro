@@ -13,7 +13,15 @@ import lumiereCover from "../templates/lumiere/assets/cover.webp";
 import { getPlatformSettings } from "../services/platform-settings";
 
 const siteSettings = await getPlatformSettings();
-const bookingUrl = siteSettings.whatsapp_url || "https://wa.me/6281234567890";
+const getWaUrl = (templateName?: string) => {
+  const base = siteSettings.whatsapp_url || "https://wa.me/6281234567890";
+  const message = templateName 
+    ? `Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *${templateName}*. Boleh minta informasi mengenai cara pemesanannya?`
+    : `Halo Admin, saya ingin bertanya lebih lanjut mengenai pembuatan undangan digital.`;
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}text=${encodeURIComponent(message)}`;
+};
+const defaultBookingUrl = getWaUrl();
 
 const navItems = [
   ["Koleksi", "#templates"],
@@ -350,7 +358,7 @@ const schemaData = {
                     >
                       Preview
                     </a>
-                    <a href={bookingUrl} target="_blank" rel="noreferrer">
+                    <a href={getWaUrl(template.name)} target="_blank" rel="noreferrer">
                       Pesan
                     </a>
                   </div>
@@ -784,7 +792,7 @@ const schemaData = {
         <a
           class="start__button reveal-blur"
           style="--delay: 190ms"
-          href={bookingUrl}
+          href={defaultBookingUrl}
           target="_blank"
           rel="noreferrer">{siteSettings.home_booking_cta || "Hubungi via WhatsApp"}</a
         >

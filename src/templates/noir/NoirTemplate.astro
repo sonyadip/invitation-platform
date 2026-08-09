@@ -103,7 +103,9 @@ const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || heroIm
 const brideImage = themeAssets.brideImage || coupleBride.src;
 const groomImage = themeAssets.groomImage || coupleGroom.src;
 const instagramUrl = themeContent.instagramUrl || platformSettings.instagram_url || 'https://instagram.com';
-const whatsappUrl = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
+const _baseWa = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
+const _themeName = (wedding.template || 'Template').charAt(0).toUpperCase() + (wedding.template || 'Template').slice(1);
+const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : '';
 const groomInstagramUrl = themeContent.groomInstagramUrl || instagramUrl;
 const brideInstagramUrl = themeContent.brideInstagramUrl || instagramUrl;
 const giftDescription = themeContent.giftDescription || 'Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan hadiah kasih, dapat melalui transfer rekening berikut:';
