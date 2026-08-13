@@ -4,10 +4,14 @@ import {
   parseInvitationForm,
   permanentlyDeleteInvitation,
   softDeleteInvitation,
-  updateInvitation
+  updateInvitation,
+  resetInvitationViews,
+  resetInvitationRsvps
 } from '../../../services/dashboard-crud';
 import { listTemplateKeys } from '../../../templates/registry';
 import { hashPasswordSHA256 } from '../../../utils/security';
+import { generateSetupToken } from '../../../utils/token';
+import { supabase } from '../../../lib/supabase';
 
 export const prerender = false;
 
@@ -53,6 +57,16 @@ if (Astro.request.method === 'POST') {
       return Astro.redirect('/dashboard?permanentlyDeleted=1');
     }
 
+    if (action === 'reset-views') {
+      await resetInvitationViews(detail.wedding.id);
+      return Astro.redirect(`/dashboard/${detail.summary.slug}/edit?resetViews=1`);
+    }
+
+    if (action === 'reset-rsvps') {
+      await resetInvitationRsvps(detail.wedding.id);
+      return Astro.redirect(`/dashboard/${detail.summary.slug}/edit?resetRsvps=1`);
+    }
+
     const parsed = parseInvitationForm(formData);
     const updatedSlug = await updateInvitation(detail.wedding.id, parsed);
     return Astro.redirect(`/dashboard/${updatedSlug}/edit?saved=1`);
@@ -64,6 +78,14 @@ if (Astro.request.method === 'POST') {
 
 if (Astro.url.searchParams.get('saved')) {
   successMessage = 'Invitation saved.';
+}
+
+if (Astro.url.searchParams.get('resetViews')) {
+  successMessage = 'Page views have been reset to zero.';
+}
+
+if (Astro.url.searchParams.get('resetRsvps')) {
+  successMessage = 'All RSVPs have been successfully deleted.';
 }
 
 const settings = detail.settings;
@@ -92,6 +114,20 @@ const giftValues = detail.gifts.length
       qrisUrl: gift.qrisUrl || ''
     }))
   : [];
+
+// Check if client has claimed their account (password is set)
+const { data: wedAuth } = await supabase
+  .from('weddings')
+  .select('client_password_hash')
+  .eq('id', detail.wedding.id)
+  .single();
+
+const isClaimed = !!wedAuth?.client_password_hash;
+let setupUrl = '';
+if (!isClaimed) {
+  const token = await generateSetupToken(detail.summary.slug);
+  setupUrl = `${Astro.url.origin}/setup?token=${token}`;
+}
 ---
 
 <!DOCTYPE html>
@@ -139,6 +175,19 @@ const giftValues = detail.gifts.length
             </label>
             <label>Access Password<input name="accessPassword" value={settings?.accessPassword || ''} /></label>
             <label>Client Password<input name="clientPassword" placeholder="Keep empty to keep existing" /></label>
+            
+            <div style="background: #f9fafb; padding: 12px; border-radius: 6px; border: 1px solid #e5e7eb; grid-column: 1 / -1;">
+              <strong>Client One-Time Setup Link</strong>
+              {isClaimed ? (
+                <p style="margin: 4px 0 0; color: #059669; font-size: 14px;">Akun telah diklaim (password sudah diset oleh client).</p>
+              ) : (
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <input type="text" value={setupUrl} readonly style="flex: 1;" id="setupLinkInput" />
+                  <button type="button" class="secondary-action" onclick="navigator.clipboard.writeText(document.getElementById('setupLinkInput').value); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
+                </div>
+              )}
+            </div>
+
             <label>Expiration Date<input type="datetime-local" name="expirationDate" value={toLocalInput(settings?.expirationDate || null)} /></label>
           </div>
           <div class="toggle-grid">
@@ -150,6 +199,7 @@ const giftValues = detail.gifts.length
             <label><input type="checkbox" name="giftEnabled" checked={settings?.giftEnabled ?? true} /> Gift</label>
             <label><input type="checkbox" name="storyEnabled" checked={settings?.storyEnabled ?? true} /> Our Story</label>
             <label><input type="checkbox" name="viewCounterEnabled" checked={settings?.viewCounterEnabled ?? true} /> View Counter</label>
+            <label><input type="checkbox" name="videoEnabled" checked={settings?.videoEnabled ?? true} /> Video</label>
             <label><input type="checkbox" name="maintenanceMode" checked={settings?.maintenanceMode ?? false} /> Maintenance</label>
             <label><input type="checkbox" name="passwordProtectionEnabled" checked={settings?.passwordProtectionEnabled ?? false} /> Password Protection</label>
           </div>
@@ -203,6 +253,10 @@ const giftValues = detail.gifts.length
 
         <section>
           <h2>Events</h2>
+          <div class="form-grid" style="margin-bottom: 24px;">
+            <label class="wide">Event Section Image URL<input name="eventImageUrl" value={assets.eventImage || ''} placeholder="https://example.com/event.jpg" /></label>
+            <label class="wide">Upload Event Section Image<input type="file" name="eventImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+          </div>
           <div class="event-list" id="events_container">
             {eventValues.map((event, index) => (
               <fieldset class="event-card repeater-item">
@@ -212,7 +266,7 @@ const giftValues = detail.gifts.length
                   <label>Date<input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} /></label>
                   <label>Start Time<input type="time" name="eventStartTime" value={event.startTime} /></label>
                   <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Selesai" /></label>
-                  <label>Venue Name<input name="eventVenueName" value={event.venueName} required={index === 0} /></label>
+                  <label>Venue Name<input name="eventVenueName" value={event.venueName} /></label>
                   <label>Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
                   <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
                 </div>
@@ -268,6 +322,16 @@ const giftValues = detail.gifts.length
         </section>
 
         <section>
+          <h2>RSVP & Countdown Images</h2>
+          <div class="form-grid">
+            <label class="wide">RSVP Image URL<input name="rsvpImageUrl" value={assets.rsvpImage || ''} placeholder="https://example.com/rsvp.jpg" /></label>
+            <label class="wide">Upload RSVP Image<input type="file" name="rsvpImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+            <label class="wide">Countdown Image URL<input name="countdownImageUrl" value={assets.countdownImage || ''} placeholder="https://example.com/countdown.jpg" /></label>
+            <label class="wide">Upload Countdown Image<input type="file" name="countdownImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+          </div>
+        </section>
+
+        <section>
           <h2>Gift & Thank You</h2>
           <div class="gift-list" id="gifts_container">
             {giftValues.map((gift, index) => (
@@ -287,6 +351,8 @@ const giftValues = detail.gifts.length
           <div class="form-grid">
             <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4">{content.giftDescription || ''}</textarea></label>
             <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4">{content.thankYouMessage || ''}</textarea></label>
+            <label class="wide">Closing Image URL<input name="closingImageUrl" value={assets.closingImage || ''} placeholder="https://example.com/closing.jpg" /></label>
+            <label class="wide">Upload Closing Image<input type="file" name="closingImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
           </div>
         </section>
 
@@ -303,6 +369,24 @@ const giftValues = detail.gifts.length
           <a href={`/dashboard/${detail.summary.slug}`}>Cancel</a>
           <button type="submit">Save Changes</button>
         </footer>
+      </form>
+
+      <form class="danger-panel" method="POST">
+        <input type="hidden" name="action" value="reset-views" />
+        <div>
+          <h2>Reset Page Views</h2>
+          <p>Reset the page view count for this invitation back to zero.</p>
+        </div>
+        <button type="submit" onclick="return confirm('Reset page views for this invitation to zero?')">Reset Views</button>
+      </form>
+
+      <form class="danger-panel" method="POST">
+        <input type="hidden" name="action" value="reset-rsvps" />
+        <div>
+          <h2>Reset RSVPs</h2>
+          <p>Delete all RSVPs for this invitation. This action cannot be undone.</p>
+        </div>
+        <button type="submit" onclick="return confirm('Delete all RSVPs for this invitation? This cannot be undone.')">Reset RSVPs</button>
       </form>
 
       <form class="danger-panel" method="POST">
@@ -406,6 +490,7 @@ const giftValues = detail.gifts.length
 
         container.addEventListener('click', (e) => {
           if (e.target.classList.contains('remove-btn')) {
+            if (!confirm('Hapus item ini?')) return;
             const item = e.target.closest('.repeater-item');
             if (item) {
               item.remove();

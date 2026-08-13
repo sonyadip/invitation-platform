@@ -51,6 +51,10 @@ export interface ThemeConfig {
     heroVideo?: string;
     videoPoster?: string;
     posterImage?: string;
+    closingImage?: string;
+    eventImage?: string;
+    rsvpImage?: string;
+    countdownImage?: string;
   };
   content?: {
     instagramUrl?: string;
@@ -76,6 +80,7 @@ export interface SectionToggles {
   gift: boolean;
   music: boolean;
   share: boolean;
+  video?: boolean;
   livestream?: boolean;
 }
 

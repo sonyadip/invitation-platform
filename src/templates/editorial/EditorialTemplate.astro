@@ -20,7 +20,8 @@ import {
   formatEventDate,
   buildGoogleCalendarUrl,
   formatWishDate,
-  getYouTubeId
+  getYouTubeId,
+  getInstagramUsername
 } from '../../utils/template-helpers';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
 import GiftGrid from '../../components/common/GiftGrid.astro';
@@ -52,30 +53,29 @@ const overrideSettings = {
 
 const themeAssets = themeConfig.assets || {};
 const themeContent = themeConfig.content || {};
+const isPreview = wedding.id.startsWith('preview-');
 const heroImage = themeAssets.heroImage;
-const heroSlides = heroImage 
-  ? [heroImage]
-  : [
-      groomPhoto,
-      themeAssets.heroImageTwo || bridePhoto,
-      themeAssets.heroImageThree || eventPhoto,
-      themeAssets.eventImage || eventPhoto,
-      themeAssets.rsvpImage || rsvpPhoto,
-      themeAssets.countdownImage || saveDatePhoto,
-      themeAssets.closingImage || closingPhoto
-    ].filter((slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index);
+const heroSlides = [
+  themeAssets.heroImage || (isPreview ? groomPhoto : undefined),
+  themeAssets.heroImageTwo || (isPreview ? bridePhoto : undefined),
+  themeAssets.heroImageThree || (isPreview ? eventPhoto : undefined),
+  themeAssets.eventImage || (isPreview ? eventPhoto : undefined),
+  themeAssets.rsvpImage || (isPreview ? rsvpPhoto : undefined),
+  themeAssets.countdownImage || (isPreview ? saveDatePhoto : undefined),
+  themeAssets.closingImage || (isPreview ? closingPhoto : undefined)
+].filter((slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index);
 
-const coverImage = themeAssets.coverImage || coverPhoto.src;
-const groomImage = themeAssets.groomImage || groomPhoto.src;
-const brideImage = themeAssets.brideImage || bridePhoto.src;
-const eventImage = themeAssets.eventImage || eventPhoto.src;
-const rsvpImage = themeAssets.rsvpImage || rsvpPhoto.src;
-const closingImage = themeAssets.closingImage || closingPhoto.src;
-const countdownImage = themeAssets.countdownImage || saveDatePhoto.src;
+const coverImage = themeAssets.coverImage || (isPreview ? coverPhoto.src : undefined);
+const groomImage = themeAssets.groomImage || (isPreview ? groomPhoto.src : undefined);
+const brideImage = themeAssets.brideImage || (isPreview ? bridePhoto.src : undefined);
+const eventImage = themeAssets.eventImage || (isPreview ? eventPhoto.src : undefined);
+const rsvpImage = themeAssets.rsvpImage || (isPreview ? rsvpPhoto.src : undefined);
+const closingImage = themeAssets.closingImage || (isPreview ? closingPhoto.src : undefined);
+const countdownImage = themeAssets.countdownImage || (isPreview ? saveDatePhoto.src : undefined);
 const initialHeroIndex = Math.max(heroSlides.findIndex((slide) => slide !== coverImage), 0);
-const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm';
+const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || (isPreview ? 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm' : undefined);
 const youtubeId = getYouTubeId(themeAssets.heroVideo);
-const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || saveDatePhoto.src;
+const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || (isPreview ? saveDatePhoto.src : undefined);
 
 const defaultText = {
   verse: 'Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu.',
@@ -98,14 +98,21 @@ const _themeName = (wedding.template || 'Template').charAt(0).toUpperCase() + (w
 const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : '';
 const groomInstagramUrl = text.groomInstagramUrl || instagramUrl;
 const brideInstagramUrl = text.brideInstagramUrl || instagramUrl;
+const groomPrefix = text.groomChildNumber 
+  ? `Putra ${/^[0-9]+$/.test(text.groomChildNumber) ? 'ke-' + text.groomChildNumber : text.groomChildNumber} dari`
+  : 'Putra dari';
+const bridePrefix = text.brideChildNumber
+  ? `Putri ${/^[0-9]+$/.test(text.brideChildNumber) ? 'ke-' + text.brideChildNumber : text.brideChildNumber} dari`
+  : 'Putri dari';
+
 const groomParentsText = buildParentText(
-  'Putra dari',
+  groomPrefix,
   text.groomFatherName,
   text.groomMotherName,
   text.groomParents
 );
 const brideParentsText = buildParentText(
-  'Putri dari',
+  bridePrefix,
   text.brideFatherName,
   text.brideMotherName,
   text.brideParents
@@ -268,7 +275,7 @@ const activeGifts = gifts && gifts.length > 0
                   <circle cx="12" cy="12" r="4"></circle>
                   <circle cx="17.5" cy="6.5" r="1"></circle>
                 </svg>
-                <span>Instagram</span>
+                <span>{getInstagramUsername(groomInstagramUrl)}</span>
               </a>
             </article>
             <article class="couple-section__person">
@@ -281,7 +288,7 @@ const activeGifts = gifts && gifts.length > 0
                   <circle cx="12" cy="12" r="4"></circle>
                   <circle cx="17.5" cy="6.5" r="1"></circle>
                 </svg>
-                <span>Instagram</span>
+                <span>{getInstagramUsername(brideInstagramUrl)}</span>
               </a>
             </article>
           </section>
@@ -316,16 +323,18 @@ const activeGifts = gifts && gifts.length > 0
                     <hr />
                     <h3 class="event-card__title">{event.event_name}</h3>
                     <h4 class="event-card__date">{eventDate.weekday},<br />{eventDate.date}</h4>
-                    <p class="event-card__time">{event.start_time} {event.end_time && event.end_time !== 'Selesai' ? `- ${event.end_time}` : ''}</p>
-                    <p class="event-card__venue">{event.venue_name}</p>
-                    <p class="event-card__address">{event.venue_address}</p>
-                    <a class="event-card__map-btn" href={event.maps_url} target="_blank" rel="noopener noreferrer">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      Open Maps
-                    </a>
+                    <p class="event-card__time">{event.start_time} {event.end_time ? `- ${event.end_time}` : '- Selesai'}</p>
+                    {event.venue_name && <p class="event-card__venue">{event.venue_name}</p>}
+                    {event.venue_address && <p class="event-card__address">{event.venue_address}</p>}
+                    {event.maps_url && (
+                      <a class="event-card__map-btn" href={event.maps_url} target="_blank" rel="noopener noreferrer">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                          <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        Open Maps
+                      </a>
+                    )}
                   </article>
                 );
               })}
@@ -349,16 +358,18 @@ const activeGifts = gifts && gifts.length > 0
           </section>
         )}
 
-        <section class="video-section" data-animate>
-          <div class="video-section__frame" data-template-video>
-            <video class="video-section__media" src={videoUrl} poster={videoPoster} playsinline preload="metadata"></video>
-            <button class="video-section__play" type="button" data-template-video-play aria-label="Play wedding video">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z"></path>
-              </svg>
-            </button>
-          </div>
-        </section>
+        {sections.video !== false && (
+          <section class="video-section" data-animate>
+            <div class="video-section__frame" data-template-video>
+              <video class="video-section__media" src={videoUrl} poster={videoPoster} playsinline preload="metadata"></video>
+              <button class="video-section__play" type="button" data-template-video-play aria-label="Play wedding video">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z"></path>
+                </svg>
+              </button>
+            </div>
+          </section>
+        )}
 
         {sections.gallery && settings.gallery_enabled && (
           <section class="gallery-section" id="gallery-section">

@@ -77,7 +77,8 @@ const data: FullInvitationData = {
         galleryColumns: 3
       },
       assets: {
-        heroImage: ['lumiere', 'editorial'].includes(templateKey) ? '/images/preview-video.mp4' : undefined
+        heroVideo: ['lumiere', 'editorial', 'atelier'].includes(templateKey) ? '/images/preview-video.mp4' : undefined,
+        videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm'
       }
     },
     created_at: now,

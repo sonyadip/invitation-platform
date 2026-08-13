@@ -78,6 +78,7 @@ export interface SlugReportDetail {
     maintenanceMode: boolean;
     expirationDate: string | null;
     passwordProtectionEnabled: boolean;
+    videoEnabled: boolean;
     assets: {
       heroVideo: string;
       heroImage: string;
@@ -449,6 +450,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       storyEnabled: settings.sections?.story !== false,
       viewCounterEnabled: Boolean(settings.view_counter_enabled),
       maintenanceMode: Boolean(settings.maintenance_mode),
+      videoEnabled: settings.sections?.video !== false,
       expirationDate: settings.expiration_date,
       passwordProtectionEnabled: Boolean(settings.password_protection_enabled),
       assets: {
@@ -456,7 +458,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
         heroImage: assets.coverImage || assets.heroImage || '',
         brideImage: assets.brideImage || '',
         groomImage: assets.groomImage || '',
-        logoImage: assets.logoImage || ''
+        logoImage: assets.logoImage || '',
+        closingImage: assets.closingImage || '',
+        eventImage: assets.eventImage || '',
+        rsvpImage: assets.rsvpImage || '',
+        countdownImage: assets.countdownImage || ''
       },
       content: {
         instagramUrl: content.instagramUrl || '',
@@ -464,8 +470,10 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
         brideInstagramUrl: content.brideInstagramUrl || '',
         groomFatherName: content.groomFatherName || '',
         groomMotherName: content.groomMotherName || '',
+        groomChildNumber: content.groomChildNumber || '',
         brideFatherName: content.brideFatherName || '',
         brideMotherName: content.brideMotherName || '',
+        brideChildNumber: content.brideChildNumber || '',
         giftDescription: content.giftDescription || '',
         thankYouMessage: content.closingMessage || '',
         introVerse: content.verse || '',

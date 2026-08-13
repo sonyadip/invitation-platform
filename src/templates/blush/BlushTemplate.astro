@@ -23,6 +23,7 @@ import {
   formatDate,
   formatEventDate,
   buildGoogleCalendarUrl,
+  getInstagramUsername,
   formatWishDate
 } from '../../utils/template-helpers';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
@@ -284,7 +285,7 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
                     <circle cx="12" cy="12" r="4" />
                     <circle cx="17.5" cy="6.5" r="1" />
                   </svg>
-                  <span>Instagram</span>
+                  <span>{getInstagramUsername(groomInstagramUrl)}</span>
                 </a>
               </div>
               <div class="couple-section__divider">
@@ -305,7 +306,7 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
                     <circle cx="12" cy="12" r="4" />
                     <circle cx="17.5" cy="6.5" r="1" />
                   </svg>
-                  <span>Instagram</span>
+                  <span>{getInstagramUsername(brideInstagramUrl)}</span>
                 </a>
               </div>
             </div>

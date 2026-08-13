@@ -490,6 +490,7 @@ body.template-editorial {
   .couple-section__parents {
     @include editorial-body-copy;
     margin: 0;
+    max-width: 270px;
   }
 
   .couple-section__social {
@@ -1366,6 +1367,8 @@ body.template-editorial {
 
   .wishes-load-more {
     @include template-form-button;
+    display: block;
+    width: fit-content;
     margin: 22px auto 0;
   }
 

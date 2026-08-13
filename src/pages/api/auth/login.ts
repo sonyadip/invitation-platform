@@ -4,10 +4,19 @@ import { hashPasswordSHA256 } from '../../../utils/security';
 
 export const prerender = false;
 
+const cookieOpts = (secure: boolean) => ({
+  path: '/',
+  maxAge: 60 * 60 * 24,
+  httpOnly: true,
+  secure,
+  sameSite: 'strict' as const,
+});
+
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
   const username = String(formData.get('username') || '').trim().toLowerCase();
   const password = String(formData.get('password') || '');
+  const isSecure = import.meta.env.PROD;
   
   if (!username || !password) {
     return redirect('/?login=admin&error=1');
@@ -20,8 +29,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     
     if (password === dashboardPassword) {
       const hashed = await hashPasswordSHA256(password);
-      cookies.set('auth_role', 'admin', { path: '/', maxAge: 60 * 60 * 24, httpOnly: true, secure: true, sameSite: 'strict' });
-      cookies.set('dashboard_unlocked', hashed, { path: '/', maxAge: 60 * 60 * 24, httpOnly: true, secure: true, sameSite: 'strict' });
+      cookies.set('auth_role', 'admin', cookieOpts(isSecure));
+      cookies.set('dashboard_unlocked', hashed, cookieOpts(isSecure));
       return redirect('/dashboard');
     }
     
@@ -42,8 +51,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const enteredHash = await hashPasswordSHA256(password);
   
   if (enteredHash === wedding.client_password_hash) {
-    cookies.set('auth_role', 'client', { path: '/', maxAge: 60 * 60 * 24, httpOnly: true, secure: true, sameSite: 'strict' });
-    cookies.set('auth_slug', username, { path: '/', maxAge: 60 * 60 * 24, httpOnly: true, secure: true, sameSite: 'strict' });
+    cookies.set('auth_role', 'client', cookieOpts(isSecure));
+    cookies.set('auth_slug', username, cookieOpts(isSecure));
     return redirect(`/dashboard/${username}`);
   }
 

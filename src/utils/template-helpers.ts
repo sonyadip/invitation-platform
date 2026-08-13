@@ -88,3 +88,21 @@ export const getYouTubeId = (url: string | undefined | null): string | null => {
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
 };
+
+export const getInstagramUsername = (url: string | undefined | null): string => {
+  if (!url || url === '#') return 'Instagram';
+  try {
+    const urlObj = new URL(url);
+    const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+    if (pathSegments.length > 0) {
+      const username = pathSegments[0];
+      return username.startsWith('@') ? username.slice(1) : username;
+    }
+    return 'Instagram';
+  } catch (e) {
+    // If not a URL, it might be raw text or a bad URL.
+    const rawName = url.split('/').filter(Boolean).pop() || '';
+    if (!rawName) return 'Instagram';
+    return rawName.startsWith('@') ? rawName.slice(1) : rawName;
+  }
+};

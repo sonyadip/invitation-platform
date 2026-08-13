@@ -18,7 +18,8 @@ import './style.scss';
 
 import {
   formatDate,
-  buildGoogleCalendarUrl
+  buildGoogleCalendarUrl,
+  getInstagramUsername
 } from '../../utils/template-helpers';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
 import GiftGrid from '../../components/common/GiftGrid.astro';
@@ -329,16 +330,18 @@ const activeGifts = gifts && gifts.length > 0
         )}
 
           <!-- ===== VIDEO ===== -->
-          <section class="video-section" data-animate="blur-up">
-            <div class="video-section__frame" data-ivory-video>
-              <video class="video-section__media" src={videoUrl} poster={videoPoster} playsinline preload="metadata"></video>
-              <button class="video-section__play" type="button" data-ivory-video-play aria-label="Play wedding video">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z"></path>
-                </svg>
-              </button>
-            </div>
-          </section>
+          {sections.video !== false && (
+            <section class="video-section" data-animate="blur-up">
+              <div class="video-section__frame" data-ivory-video>
+                <video class="video-section__media" src={videoUrl} poster={videoPoster} playsinline preload="metadata"></video>
+                <button class="video-section__play" type="button" data-ivory-video-play aria-label="Play wedding video">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z"></path>
+                  </svg>
+                </button>
+              </div>
+            </section>
+          )}
 
           <!-- ===== GALLERY ===== -->
           {sections.gallery && (

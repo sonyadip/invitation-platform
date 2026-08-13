@@ -1,0 +1,217 @@
+---
+import { verifySetupToken } from '../utils/token';
+import { supabase } from '../lib/supabase';
+
+export const prerender = false;
+
+const token = Astro.url.searchParams.get('token');
+
+if (!token) {
+  return Astro.redirect('/?error=invalid_setup_link');
+}
+
+const slug = await verifySetupToken(token);
+
+if (!slug) {
+  return Astro.redirect('/?error=invalid_setup_link');
+}
+
+// Check if password is already set
+const { data: wedding, error } = await supabase
+  .from('weddings')
+  .select('client_password_hash')
+  .eq('slug', slug)
+  .single();
+
+if (error || !wedding) {
+  return Astro.redirect('/?error=invalid_setup_link');
+}
+
+if (wedding.client_password_hash) {
+  return Astro.redirect('/?login=client&error=link_used');
+}
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Klaim Akun Dashboard</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --ink-charcoal: #17160f;
+      --deep-charcoal: #2f2e25;
+      --ivory-paper: #f7f5ea;
+      --soft-parchment: #efeddf;
+      --warm-taupe: #b8aa92;
+      --muted-clay: #a9785f;
+      --font-body: 'Montserrat', system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      font-family: var(--font-body);
+      background-color: var(--ivory-paper);
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(169,120,95,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(184,170,146,0.08) 0%, transparent 50%);
+    }
+
+    .setup-card {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      background: var(--ivory-paper);
+      padding: 2.5rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .setup-card__badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted-clay);
+      margin-bottom: 0.75rem;
+    }
+
+    .setup-card h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2rem;
+      line-height: 1.1;
+      font-weight: 400;
+      color: var(--ink-charcoal);
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .setup-card__sub {
+      font-size: 0.875rem;
+      color: var(--muted-clay);
+      margin: 0 0 2rem;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--deep-charcoal);
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--warm-taupe);
+      border-radius: 0.75rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      background: var(--ivory-paper);
+      color: var(--ink-charcoal);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--muted-clay);
+      box-shadow: 0 0 0 3px rgba(169, 120, 95, 0.12);
+    }
+
+    .form-group input[readonly] {
+      background: var(--soft-parchment);
+      color: var(--warm-taupe);
+      cursor: not-allowed;
+      border-color: transparent;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--ink-charcoal);
+      color: var(--ivory-paper);
+      border: none;
+      border-radius: 0.75rem;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      margin-top: 0.5rem;
+    }
+
+    .submit-btn:hover { background: var(--deep-charcoal); }
+    .submit-btn:active { transform: scale(0.98); }
+
+    .setup-card__divider {
+      height: 1px;
+      background: var(--soft-parchment);
+      margin: 1.75rem 0;
+    }
+
+    .setup-card__hint {
+      font-size: 0.78rem;
+      color: var(--warm-taupe);
+      text-align: center;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="setup-card">
+    <span class="setup-card__badge">Sekali Pakai</span>
+    <h1>Klaim Akun</h1>
+    <p class="setup-card__sub">Buat password untuk mengakses dashboard undangan Anda.</p>
+
+    <form method="POST" action="/api/auth/setup">
+      <input type="hidden" name="token" value={token} />
+
+      <div class="form-group">
+        <label for="setup-username">Username</label>
+        <input type="text" id="setup-username" name="username" value={slug} readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="setup-password">Password Baru</label>
+        <input
+          type="password"
+          id="setup-password"
+          name="password"
+          required
+          placeholder="••••••••"
+          minlength="6"
+          autofocus
+        />
+      </div>
+
+      <button type="submit" class="submit-btn">Simpan &amp; Login</button>
+    </form>
+
+    <div class="setup-card__divider"></div>
+    <p class="setup-card__hint">Link ini hanya dapat digunakan satu kali.<br />Setelah password diset, link ini tidak bisa dipakai lagi.</p>
+  </div>
+</body>
+</html>

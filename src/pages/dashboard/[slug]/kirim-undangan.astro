@@ -384,6 +384,7 @@ Om Shanti, Shanti, Shanti, Om.`
           // Tombol Hapus
           const deleteBtn = e.target.closest('.kirim-guests__btn-delete');
           if (deleteBtn) {
+            if (!confirm('Hapus tamu ini?')) return;
             const row = deleteBtn.closest('.kirim-guests__item');
             if (row && row.dataset.id) {
               const id = row.dataset.id;

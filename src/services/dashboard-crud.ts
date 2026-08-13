@@ -22,6 +22,7 @@ export interface InvitationFormInput {
   giftEnabled: boolean;
   storyEnabled: boolean;
   viewCounterEnabled: boolean;
+  videoEnabled: boolean;
   maintenanceMode: boolean;
   passwordProtectionEnabled: boolean;
   accessPassword: string | null;
@@ -54,6 +55,10 @@ export interface InvitationFormInput {
   brideImageFile: File | null;
   groomImageFile: File | null;
   logoImageFile: File | null;
+  closingImageFile: File | null;
+  eventImageFile: File | null;
+  rsvpImageFile: File | null;
+  countdownImageFile: File | null;
   galleryImageFiles: File[];
 }
 
@@ -113,6 +118,15 @@ function toDashboardError(error: any, context: string) {
   ].filter(Boolean);
 
   return new Error(parts.join(' - '));
+}
+
+function formatInstagramUrl(val: string | null): string | null {
+  if (!val) return null;
+  val = val.trim();
+  if (!val) return null;
+  if (val.startsWith('http://') || val.startsWith('https://')) return val;
+  if (val.startsWith('@')) return `https://www.instagram.com/${val.substring(1)}`;
+  return `https://www.instagram.com/${val}`;
 }
 
 export function parseInvitationForm(formData: FormData): InvitationFormInput {
@@ -204,6 +218,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     giftEnabled: checked('giftEnabled'),
     storyEnabled: checked('storyEnabled'),
     viewCounterEnabled: checked('viewCounterEnabled'),
+    videoEnabled: checked('videoEnabled'),
     maintenanceMode: checked('maintenanceMode'),
     passwordProtectionEnabled: checked('passwordProtectionEnabled'),
     accessPassword: nullableValue('accessPassword'),
@@ -221,11 +236,15 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     brideImageUrl: nullableValue('brideImageUrl'),
     groomImageUrl: nullableValue('groomImageUrl'),
     logoImageUrl: nullableValue('logoImageUrl'),
+    closingImageUrl: nullableValue('closingImageUrl'),
+    eventImageUrl: nullableValue('eventImageUrl'),
+    rsvpImageUrl: nullableValue('rsvpImageUrl'),
+    countdownImageUrl: nullableValue('countdownImageUrl'),
     galleryImageUrls: galleryImageUrlValues.filter(Boolean),
     galleryVideoUrls: galleryVideoUrlValues.filter(Boolean),
-    instagramUrl: nullableValue('instagramUrl'),
-    groomInstagramUrl: nullableValue('groomInstagramUrl'),
-    brideInstagramUrl: nullableValue('brideInstagramUrl'),
+    instagramUrl: formatInstagramUrl(nullableValue('instagramUrl')),
+    groomInstagramUrl: formatInstagramUrl(nullableValue('groomInstagramUrl')),
+    brideInstagramUrl: formatInstagramUrl(nullableValue('brideInstagramUrl')),
     groomFatherName: nullableValue('groomFatherName'),
     groomMotherName: nullableValue('groomMotherName'),
     groomChildNumber: nullableValue('groomChildNumber'),
@@ -243,6 +262,10 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     brideImageFile: fileValue('brideImageFile'),
     groomImageFile: fileValue('groomImageFile'),
     logoImageFile: fileValue('logoImageFile'),
+    closingImageFile: fileValue('closingImageFile'),
+    eventImageFile: fileValue('eventImageFile'),
+    rsvpImageFile: fileValue('rsvpImageFile'),
+    countdownImageFile: fileValue('countdownImageFile'),
     galleryImageFiles: fileList('galleryImageFiles')
   };
 }
@@ -255,7 +278,6 @@ export function validateInvitationForm(input: InvitationFormInput) {
     ['bride full name', input.brideFullName],
     ['groom full name', input.groomFullName],
     ['wedding date', input.weddingDate],
-    ['venue name', input.venueName],
     ['venue address', input.venueAddress],
     ['maps URL', input.mapsUrl]
   ];
@@ -277,7 +299,6 @@ export function validateInvitationForm(input: InvitationFormInput) {
     const requiredEventFields = [
       [`event ${eventNumber} name`, event.name],
       [`event ${eventNumber} date`, event.date],
-      [`event ${eventNumber} venue name`, event.venueName],
       [`event ${eventNumber} venue address`, event.venueAddress],
       [`event ${eventNumber} maps URL`, event.mapsUrl]
     ];
@@ -383,7 +404,7 @@ async function resolveUploadedImages(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   input: InvitationFormInput
 ): Promise<InvitationFormInput> {
-  const [heroImageUrl, brideImageUrl, groomImageUrl, logoImageUrl, galleryImageUrls] = await Promise.all([
+  const [heroImageUrl, brideImageUrl, groomImageUrl, logoImageUrl, closingImageUrl, eventImageUrl, rsvpImageUrl, countdownImageUrl, galleryImageUrls] = await Promise.all([
     input.heroImageFile
       ? uploadImageFile(supabase, input.slug, 'hero', input.heroImageFile)
       : Promise.resolve(input.heroImageUrl),
@@ -396,6 +417,18 @@ async function resolveUploadedImages(
     input.logoImageFile
       ? uploadImageFile(supabase, input.slug, 'logo', input.logoImageFile)
       : Promise.resolve(input.logoImageUrl),
+    input.closingImageFile
+      ? uploadImageFile(supabase, input.slug, 'closing', input.closingImageFile)
+      : Promise.resolve(input.closingImageUrl),
+    input.eventImageFile
+      ? uploadImageFile(supabase, input.slug, 'event', input.eventImageFile)
+      : Promise.resolve(input.eventImageUrl),
+    input.rsvpImageFile
+      ? uploadImageFile(supabase, input.slug, 'rsvp', input.rsvpImageFile)
+      : Promise.resolve(input.rsvpImageUrl),
+    input.countdownImageFile
+      ? uploadImageFile(supabase, input.slug, 'countdown', input.countdownImageFile)
+      : Promise.resolve(input.countdownImageUrl),
     Promise.all(input.galleryImageFiles.map((file) => uploadImageFile(supabase, input.slug, 'gallery', file)))
   ]);
 
@@ -405,6 +438,10 @@ async function resolveUploadedImages(
     brideImageUrl,
     groomImageUrl,
     logoImageUrl,
+    closingImageUrl,
+    eventImageUrl,
+    rsvpImageUrl,
+    countdownImageUrl,
     galleryImageUrls: [
       ...input.galleryImageUrls,
       ...galleryImageUrls
@@ -428,7 +465,11 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     heroImage: input.heroImageUrl || undefined,
     brideImage: input.brideImageUrl || undefined,
     groomImage: input.groomImageUrl || undefined,
-    logoImage: input.logoImageUrl || undefined
+    logoImage: input.logoImageUrl || undefined,
+    closingImage: input.closingImageUrl || undefined,
+    eventImage: input.eventImageUrl || undefined,
+    rsvpImage: input.rsvpImageUrl || undefined,
+    countdownImage: input.countdownImageUrl || undefined
   };
 
   Object.keys(assets).forEach((key) => {
@@ -485,6 +526,7 @@ function buildSections(baseSections: any, input: InvitationFormInput): SectionTo
     gift: true,
     music: true,
     share: true,
+    video: true,
     livestream: true
   };
 
@@ -497,7 +539,8 @@ function buildSections(baseSections: any, input: InvitationFormInput): SectionTo
     rsvp: input.rsvpEnabled,
     wishes: input.wishesEnabled,
     gift: input.giftEnabled,
-    music: input.musicEnabled
+    music: input.musicEnabled,
+    video: input.videoEnabled
   };
 }
 
@@ -611,7 +654,11 @@ function collectAssetPaths(themeConfig: any) {
     extractStoragePath(assets.heroImage),
     extractStoragePath(assets.brideImage),
     extractStoragePath(assets.groomImage),
-    extractStoragePath(assets.logoImage)
+    extractStoragePath(assets.logoImage),
+    extractStoragePath(assets.closingImage),
+    extractStoragePath(assets.eventImage),
+    extractStoragePath(assets.rsvpImage),
+    extractStoragePath(assets.countdownImage)
   ].filter(Boolean) as string[];
 }
 
@@ -1023,3 +1070,20 @@ export async function duplicateInvitation(weddingId: string) {
 
   return duplicatedWedding.slug as string;
 }
+
+export async function resetInvitationViews(weddingId: string): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from('invitation_views').delete().eq('wedding_id', weddingId);
+  if (error) {
+    throw toDashboardError(error, 'Failed to reset page views.');
+  }
+}
+
+export async function resetInvitationRsvps(weddingId: string): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from('rsvps').delete().eq('wedding_id', weddingId);
+  if (error) {
+    throw toDashboardError(error, 'Failed to reset RSVPs.');
+  }
+}
+

@@ -11,6 +11,7 @@ import {
   formatDate,
   formatEventDate,
   buildGoogleCalendarUrl,
+  getInstagramUsername,
   formatWishDate,
   getYouTubeId
 } from '../../utils/template-helpers';
@@ -37,21 +38,27 @@ const themeConfig = (settings.theme_config || { theme: {}, layout: {}, assets: {
 const themeAssets = themeConfig.assets || {};
 const themeContent = themeConfig.content || {};
 
-// ── Asset resolution (prefer CMS override, fall back to local assets) ──────────
-const coverImage   = themeAssets.coverImage   || coverPhoto.src;
-const groomImage   = themeAssets.groomImage   || groomPhoto.src;
-const brideImage   = themeAssets.brideImage   || bridePhoto.src;
-const eventImage   = themeAssets.eventImage   || eventPhoto.src;
-const rsvpImage    = themeAssets.rsvpImage    || rsvpPhoto.src;
-const closingImage = themeAssets.closingImage || closingPhoto.src;
-const saveDateImage= themeAssets.countdownImage || saveDatePhoto.src;
+const isPreview = wedding.id.startsWith('preview-');
+
+// ── Asset resolution (prefer CMS override, fall back to local assets if preview) ──────────
+const coverImage   = themeAssets.coverImage   || (isPreview ? coverPhoto.src : undefined);
+const groomImage   = themeAssets.groomImage   || (isPreview ? groomPhoto.src : undefined);
+const brideImage   = themeAssets.brideImage   || (isPreview ? bridePhoto.src : undefined);
+const eventImage   = themeAssets.eventImage   || (isPreview ? eventPhoto.src : undefined);
+const rsvpImage    = themeAssets.rsvpImage    || (isPreview ? rsvpPhoto.src : undefined);
+const closingImage = themeAssets.closingImage || (isPreview ? closingPhoto.src : undefined);
+const saveDateImage= themeAssets.countdownImage || (isPreview ? saveDatePhoto.src : undefined);
 
 // Slideshow pool — deduplicated, cover goes last (it's the "home" slide)
 const heroImage = themeAssets.heroImage;
-const heroSlides = heroImage 
-  ? [heroImage] 
-  : [groomImage, brideImage, eventImage, rsvpImage, saveDateImage, coverImage]
-      .filter((s, i, a) => Boolean(s) && a.indexOf(s) === i);
+const heroSlides = [
+  heroImage || groomImage,
+  brideImage,
+  eventImage,
+  rsvpImage,
+  saveDateImage,
+  coverImage
+].filter((s, i, a) => Boolean(s) && a.indexOf(s) === i);
 
 // ── Text / content ─────────────────────────────────────────────────────────────
 const defaultText = {
@@ -297,7 +304,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                   </svg>
-                  <span>Instagram</span>
+                  <span>{getInstagramUsername(groomInstagramUrl)}</span>
                 </a>
               </div>
             </article>
@@ -324,7 +331,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                   </svg>
-                  <span>Instagram</span>
+                  <span>{getInstagramUsername(brideInstagramUrl)}</span>
                 </a>
               </div>
             </article>
@@ -383,7 +390,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                     <h3 class="event-card__title">{event.event_name}</h3>
                     <h4 class="event-card__date">{eventDate.weekday}, {eventDate.date}</h4>
                     <p class="event-card__time">
-                      {event.start_time}{event.end_time && event.end_time !== 'Selesai' ? ` - ${event.end_time}` : ''} WIB
+                      {event.start_time} {event.end_time ? `- ${event.end_time}` : '- Selesai'} WIB
                     </p>
                     <p class="event-card__venue">{event.venue_name}</p>
                     <p class="event-card__address">{event.venue_address}</p>

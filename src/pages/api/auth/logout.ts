@@ -2,10 +2,12 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ cookies, redirect }) => {
+const doLogout = ({ cookies, redirect }: Parameters<APIRoute>[0]) => {
   cookies.delete('auth_role', { path: '/' });
   cookies.delete('auth_slug', { path: '/' });
   cookies.delete('dashboard_unlocked', { path: '/' });
-  
   return redirect('/');
 };
+
+export const GET: APIRoute = doLogout;
+export const POST: APIRoute = doLogout;
