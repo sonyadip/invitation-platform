@@ -64,6 +64,8 @@ export interface ThemeConfig {
     groomMotherName?: string;
     brideFatherName?: string;
     brideMotherName?: string;
+    groomAddress?: string;
+    brideAddress?: string;
     [key: string]: string | undefined;
   };
 }
