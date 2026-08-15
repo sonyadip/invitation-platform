@@ -7,7 +7,8 @@ import CinematicIntro from "../../components/common/CinematicIntro.astro";
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
 import {
-  buildParentText,
+  formatChildPrefix,
+  buildCoupleLines,
   formatDate,
   formatEventDate,
   buildGoogleCalendarUrl,
@@ -67,6 +68,8 @@ const defaultText = {
   verseSource: 'QS. Ar-rum : 21',
   groomParents: 'Putra dari Bapak Mempelai & Ibu Mempelai',
   brideParents: 'Putri dari Bapak Mempelai & Ibu Mempelai',
+  groomAddress: '',
+  brideAddress: '',
   giftDescription: 'Tanpa mengurangi rasa hormat kami, bagi tamu yang ingin mengirimkan hadiah kepada kedua mempelai dapat mengirimnya melalui :',
   rsvpDescription: 'Bagi tamu undangan yang akan hadir di acara pernikahan kami silahkan kirimkan konfirmasi kehadiran dengan mengisi form berikut :',
   closingMessage: 'Merupakan suatu kebahagiaan dan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.',
@@ -89,8 +92,25 @@ const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}tex
 const groomInstagramUrl = text.groomInstagramUrl || instagramUrl;
 const brideInstagramUrl = text.brideInstagramUrl || instagramUrl;
 
-const groomParentsText = buildParentText('Anak pertama dari', text.groomFatherName, text.groomMotherName, text.groomParents);
-const brideParentsText = buildParentText('Anak pertama dari', text.brideFatherName, text.brideMotherName, text.brideParents);
+const groomPrefix = formatChildPrefix(text.groomChildNumber, 'Putra', text.groomPrefix, isPreview ? 'Putra pertama dari' : 'Putra dari');
+const bridePrefix = formatChildPrefix(text.brideChildNumber, 'Putri', text.bridePrefix, isPreview ? 'Putri pertama dari' : 'Putri dari');
+const groomAddressText = text.groomAddress || text.groomCity || text.groomOrigin || (isPreview ? 'Denpasar, Bali' : '');
+const brideAddressText = text.brideAddress || text.brideCity || text.brideOrigin || (isPreview ? 'Gianyar, Bali' : '');
+
+const groomParentLines = buildCoupleLines(
+  groomPrefix,
+  text.groomFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  text.groomMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
+  text.groomParents,
+  groomAddressText
+);
+const brideParentLines = buildCoupleLines(
+  bridePrefix,
+  text.brideFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  text.brideMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
+  text.brideParents,
+  brideAddressText
+);
 
 const formattedDate = formatDate(wedding.wedding_date);
 const introDateFormatted = formattedDate.includes(',') ? formattedDate.split(',')[1].trim() : formattedDate;
@@ -297,8 +317,11 @@ const activeStory = wedding.story && wedding.story.length > 0
               </div>
               <div class="couple-section__info" data-animate style="--animate-delay: 400ms;">
                 <h2 class="couple-section__name">{wedding.groom_full_name || wedding.groom_name}</h2>
-                <p class="couple-section__parents-label">Anak pertama dari</p>
-                <p class="couple-section__parents">{groomParentsText}</p>
+                <p class="couple-section__parents">
+                  {groomParentLines.map((line) => (
+                    <span class="couple-section__parent-line">{line}</span>
+                  ))}
+                </p>
                 <a class="couple-section__social" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -324,8 +347,11 @@ const activeStory = wedding.story && wedding.story.length > 0
               </div>
               <div class="couple-section__info" data-animate style="--animate-delay: 400ms;">
                 <h2 class="couple-section__name">{wedding.bride_full_name || wedding.bride_name}</h2>
-                <p class="couple-section__parents-label">Anak pertama dari</p>
-                <p class="couple-section__parents">{brideParentsText}</p>
+                <p class="couple-section__parents">
+                  {brideParentLines.map((line) => (
+                    <span class="couple-section__parent-line">{line}</span>
+                  ))}
+                </p>
                 <a class="couple-section__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>

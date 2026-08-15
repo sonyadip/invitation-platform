@@ -460,6 +460,10 @@ body.template-atelier {
       margin: 0;
     }
 
+    &__parent-line {
+      display: block;
+    }
+
     &__social {
       display: inline-flex;
       align-items: center;

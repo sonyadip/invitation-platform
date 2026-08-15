@@ -14,6 +14,53 @@ export const buildParentText = (
   return parents ? `${roleText} ${parents}` : fallbackText;
 };
 
+export const formatChildPrefix = (
+  childNumber: string | undefined | null,
+  defaultRole: 'Putra' | 'Putri',
+  customPrefix?: string | null,
+  fallback?: string
+): string => {
+  if (childNumber) {
+    let formatted = childNumber.trim();
+    if (!new RegExp(`^${defaultRole}`, 'i').test(formatted)) {
+      formatted = `${defaultRole} ${/^[0-9]+$/.test(formatted) ? 'ke-' + formatted : formatted}`;
+    }
+    if (!/dari$/i.test(formatted)) {
+      formatted = `${formatted} dari`;
+    }
+    return formatted;
+  }
+  return customPrefix || fallback || `${defaultRole} dari`;
+};
+
+export const buildCoupleLines = (
+  prefix: string,
+  fatherName: string | undefined | null,
+  motherName: string | undefined | null,
+  fallbackParents: string | undefined | null,
+  address: string | undefined | null
+): string[] => {
+  const lines: string[] = [];
+  if (prefix) lines.push(prefix);
+
+  const parents = [
+    fatherName?.trim() || '',
+    motherName?.trim() || ''
+  ].filter(Boolean).join(' & ');
+
+  if (parents) {
+    lines.push(parents);
+  } else if (fallbackParents) {
+    const cleaned = fallbackParents
+      .replace(/^(Putra dari|Putri dari|Putra|Putri)\s+/i, '')
+      .replace(/^dari\s+/i, '');
+    lines.push(cleaned || fallbackParents);
+  }
+
+  if (address) lines.push(address);
+  return lines;
+};
+
 export const formatDate = (iso: string): string => new Date(iso).toLocaleDateString('id-ID', {
   weekday: 'long',
   year: 'numeric',

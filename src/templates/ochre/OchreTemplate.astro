@@ -17,6 +17,8 @@ import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import './style.scss';
 
 import {
+  formatChildPrefix,
+  buildCoupleLines,
   formatDate,
   buildGoogleCalendarUrl,
   getInstagramUsername,
@@ -87,6 +89,29 @@ const activeEvents = events && events.length > 0
 const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, activeEvents[0] as any);
 
 const themeAssets = themeConfig.assets || {};
+const themeContent = themeConfig.content || {};
+const isPreview = wedding.id.startsWith('preview-');
+
+const groomPrefix = formatChildPrefix(themeContent.groomChildNumber, 'Putra', themeContent.groomPrefix, isPreview ? 'Putra pertama dari' : 'Putra dari');
+const bridePrefix = formatChildPrefix(themeContent.brideChildNumber, 'Putri', themeContent.bridePrefix, isPreview ? 'Putri pertama dari' : 'Putri dari');
+const groomAddressText = themeContent.groomAddress || themeContent.groomCity || themeContent.groomOrigin || (isPreview ? 'Denpasar, Bali' : '');
+const brideAddressText = themeContent.brideAddress || themeContent.brideCity || themeContent.brideOrigin || (isPreview ? 'Gianyar, Bali' : '');
+
+const groomParentLines = buildCoupleLines(
+  groomPrefix,
+  themeContent.groomFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  themeContent.groomMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
+  themeContent.groomParents || 'Keluarga Mempelai Pria',
+  groomAddressText
+);
+const brideParentLines = buildCoupleLines(
+  bridePrefix,
+  themeContent.brideFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  themeContent.brideMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
+  themeContent.brideParents || 'Keluarga Mempelai Wanita',
+  brideAddressText
+);
+
 const heroImage = themeAssets.heroImage || bgHero.src;
 const brideImage = themeAssets.brideImage || coupleBride.src;
 const groomImage = themeAssets.groomImage || coupleGroom.src;
@@ -224,7 +249,14 @@ const activeGifts = gifts && gifts.length > 0
                   </div>
                   <p class="person-card__role">Bride</p>
                   <p class="person-card__fullname">{wedding.bride_full_name}</p>
-                  <p class="person-card__parents">Putri dari<br/>Keluarga Mempelai Wanita</p>
+                  <p class="person-card__parents">
+                    {brideParentLines.map((line, index) => (
+                      <>
+                        {index > 0 && <br/>}
+                        {line}
+                      </>
+                    ))}
+                  </p>
                 </div>
 
                 <!-- Ampersand -->
@@ -242,7 +274,14 @@ const activeGifts = gifts && gifts.length > 0
                   </div>
                   <p class="person-card__role">Groom</p>
                   <p class="person-card__fullname">{wedding.groom_full_name}</p>
-                  <p class="person-card__parents">Putra dari<br/>Keluarga Mempelai Pria</p>
+                  <p class="person-card__parents">
+                    {groomParentLines.map((line, index) => (
+                      <>
+                        {index > 0 && <br/>}
+                        {line}
+                      </>
+                    ))}
+                  </p>
                 </div>
               </div>
             </section>

@@ -497,6 +497,10 @@ body.template-lumiere {
       text-align: center;
     }
 
+    &__parent-line {
+      display: block;
+    }
+
     &__social {
       display: inline-flex;
       align-items: center;

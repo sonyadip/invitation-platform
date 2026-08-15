@@ -803,11 +803,15 @@ body.template-blush.template-no-scroll {
       color: $blush-bg;
     }
 
-    &__parent-names {
+    &__parents {
       font-size: 15px;
       line-height: 1.6;
       color: rgba(255, 255, 255, 0.85);
       margin-bottom: 15px;
+    }
+
+    &__parent-line {
+      display: block;
     }
 
     

@@ -49,9 +49,11 @@ const defaults = {
   groomFatherName: '',
   groomMotherName: '',
   groomChildNumber: '',
+  groomAddress: '',
   brideFatherName: '',
   brideMotherName: '',
   brideChildNumber: '',
+  brideAddress: '',
   giftDescription: '',
   thankYouMessage: '',
   introVerse: '',
@@ -93,9 +95,11 @@ if (Astro.request.method === 'POST') {
     groomFatherName: parsed.groomFatherName || '',
     groomMotherName: parsed.groomMotherName || '',
     groomChildNumber: parsed.groomChildNumber || '',
+    groomAddress: parsed.groomAddress || '',
     brideFatherName: parsed.brideFatherName || '',
     brideMotherName: parsed.brideMotherName || '',
     brideChildNumber: parsed.brideChildNumber || '',
+    brideAddress: parsed.brideAddress || '',
     giftDescription: parsed.giftDescription || '',
     thankYouMessage: parsed.thankYouMessage || '',
     introVerse: parsed.introVerse || '',
@@ -186,8 +190,7 @@ if (Astro.request.method === 'POST') {
             <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
             <label class="wide">Hero Video URL<input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" /></label>
             <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{values.introVerse}</textarea></label>
-            <label>Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(Rgveda : X.85.42)" /></label>
-            <label>Instagram URL<input name="instagramUrl" value={values.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
+            <label class="wide">Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(Rgveda : X.85.42)" /></label>
           </div>
         </section>
 
@@ -202,6 +205,7 @@ if (Astro.request.method === 'POST') {
                 <label>Groom Father Name<input name="groomFatherName" value={values.groomFatherName} placeholder="Groom father name" /></label>
                 <label>Groom Mother Name<input name="groomMotherName" value={values.groomMotherName} placeholder="Groom mother name" /></label>
                 <label>Groom Anak Ke-<input name="groomChildNumber" value={values.groomChildNumber || ''} placeholder="pertama" /></label>
+                <label>Groom Alamat / Asal<input name="groomAddress" value={values.groomAddress || ''} placeholder="Br. Roban, gianyar" /></label>
                 <label>Groom Image URL<input name="groomImageUrl" value={values.groomImageUrl} placeholder="https://example.com/groom.jpg" /></label>
                 <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Groom Instagram URL<input name="groomInstagramUrl" value={values.groomInstagramUrl} placeholder="https://www.instagram.com/username" /></label>
@@ -215,6 +219,7 @@ if (Astro.request.method === 'POST') {
                 <label>Bride Father Name<input name="brideFatherName" value={values.brideFatherName} placeholder="Bride father name" /></label>
                 <label>Bride Mother Name<input name="brideMotherName" value={values.brideMotherName} placeholder="Bride mother name" /></label>
                 <label>Bride Anak Ke-<input name="brideChildNumber" value={values.brideChildNumber || ''} placeholder="kedua" /></label>
+                <label>Bride Alamat / Asal<input name="brideAddress" value={values.brideAddress || ''} placeholder="Br. Tengah, gianyar" /></label>
                 <label>Bride Image URL<input name="brideImageUrl" value={values.brideImageUrl} placeholder="https://example.com/bride.jpg" /></label>
                 <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Bride Instagram URL<input name="brideInstagramUrl" value={values.brideInstagramUrl} placeholder="https://www.instagram.com/username" /></label>

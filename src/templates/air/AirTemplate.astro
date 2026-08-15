@@ -16,6 +16,8 @@ import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import './style.scss';
 
 import {
+  formatChildPrefix,
+  buildCoupleLines,
   formatDate,
   buildGoogleCalendarUrl,
   getInstagramUsername,
@@ -125,6 +127,28 @@ const activeGifts = gifts && gifts.length > 0
 const themeContent = themeConfig.content || {};
 const groomInstagramUrl = themeContent.groomInstagramUrl || themeContent.instagramUrl || settings.social_instagram || "#";
 const brideInstagramUrl = themeContent.brideInstagramUrl || themeContent.instagramUrl || settings.social_instagram || "#";
+
+const isPreview = wedding.id.startsWith('preview-');
+
+const groomPrefix = formatChildPrefix(themeContent.groomChildNumber, 'Putra', themeContent.groomPrefix, isPreview ? 'Putra pertama dari' : 'Putra dari');
+const bridePrefix = formatChildPrefix(themeContent.brideChildNumber, 'Putri', themeContent.bridePrefix, isPreview ? 'Putri pertama dari' : 'Putri dari');
+const groomAddressText = themeContent.groomAddress || themeContent.groomCity || themeContent.groomOrigin || (isPreview ? 'Denpasar, Bali' : '');
+const brideAddressText = themeContent.brideAddress || themeContent.brideCity || themeContent.brideOrigin || (isPreview ? 'Gianyar, Bali' : '');
+
+const groomParentLines = buildCoupleLines(
+  groomPrefix,
+  themeContent.groomFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  themeContent.groomMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
+  themeContent.groomParents || 'Keluarga Mempelai Pria',
+  groomAddressText
+);
+const brideParentLines = buildCoupleLines(
+  bridePrefix,
+  themeContent.brideFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  themeContent.brideMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
+  themeContent.brideParents || 'Keluarga Mempelai Wanita',
+  brideAddressText
+);
 ---
 
 <BaseLayout
@@ -247,7 +271,11 @@ const brideInstagramUrl = themeContent.brideInstagramUrl || themeContent.instagr
                 </div>
                 <div class="couple-swiss__item couple-swiss__item--bride-text" data-animate="fade-left">
                   <h4>{wedding.bride_full_name}</h4>
-                  <p class="parents">Putri dari Pasangan<br /><strong>{wedding.bride_father_name ?? 'Bapak'} & {wedding.bride_mother_name ?? 'Ibu'}</strong></p>
+                  <p class="parents">
+                    {brideParentLines.map((line) => (
+                      <span class="couple-section__parent-line">{line}</span>
+                    ))}
+                  </p>
                   <a
                     class="couple-section__social"
                     href={brideInstagramUrl}
@@ -279,7 +307,11 @@ const brideInstagramUrl = themeContent.brideInstagramUrl || themeContent.instagr
                 </div>
                 <div class="couple-swiss__item couple-swiss__item--groom-text" data-animate="fade-right">
                   <h4>{wedding.groom_full_name}</h4>
-                  <p class="parents">Putra dari Pasangan<br /><strong>{wedding.groom_father_name ?? 'Bapak'} & {wedding.groom_mother_name ?? 'Ibu'}</strong></p>
+                  <p class="parents">
+                    {groomParentLines.map((line) => (
+                      <span class="couple-section__parent-line">{line}</span>
+                    ))}
+                  </p>
                   <a
                     class="couple-section__social"
                     href={groomInstagramUrl}

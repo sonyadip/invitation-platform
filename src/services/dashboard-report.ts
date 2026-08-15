@@ -92,8 +92,10 @@ export interface SlugReportDetail {
       brideInstagramUrl: string;
       groomFatherName: string;
       groomMotherName: string;
+      groomAddress: string;
       brideFatherName: string;
       brideMotherName: string;
+      brideAddress: string;
       giftDescription: string;
       thankYouMessage: string;
       introVerse: string;
@@ -471,9 +473,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
         groomFatherName: content.groomFatherName || '',
         groomMotherName: content.groomMotherName || '',
         groomChildNumber: content.groomChildNumber || '',
+        groomAddress: content.groomAddress || '',
         brideFatherName: content.brideFatherName || '',
         brideMotherName: content.brideMotherName || '',
         brideChildNumber: content.brideChildNumber || '',
+        brideAddress: content.brideAddress || '',
         giftDescription: content.giftDescription || '',
         thankYouMessage: content.closingMessage || '',
         introVerse: content.verse || '',

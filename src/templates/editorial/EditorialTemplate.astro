@@ -105,7 +105,7 @@ const groomPrefix = text.groomChildNumber
   ? (text.groomChildNumber.toLowerCase().startsWith('putra')
       ? (text.groomChildNumber.endsWith('dari') ? text.groomChildNumber : `${text.groomChildNumber} dari`)
       : `Putra ${/^[0-9]+$/.test(text.groomChildNumber) ? 'ke-' + text.groomChildNumber : text.groomChildNumber} dari`)
-  : (text.groomPrefix || (isPreview ? 'Putra ketiga dari' : 'Putra dari'));
+  : (text.groomPrefix || (isPreview ? 'Putra pertama dari' : 'Putra dari'));
 
 const bridePrefix = text.brideChildNumber
   ? (text.brideChildNumber.toLowerCase().startsWith('putri')
@@ -113,8 +113,8 @@ const bridePrefix = text.brideChildNumber
       : `Putri ${/^[0-9]+$/.test(text.brideChildNumber) ? 'ke-' + text.brideChildNumber : text.brideChildNumber} dari`)
   : (text.bridePrefix || (isPreview ? 'Putri pertama dari' : 'Putri dari'));
 
-const groomAddressText = text.groomAddress || text.groomCity || text.groomOrigin || (isPreview ? 'Br. Roban, gianyar' : '');
-const brideAddressText = text.brideAddress || text.brideCity || text.brideOrigin || (isPreview ? 'Br. Tengah, gianyar' : '');
+const groomAddressText = text.groomAddress || text.groomCity || text.groomOrigin || (isPreview ? 'Denpasar, Bali' : '');
+const brideAddressText = text.brideAddress || text.brideCity || text.brideOrigin || (isPreview ? 'Gianyar, Bali' : '');
 
 const buildCoupleLines = (
   prefix: string,
@@ -144,16 +144,16 @@ const buildCoupleLines = (
 
 const groomParentLines = buildCoupleLines(
   groomPrefix,
-  text.groomFatherName || (isPreview ? 'I Wayan Karta' : undefined),
-  text.groomMotherName || (isPreview ? 'Alm. Ni Ketut Limbur' : undefined),
+  text.groomFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  text.groomMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
   text.groomParents,
   groomAddressText
 );
 
 const brideParentLines = buildCoupleLines(
   bridePrefix,
-  text.brideFatherName || (isPreview ? 'I Made Rai' : undefined),
-  text.brideMotherName || (isPreview ? 'Ni Luh Nyoman' : undefined),
+  text.brideFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
+  text.brideMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
   text.brideParents,
   brideAddressText
 );

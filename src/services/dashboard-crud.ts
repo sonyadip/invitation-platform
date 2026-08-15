@@ -41,9 +41,11 @@ export interface InvitationFormInput {
   groomFatherName: string | null;
   groomMotherName: string | null;
   groomChildNumber: string | null;
+  groomAddress: string | null;
   brideFatherName: string | null;
   brideMotherName: string | null;
   brideChildNumber: string | null;
+  brideAddress: string | null;
   giftDescription: string | null;
   thankYouMessage: string | null;
   introVerse: string | null;
@@ -250,9 +252,11 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     groomFatherName: nullableValue('groomFatherName'),
     groomMotherName: nullableValue('groomMotherName'),
     groomChildNumber: nullableValue('groomChildNumber'),
+    groomAddress: nullableValue('groomAddress'),
     brideFatherName: nullableValue('brideFatherName'),
     brideMotherName: nullableValue('brideMotherName'),
     brideChildNumber: nullableValue('brideChildNumber'),
+    brideAddress: nullableValue('brideAddress'),
     giftDescription: nullableValue('giftDescription'),
     thankYouMessage: nullableValue('thankYouMessage'),
     introVerse: nullableValue('introVerse'),
@@ -546,9 +550,11 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     groomFatherName: input.groomFatherName || undefined,
     groomMotherName: input.groomMotherName || undefined,
     groomChildNumber: input.groomChildNumber || undefined,
+    groomAddress: input.groomAddress || undefined,
     brideFatherName: input.brideFatherName || undefined,
     brideMotherName: input.brideMotherName || undefined,
     brideChildNumber: input.brideChildNumber || undefined,
+    brideAddress: input.brideAddress || undefined,
     galleryVideoUrls: input.galleryVideoUrls?.length ? input.galleryVideoUrls : undefined,
     giftDescription: input.giftDescription || undefined,
     closingMessage: input.thankYouMessage || undefined,

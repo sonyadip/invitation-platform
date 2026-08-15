@@ -97,8 +97,12 @@ const content = settings?.content || {
   brideInstagramUrl: '',
   groomFatherName: '',
   groomMotherName: '',
+  groomChildNumber: '',
+  groomAddress: '',
   brideFatherName: '',
   brideMotherName: '',
+  brideChildNumber: '',
+  brideAddress: '',
   giftDescription: '',
   thankYouMessage: ''
 };
@@ -217,8 +221,7 @@ if (!isClaimed) {
             <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
             <label class="wide">Hero Video URL<input name="heroVideoUrl" value={assets.heroVideo || ''} placeholder="https://example.com/hero.mp4" /></label>
             <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{content.introVerse || ''}</textarea></label>
-            <label>Intro Verse Source<input name="introVerseSource" value={content.introVerseSource || ''} placeholder="(Rgveda : X.85.42)" /></label>
-            <label>Instagram URL<input name="instagramUrl" value={content.instagramUrl || ''} placeholder="https://www.instagram.com/username" /></label>
+            <label class="wide">Intro Verse Source<input name="introVerseSource" value={content.introVerseSource || ''} placeholder="(Rgveda : X.85.42)" /></label>
           </div>
         </section>
 
@@ -233,6 +236,7 @@ if (!isClaimed) {
                 <label>Groom Father Name<input name="groomFatherName" value={content.groomFatherName || ''} placeholder="Groom father name" /></label>
                 <label>Groom Mother Name<input name="groomMotherName" value={content.groomMotherName || ''} placeholder="Groom mother name" /></label>
                 <label>Groom Anak Ke-<input name="groomChildNumber" value={content.groomChildNumber || ''} placeholder="pertama" /></label>
+                <label>Groom Alamat / Asal<input name="groomAddress" value={content.groomAddress || ''} placeholder="Br. Roban, gianyar" /></label>
                 <label>Groom Image URL<input name="groomImageUrl" value={assets.groomImage} placeholder="https://example.com/groom.jpg" /></label>
                 <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Groom Instagram URL<input name="groomInstagramUrl" value={content.groomInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
@@ -246,6 +250,7 @@ if (!isClaimed) {
                 <label>Bride Father Name<input name="brideFatherName" value={content.brideFatherName || ''} placeholder="Bride father name" /></label>
                 <label>Bride Mother Name<input name="brideMotherName" value={content.brideMotherName || ''} placeholder="Bride mother name" /></label>
                 <label>Bride Anak Ke-<input name="brideChildNumber" value={content.brideChildNumber || ''} placeholder="kedua" /></label>
+                <label>Bride Alamat / Asal<input name="brideAddress" value={content.brideAddress || ''} placeholder="Br. Tengah, gianyar" /></label>
                 <label>Bride Image URL<input name="brideImageUrl" value={assets.brideImage} placeholder="https://example.com/bride.jpg" /></label>
                 <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Bride Instagram URL<input name="brideInstagramUrl" value={content.brideInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
