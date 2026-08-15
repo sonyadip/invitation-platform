@@ -4,7 +4,8 @@ import {
   initGiftInteractions, 
   initGalleryLightbox, 
   initVideoPlayers, 
-  initRevealAnimations 
+  initRevealAnimations,
+  initBackgroundAudioHandler
 } from '../../scripts/template-modules';
 
 const root = document.querySelector('body.template-editorial [data-template-root]');
@@ -138,6 +139,8 @@ if (audioBtn && song instanceof HTMLAudioElement) {
     isPlaying = !isPlaying;
   });
 }
+
+initBackgroundAudioHandler(song, audioBtn);
 
 function playAutoplayVideos() {
   const videos = Array.from(root?.querySelectorAll('video') || []);

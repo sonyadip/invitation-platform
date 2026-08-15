@@ -19,7 +19,7 @@ body.template-moison {
   &.template-no-scroll {
     overflow: hidden;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
   }
 
   .cinematic-letters span {
@@ -30,13 +30,17 @@ body.template-moison {
   .invitation-root {
     position: relative;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     color: var(--lm-white);
   }
 
   .page-bg {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100lvh;
     z-index: -2;
     overflow: hidden;
     background: #000;
@@ -59,6 +63,8 @@ body.template-moison {
     object-fit: cover;
     opacity: 0;
     transform: scale(1);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
     transition: opacity 1800ms ease, transform 9800ms ease;
 
     &.is-active {
@@ -72,7 +78,7 @@ body.template-moison {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     max-width: 440px;
     margin: 0 auto;
   }
@@ -83,7 +89,7 @@ body.template-moison {
   .cover-section {
     position: relative;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     display: flex;
     overflow: hidden;
 
@@ -115,7 +121,7 @@ body.template-moison {
       padding: 48px 24px;
       width: 100%;
       min-height: 100vh;
-      min-height: 100dvh;
+      min-height: 100svh;
       max-width: 480px;
       margin: 0 auto;
     }
@@ -252,7 +258,7 @@ body.template-moison {
   // ══════════════════════════════════════════════════════════════════════════════
   .intro-section {
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -1555,7 +1561,6 @@ body.template-moison {
       display: flex;
       width: calc(100% - 480px);
       height: 100vh;
-      height: 100dvh;
       align-items: center;
       justify-content: center;
       overflow: hidden;
@@ -1575,7 +1580,6 @@ body.template-moison {
       position: relative;
       width: 480px;
       min-height: 100vh;
-      min-height: 100dvh;
       flex-shrink: 0;
       margin-left: auto;
       box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);

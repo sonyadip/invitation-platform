@@ -330,7 +330,8 @@ if (Astro.request.method === 'POST') {
         <section data-setting-target="musicEnabled">
           <h2>Music</h2>
           <div class="form-grid">
-            <label class="wide">Music URL<input name="musicUrl" value={values.musicUrl} /></label>
+            <label class="wide">Music URL<input name="musicUrl" value={values.musicUrl} placeholder="https://example.com/audio.mp3" /></label>
+            <label class="wide">Upload Music File (MP3 / AAC / WAV)<input type="file" name="musicFile" accept="audio/*,.mp3,.wav,.ogg,.aac,.m4a,.webm" /></label>
           </div>
         </section>
 

@@ -176,3 +176,42 @@ export function initRevealAnimations(root: Element | Document = document) {
     observer.observe(item);
   });
 }
+
+export function initBackgroundAudioHandler(
+  song: HTMLAudioElement | null | undefined,
+  audioBtn?: HTMLElement | null,
+  getIsPlaying?: () => boolean,
+  setIsPlaying?: (playing: boolean) => void
+) {
+  if (!song || typeof document === 'undefined') return;
+
+  let wasPlayingBeforeHidden = false;
+
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      if (!song.paused) {
+        wasPlayingBeforeHidden = true;
+        song.pause();
+        audioBtn?.classList.remove('audio-toggle--playing');
+      }
+    } else {
+      if (wasPlayingBeforeHidden) {
+        wasPlayingBeforeHidden = false;
+        song.play().catch(() => {});
+        audioBtn?.classList.add('audio-toggle--playing');
+      }
+    }
+  };
+
+  const handlePageHide = () => {
+    if (!song.paused) {
+      song.pause();
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('blur', () => {
+    // Optional additional safeguard for iframe/window focus loss if needed
+  });
+}

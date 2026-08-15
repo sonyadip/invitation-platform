@@ -29,7 +29,7 @@ import "../styles/dashboard.scss";
     </div>
     
     <div class="dashboard-header__right">
-      <a href="/api/auth/logout" class="icon-btn" title="Logout">
+      <a href="/api/auth/logout" class="icon-btn" title="Logout" data-logout>
         <span class="material-symbols-outlined" data-icon="logout">logout</span>
       </a>
     </div>
@@ -61,7 +61,7 @@ import "../styles/dashboard.scss";
         </a>
       </div>
       <div class="dashboard-drawer__footer">
-        <a href="/api/auth/logout" class="nav-link nav-link--error">
+        <a href="/api/auth/logout" class="nav-link nav-link--error" data-logout>
           <span class="material-symbols-outlined">logout</span>
           Logout
         </a>
@@ -118,6 +118,16 @@ import "../styles/dashboard.scss";
       if (menuBtn) menuBtn.addEventListener('click', openDrawer);
       if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
       if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+      // Logout confirmation
+      document.querySelectorAll('[data-logout]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (confirm('Yakin ingin logout?')) {
+            window.location.href = '/api/auth/logout';
+          }
+        });
+      });
 
       // Intersection Observer for fade-in elements
       const observer = new IntersectionObserver((entries) => {

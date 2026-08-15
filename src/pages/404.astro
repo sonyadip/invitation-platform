@@ -43,28 +43,23 @@ const navItems = [
           />
         </a>
 
-        <div class="nav-links" aria-label="Menu desktop">
-          {
-            navItems.map(([label, href]) => (
-              <a href={href}>{label}</a>
-            ))
-          }
+        <div class="nav-right" style="display: flex; align-items: center; gap: 12px;">
+          <button
+            class="nav-action motion-down"
+            style="--i: 4"
+            id="login-btn"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            onclick="window.location.href='/'"
+          >
+            Login
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </button>
         </div>
-        <button
-          class="nav-action motion-down"
-          style="--i: 4"
-          id="login-btn"
-          aria-haspopup="dialog"
-          aria-expanded="false"
-          onclick="window.location.href='/'"
-        >
-          Login
-          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-            <polyline points="10 17 15 12 10 7"></polyline>
-            <line x1="15" y1="12" x2="3" y2="12"></line>
-          </svg>
-        </button>
       </nav>
 
       <section class="not-found-section">

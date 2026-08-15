@@ -50,13 +50,13 @@ body.template-deauville {
   &.template-no-scroll {
     overflow: hidden;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
   }
 
   &.template-cover-active {
     overflow: hidden;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
   }
 
   &.template-cover-active .cover-section {
@@ -64,13 +64,13 @@ body.template-deauville {
     inset: 0;
     z-index: 99;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     overflow: hidden;
   }
 
   .invitation-root {
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     background: var(--dea-dark);
   }
 
@@ -81,7 +81,7 @@ body.template-deauville {
     display: grid;
     place-items: stretch;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     overflow: hidden;
     isolation: isolate;
     transition: transform 1.9s ease-in-out;
@@ -173,7 +173,7 @@ body.template-deauville {
     z-index: 1;
     display: flex;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     width: min(86vw, 430px);
     margin: 0 auto;
     flex-direction: column;
@@ -285,7 +285,7 @@ body.template-deauville {
     display: flex;
     width: 100%;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     flex-direction: row;
     position: relative;
     z-index: 2;
@@ -319,7 +319,6 @@ body.template-deauville {
     display: flex;
     width: calc(100% - 480px);
     height: 100vh;
-    height: 100dvh;
     align-items: center;
     justify-content: center;
     overflow: hidden;
@@ -407,7 +406,6 @@ body.template-deauville {
   .invitation-main {
     width: 480px;
     min-height: 100vh;
-    min-height: 100dvh;
     flex-shrink: 0;
     margin-left: auto;
     box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
@@ -418,7 +416,7 @@ body.template-deauville {
   .snap-section {
     position: relative;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     padding: 60px 30px;
     overflow: hidden;
   }
@@ -1547,7 +1545,7 @@ body.template-deauville {
     position: relative;
     display: flex;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;

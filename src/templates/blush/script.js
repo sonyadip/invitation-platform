@@ -4,7 +4,8 @@ import {
   initGiftInteractions, 
   initGalleryLightbox, 
   initVideoPlayers, 
-  initRevealAnimations 
+  initRevealAnimations,
+  initBackgroundAudioHandler
 } from '../../scripts/template-modules';
 
 const root = document.querySelector('body.template-blush [data-template-root]');
@@ -65,6 +66,8 @@ if (audioBtn && song instanceof HTMLAudioElement) {
     isPlaying = !isPlaying;
   });
 }
+
+initBackgroundAudioHandler(song, audioBtn);
 
 let revealAnimationsInitialized = false;
 function triggerRevealAnimations() {

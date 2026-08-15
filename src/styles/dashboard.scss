@@ -75,8 +75,8 @@ button, input, textarea, select {
 }
 
 ::selection {
-  background-color: var(--color-primary-fixed);
-  color: var(--color-on-primary-fixed);
+  background-color: #c9b99a;
+  color: #1a1008;
 }
 
 .material-symbols-outlined {
@@ -374,7 +374,7 @@ button, input, textarea, select {
 .hero-card__link {
   display: block;
   margin-top: 12px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   letter-spacing: 0.04em;

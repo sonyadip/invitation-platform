@@ -106,19 +106,23 @@ body.template-editorial {
   &.template-no-scroll {
     overflow: hidden;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
   }
 
   .invitation-root {
     position: relative;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     color: var(--editorial-white);
   }
 
   .page-bg {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100lvh;
     z-index: -2;
     overflow: hidden;
     background: #000;
@@ -143,6 +147,8 @@ body.template-editorial {
     object-fit: cover;
     opacity: 0;
     transform: scale(1);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
     transition: opacity 1800ms ease, transform 9800ms ease;
 
     &.is-active {
@@ -168,7 +174,7 @@ body.template-editorial {
   .invitation-layout {
     display: flex;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     flex-direction: column;
   }
 
@@ -262,7 +268,7 @@ body.template-editorial {
     z-index: 1;
     width: 100%;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
   }
 
   /* Cover */
@@ -311,7 +317,7 @@ body.template-editorial {
     flex-direction: column;
     align-items: center;
     margin: 0 auto;
-    padding: max(46px, 9vh) 0 max(28px, calc(7vh + env(safe-area-inset-bottom)));
+    padding: max(46px, 60px) 0 max(28px, calc(40px + env(safe-area-inset-bottom)));
   }
 
   .cover-section__eyebrow {
@@ -429,7 +435,7 @@ body.template-editorial {
     align-items: stretch;
     justify-content: center;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     padding: 0;
     text-align: center;
   }
@@ -438,11 +444,11 @@ body.template-editorial {
     display: flex;
     width: min(86vw, 430px);
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     flex-direction: column;
     align-items: center;
     margin: 0 auto;
-    padding: max(46px, 9vh) 0 max(28px, calc(7vh + env(safe-area-inset-bottom)));
+    padding: max(46px, 60px) 0 max(28px, calc(40px + env(safe-area-inset-bottom)));
   }
 
   .intro-section__verse {
@@ -1300,7 +1306,7 @@ body.template-editorial {
   }
 
   .rsvp-form__textarea {
-    min-height: 104px;
+    height: 70px;
     resize: vertical;
   }
 
@@ -1972,7 +1978,6 @@ body.template-editorial {
       display: flex;
       width: calc(100% - 480px);
       height: 100vh;
-      height: 100dvh;
       align-items: center;
       justify-content: center;
       overflow: hidden;
@@ -1992,7 +1997,6 @@ body.template-editorial {
       position: relative;
       width: 480px;
       min-height: 100vh;
-      min-height: 100dvh;
       flex-shrink: 0;
       margin-left: auto;
       box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);

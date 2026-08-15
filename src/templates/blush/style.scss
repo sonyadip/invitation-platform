@@ -68,7 +68,7 @@ body.template-blush {
 body.template-blush.template-no-scroll {
   overflow: hidden;
   height: 100vh;
-  height: 100dvh;
+  height: 100svh;
 }
 
 .template-blush {
@@ -219,7 +219,7 @@ body.template-blush.template-no-scroll {
     display: grid;
     place-items: stretch;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     padding: 0;
     overflow: hidden;
     text-align: center;
@@ -239,7 +239,7 @@ body.template-blush.template-no-scroll {
     z-index: 1;
     display: flex;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     width: min(86vw, 430px);
     margin: 0 auto;
     flex-direction: column;
@@ -355,7 +355,7 @@ body.template-blush.template-no-scroll {
   .invitation-layout {
     display: flex;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     flex-direction: column;
     background-color: var(--template-bg);
   }
@@ -447,7 +447,7 @@ body.template-blush.template-no-scroll {
   .solstice-hero {
     display: block;
     width: 100%;
-    height: calc(200dvh + 100px);
+    height: calc(200svh + 100px);
     position: relative;
     background-color: transparent;
 
@@ -466,7 +466,7 @@ body.template-blush.template-no-scroll {
       align-items: center;
       justify-content: flex-start;
       width: 100%;
-      height: 100dvh;
+      height: 100svh;
       position: sticky;
       top: 0;
       left: 0;
@@ -547,7 +547,7 @@ body.template-blush.template-no-scroll {
       border-top-right-radius: 20px;
 
       @media (min-width: 1024px) {
-        height: 100dvh;
+        height: 100vh;
         bottom: auto;
         top: calc(50% + 50px);
         background-color: transparent; // If they want side-by-side on desktop
@@ -1734,7 +1734,6 @@ body.template-blush.template-no-scroll {
       display: flex;
       width: calc(100% - 480px);
       height: 100vh;
-      height: 100dvh;
       align-items: center;
       justify-content: center;
       overflow: hidden;
@@ -1753,7 +1752,6 @@ body.template-blush.template-no-scroll {
     .invitation-main {
       width: 480px;
       min-height: 100vh;
-      min-height: 100dvh;
       flex-shrink: 0;
       margin-left: auto;
       // box-shadow: -20px 0 60px rgba($blush-primary, 0.2); // Blush tinted shadow

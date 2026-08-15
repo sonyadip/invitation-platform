@@ -43,7 +43,7 @@ body.template-air {
   &.template-no-scroll {
     overflow: hidden;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
   }
 
   *,
@@ -67,7 +67,7 @@ body.template-air {
 
   .invitation-root {
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     background: var(--air-bg);
   }
 
@@ -310,7 +310,7 @@ body.template-air {
   .invitation-layout {
     display: block;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
   }
 
   /* HERO SECTION */
@@ -1005,6 +1005,7 @@ body.template-air {
     filter: brightness(0) invert(1) opacity(0.85);
   }
 
+
   .gift-card__number {
     margin: 0;
     max-width: 100%;
@@ -1080,7 +1081,7 @@ body.template-air {
     position: relative;
     display: flex;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
@@ -1391,6 +1392,139 @@ body.template-air {
       gap: 4px;
     }
 
+
+  [data-animate] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 700ms ease var(--animate-delay, 0ms), transform 700ms ease var(--animate-delay, 0ms);
+  }
+
+  [data-animate].is-animated {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* RESPONSIVE BREAKPOINTS */
+  @media (max-width: 960px) {
+    .air-nav {
+      display: none;
+    }
+
+    .cover-section__top,
+    .hero-section__top {
+      padding: 20px;
+    }
+
+    .cover-section__content,
+    .hero-section__content,
+    .template-section,
+    .intro-section,
+    .countdown-section,
+    .thankyou-section {
+      padding-inline: 20px;
+    }
+
+    .template-section__head,
+    .rsvp-section__grid,
+    .countdown-section {
+      grid-template-columns: 1fr;
+    }
+
+    .couple-swiss {
+      gap: 150px;
+      padding-inline: 0;
+    }
+
+    .couple-swiss__wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .couple-swiss__item--bride-img,
+    .couple-swiss__item--groom-img {
+      width: 75%;
+      aspect-ratio: 4 / 5;
+      margin: 0;
+    }
+
+    .couple-swiss__item--bride-img {
+      align-self: flex-start;
+    }
+
+    .couple-swiss__item--groom-img {
+      align-self: flex-end;
+    }
+
+    .couple-swiss__item--bride-text,
+    .couple-swiss__item--groom-text {
+      width: 85%;
+      padding: clamp(32px, 8vw, 48px);
+      background: rgba(255, 255, 255, 1);
+      position: relative;
+      z-index: 2;
+    }
+
+    .couple-swiss__item--bride-text {
+      align-self: flex-end;
+      text-align: left;
+      margin-top: -25%;
+    }
+
+    .couple-swiss__item--groom-text {
+      align-self: flex-start;
+      text-align: right;
+      margin-top: -25%;
+    }
+
+    .vertical-role {
+      position: absolute;
+    }
+
+    .vertical-role--left {
+      right: 8%;
+      top: 140px;
+    }
+
+    .vertical-role--right {
+      left: 8%;
+      top: 130px;
+      margin-bottom: 0;
+    }
+
+    .couple-swiss__amp {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .gallery-section__grid {
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: clamp(100px, 18vw, 150px);
+      gap: 6px;
+    }
+
+    .countdown-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .countdown-item:nth-child(2) {
+      border-right: 0;
+    }
+
+    .countdown-item:nth-child(-n + 2) {
+      border-bottom: 1px solid var(--air-line);
+    }
+  }
+
+  @media (max-width: 580px) {
+    .cover-section__top,
+    .hero-section__top {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+
     .cover-section__title,
     .hero-section__title {
       font-size: clamp(48px, 18vw, 84px);
@@ -1428,7 +1562,6 @@ body.template-air {
     }
   }
 
-
   /* SIDEBAR (desktop only — hidden on mobile) */
   .sidebar-section-wrap,
   .sidebar-section {
@@ -1441,29 +1574,20 @@ body.template-air {
       display: flex;
       flex-direction: row;
       min-height: 100vh;
-      min-height: 100dvh;
     }
 
-    /* Spacer — pushes invitation-main to 520px on the right */
     .sidebar-section-wrap {
       display: block;
       flex: 1 1 auto;
     }
 
-    /*
-     * Sidebar = cover-section pinned to left panel.
-     * Must explicitly set display:grid to override the global display:none
-     * on .sidebar-section. All other cover styles (bg, color, grid, overlay)
-     * come free from .cover-section base rules.
-     */
     .sidebar-section.cover-section {
-      display: grid;            /* override .sidebar-section { display: none } */
+      display: grid;
       position: fixed;
-      inset: 0 520px 0 0;      /* fills left, leaves 520px for .invitation-main */
+      inset: 0 520px 0 0;
       z-index: 10;
       min-height: unset;
 
-      /* Scale title/amp — vw units are viewport-wide, sidebar is narrower */
       .cover-section__title {
         font-size: clamp(36px, 5vw, 84px);
         margin: 12px 0 20px;
@@ -1473,7 +1597,6 @@ body.template-air {
         font-size: clamp(56px, 7vw, 120px);
       }
 
-      /* No open button in sidebar — already open */
       .cover-section__btn {
         display: none;
       }
@@ -1482,11 +1605,9 @@ body.template-air {
     .invitation-main {
       width: 520px;
       min-height: 100vh;
-      min-height: 100dvh;
       flex-shrink: 0;
     }
 
-    /* Hero section redundant on desktop — sidebar covers this role */
     .hero-section {
       display: none;
     }

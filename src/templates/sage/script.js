@@ -3,7 +3,8 @@ import {
   initCountdown, 
   initGiftInteractions, 
   initGalleryLightbox, 
-  initRevealAnimations 
+  initRevealAnimations,
+  initBackgroundAudioHandler
 } from '../../scripts/template-modules';
 
 const root = document.querySelector('body.template-sage [data-template-root]');
@@ -58,6 +59,8 @@ if (audioBtn && song instanceof HTMLAudioElement) {
     isPlaying = !isPlaying;
   });
 }
+
+initBackgroundAudioHandler(song, audioBtn);
 
 if (root) {
   // Sage has specific staggered animation delays

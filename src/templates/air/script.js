@@ -4,7 +4,8 @@ import {
   initGiftInteractions, 
   initGalleryLightbox, 
   initVideoPlayers, 
-  initRevealAnimations 
+  initRevealAnimations,
+  initBackgroundAudioHandler
 } from '../../scripts/template-modules';
 
 function initAirTemplate() {
@@ -85,6 +86,8 @@ function initAirTemplate() {
       }
     });
   }
+
+  initBackgroundAudioHandler(song, audioBtn);
 
   function initHeroSlideshows() {
     const sliders = Array.from(root.querySelectorAll('[data-hero-section-slider]'));

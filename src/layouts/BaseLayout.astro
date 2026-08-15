@@ -18,7 +18,13 @@ const brideName = wedding.bride_name;
 const groomName = wedding.groom_name;
 const defaultTitle = `The Wedding of ${groomName} & ${brideName}`;
 const docTitle = title || defaultTitle;
-const description = `Undangan pernikahan online ${groomName} dan ${brideName} pada ${new Date(wedding.wedding_date).toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.`;
+const formattedDate = new Date(wedding.wedding_date).toLocaleDateString("id-ID", {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+const description = `Undangan pernikahan ${groomName} & ${brideName},\n${formattedDate}.`;
 
 const theme = settings.theme_config.theme;
 ---

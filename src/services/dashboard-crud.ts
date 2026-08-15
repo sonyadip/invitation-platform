@@ -60,6 +60,7 @@ export interface InvitationFormInput {
   rsvpImageFile: File | null;
   countdownImageFile: File | null;
   galleryImageFiles: File[];
+  musicFile: File | null;
 }
 
 export interface InvitationEventInput {
@@ -89,6 +90,7 @@ const maxUploadBytes = Number(
   5
 ) * 1024 * 1024;
 const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+const allowedAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a', 'audio/x-m4a', 'audio/webm'];
 
 const defaultThemeConfig: ThemeConfig = {
   theme: {
@@ -266,7 +268,8 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     eventImageFile: fileValue('eventImageFile'),
     rsvpImageFile: fileValue('rsvpImageFile'),
     countdownImageFile: fileValue('countdownImageFile'),
-    galleryImageFiles: fileList('galleryImageFiles')
+    galleryImageFiles: fileList('galleryImageFiles'),
+    musicFile: fileValue('musicFile')
   };
 }
 
@@ -355,18 +358,37 @@ function validateImageFile(file: File) {
   }
 }
 
+function validateAudioFile(file: File) {
+  if (!allowedAudioTypes.includes(file.type) && !file.name.match(/\.(mp3|wav|ogg|aac|m4a|webm)$/i)) {
+    throw new Error(`Unsupported audio type for ${file.name}. Use MP3, WAV, OGG, AAC, M4A, or WebM.`);
+  }
+
+  const maxAudioBytes = 20 * 1024 * 1024; // 20MB limit for audio
+  if (file.size > maxAudioBytes) {
+    throw new Error(`${file.name} is too large. Maximum audio upload is 20 MB.`);
+  }
+}
+
 async function ensureStorageBucket(supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>) {
-  const { error: getBucketError } = await supabase.storage.getBucket(storageBucket);
-  if (!getBucketError) return;
+  const { data: bucket, error: getBucketError } = await supabase.storage.getBucket(storageBucket);
+  
+  if (!getBucketError && bucket) {
+    // If bucket already exists (e.g. previously configured only for images), update allowed MIME types
+    await supabase.storage.updateBucket(storageBucket, {
+      public: true,
+      fileSizeLimit: 20 * 1024 * 1024,
+      allowedMimeTypes: null as any // null or empty allows all types, or we can omit restriction
+    }).catch(() => {});
+    return;
+  }
 
   const { error: createBucketError } = await supabase.storage.createBucket(storageBucket, {
     public: true,
-    fileSizeLimit: maxUploadBytes,
-    allowedMimeTypes: allowedImageTypes
+    fileSizeLimit: 20 * 1024 * 1024
   });
 
   if (createBucketError && !String(createBucketError.message || '').toLowerCase().includes('already exists')) {
-    throw toDashboardError(createBucketError, 'Failed to prepare image storage bucket.');
+    throw toDashboardError(createBucketError, 'Failed to prepare storage bucket.');
   }
 }
 
@@ -400,11 +422,41 @@ async function uploadImageFile(
   return data.publicUrl;
 }
 
+async function uploadAudioFile(
+  supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
+  slug: string,
+  file: File
+) {
+  validateAudioFile(file);
+  await ensureStorageBucket(supabase);
+
+  const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
+  const path = [
+    slug,
+    'music',
+    `${Date.now()}-${crypto.randomUUID()}.${ext}`
+  ].join('/');
+
+  const { error: uploadError } = await supabase
+    .storage
+    .from(storageBucket)
+    .upload(path, file, {
+      cacheControl: '31536000',
+      upsert: false,
+      contentType: file.type || 'audio/mpeg'
+    });
+
+  if (uploadError) throw toDashboardError(uploadError, `Failed to upload ${file.name}.`);
+
+  const { data } = supabase.storage.from(storageBucket).getPublicUrl(path);
+  return data.publicUrl;
+}
+
 async function resolveUploadedImages(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   input: InvitationFormInput
 ): Promise<InvitationFormInput> {
-  const [heroImageUrl, brideImageUrl, groomImageUrl, logoImageUrl, closingImageUrl, eventImageUrl, rsvpImageUrl, countdownImageUrl, galleryImageUrls] = await Promise.all([
+  const [heroImageUrl, brideImageUrl, groomImageUrl, logoImageUrl, closingImageUrl, eventImageUrl, rsvpImageUrl, countdownImageUrl, galleryImageUrls, musicUrl] = await Promise.all([
     input.heroImageFile
       ? uploadImageFile(supabase, input.slug, 'hero', input.heroImageFile)
       : Promise.resolve(input.heroImageUrl),
@@ -429,7 +481,10 @@ async function resolveUploadedImages(
     input.countdownImageFile
       ? uploadImageFile(supabase, input.slug, 'countdown', input.countdownImageFile)
       : Promise.resolve(input.countdownImageUrl),
-    Promise.all(input.galleryImageFiles.map((file) => uploadImageFile(supabase, input.slug, 'gallery', file)))
+    Promise.all(input.galleryImageFiles.map((file) => uploadImageFile(supabase, input.slug, 'gallery', file))),
+    input.musicFile
+      ? uploadAudioFile(supabase, input.slug, input.musicFile)
+      : Promise.resolve(input.musicUrl)
   ]);
 
   return {
@@ -442,6 +497,7 @@ async function resolveUploadedImages(
     eventImageUrl,
     rsvpImageUrl,
     countdownImageUrl,
+    musicUrl,
     galleryImageUrls: [
       ...input.galleryImageUrls,
       ...galleryImageUrls
