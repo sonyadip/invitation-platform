@@ -44,7 +44,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
             <span class="material-symbols-outlined" data-icon="mail">mail</span>
           </div>
           <div class="stat-card__label">TOTAL RSVP</div>
-          <div class="stat-card__number">{report.summary.rsvpCount}</div>
+          <div class="stat-card__number" id="statTotalRsvp">{report.summary.rsvpCount}</div>
         </div>
         
         <div class="stat-card">
@@ -52,7 +52,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
             <span class="material-symbols-outlined" data-icon="group">group</span>
           </div>
           <div class="stat-card__label">TOTAL PAX</div>
-          <div class="stat-card__number">{report.summary.guestCount}</div>
+          <div class="stat-card__number" id="statTotalPax">{report.summary.guestCount}</div>
         </div>
 
         <div class="stat-card">
@@ -60,7 +60,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
             <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
           </div>
           <div class="stat-card__label">HADIR</div>
-          <div class="stat-card__number">{report.summary.attendingCount}</div>
+          <div class="stat-card__number" id="statAttending">{report.summary.attendingCount}</div>
         </div>
         
         <div class="stat-card">
@@ -68,7 +68,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
             <span class="material-symbols-outlined" data-icon="cancel">cancel</span>
           </div>
           <div class="stat-card__label">TIDAK HADIR</div>
-          <div class="stat-card__number">{report.summary.declinedCount}</div>
+          <div class="stat-card__number" id="statDeclined">{report.summary.declinedCount}</div>
         </div>
 
         <div class="stat-card">
@@ -76,7 +76,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
             <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
           </div>
           <div class="stat-card__label">RAGU</div>
-          <div class="stat-card__number">{report.summary.tentativeCount}</div>
+          <div class="stat-card__number" id="statTentative">{report.summary.tentativeCount}</div>
         </div>
 
         <div class="stat-card">
@@ -84,7 +84,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
             <span class="material-symbols-outlined" data-icon="forum">forum</span>
           </div>
           <div class="stat-card__label">UCAPAN</div>
-          <div class="stat-card__number">{report.summary.wishesCount}</div>
+          <div class="stat-card__number" id="statWishes">{report.summary.wishesCount}</div>
         </div>
       </div>
     </div>
@@ -118,7 +118,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
         <div class="rsvp-table__empty">Belum ada data RSVP</div>
       ) : (
         guests.map((guest, index) => (
-          <div class="rsvp-row-wrapper" data-name={guest.guestName.toLowerCase()} data-status={guest.attendanceStatus.toLowerCase()} data-has-message={guest.message ? "true" : "false"}>
+          <div class="rsvp-row-wrapper" data-id={guest.id} data-name={guest.guestName.toLowerCase()} data-status={guest.attendanceStatus.toLowerCase()} data-pax={guest.guestCount} data-has-message={guest.message ? "true" : "false"}>
             <div class="rsvp-row">
               <div class="rsvp-row__header">
                 <div class="rsvp-row__user">
@@ -145,6 +145,9 @@ function formatRsvpDateTime(dateStr: string | null): string {
                   <div class="rsvp-row__pax-col">
                     <span class="rsvp-row__pax-badge"><span class="rsvp-row__pax-val">{guest.guestCount}</span> Pax</span>
                   </div>
+                  <button class="rsvp-row__btn-delete" title="Hapus RSVP" aria-label="Hapus RSVP">
+                    <span class="material-symbols-outlined rsvp-row__delete-icon">delete</span>
+                  </button>
                 </div>
               </div>
               {guest.message ? (
@@ -179,15 +182,16 @@ function formatRsvpDateTime(dateStr: string | null): string {
       const searchInput = document.getElementById('rsvpSearch');
       const filterSelect = document.getElementById('rsvpFilter');
       const exportBtn = document.getElementById('rsvpExport');
-      const rows = document.querySelectorAll('.rsvp-row-wrapper');
+      const tableContainer = document.getElementById('rsvpTable');
       
       let currentPage = 1;
       const itemsPerPage = 10;
       let filteredRows = [];
 
       function filterGuests() {
-        if(!searchInput || !filterSelect) return;
-        const query = searchInput.value.toLowerCase();
+        const rows = document.querySelectorAll('.rsvp-row-wrapper');
+        if (!searchInput || !filterSelect) return;
+        const query = searchInput.value.toLowerCase().trim();
         const status = filterSelect.value.toLowerCase();
         
         filteredRows = [];
@@ -216,7 +220,10 @@ function formatRsvpDateTime(dateStr: string | null): string {
           }
         });
         
-        currentPage = 1;
+        const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
         updatePagination();
       }
 
@@ -304,9 +311,101 @@ function formatRsvpDateTime(dateStr: string | null): string {
         });
       }
 
-      if (searchInput) searchInput.addEventListener('input', filterGuests);
-      if (filterSelect) filterSelect.addEventListener('change', filterGuests);
+      if (searchInput) searchInput.addEventListener('input', () => { currentPage = 1; filterGuests(); });
+      if (filterSelect) filterSelect.addEventListener('change', () => { currentPage = 1; filterGuests(); });
       
+      // Delete RSVP action
+      if (tableContainer) {
+        tableContainer.addEventListener('click', async (e) => {
+          const deleteBtn = e.target.closest('.rsvp-row__btn-delete');
+          if (!deleteBtn) return;
+
+          const rowWrapper = deleteBtn.closest('.rsvp-row-wrapper');
+          if (!rowWrapper) return;
+
+          const id = rowWrapper.getAttribute('data-id');
+          const nameEl = rowWrapper.querySelector('.rsvp-row__name');
+          const guestName = nameEl ? nameEl.innerText.trim() : 'tamu ini';
+
+          if (!confirm(`Hapus konfirmasi RSVP dari "${guestName}"?`)) return;
+
+          try {
+            deleteBtn.disabled = true;
+            deleteBtn.style.opacity = '0.5';
+
+            const res = await fetch('/api/rsvp', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id })
+            });
+
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              throw new Error(data.error || 'Gagal menghapus data RSVP.');
+            }
+
+            // Remove row from DOM
+            rowWrapper.remove();
+
+            // Update summary counters
+            const statusAttr = rowWrapper.getAttribute('data-status') || '';
+            const paxAttr = parseInt(rowWrapper.getAttribute('data-pax') || '0', 10) || 0;
+            const hasMsg = rowWrapper.getAttribute('data-has-message') === 'true';
+
+            const statTotalRsvp = document.getElementById('statTotalRsvp');
+            const statTotalPax = document.getElementById('statTotalPax');
+            const statAttending = document.getElementById('statAttending');
+            const statDeclined = document.getElementById('statDeclined');
+            const statTentative = document.getElementById('statTentative');
+            const statWishes = document.getElementById('statWishes');
+
+            if (statTotalRsvp) {
+              const cur = parseInt(statTotalRsvp.innerText, 10) || 0;
+              statTotalRsvp.innerText = Math.max(0, cur - 1);
+            }
+            if (statTotalPax) {
+              const cur = parseInt(statTotalPax.innerText, 10) || 0;
+              statTotalPax.innerText = Math.max(0, cur - paxAttr);
+            }
+            if (statusAttr === 'attending' && statAttending) {
+              const cur = parseInt(statAttending.innerText, 10) || 0;
+              statAttending.innerText = Math.max(0, cur - 1);
+            } else if (statusAttr === 'declined' && statDeclined) {
+              const cur = parseInt(statDeclined.innerText, 10) || 0;
+              statDeclined.innerText = Math.max(0, cur - 1);
+            } else if ((statusAttr === 'tentative' || statusAttr === 'pending') && statTentative) {
+              const cur = parseInt(statTentative.innerText, 10) || 0;
+              statTentative.innerText = Math.max(0, cur - 1);
+            }
+            if (hasMsg && statWishes) {
+              const cur = parseInt(statWishes.innerText, 10) || 0;
+              statWishes.innerText = Math.max(0, cur - 1);
+            }
+
+            // Re-index remaining rows
+            const allRows = document.querySelectorAll('.rsvp-row-wrapper');
+            allRows.forEach((row, idx) => {
+              const idxEl = row.querySelector('.rsvp-row__index');
+              if (idxEl) {
+                idxEl.innerText = (idx + 1).toString().padStart(2, '0');
+              }
+            });
+
+            if (allRows.length === 0) {
+              tableContainer.innerHTML = '<div class="rsvp-table__empty">Belum ada data RSVP</div>';
+            }
+
+            // Re-run filter and pagination
+            filterGuests();
+          } catch (err) {
+            console.error('Error deleting RSVP:', err);
+            alert(err.message || 'Terjadi kesalahan saat menghapus RSVP.');
+            deleteBtn.disabled = false;
+            deleteBtn.style.opacity = '1';
+          }
+        });
+      }
+
       // Initialize on load
       filterGuests();
 

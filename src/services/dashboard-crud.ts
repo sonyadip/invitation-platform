@@ -1134,7 +1134,7 @@ export async function duplicateInvitation(weddingId: string) {
 }
 
 export async function resetInvitationViews(weddingId: string): Promise<void> {
-  const supabase = getSupabaseAdmin();
+  const supabase = await getSupabaseAdmin();
   const { error } = await supabase.from('invitation_views').delete().eq('wedding_id', weddingId);
   if (error) {
     throw toDashboardError(error, 'Failed to reset page views.');
@@ -1142,10 +1142,20 @@ export async function resetInvitationViews(weddingId: string): Promise<void> {
 }
 
 export async function resetInvitationRsvps(weddingId: string): Promise<void> {
-  const supabase = getSupabaseAdmin();
+  const supabase = await getSupabaseAdmin();
   const { error } = await supabase.from('rsvps').delete().eq('wedding_id', weddingId);
   if (error) {
     throw toDashboardError(error, 'Failed to reset RSVPs.');
   }
 }
+
+export async function deleteRsvp(id: string): Promise<void> {
+  const supabase = await getSupabaseAdmin();
+  const { error } = await supabase.from('rsvps').delete().eq('id', id);
+  if (error) {
+    throw toDashboardError(error, 'Failed to delete RSVP.');
+  }
+}
+
+
 

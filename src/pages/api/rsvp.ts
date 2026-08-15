@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
+import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { jsonResponse } from '../../utils/http';
 import { validateRSVPInput } from '../../utils/security';
 
@@ -100,3 +101,31 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ error: error.message || 'Gagal memproses konfirmasi kehadiran.' }, 500);
   }
 };
+
+export const DELETE: APIRoute = async ({ request }) => {
+  try {
+    const payload = await request.json();
+    const { id } = payload;
+
+    if (!id) {
+      return jsonResponse({ error: 'id wajib disertakan.' }, 400);
+    }
+
+    const adminSupabase = await getSupabaseAdmin();
+    const { error } = await adminSupabase
+      .from('rsvps')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    return jsonResponse({
+      success: true,
+      message: 'Data RSVP berhasil dihapus.'
+    });
+  } catch (error: any) {
+    console.error('RSVP delete API error:', error);
+    return jsonResponse({ error: error.message || 'Gagal menghapus data RSVP.' }, 500);
+  }
+};
+

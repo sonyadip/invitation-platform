@@ -123,6 +123,7 @@ export interface SlugReportDetail {
     qrisUrl: string;
   }>;
   rsvps: Array<{
+    id: string;
     guestName: string;
     attendanceStatus: string;
     guestCount: number;
@@ -343,7 +344,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .order('sort_order', { ascending: true }),
     supabase
       .from('rsvps')
-      .select('guest_name, attendance_status, guest_count, message, created_at')
+      .select('id, guest_name, attendance_status, guest_count, message, created_at')
       .eq('wedding_id', wedding.id)
       .order('created_at', { ascending: false }),
     supabase
@@ -505,6 +506,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       qrisUrl: gift.qris_url || ''
     })),
     rsvps: rsvps.map((rsvp) => ({
+      id: rsvp.id,
       guestName: rsvp.guest_name,
       attendanceStatus: rsvp.attendance_status,
       guestCount: Number(rsvp.guest_count || 0),

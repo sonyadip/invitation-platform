@@ -2114,6 +2114,29 @@ button, input, textarea, select {
   font-size: 14px;
 }
 
+.rsvp-row__btn-delete {
+  background: none;
+  border: none;
+  color: #a37b7b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+
+  &:hover {
+    color: #dc2626;
+    background-color: #fee2e2;
+  }
+}
+
+.rsvp-row__delete-icon {
+  font-size: 18px;
+}
+
 /* Profile (profile.astro) */
 .profile-avatar-edit__icon {
   font-size: 18px;
