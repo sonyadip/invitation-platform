@@ -66,15 +66,89 @@ button {
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-// --- 5. Keyframes ---
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
+// --- 6. Wishes Pagination Component ---
+.wishes-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.wishes-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid rgba(125, 125, 125, 0.28);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
   }
 
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+  &:hover:not(:disabled) {
+    background: rgba(125, 125, 125, 0.12);
+    border-color: currentColor;
   }
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+}
+
+.wishes-pagination__numbers {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wishes-pagination__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(125, 125, 125, 0.28);
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(.wishes-pagination__num--active) {
+    border-color: currentColor;
+    background: rgba(125, 125, 125, 0.1);
+  }
+
+  &--active {
+    background: rgba(125, 125, 125, 0.18);
+    border-color: currentColor;
+    font-weight: 700;
+  }
+}
+
+.wishes-pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 28px;
+  padding: 0 2px;
+  opacity: 0.45;
+  font-size: 11px;
+  user-select: none;
 }

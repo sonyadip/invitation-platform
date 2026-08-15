@@ -98,15 +98,41 @@ export function initGiftInteractions(root: Element | Document = document) {
 
 export async function initGalleryLightbox(root: Element | Document = document, groupName: string = 'gallery-section') {
   try {
-    await import('glightbox/dist/css/glightbox.min.css');
-    const GLightbox = (await import('glightbox')).default;
-    
-    GLightbox({
-      selector: `[data-fancybox="${groupName}"], [data-fancybox="gallery-section"], [data-fancybox]`,
-      touchNavigation: true,
-      loop: true,
-      zoomable: true,
-      draggable: true
+    await import('@fancyapps/ui/dist/fancybox/fancybox.css');
+    await import('../styles/fancybox-custom.scss');
+    const { Fancybox } = await import('@fancyapps/ui');
+
+    const container = root instanceof HTMLElement ? root : document.body;
+    const selector = `[data-fancybox="${groupName}"], [data-fancybox="gallery-section"], [data-fancybox]`;
+
+    try {
+      Fancybox.unbind(container, selector);
+    } catch (_) {}
+
+    Fancybox.bind(container, selector, {
+      groupAll: false,
+      placeFocusBack: false,
+      Fullscreen: false,
+      Toolbar: {
+        display: {
+          left: ['counter'],
+          right: ['close'],
+        },
+      },
+      Thumbs: {
+        showOnStart: true,
+        type: 'classic',
+      },
+      Carousel: {
+        infinite: true,
+        friction: 0.84,
+        plugins: {
+          Fullscreen: null as any,
+        },
+      },
+      Images: {
+        zoom: true,
+      },
     });
   } catch (error) {
     console.error('Failed to initialize gallery lightbox:', error);

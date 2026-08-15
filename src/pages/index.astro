@@ -171,8 +171,11 @@ const schemaData = {
       rel="stylesheet"
     />
     <link
-      href="https://db.onlinewebfonts.com/c/4c4c08af466e9ad071b6d69cf44093df?family=SaolDisplay-Regular"
-      rel="stylesheet"
+      rel="preload"
+      href="/fonts/SaolDisplay-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
 
     <!-- Schema.org for Google and AI Search Engines -->
@@ -1452,6 +1455,14 @@ const schemaData = {
 </html>
 
 <style lang="scss">
+  @font-face {
+    font-family: "SaolDisplay-Regular";
+    src: url("/fonts/SaolDisplay-Regular.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
   :root {
     color-scheme: light;
     scroll-behavior: smooth;

@@ -1,0 +1,273 @@
+/* Custom Fancybox-style UI for GLightbox */
+
+#glightbox-body {
+  // Navigation Arrows: Left & Right, always visible on mobile & desktop
+  .gprev,
+  .gnext {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(20, 20, 20, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 999999;
+    opacity: 0.9;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    padding: 0;
+
+    svg {
+      width: 22px;
+      height: 22px;
+      stroke: #ffffff;
+      fill: none;
+      transition: transform 0.2s ease;
+    }
+
+    &:hover {
+      opacity: 1;
+      background: rgba(10, 10, 10, 0.9);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-50%) scale(1.08);
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    &.disabled {
+      opacity: 0.2;
+      pointer-events: none;
+    }
+  }
+
+  .gprev {
+    left: 16px;
+    right: auto;
+  }
+
+  .gnext {
+    right: 16px;
+    left: auto;
+  }
+
+  // Close Button: Top right
+  .gclose {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(20, 20, 20, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 999999;
+    opacity: 0.9;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    padding: 0;
+
+    svg {
+      width: 18px;
+      height: 18px;
+      stroke: #ffffff;
+      fill: none;
+    }
+
+    &:hover {
+      opacity: 1;
+      background: rgba(10, 10, 10, 0.9);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.08);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // Slide Layout: Ensure centered image without cutting or shifting
+  .gcontainer {
+    width: 100%;
+    height: 100%;
+  }
+
+  .gslide {
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  .ginner-container {
+    height: 100% !important;
+    max-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-bottom: 76px !important;
+    box-sizing: border-box !important;
+  }
+
+  .gslide-media {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+    max-width: 100vw;
+  }
+
+  .gslide-image {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .gslide-image img {
+    max-height: calc(100vh - 130px) !important;
+    max-width: calc(100vw - 32px) !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
+    display: block !important;
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  // Fancybox-like Thumbnails Bar at the Bottom
+  .glightbox-thumbs {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 74px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.7) 75%, transparent 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 8px 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    z-index: 999998;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    user-select: none;
+
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+    }
+
+    @media (min-width: 600px) {
+      justify-content: center;
+    }
+  }
+
+  .glightbox-thumb-item {
+    flex: 0 0 62px;
+    width: 62px;
+    height: 48px;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+    background: #1a1a1a;
+    padding: 0;
+    opacity: 0.5;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    &:hover {
+      opacity: 0.85;
+      transform: translateY(-2px);
+    }
+
+    &.is-active {
+      opacity: 1;
+      border-color: #ffffff;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+      transform: scale(1.06);
+    }
+  }
+
+  // Mobile responsiveness
+  @media (max-width: 768px) {
+    .gprev {
+      left: 10px;
+      width: 38px;
+      height: 38px;
+    }
+
+    .gnext {
+      right: 10px;
+      width: 38px;
+      height: 38px;
+    }
+
+    .gclose {
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+    }
+
+    .ginner-container {
+      padding-bottom: 64px !important;
+    }
+
+    .gslide-image img {
+      max-height: calc(100vh - 120px) !important;
+      max-width: calc(100vw - 16px) !important;
+    }
+
+    .glightbox-thumbs {
+      height: 60px;
+      padding: 6px 12px;
+      gap: 8px;
+      justify-content: flex-start;
+    }
+
+    .glightbox-thumb-item {
+      flex: 0 0 48px;
+      width: 48px;
+      height: 38px;
+    }
+  }
+}

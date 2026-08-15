@@ -1,5 +1,15 @@
 // Dashboard Styling
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+@font-face {
+  font-family: "SaolDisplay-Regular";
+  src: url("/fonts/SaolDisplay-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --color-surface-container-lowest: #ffffff;
   --color-outline: #d1d5db;
@@ -346,7 +356,7 @@ button, input, textarea, select {
 
 .hero-card__title {
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 36px;
   line-height: 1.1;
   margin: 0;
@@ -394,7 +404,7 @@ button, input, textarea, select {
 
 .bento-card__title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-on-surface);
   margin-bottom: 16px;
   text-transform: none;
@@ -430,7 +440,7 @@ button, input, textarea, select {
 
 .countdown-item__number {
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 32px;
   color: #111827;
 }
@@ -476,7 +486,7 @@ button, input, textarea, select {
 
 .stat-card__number {
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 28px;
   color: var(--color-on-surface);
   line-height: 1;
@@ -547,7 +557,7 @@ button, input, textarea, select {
 
 .event-item__name {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-on-surface);
   margin: 0 0 4px 0;
 }
@@ -593,7 +603,7 @@ button, input, textarea, select {
   background-color: #dcfce7;
   color: #16a34a;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 3px 10px;
   border-radius: 9999px;
 }
@@ -649,13 +659,13 @@ button, input, textarea, select {
 
 .wish-item__name {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-on-surface);
 }
 
 .wish-item__status {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 2px 8px;
   border-radius: 9999px;
   letter-spacing: 0.05em;
@@ -703,7 +713,7 @@ button, input, textarea, select {
   padding-top: 16px;
   border-top: 1px solid #f3f4f6;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--color-primary);
   text-decoration: none;
@@ -739,7 +749,7 @@ button, input, textarea, select {
 
 .concierge-widget__title {
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 20px;
   color: var(--color-on-surface);
   margin: 0 0 8px 0;
@@ -875,6 +885,11 @@ button, input, textarea, select {
   transition: transform 0.1s, background-color 0.2s;
   border: none;
   cursor: pointer;
+
+  @media (max-width: 640px) {
+    padding: 8px 16px;
+    gap: 2px !important;
+  }
 }
 
 .filter-btn:active {
@@ -1016,7 +1031,7 @@ button, input, textarea, select {
 
 .guest-card__name {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-on-surface);
   margin: 0 0 4px 0;
 }
@@ -1106,89 +1121,151 @@ button, input, textarea, select {
 
 .rsvp-table {
   background-color: var(--color-surface-container-lowest);
-  border-radius: 24px;
-  padding: 8px;
+  border-radius: 16px;
+  padding: 4px;
   border: 1px solid rgba(166, 137, 102, 0.15);
   box-shadow: none;
 }
 
 .rsvp-table__header {
-  display: grid;
-  grid-template-columns: 40px 1.5fr 2fr 100px 60px;
-  padding: 8px 16px;
-  color: var(--color-outline);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.rsvp-table__header-col--center {
-  text-align: center;
+  display: none;
 }
 
 .rsvp-row {
-  display: grid;
-  grid-template-columns: 40px 1.5fr 2fr 100px 60px;
-  align-items: center;
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px;
+  gap: 8px;
 }
 
-.rsvp-row__divider {
-  margin: 0 16px;
-  border-bottom: 1px solid var(--color-surface-variant);
+.rsvp-row__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rsvp-row__user {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
 
 .rsvp-row__index {
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--color-outline);
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
-.rsvp-row__info {
+.rsvp-row__user-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  gap: 2px;
 }
 
 .rsvp-row__name {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-on-surface);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 8px;
 }
 
-.rsvp-row__pax {
+.rsvp-row__date {
   font-size: 12px;
-  color: var(--color-outline);
+  color: #9ca3af;
+  font-weight: 400;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+  }
+}
+
+.rsvp-row__badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .rsvp-row__status {
   display: flex;
-  justify-content: center;
+  align-items: center;
 }
 
 .status-label {
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 9999px;
   font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .status-label--attending {
-  background-color: #e7f3ea;
-  color: #1e4620;
+  background-color: #dcfce7;
+  color: #15803d;
 }
 
 .status-label--declined {
-  background-color: #fceef0;
-  color: #8e1a1a;
+  background-color: #fee2e2;
+  color: #b91c1c;
 }
 
-.status-label--pending {
-  background-color: var(--color-secondary-container);
-  color: var(--color-secondary);
+.status-label--pending,
+.status-label--tentative {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.rsvp-row__pax-col {
+  display: flex;
+  align-items: center;
+}
+
+.rsvp-row__pax-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4b5563;
+  background-color: #f3f4f6;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.rsvp-row__message-col {
+  padding: 0;
+  padding-left: 22px;
+}
+
+.rsvp-row__message {
+  display: block;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4b5563;
+  font-style: italic;
+  background-color: #faf8f5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  // border-left: 2.5px solid #94805e;
+  word-break: break-word;
+}
+
+.rsvp-row__message--empty {
+  display: none;
+}
+
+.rsvp-row__divider {
+  margin: 0 12px;
+  border-bottom: 1px solid var(--color-surface-variant);
 }
 
 .tip-widget {
@@ -1363,7 +1440,7 @@ button, input, textarea, select {
   padding: 6px 16px;
   border-radius: 9999px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1423,7 +1500,7 @@ button, input, textarea, select {
 
 .security-card__title {
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 18px;
   color: var(--color-on-surface);
   margin: 0;
@@ -1566,7 +1643,7 @@ button, input, textarea, select {
 .guest-stats__total-val {
   font-family: var(--font-body);
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-on-surface);
 }
 
@@ -1773,7 +1850,7 @@ button, input, textarea, select {
 
   /* Stats Grid */
   .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   .stats-grid--dashboard {
     grid-template-columns: repeat(2, 1fr);
@@ -2091,25 +2168,6 @@ button, input, textarea, select {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-.rsvp-row__message-col {
-  padding-right: 16px;
-}
-.rsvp-row__message {
-  display: block;
-  font-size: 13px;
-  color: var(--color-on-surface-variant);
-  font-style: italic;
-}
-.rsvp-row__message--empty {
-  color: var(--color-outline);
-  opacity: 0.5;
-}
-.rsvp-row__pax-col {
-  text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--color-on-surface);
 }
 
 /* Pagination Controls */

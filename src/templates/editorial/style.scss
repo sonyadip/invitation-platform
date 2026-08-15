@@ -989,7 +989,7 @@ body.template-editorial {
 
   .gallery-item--full-16x10 {
     grid-column: 1 / -1;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 12;
   }
 
   .gallery-item__img {
@@ -1352,10 +1352,7 @@ body.template-editorial {
 
   .wishes-list {
     display: grid;
-    max-height: 32vh;
     gap: 12px;
-    overflow: auto;
-    padding-right: 4px;
   }
 
   .wishes-empty {
@@ -1554,9 +1551,8 @@ body.template-editorial {
   }
 
   .wishes-list {
-    max-height: 30vh;
-    overflow: auto;
-    padding-right: 4px;
+    display: grid;
+    gap: 12px;
   }
 
   .wish-card {
@@ -1941,11 +1937,11 @@ body.template-editorial {
   }
 
   .wishes-list {
-    max-height: 30vh;
+    gap: 12px;
   }
 
   .audio-toggle {
-    right: 25px;
+    right: 20px;
     bottom: 20px;
     width: 40px;
     height: 40px;

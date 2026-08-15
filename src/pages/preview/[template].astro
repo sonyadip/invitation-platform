@@ -129,17 +129,20 @@ const data: FullInvitationData = {
       created_at: now
     }
   ],
-  wishes: [
-    {
-      id: 'wish-1',
-      wedding_id: `preview-${templateKey}`,
-      guest_name: 'Sahabat',
-      attendance_status: 'attending',
-      guest_count: 2,
-      message: 'Selamat menempuh hidup baru.',
-      created_at: now
-    }
-  ]
+  wishes: Array.from({ length: 40 }, (_, i) => ({
+    id: `wish-${i + 1}`,
+    wedding_id: `preview-${templateKey}`,
+    guest_name: ['Sahabat', 'Budi Santoso', 'Siti Rahma', 'Dimas Anggara', 'Rina Wulandari', 'Andi Pratama', 'Maya Putri', 'Eko Prasetyo', 'Dewi Lestari', 'Fajar Ramadhan'][i % 10] + ` #${i + 1}`,
+    attendance_status: (i % 3 === 0 ? 'attending' : (i % 3 === 1 ? 'tentative' : 'declined')) as any,
+    guest_count: (i % 3) + 1,
+    message: [
+      'Selamat menempuh hidup baru, semoga bahagia selalu!',
+      'Happy wedding! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.',
+      'Selamat ya! Semoga lancar sampai hari H dan langgeng selamanya.',
+      'Barakallahu lakum wa baraka alaikum, bahagia selalu dunia akhirat.'
+    ][i % 4],
+    created_at: new Date(Date.now() - i * 3600000).toISOString()
+  }))
 };
 
 const loadedTemplate = await loadTemplate(templateKey);

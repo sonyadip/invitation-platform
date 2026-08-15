@@ -1253,22 +1253,6 @@ body.template-deauville {
     gap: 10px;
     width: min(100%, 370px);
     margin: 0 auto;
-    max-height: calc(100vh - 520px);
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    &::-webkit-scrollbar {
-      width: 1px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: var(--dea-muted);
-      border-radius: 10px;
-    }
   }
 
   .wish-card,

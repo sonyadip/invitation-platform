@@ -1,0 +1,129 @@
+/* Premium Custom Styling for Fancybox */
+
+.fancybox__dialog {
+  z-index: 999999 !important;
+}
+
+.fancybox__backdrop {
+  background: rgba(10, 10, 12, 0.94) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.fancybox__container {
+  // Arrow buttons
+  --f-arrow-width: 44px;
+  --f-arrow-height: 44px;
+  --f-arrow-svg-width: 22px;
+  --f-arrow-svg-height: 22px;
+  --f-arrow-svg-stroke-width: 2.2;
+  --f-arrow-border-radius: 50%;
+  --f-arrow-bg: rgba(30, 30, 35, 0.7);
+  --f-arrow-hover-bg: rgba(15, 15, 20, 0.95);
+  --f-arrow-color: #ffffff;
+  --f-arrow-hover-color: #ffffff;
+  --f-arrow-pos: 20px;
+
+  .f-button.is-arrow {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      transform: translateY(-50%) scale(1.08);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
+
+  // Close button
+  .f-button.is-close-button {
+    --f-button-width: 40px;
+    --f-button-height: 40px;
+    --f-button-border-radius: 50%;
+    --f-button-bg: rgba(30, 30, 35, 0.7);
+    --f-button-hover-bg: rgba(15, 15, 20, 0.95);
+    --f-button-color: #ffffff;
+    --f-button-hover-color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 999;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      transform: scale(1.08);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // Thumbnails bar at the bottom
+  --f-thumbs-gap: 8px;
+  --f-thumbs-padding-y: 10px;
+  --f-thumbs-padding-x: 16px;
+  --f-thumbs-bg: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
+  --f-thumb-width: 68px;
+  --f-thumb-height: 52px;
+  --f-thumb-border-radius: 6px;
+  --f-thumb-opacity: 0.55;
+  --f-thumb-hover-opacity: 0.9;
+  --f-thumb-selected-opacity: 1;
+  --f-thumb-selected-shadow: inset 0 0 0 2px #ffffff, 0 0 12px rgba(255, 255, 255, 0.4);
+
+  .f-thumbs {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .f-thumbs__slide {
+    transition: transform 0.2s ease;
+
+    &.is-selected {
+      transform: scale(1.05);
+    }
+  }
+
+  // Main Image styling
+  img.f-panzoom__content {
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  // Mobile adjustments
+  @media (max-width: 768px) {
+    --f-arrow-pos: 10px;
+    --f-arrow-width: 38px;
+    --f-arrow-height: 38px;
+    --f-arrow-svg-width: 18px;
+    --f-arrow-svg-height: 18px;
+    --f-thumb-width: 52px;
+    --f-thumb-height: 40px;
+    --f-thumbs-padding-y: 6px;
+    --f-thumbs-padding-x: 10px;
+
+    .f-button.is-close-button {
+      top: 12px;
+      right: 12px;
+      --f-button-width: 36px;
+      --f-button-height: 36px;
+    }
+
+    .f-thumbs.is-modern .f-thumbs__viewport {
+      width: calc(97% + var(--f-carousel-slide-width) * 2 + var(--f-thumbs-padding-x));
+    }
+  }
+}

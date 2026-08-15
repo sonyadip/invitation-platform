@@ -21,7 +21,8 @@ import {
   buildGoogleCalendarUrl,
   getInstagramUsername,
   formatWishDate,
-  getYouTubeId
+  getYouTubeId,
+  generatePaginationItems
 } from "../../utils/template-helpers";
 import CountdownTimer from "../../components/common/CountdownTimer.astro";
 import GiftGrid from "../../components/common/GiftGrid.astro";
@@ -181,7 +182,7 @@ const activeGallery =
 
 const displayedWishes = wishes ? wishes.slice(0, 4) : [];
 const isWishesEmpty = !wishes || wishes.length === 0;
-const hasMoreWishes = wishes ? wishes.length > displayedWishes.length : false;
+const totalWishPages = wishes ? Math.ceil(wishes.length / 4) : 0;
 const activeGifts =
   gifts && gifts.length > 0
     ? gifts
@@ -595,7 +596,9 @@ const activeGifts =
                         >
                           {wish.attendance_status === "attending"
                             ? "Hadir"
-                            : "Absen"}
+                            : wish.attendance_status === "tentative"
+                            ? "Ragu"
+                            : "Tidak Hadir"}
                         </span>
                       </div>
                       <span class="wish-card__date">
@@ -606,15 +609,35 @@ const activeGifts =
                   </article>
                 ))}
               </div>
-              {hasMoreWishes && (
-                <button
-                  class="template-btn wishes-load-more"
-                  data-wishes-load-more
-                  data-offset={displayedWishes.length}
-                  data-wedding-id={wedding.id}
-                >
-                  Load More
-                </button>
+              {totalWishPages > 1 && (
+                <div class="wishes-pagination" data-wishes-pagination data-wedding-id={wedding.id} data-current-page="1" data-total-pages={totalWishPages} data-per-page="4">
+                  <button type="button" class="wishes-pagination__btn" data-wishes-prev disabled aria-label="Halaman sebelumnya">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <div class="wishes-pagination__numbers" data-wishes-numbers>
+                    {generatePaginationItems(1, totalWishPages).map((item) => (
+                      typeof item === 'number' ? (
+                        <button
+                          type="button"
+                          class={`wishes-pagination__num ${item === 1 ? 'wishes-pagination__num--active' : ''}`}
+                          data-wishes-page={item}
+                          aria-label={`Halaman ${item}`}
+                        >
+                          {item}
+                        </button>
+                      ) : (
+                        <span class="wishes-pagination__ellipsis">...</span>
+                      )
+                    ))}
+                  </div>
+                  <button type="button" class="wishes-pagination__btn" data-wishes-next aria-label="Halaman berikutnya">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
               )}
             </section>
           )

@@ -1,3 +1,20 @@
+export function generatePaginationItems(currentPage: number, totalPages: number): (number | string)[] {
+  if (totalPages <= 1) return [1];
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, '...', totalPages];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, '...', totalPages - 2, totalPages - 1, totalPages];
+  }
+
+  return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+}
+
 export function getWishKey({ id, name, message, createdAt }: any) {
   return id ? String(id) : [createdAt || '', name || '', message || ''].join('|');
 }
@@ -28,8 +45,9 @@ export function createWishCard({ id, name, attendance, message, createdAt }: any
 
   const badge = document.createElement('span');
   const isAttending = attendance === 'attending';
-  badge.className = `wish-card__badge ${isAttending ? 'wish-card__badge--attend' : 'wish-card__badge--absent'}`;
-  badge.textContent = isAttending ? 'Hadir' : 'Absen';
+  const isTentative = attendance === 'tentative';
+  badge.className = `wish-card__badge ${isAttending ? 'wish-card__badge--attend' : isTentative ? 'wish-card__badge--tentative' : 'wish-card__badge--absent'}`;
+  badge.textContent = isAttending ? 'Hadir' : isTentative ? 'Ragu' : 'Tidak Hadir';
 
   const date = document.createElement('span');
   date.className = 'wish-card__date';
@@ -86,22 +104,22 @@ export function renderWishItems(wishesContainer: Element, items: any[], emptySta
   return renderedCount;
 }
 
-export async function syncWishesFromServer({ weddingId, wishesContainer, emptyState, loadMoreBtn, limit, submittedItem = null }: any) {
-  const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&offset=0&limit=${limit}&_=${Date.now()}`, {
+export async function syncWishesFromServer({ weddingId, wishesContainer, emptyState, limit = 4, submittedItem = null }: any) {
+  const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&page=1&limit=${limit}&_=${Date.now()}`, {
     cache: 'no-store'
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || 'Gagal menyinkronkan ucapan.');
 
-  const items = submittedItem ? [submittedItem, ...(result.items || [])] : (result.items || []);
+  const items = result.items || [];
   const renderedCount = renderWishItems(wishesContainer, items, emptyState);
 
-  if (loadMoreBtn instanceof HTMLButtonElement) {
-    loadMoreBtn.dataset.offset = String(renderedCount);
-    loadMoreBtn.dataset.loading = 'false';
-    loadMoreBtn.disabled = false;
-    loadMoreBtn.textContent = 'Load More';
-    if (!result.hasMore && renderedCount <= (result.items?.length || 0)) loadMoreBtn.remove();
+  const paginationContainer = wishesContainer.parentElement?.querySelector('[data-wishes-pagination]');
+  if (paginationContainer instanceof HTMLElement) {
+    paginationContainer.dataset.currentPage = '1';
+    paginationContainer.dataset.totalPages = String(result.totalPages || 1);
+    delete paginationContainer.dataset.paginationBound;
+    initWishesPagination(wishesContainer.parentElement || document);
   }
 
   return renderedCount;
@@ -114,7 +132,6 @@ export function initRSVPForm(root: Element | Document = document) {
   const submitBtn = root.querySelector('[data-rsvp-submit]');
   const wishesContainer = root.querySelector('[data-wishes-list]');
   const emptyState = root.querySelector('[data-wishes-empty]');
-  const loadMoreBtn = root.querySelector('[data-wishes-load-more]');
 
   if (!(form instanceof HTMLFormElement) || !(successState instanceof HTMLElement) || !(submitBtn instanceof HTMLButtonElement)) return;
   if (form.dataset.rsvpBound === 'true') return;
@@ -170,13 +187,11 @@ export function initRSVPForm(root: Element | Document = document) {
       successState.style.display = isGrid ? 'grid' : 'block';
 
       if (wishesContainer && result.item?.message) {
-        const currentRendered = wishesContainer.querySelectorAll('.wish-card').length;
         await syncWishesFromServer({
           weddingId: String(payload.weddingId),
           wishesContainer,
           emptyState,
-          loadMoreBtn,
-          limit: Math.max(currentRendered + 1, 4),
+          limit: 4,
           submittedItem: result.item
         });
         wishesContainer.querySelector('.wish-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -194,64 +209,109 @@ export function initRSVPForm(root: Element | Document = document) {
   });
 }
 
-export function initWishesLoadMore(root: Element | Document = document) {
-  const button = root.querySelector('[data-wishes-load-more]');
+export function initWishesPagination(root: Element | Document = document) {
+  const paginationContainer = root.querySelector('[data-wishes-pagination]');
   const wishesContainer = root.querySelector('[data-wishes-list]');
-  if (!(button instanceof HTMLButtonElement) || !wishesContainer) return;
-  if (button.dataset.wishesBound === 'true') return;
-  button.dataset.wishesBound = 'true';
+  const emptyState = root.querySelector('[data-wishes-empty]');
 
-  button.addEventListener('click', async () => {
-    if (button.dataset.loading === 'true') return;
+  if (!(paginationContainer instanceof HTMLElement) || !wishesContainer) return;
+  if (paginationContainer.dataset.paginationBound === 'true') return;
+  paginationContainer.dataset.paginationBound = 'true';
 
-    const weddingId = button.dataset.weddingId;
-    const offset = parseInt(button.dataset.offset || '0', 10);
-    if (!weddingId) return;
+  const weddingId = paginationContainer.dataset.weddingId;
+  const limit = parseInt(paginationContainer.dataset.perPage || '4', 10) || 4;
+  let currentPage = parseInt(paginationContainer.dataset.currentPage || '1', 10) || 1;
+  let totalPages = parseInt(paginationContainer.dataset.totalPages || '1', 10) || 1;
 
-    button.dataset.loading = 'true';
-    button.disabled = true;
-    button.textContent = 'Loading...';
+  async function goToPage(page: number) {
+    if (page < 1 || page > totalPages || !weddingId) return;
+
+    // Visual loading state
+    (wishesContainer as HTMLElement).style.opacity = '0.5';
+    (wishesContainer as HTMLElement).style.pointerEvents = 'none';
 
     try {
-      const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&offset=${offset}&limit=4`);
+      const response = await fetch(`/api/wishes?weddingId=${encodeURIComponent(weddingId)}&page=${page}&limit=${limit}&_=${Date.now()}`);
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Gagal memuat ucapan.');
 
-      const existingWishKeys = getRenderedWishKeys(wishesContainer);
-      result.items.forEach((wish: any) => {
-        const wishKey = getWishKey({
-          id: wish.id,
-          name: wish.guest_name,
-          message: wish.message || '',
-          createdAt: wish.created_at
-        });
-        if (existingWishKeys.has(wishKey)) return;
+      renderWishItems(wishesContainer, result.items || [], emptyState);
 
-        wishesContainer.append(createWishCard({
-          id: wish.id,
-          name: wish.guest_name,
-          attendance: wish.attendance_status,
-          message: wish.message || '',
-          createdAt: wish.created_at
-        }));
-        existingWishKeys.add(wishKey);
-      });
+      currentPage = result.page || page;
+      totalPages = result.totalPages || totalPages;
+      paginationContainer.dataset.currentPage = String(currentPage);
+      paginationContainer.dataset.totalPages = String(totalPages);
 
-      const nextOffset = offset + result.items.length;
-      button.dataset.offset = String(nextOffset);
+      renderPaginationControls();
 
-      if (!result.hasMore || result.items.length === 0) {
-        button.remove();
-      } else {
-        button.disabled = false;
-        button.dataset.loading = 'false';
-        button.textContent = 'Load More';
-      }
+      // Smooth scroll to top of wishes list
+      wishesContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (error) {
-      button.disabled = false;
-      button.dataset.loading = 'false';
-      button.textContent = 'Load More';
-      console.error(error);
+      console.error('Wishes pagination error:', error);
+    } finally {
+      (wishesContainer as HTMLElement).style.opacity = '1';
+      (wishesContainer as HTMLElement).style.pointerEvents = 'auto';
     }
-  });
+  }
+
+  function renderPaginationControls() {
+    if (totalPages <= 1) {
+      paginationContainer.style.display = 'none';
+      return;
+    }
+    paginationContainer.style.display = 'flex';
+
+    const prevBtn = paginationContainer.querySelector('[data-wishes-prev]') as HTMLButtonElement | null;
+    const nextBtn = paginationContainer.querySelector('[data-wishes-next]') as HTMLButtonElement | null;
+    const numbersContainer = paginationContainer.querySelector('[data-wishes-numbers]');
+
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+
+    if (numbersContainer) {
+      numbersContainer.innerHTML = '';
+      const items = generatePaginationItems(currentPage, totalPages);
+
+      items.forEach((item) => {
+        if (typeof item === 'number') {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `wishes-pagination__num ${item === currentPage ? 'wishes-pagination__num--active' : ''}`;
+          btn.textContent = String(item);
+          btn.setAttribute('data-wishes-page', String(item));
+          btn.setAttribute('aria-label', `Halaman ${item}`);
+          btn.onclick = () => goToPage(item);
+          numbersContainer.appendChild(btn);
+        } else {
+          const span = document.createElement('span');
+          span.className = 'wishes-pagination__ellipsis';
+          span.textContent = '...';
+          numbersContainer.appendChild(span);
+        }
+      });
+    }
+  }
+
+  // Initial event listeners for next/prev
+  const prevBtn = paginationContainer.querySelector('[data-wishes-prev]');
+  const nextBtn = paginationContainer.querySelector('[data-wishes-next]');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) goToPage(currentPage - 1);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) goToPage(currentPage + 1);
+    });
+  }
+
+  renderPaginationControls();
+}
+
+// Backward compatibility alias:
+export function initWishesLoadMore(root: Element | Document = document) {
+  initWishesPagination(root);
 }

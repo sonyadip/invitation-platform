@@ -16,6 +16,19 @@ if (!report) {
 }
 
 const guests = report.rsvps;
+
+function formatRsvpDateTime(dateStr: string | null): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).replace('.', ':');
+}
 ---
 
 <ClientLayout title="RSVP">
@@ -36,6 +49,14 @@ const guests = report.rsvps;
         
         <div class="stat-card">
           <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="group">group</span>
+          </div>
+          <div class="stat-card__label">TOTAL PAX</div>
+          <div class="stat-card__number">{report.summary.guestCount}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card__icon">
             <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
           </div>
           <div class="stat-card__label">HADIR</div>
@@ -44,18 +65,26 @@ const guests = report.rsvps;
         
         <div class="stat-card">
           <div class="stat-card__icon">
-            <span class="material-symbols-outlined" data-icon="group">group</span>
-          </div>
-          <div class="stat-card__label">TOTAL PAX</div>
-          <div class="stat-card__number">{report.summary.guestCount}</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-card__icon">
             <span class="material-symbols-outlined" data-icon="cancel">cancel</span>
           </div>
           <div class="stat-card__label">TIDAK HADIR</div>
           <div class="stat-card__number">{report.summary.declinedCount}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+          </div>
+          <div class="stat-card__label">RAGU</div>
+          <div class="stat-card__number">{report.summary.tentativeCount}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card__icon">
+            <span class="material-symbols-outlined" data-icon="forum">forum</span>
+          </div>
+          <div class="stat-card__label">UCAPAN</div>
+          <div class="stat-card__number">{report.summary.wishesCount}</div>
         </div>
       </div>
     </div>
@@ -73,7 +102,8 @@ const guests = report.rsvps;
           <option value="all">Semua Status</option>
           <option value="attending">Hadir</option>
           <option value="declined">Tidak Hadir</option>
-          <option value="pending">Pending</option>
+          <option value="tentative">Ragu</option>
+          <option value="with_message">Ada Ucapan</option>
         </select>
         <button id="rsvpExport" class="filter-btn filter-btn--outline rsvp-filter-btn rsvp-export-btn">
           <span class="material-symbols-outlined rsvp-filter-icon">download</span>
@@ -82,48 +112,48 @@ const guests = report.rsvps;
       </div>
     </div>
 
-    <!-- Header (Visual Guide) -->
-    <div class="rsvp-table__header">
-      <span>No.</span>
-      <span>Nama Tamu</span>
-      <span>Ucapan</span>
-      <span class="rsvp-table__header-col--center">Status</span>
-      <span class="rsvp-table__header-col--center">Pax</span>
-    </div>
-
     <!-- Guest Items -->
     <div class="rsvp-table" id="rsvpTable">
       {guests.length === 0 ? (
         <div class="rsvp-table__empty">Belum ada data RSVP</div>
       ) : (
         guests.map((guest, index) => (
-          <div class="rsvp-row-wrapper" data-name={guest.guestName.toLowerCase()} data-status={guest.attendanceStatus.toLowerCase()}>
+          <div class="rsvp-row-wrapper" data-name={guest.guestName.toLowerCase()} data-status={guest.attendanceStatus.toLowerCase()} data-has-message={guest.message ? "true" : "false"}>
             <div class="rsvp-row">
-              <span class="rsvp-row__index">{(index + 1).toString().padStart(2, '0')}</span>
-              <div class="rsvp-row__info">
-                <span class="rsvp-row__name">{guest.guestName}</span>
+              <div class="rsvp-row__header">
+                <div class="rsvp-row__user">
+                  <span class="rsvp-row__index">{(index + 1).toString().padStart(2, '0')}</span>
+                  <div class="rsvp-row__user-info">
+                    <span class="rsvp-row__name">{guest.guestName}</span>
+                    {guest.createdAt && (
+                      <span class="rsvp-row__date">{formatRsvpDateTime(guest.createdAt)}</span>
+                    )}
+                  </div>
+                </div>
+                <div class="rsvp-row__badges">
+                  <div class="rsvp-row__status">
+                    {guest.attendanceStatus.toLowerCase() === 'attending' && (
+                      <span class="status-label status-label--attending">Hadir</span>
+                    )}
+                    {guest.attendanceStatus.toLowerCase() === 'declined' && (
+                      <span class="status-label status-label--declined">Tdk Hadir</span>
+                    )}
+                    {(guest.attendanceStatus.toLowerCase() === 'tentative' || guest.attendanceStatus.toLowerCase() === 'pending') && (
+                      <span class="status-label status-label--tentative">Ragu</span>
+                    )}
+                  </div>
+                  <div class="rsvp-row__pax-col">
+                    <span class="rsvp-row__pax-badge"><span class="rsvp-row__pax-val">{guest.guestCount}</span> Pax</span>
+                  </div>
+                </div>
               </div>
-              <div class="rsvp-row__message-col">
-                {guest.message ? (
-                  <span class="rsvp-row__message">"{guest.message}"</span>
-                ) : (
-                  <span class="rsvp-row__message rsvp-row__message--empty">-</span>
-                )}
-              </div>
-              <div class="rsvp-row__status">
-                {guest.attendanceStatus.toLowerCase() === 'attending' && (
-                  <span class="status-label status-label--attending">Hadir</span>
-                )}
-                {guest.attendanceStatus.toLowerCase() === 'declined' && (
-                  <span class="status-label status-label--declined">Tdk Hadir</span>
-                )}
-                {guest.attendanceStatus.toLowerCase() === 'pending' && (
-                  <span class="status-label status-label--pending">Pending</span>
-                )}
-              </div>
-              <div class="rsvp-row__pax-col">
-                <span class="rsvp-row__pax-val">{guest.guestCount}</span>
-              </div>
+              {guest.message ? (
+                <div class="rsvp-row__message-col">
+                  <p class="rsvp-row__message">"{guest.message}"</p>
+                </div>
+              ) : (
+                <span class="rsvp-row__message rsvp-row__message--empty" style="display: none;">-</span>
+              )}
             </div>
             {index < guests.length - 1 && (
               <div class="rsvp-row__divider"></div>
@@ -131,6 +161,8 @@ const guests = report.rsvps;
           </div>
         ))
       )}
+    </div>
+
     <!-- Pagination UI -->
     <div class="pagination-wrapper">
       <button class="pagination-btn" id="rsvpPrev" disabled>Prev</button>
@@ -163,9 +195,19 @@ const guests = report.rsvps;
         rows.forEach(row => {
           const rowName = row.getAttribute('data-name') || '';
           const rowStatus = row.getAttribute('data-status') || '';
+          const hasMessage = row.getAttribute('data-has-message') === 'true';
           
           const matchesSearch = rowName.includes(query);
-          const matchesStatus = status === 'all' || rowStatus === status;
+          let matchesStatus = false;
+          if (status === 'all') {
+            matchesStatus = true;
+          } else if (status === 'with_message') {
+            matchesStatus = hasMessage;
+          } else if (status === 'tentative' || status === 'pending') {
+            matchesStatus = rowStatus === 'tentative' || rowStatus === 'pending';
+          } else {
+            matchesStatus = rowStatus === status;
+          }
 
           if (matchesSearch && matchesStatus) {
             filteredRows.push(row);
@@ -276,19 +318,21 @@ const guests = report.rsvps;
           }
 
           const ws_data = [
-            ["No", "Nama Tamu", "Ucapan", "Status", "Pax"]
+            ["No", "Nama Tamu", "Waktu RSVP", "Ucapan", "Status", "Pax"]
           ];
           let count = 1;
           
           // Export ALL filtered rows, not just the visible page
           filteredRows.forEach(row => {
             const nameEl = row.querySelector('.rsvp-row__name');
+            const dateEl = row.querySelector('.rsvp-row__date');
             const statusAttr = row.getAttribute('data-status');
             const paxEl = row.querySelector('.rsvp-row__pax-val');
             const messageEl = row.querySelector('.rsvp-row__message');
             
             const name = nameEl ? nameEl.innerText : '';
-            let statusText = 'Pending';
+            const dateText = dateEl ? dateEl.innerText : '';
+            let statusText = 'Ragu';
             if (statusAttr === 'attending') statusText = 'Hadir';
             if (statusAttr === 'declined') statusText = 'Tidak Hadir';
             const pax = paxEl ? parseInt(paxEl.innerText) || 0 : 0;
@@ -299,7 +343,7 @@ const guests = report.rsvps;
                message = message.substring(1, message.length - 1);
             }
             
-            ws_data.push([count, name, message, statusText, pax]);
+            ws_data.push([count, name, dateText, message, statusText, pax]);
             count++;
           });
 
@@ -309,6 +353,7 @@ const guests = report.rsvps;
           ws['!cols'] = [
             { wch: 5 },   // No
             { wch: 30 },  // Nama Tamu
+            { wch: 20 },  // Waktu RSVP
             { wch: 50 },  // Ucapan
             { wch: 15 },  // Status
             { wch: 10 }   // Pax

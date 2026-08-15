@@ -1070,20 +1070,6 @@ body.template-lumiere {
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255, 255, 255, 0.4);
     padding: 20px;
-    max-height: 40vh;
-    overflow-y: auto;
-  }
-
-  /* Custom scrollbar for wishes list */
-  .wishes-list::-webkit-scrollbar {
-    width: 4px;
-  }
-  .wishes-list::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .wishes-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
   }
 
   .wishes-empty {
