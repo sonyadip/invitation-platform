@@ -127,8 +127,8 @@ const buildCoupleLines = (
   if (prefix) lines.push(prefix);
 
   const parents = [
-    fatherName ? (fatherName.toLowerCase().startsWith('bapak') ? fatherName : `Bapak ${fatherName}`) : '',
-    motherName ? (motherName.toLowerCase().startsWith('ibu') ? motherName : `Ibu ${motherName}`) : ''
+    fatherName?.trim() || '',
+    motherName?.trim() || ''
   ].filter(Boolean).join(' & ');
 
   if (parents) {
