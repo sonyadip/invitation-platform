@@ -42,12 +42,12 @@ const { isMaintenance, isExpired, isPasswordLocked } = getInvitationAccessState(
 const guestName = Astro.url.searchParams.get('to') || null;
 
 if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked)) {
-  await trackInvitationView({
+  trackInvitationView({
     weddingId: wedding.id,
     clientIp: getClientIp(Astro.request, Astro.clientAddress),
     userAgent: Astro.request.headers.get('user-agent') || 'Unknown',
     now
-  });
+  }).catch(console.error);
 }
 
 const loadedTemplate = await loadTemplate(wedding.template);

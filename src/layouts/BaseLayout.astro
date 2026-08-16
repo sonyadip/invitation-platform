@@ -41,6 +41,9 @@ const theme = settings.theme_config.theme;
     <!-- Dynamic Fonts Injection -->
     <FontLoader fontHeading={theme.fontHeading} fontBody={theme.fontBody} />
 
+    <!-- LCP Image Preload -->
+    {image && <link rel="preload" as="image" href={image} fetchpriority="high" />}
+
     <!-- SEO Meta Tags -->
     <title>{docTitle}</title>
     <meta name="description" content={description} />

@@ -214,7 +214,7 @@ const activeGifts = gifts && gifts.length > 0
   settings={overrideSettings}
   to={guestName}
   templateClass="template-editorial"
-  image={heroImage}
+  image={coverImage || heroImage}
 >
   <style>
     .template-slide.is-active {
@@ -259,13 +259,26 @@ const activeGifts = gifts && gifts.length > 0
         )
       ) : (
         heroSlides.map((slide, index) => (
-          <SmartImage class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} src={slide} alt="" data-cover-slide={slide === coverImage ? 'true' : 'false'} />
+          <SmartImage 
+            class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} 
+            src={slide} 
+            alt="" 
+            loading={index === initialHeroIndex ? 'eager' : 'lazy'} 
+            fetchpriority={index === initialHeroIndex ? 'high' : 'low'} 
+            data-cover-slide={slide === coverImage ? 'true' : 'false'} 
+          />
         ))
       )}
     </div>
 
     <section class="cover-section" data-template-cover>
-      <SmartImage src={coverImage} alt="" aria-hidden="true" />
+      <SmartImage 
+        src={coverImage} 
+        alt="" 
+        aria-hidden="true" 
+        loading="eager" 
+        fetchpriority="high" 
+      />
       <div class="cover-section__overlay"></div>
       <div class="cover-section__content">
         <span class="cover-section__eyebrow">The Wedding of</span>
@@ -632,7 +645,7 @@ const activeGifts = gifts && gifts.length > 0
             </svg>
           </div>
           {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop src={wedding.music_url}></audio>
+            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
           )}
         </button>
       )}
