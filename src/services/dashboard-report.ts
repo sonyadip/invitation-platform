@@ -79,6 +79,7 @@ export interface SlugReportDetail {
     expirationDate: string | null;
     passwordProtectionEnabled: boolean;
     videoEnabled: boolean;
+    introAnimationEnabled: boolean;
     assets: {
       heroVideo: string;
       heroImage: string;
@@ -454,6 +455,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       viewCounterEnabled: Boolean(settings.view_counter_enabled),
       maintenanceMode: Boolean(settings.maintenance_mode),
       videoEnabled: settings.sections?.video !== false,
+      introAnimationEnabled: settings.sections?.introAnimation !== false,
       expirationDate: settings.expiration_date,
       passwordProtectionEnabled: Boolean(settings.password_protection_enabled),
       assets: {

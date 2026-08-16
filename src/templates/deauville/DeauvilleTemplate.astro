@@ -241,12 +241,14 @@ const activeGifts =
   </style>
 
   <div class="invitation-root" data-template-root>
-    <CinematicIntro
-      groomName={wedding.groom_name}
-      brideName={wedding.bride_name}
-      coverImage={coverImage}
-      fontClass="deauville-name--glasvia"
-    />
+    {sections.introAnimation !== false && (
+      <CinematicIntro
+        groomName={wedding.groom_name}
+        brideName={wedding.bride_name}
+        coverImage={coverImage}
+        fontClass="deauville-name--glasvia"
+      />
+    )}
     <section class="cover-section" data-template-cover>
       <SmartImage
         class="cover-section__bg"

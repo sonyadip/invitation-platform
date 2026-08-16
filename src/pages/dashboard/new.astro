@@ -31,6 +31,7 @@ const defaults = {
   storyEnabled: true,
   viewCounterEnabled: true,
   videoEnabled: true,
+  introAnimationEnabled: true,
   maintenanceMode: false,
   passwordProtectionEnabled: false,
   accessPassword: '',
@@ -176,6 +177,7 @@ if (Astro.request.method === 'POST') {
             <label><input type="checkbox" name="storyEnabled" checked={values.storyEnabled} /> Our Story</label>
             <label><input type="checkbox" name="viewCounterEnabled" checked={values.viewCounterEnabled} /> View Counter</label>
             <label><input type="checkbox" name="videoEnabled" checked={values.videoEnabled} /> Video</label>
+            <label><input type="checkbox" name="introAnimationEnabled" checked={values.introAnimationEnabled} /> Intro Animasi</label>
             <label><input type="checkbox" name="maintenanceMode" checked={values.maintenanceMode} /> Maintenance</label>
             <label><input type="checkbox" name="passwordProtectionEnabled" checked={values.passwordProtectionEnabled} /> Password Protection</label>
           </div>

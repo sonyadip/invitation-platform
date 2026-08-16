@@ -159,11 +159,13 @@ const brideParentLines = buildCoupleLines(
   image={heroImage}
 >
   <div class="invitation-root" data-template-root>
-    <ClassicIntro
-      groomName={wedding.groom_name}
-      brideName={wedding.bride_name}
-      coverImage={heroImage}
-    />
+    {sections.introAnimation !== false && (
+      <ClassicIntro
+        groomName={wedding.groom_name}
+        brideName={wedding.bride_name}
+        coverImage={heroImage}
+      />
+    )}
     {/* COVER OVERLAY */}
     <div class="cover-section" data-template-cover>
       <div class="cover-section__slides" data-hero-section-slider>

@@ -23,6 +23,7 @@ export interface InvitationFormInput {
   storyEnabled: boolean;
   viewCounterEnabled: boolean;
   videoEnabled: boolean;
+  introAnimationEnabled: boolean;
   maintenanceMode: boolean;
   passwordProtectionEnabled: boolean;
   accessPassword: string | null;
@@ -223,6 +224,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     storyEnabled: checked('storyEnabled'),
     viewCounterEnabled: checked('viewCounterEnabled'),
     videoEnabled: checked('videoEnabled'),
+    introAnimationEnabled: checked('introAnimationEnabled'),
     maintenanceMode: checked('maintenanceMode'),
     passwordProtectionEnabled: checked('passwordProtectionEnabled'),
     accessPassword: nullableValue('accessPassword'),
@@ -589,7 +591,8 @@ function buildSections(baseSections: any, input: InvitationFormInput): SectionTo
     music: true,
     share: true,
     video: true,
-    livestream: true
+    livestream: true,
+    introAnimation: true
   };
 
   return {
@@ -602,7 +605,8 @@ function buildSections(baseSections: any, input: InvitationFormInput): SectionTo
     wishes: input.wishesEnabled,
     gift: input.giftEnabled,
     music: input.musicEnabled,
-    video: input.videoEnabled
+    video: input.videoEnabled,
+    introAnimation: input.introAnimationEnabled
   };
 }
 

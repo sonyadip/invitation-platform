@@ -168,11 +168,13 @@ const activeGifts = gifts && gifts.length > 0
   image={heroImage}
 >
   <div class="invitation-root" data-template-root>
-    <CinematicIntro
-      groomName={wedding.groom_name}
-      brideName={wedding.bride_name}
-      coverImage={heroImage}
-    />
+    {sections.introAnimation !== false && (
+      <CinematicIntro
+        groomName={wedding.groom_name}
+        brideName={wedding.bride_name}
+        coverImage={heroImage}
+      />
+    )}
     <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
       <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" />

@@ -188,11 +188,13 @@ const activeStory = wedding.story && wedding.story.length > 0
   image={coverImage}
 >
   <div class="invitation-root" data-template-root>
-    <CinematicIntro
-      groomName={wedding.groom_name}
-      brideName={wedding.bride_name}
-      coverImage={coverImage}
-    />
+    {sections.introAnimation !== false && (
+      <CinematicIntro
+        groomName={wedding.groom_name}
+        brideName={wedding.bride_name}
+        coverImage={coverImage}
+      />
+    )}
 
     <style>
       .yt-bg-container {

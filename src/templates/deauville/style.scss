@@ -189,6 +189,11 @@ body.template-deauville {
     display: grid;
     justify-items: center;
     gap: 14px;
+    opacity: 1;
+  }
+
+  &:has(#cinematic-preloader):not(.is-intro-finished) .cover-section__title-block,
+  &:has(#cinematic-preloader):not(.is-intro-finished) .cover-section__guest {
     opacity: 0;
   }
 

@@ -243,11 +243,13 @@ const activeGifts = gifts && gifts.length > 0
   </style>
 
   <div class="invitation-root" data-template-root>
-    <CinematicIntro
-      groomName={wedding.groom_name}
-      brideName={wedding.bride_name}
-      coverImage={coverImage}
-    />
+    {sections.introAnimation !== false && (
+      <CinematicIntro
+        groomName={wedding.groom_name}
+        brideName={wedding.bride_name}
+        coverImage={coverImage}
+      />
+    )}
     <div class="page-bg" data-template-slider aria-hidden="true">
       {themeAssets.heroVideo ? (
         youtubeId ? (

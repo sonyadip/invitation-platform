@@ -84,6 +84,7 @@ export interface SectionToggles {
   share: boolean;
   video?: boolean;
   livestream?: boolean;
+  introAnimation?: boolean;
 }
 
 export interface InvitationSettings {
