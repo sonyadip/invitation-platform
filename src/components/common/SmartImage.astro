@@ -38,6 +38,7 @@ const isVideo = isString && (src.endsWith('.mp4') || src.endsWith('.webm'));
     class={className} 
     loading={loading} 
     fetchpriority={fetchpriority} 
+    decoding="async"
     width={width} 
     height={height} 
     {...rest} 
@@ -49,6 +50,7 @@ const isVideo = isString && (src.endsWith('.mp4') || src.endsWith('.webm'));
     class={className} 
     loading={loading} 
     fetchpriority={fetchpriority} 
+    decoding="async"
     width={width as any} 
     height={height as any} 
     {...rest} 

@@ -258,16 +258,29 @@ const activeGifts = gifts && gifts.length > 0
           <video class="template-slide is-active" src={themeAssets.heroVideo} preload="none" loop muted playsinline data-template-autoplay></video>
         )
       ) : (
-        heroSlides.map((slide, index) => (
-          <SmartImage 
-            class={`template-slide ${index === initialHeroIndex ? 'is-active' : ''}`} 
-            src={slide} 
-            alt="" 
-            loading={index === initialHeroIndex ? 'eager' : 'lazy'} 
-            fetchpriority={index === initialHeroIndex ? 'high' : 'low'} 
-            data-cover-slide={slide === coverImage ? 'true' : 'false'} 
-          />
-        ))
+        heroSlides.map((slide, index) => {
+          const isInitial = index === initialHeroIndex;
+          const slideUrl = typeof slide === 'string' ? slide : (slide as any)?.src;
+          return isInitial ? (
+            <SmartImage 
+              class="template-slide is-active" 
+              src={slide} 
+              alt="" 
+              loading="eager" 
+              fetchpriority="high" 
+              data-cover-slide={slide === coverImage ? 'true' : 'false'} 
+            />
+          ) : (
+            <img 
+              class="template-slide" 
+              data-src={slideUrl} 
+              alt="" 
+              loading="lazy" 
+              decoding="async" 
+              data-cover-slide={slide === coverImage ? 'true' : 'false'} 
+            />
+          );
+        })
       )}
     </div>
 
