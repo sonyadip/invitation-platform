@@ -960,7 +960,7 @@ body.template-ivory {
     height: 64px;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    margin: 0 auto 20px;
     border-radius: 50%;
     background-color: #ecfdf5;
     color: #059669;
@@ -987,25 +987,25 @@ body.template-ivory {
   .rsvp-form {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
   }
 
   .rsvp-form__field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .rsvp-form__input,
   .rsvp-form__select,
   .rsvp-form__textarea {
     width: 100%;
-    padding: 15px 16px;
+    padding: 10px 14px;
     border: 1px solid var(--template-border);
-    border-radius: 14px;
+    border-radius: 8px;
     background-color: var(--template-bg-muted);
     color: var(--template-text);
-    font-size: 15px;
+    font-size: 13.5px;
     transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   }
 
@@ -1029,31 +1029,37 @@ body.template-ivory {
   }
 
   .rsvp-form__textarea {
-    min-height: 112px;
+    height: 70px;
+    min-height: 70px;
     resize: vertical;
   }
 
   .rsvp-form__error {
-    padding: 12px;
+    padding: 10px 12px;
     border: 1px solid #fecaca;
-    border-radius: 12px;
+    border-radius: 8px;
     background-color: #fef2f2;
     color: #b91c1c;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .rsvp-form__submit {
     width: max-content;
     margin-top: 10px;
-    padding: 0 26px;
+    padding: 0 22px;
   }
 
   .wishes-list {
     display: flex;
     width: 100%;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
     text-align: left;
+    border: 1px solid var(--template-border);
+    border-radius: var(--template-radius);
+    background-color: var(--template-surface);
+    box-shadow: var(--template-shadow);
+    overflow: hidden;
   }
 
   .wishes-empty {
@@ -1061,24 +1067,30 @@ body.template-ivory {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    padding: 48px 18px;
-    border: 1px solid var(--template-border);
-    border-radius: var(--template-radius);
-    background-color: var(--template-surface);
+    padding: 36px 18px;
+    border: 0;
+    background-color: transparent;
     color: var(--template-text-dim);
     font-size: 13px;
     text-align: center;
-    box-shadow: var(--template-shadow);
+    box-shadow: none;
   }
 
   .wishes-empty svg {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     color: var(--template-accent);
   }
 
   .wish-card {
-    padding: 16px;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--template-border);
+    }
   }
 
   .wish-card__header {
@@ -1098,13 +1110,13 @@ body.template-ivory {
 
   .wish-card__name {
     color: var(--template-text);
-    font-size: 14px;
+    font-size: 13.12px;
     font-weight: 700;
     text-transform: capitalize;
   }
 
   .wish-card__badge {
-    padding: 3px 8px;
+    padding: 3px 8px 2px;
     border: 1px solid var(--template-border);
     border-radius: 999px;
     background-color: var(--template-bg-soft);
@@ -1113,6 +1125,7 @@ body.template-ivory {
     font-weight: 700;
     letter-spacing: 0.8px;
     text-transform: uppercase;
+    line-height: 1;
   }
 
   .wish-card__badge--attend {
@@ -1134,14 +1147,15 @@ body.template-ivory {
 
   .wish-card__date {
     color: var(--template-text-dim);
-    font-size: 11px;
+    font-size: 11.52px;
     font-weight: 500;
   }
 
   .wish-card__message {
     color: var(--template-text-dim);
-    font-size: 13px;
-    line-height: 1.75;
+    font-size: 13.12px;
+    line-height: 1.72;
+    margin: 6px 0 0;
   }
 
   .wishes-load-more {

@@ -58,6 +58,7 @@ const overrideSettings = {
 
 const themeAssets = themeConfig.assets || {};
 const heroImage = themeAssets.heroImage || bgHero.src;
+const coverImage = themeAssets.coverImage || heroImage;
 const heroSlides = [
   themeAssets.heroImage || bgHero.src,
   themeAssets.heroImageTwo || galleryEight.src,
@@ -156,21 +157,30 @@ const brideParentLines = buildCoupleLines(
   settings={overrideSettings}
   to={guestName}
   templateClass="template-air"
-  image={heroImage}
+  image={coverImage || heroImage}
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
       <ClassicIntro
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}
-        coverImage={heroImage}
+        coverImage={coverImage}
       />
     )}
-    {/* COVER OVERLAY */}
+
+    {/* COVER SECTION */}
     <div class="cover-section" data-template-cover>
       <div class="cover-section__slides" data-hero-section-slider>
         {heroSlides.map((slide, index) => (
-          <img class={`cover-section__slide ${index === 0 ? 'is-active' : ''}`} src={typeof slide === 'string' ? slide : slide.src} alt="" aria-hidden="true" />
+          <img 
+            class={`cover-section__slide ${index === 0 ? 'is-active' : ''}`} 
+            src={typeof slide === 'string' ? slide : slide.src} 
+            alt="" 
+            aria-hidden="true" 
+            loading={index === 0 ? 'eager' : 'lazy'} 
+            fetchpriority={index === 0 ? 'high' : 'low'} 
+            decoding="async" 
+          />
         ))}
       </div>
       <div class="cover-section__top">
@@ -616,7 +626,7 @@ const brideParentLines = buildCoupleLines(
             </svg>
           </div>
           {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop src={wedding.music_url}></audio>
+            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
           )}
         </button>
       )}

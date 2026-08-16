@@ -553,21 +553,23 @@ const activeGifts =
               <form class="rsvp-form" data-animate data-rsvp-form>
                 <input type="hidden" name="weddingId" value={wedding.id} />
                 <input type="text" name="name" required placeholder="Nama" />
-                <select name="attendance" required data-rsvp-attendance>
-                  <option value="" disabled>
-                    Konfirmasi Kehadiran
-                  </option>
-                  <option value="attending" selected>Hadir</option>
-                      <option value="tentative">Ragu</option>
-                  <option value="declined">Tidak Hadir</option>
-                </select>
-                <select name="count">
-                  <option value="1" selected>1 Orang</option>
-                  <option value="2">2 Orang</option>
-                  <option value="3">3 Orang</option>
-                  <option value="4">4 Orang</option>
-                  <option value="5">5 Orang</option>
-                </select>
+                <div class="rsvp-form__row">
+                  <select name="attendance" required data-rsvp-attendance>
+                    <option value="" disabled>
+                      Konfirmasi Kehadiran
+                    </option>
+                    <option value="attending" selected>Hadir</option>
+                    <option value="tentative">Ragu</option>
+                    <option value="declined">Tidak Hadir</option>
+                  </select>
+                  <select name="count">
+                    <option value="1" selected>1 Orang</option>
+                    <option value="2">2 Orang</option>
+                    <option value="3">3 Orang</option>
+                    <option value="4">4 Orang</option>
+                    <option value="5">5 Orang</option>
+                  </select>
+                </div>
                 <textarea
                   name="message"
                   rows="5"
@@ -732,7 +734,7 @@ const activeGifts =
             </svg>
           </div>
           {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop src={wedding.music_url}></audio>
+            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
           )}
         </button>
           )

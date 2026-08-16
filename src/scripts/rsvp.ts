@@ -182,9 +182,12 @@ export function initRSVPForm(root: Element | Document = document) {
 
       form.style.display = 'none';
       
-      // Handle templates that use grid or block for success state
-      const isGrid = window.getComputedStyle(successState).display === 'grid' || successState.classList.contains('rsvp-success--grid');
-      successState.style.display = isGrid ? 'grid' : 'block';
+      // Handle templates that use grid, flex or block for success state
+      successState.style.display = '';
+      if (window.getComputedStyle(successState).display === 'none') {
+        const isGrid = successState.classList.contains('rsvp-success--grid');
+        successState.style.display = isGrid ? 'grid' : 'flex';
+      }
 
       if (wishesContainer && result.item?.message) {
         await syncWishesFromServer({

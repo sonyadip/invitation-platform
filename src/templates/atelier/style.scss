@@ -981,9 +981,9 @@ body.template-atelier {
       border: none;
       border-bottom: 1px solid rgba(255, 255, 255, 0.4);
       color: var(--lm-white);
-      padding: 10px 0;
+      padding: 8px 0;
       font-family: 'Poppins', serif;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       outline: none;
       transition: border-color 0.2s;
 
@@ -1001,7 +1001,9 @@ body.template-atelier {
 
     &__textarea {
       border: 1px solid rgba(255, 255, 255, 0.4);
-      padding: 10px;
+      padding: 8px;
+      height: 70px;
+      min-height: 70px;
       resize: vertical;
 
       &:focus { border-color: var(--lm-blue); }
@@ -1020,7 +1022,7 @@ body.template-atelier {
       background: transparent;
       color: var(--lm-white);
       border: 1px solid rgba(255,255,255,0.5);
-      padding: 10px 22px;
+      padding: 8px 18px;
       font-family: 'Alegreya Sans', sans-serif;
       font-size: 0.68rem;
       text-transform: uppercase;

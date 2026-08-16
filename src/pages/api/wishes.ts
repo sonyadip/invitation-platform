@@ -32,9 +32,7 @@ export const GET: APIRoute = async ({ url }) => {
         guest_count: (i % 3) + 1,
         message: [
           'Selamat menempuh hidup baru, semoga bahagia selalu!',
-          'Happy wedding! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.',
           'Selamat ya! Semoga lancar sampai hari H dan langgeng selamanya.',
-          'Barakallahu lakum wa baraka alaikum, bahagia selalu dunia akhirat.'
         ][i % 4],
         created_at: new Date(Date.now() - i * 3600000).toISOString()
       }));

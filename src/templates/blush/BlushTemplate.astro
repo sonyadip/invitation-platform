@@ -196,7 +196,7 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
     )}
     <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
-      <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" />
+      <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__body">
         <div class="cover-section__title-block">
           <p>The Wedding Of</p>
@@ -553,7 +553,7 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
             </svg>
           </div>
           {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop src={wedding.music_url}></audio>
+            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
           )}
         </button>
     )}

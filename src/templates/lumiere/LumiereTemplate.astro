@@ -223,20 +223,35 @@ const activeStory = wedding.story && wedding.story.length > 0
           <video class="template-slide is-active" src={themeAssets.heroVideo} preload="none" loop muted playsinline data-template-autoplay style="object-fit:cover;"></video>
         )
       ) : (
-        heroSlides.map((slide, index) => (
-          <SmartImage
-            class={`template-slide ${index === 0 ? 'is-active' : ''}`}
-            src={slide}
-            alt=""
-            data-cover-slide={slide === coverImage ? 'true' : 'false'}
-          />
-        ))
+        heroSlides.map((slide, index) => {
+          const isInitial = index === 0;
+          const slideUrl = typeof slide === 'string' ? slide : (slide as any)?.src;
+          return isInitial ? (
+            <SmartImage
+              class="template-slide is-active"
+              src={slide}
+              alt=""
+              loading="eager"
+              fetchpriority="high"
+              data-cover-slide={slide === coverImage ? 'true' : 'false'}
+            />
+          ) : (
+            <img
+              class="template-slide"
+              data-src={slideUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              data-cover-slide={slide === coverImage ? 'true' : 'false'}
+            />
+          );
+        })
       )}
     </div>
 
     <!-- ══════════════════ COVER / HERO ══════════════════ -->
     <section class="cover-section" data-template-cover>
-      <SmartImage src={coverImage} alt="" aria-hidden="true" />
+      <SmartImage src={coverImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__overlay"></div>
       <div class="cover-section__body">
         <div class="cover-section__title-block">
@@ -533,7 +548,7 @@ const activeStory = wedding.story && wedding.story.length > 0
               <section class="rsvp-section" data-animate>
                 <div class="rsvp-container">
                   <div class="rsvp-header" data-animate data-stagger-heading>
-                    <h3 class="section-title rsvp-section__title">RSVP</h3>
+                    <h3 class="section-title rsvp-section__title">RSVP & Wishes</h3>
                     <p class="rsvp-section__desc">{text.rsvpDescription}</p>
                   </div>
 
@@ -711,7 +726,7 @@ const activeStory = wedding.story && wedding.story.length > 0
             </svg>
           </div>
           {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop src={wedding.music_url}></audio>
+            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
           )}
         </button>
       )}

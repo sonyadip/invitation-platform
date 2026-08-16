@@ -10,6 +10,8 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+html body .fancybox__container,
+div.fancybox__container,
 .fancybox__container {
   // Global button & typography variables
   --f-button-svg-width: 18px;
@@ -33,6 +35,12 @@
   --f-arrow-color: rgba(255, 255, 255, 0.9);
   --f-arrow-hover-color: #ffffff;
   --f-arrow-pos: 24px;
+
+  --fancybox-bg: rgba(0, 0, 0, 0.92);
+  --f-button-color: var(--editorial-white);
+  --f-thumb-width: 58px;
+  --f-thumb-height: 58px;
+  --f-thumb-border-radius: 2px;
 
   // Shared minimalist styling for all Fancybox buttons
   .f-button {
@@ -133,11 +141,11 @@
   --f-thumbs-padding-y: 10px;
   --f-thumbs-padding-x: 16px;
   --f-thumbs-bg: linear-gradient(to top, rgba(10, 10, 12, 0.95) 0%, rgba(10, 10, 12, 0.6) 70%, transparent 100%);
-  --f-thumb-width: 64px;
-  --f-thumb-height: 48px;
-  --f-thumb-border-radius: 4px;
-  --f-thumb-opacity: 0.5;
-  --f-thumb-hover-opacity: 0.85;
+  --f-thumb-width: 58px;
+  --f-thumb-height: 58px;
+  --f-thumb-border-radius: 2px;
+  --f-thumb-opacity: 0.55;
+  --f-thumb-hover-opacity: 0.9;
   --f-thumb-selected-opacity: 1;
   --f-thumb-selected-shadow: inset 0 0 0 2px #ffffff;
 
@@ -170,8 +178,9 @@
     --f-arrow-svg-height: 16px;
     --f-button-svg-width: 16px;
     --f-button-svg-height: 16px;
-    --f-thumb-width: 50px;
-    --f-thumb-height: 38px;
+    --f-thumb-width: 58px;
+    --f-thumb-height: 58px;
+    --f-thumb-border-radius: 2px;
     --f-thumbs-padding-y: 6px;
     --f-thumbs-padding-x: 10px;
 

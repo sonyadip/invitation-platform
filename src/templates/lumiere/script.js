@@ -162,6 +162,12 @@ function initSlideshows() {
     const slides = Array.from(slider.querySelectorAll('.template-slide'));
     if (slides.length <= 1) return;
 
+    slides.forEach((slide) => {
+      if (slide instanceof HTMLImageElement && slide.dataset.src && !slide.getAttribute('src')) {
+        slide.src = slide.dataset.src;
+      }
+    });
+
     const firstCandidates = slides
       .map((slide, index) => ({ slide, index }))
       .filter(({ slide }) => slide instanceof HTMLElement && slide.dataset.coverSlide !== 'true');

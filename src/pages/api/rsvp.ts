@@ -29,6 +29,25 @@ export const POST: APIRoute = async ({ request }) => {
 
     const normalizedMessage = message ? String(message).trim().slice(0, 500) : '';
 
+    // Mock handler for preview pages
+    if (typeof weddingId === 'string' && weddingId.startsWith('preview-')) {
+      const validated = validateRSVPInput(name, attendance, count);
+      const mockItem = {
+        id: `wish-preview-${Date.now()}`,
+        wedding_id: weddingId,
+        guest_name: validated.name,
+        attendance_status: validated.status,
+        guest_count: validated.count,
+        message: normalizedMessage,
+        created_at: new Date().toISOString()
+      };
+      return jsonResponse({
+        success: true,
+        message: 'Kehadiran berhasil dikonfirmasi.',
+        item: mockItem
+      });
+    }
+
     // 1. Fetch dynamic settings to verify toggle & expiration state
     const { data: settings, error: settingsError } = await supabase
       .from('invitation_settings')

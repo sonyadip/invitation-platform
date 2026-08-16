@@ -152,7 +152,7 @@ const activeGifts = gifts && gifts.length > 0
   <div class="invitation-root" data-template-root>
     <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
-      <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" />
+      <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__body">
         <p class="cover-section__eyebrow">The Wedding Of</p>
         <h2 class="cover-section__names">
@@ -578,7 +578,7 @@ const activeGifts = gifts && gifts.length > 0
             </svg>
           </div>
           {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop src={wedding.music_url}></audio>
+            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
           )}
         </button>
     )}
