@@ -114,6 +114,7 @@ openBtn?.addEventListener('click', () => {
       layout.style.transition = 'opacity 1200ms ease';
       layout.style.opacity = '1';
       initSlideshows();
+      initGalleryLightbox(root);
     });
   }
 
