@@ -1,68 +1,110 @@
-/* Premium Custom Styling for Fancybox */
+/* Premium Minimalist Custom Styling for Fancybox */
 
 .fancybox__dialog {
   z-index: 999999 !important;
 }
 
 .fancybox__backdrop {
-  background: rgba(10, 10, 12, 0.94) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(10, 10, 12, 0.92) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .fancybox__container {
-  // Arrow buttons
-  --f-arrow-width: 44px;
-  --f-arrow-height: 44px;
-  --f-arrow-svg-width: 22px;
-  --f-arrow-svg-height: 22px;
-  --f-arrow-svg-stroke-width: 2.2;
-  --f-arrow-border-radius: 50%;
-  --f-arrow-bg: rgba(30, 30, 35, 0.7);
-  --f-arrow-hover-bg: rgba(15, 15, 20, 0.95);
-  --f-arrow-color: #ffffff;
-  --f-arrow-hover-color: #ffffff;
-  --f-arrow-pos: 20px;
+  // Global button & typography variables
+  --f-button-svg-width: 18px;
+  --f-button-svg-height: 18px;
+  --f-button-svg-stroke-width: 1.75;
+  --f-button-color: rgba(255, 255, 255, 0.9);
+  --f-button-hover-color: #ffffff;
+  --f-button-bg: rgba(25, 25, 28, 0.55);
+  --f-button-hover-bg: rgba(35, 35, 40, 0.85);
+  --f-button-active-bg: rgba(20, 20, 24, 0.95);
 
+  // Arrow buttons configuration
+  --f-arrow-width: 42px;
+  --f-arrow-height: 42px;
+  --f-arrow-svg-width: 18px;
+  --f-arrow-svg-height: 18px;
+  --f-arrow-svg-stroke-width: 1.75;
+  --f-arrow-border-radius: 50%;
+  --f-arrow-bg: rgba(25, 25, 28, 0.55);
+  --f-arrow-hover-bg: rgba(40, 40, 45, 0.85);
+  --f-arrow-color: rgba(255, 255, 255, 0.9);
+  --f-arrow-hover-color: #ffffff;
+  --f-arrow-pos: 24px;
+
+  // Shared minimalist styling for all Fancybox buttons
+  .f-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+
+    svg {
+      display: block;
+      width: var(--f-button-svg-width, 18px);
+      height: var(--f-button-svg-height, 18px);
+      stroke: currentColor;
+      stroke-width: var(--f-button-svg-stroke-width, 1.75);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+
+    &:focus-visible {
+      border-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  // Arrow buttons specific styling
   .f-button.is-arrow {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 50%;
+    opacity: 0.85;
 
     &:hover {
-      transform: translateY(-50%) scale(1.08);
-      border-color: rgba(255, 255, 255, 0.5);
+      opacity: 1;
+      transform: translateY(-50%) scale(1.05);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     }
 
     &:active {
       transform: translateY(-50%) scale(0.95);
     }
+
+    &[disabled],
+    &.is-disabled {
+      opacity: 0.25;
+      pointer-events: none;
+      cursor: default;
+    }
   }
 
   // Close button
   .f-button.is-close-button {
-    --f-button-width: 40px;
-    --f-button-height: 40px;
+    --f-button-width: 38px;
+    --f-button-height: 38px;
     --f-button-border-radius: 50%;
-    --f-button-bg: rgba(30, 30, 35, 0.7);
-    --f-button-hover-bg: rgba(15, 15, 20, 0.95);
-    --f-button-color: #ffffff;
-    --f-button-hover-color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: 20px;
+    right: 20px;
     z-index: 999;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 50%;
+    opacity: 0.85;
 
     &:hover {
-      transform: scale(1.08);
-      border-color: rgba(255, 255, 255, 0.5);
+      opacity: 1;
+      transform: scale(1.05);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     }
 
     &:active {
@@ -70,56 +112,80 @@
     }
   }
 
+  // Counter
+  .fancybox__counter {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(25, 25, 28, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    margin: 16px;
+  }
+
   // Thumbnails bar at the bottom
   --f-thumbs-gap: 8px;
   --f-thumbs-padding-y: 10px;
   --f-thumbs-padding-x: 16px;
-  --f-thumbs-bg: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
-  --f-thumb-width: 68px;
-  --f-thumb-height: 52px;
-  --f-thumb-border-radius: 6px;
-  --f-thumb-opacity: 0.55;
-  --f-thumb-hover-opacity: 0.9;
+  --f-thumbs-bg: linear-gradient(to top, rgba(10, 10, 12, 0.95) 0%, rgba(10, 10, 12, 0.6) 70%, transparent 100%);
+  --f-thumb-width: 64px;
+  --f-thumb-height: 48px;
+  --f-thumb-border-radius: 4px;
+  --f-thumb-opacity: 0.5;
+  --f-thumb-hover-opacity: 0.85;
   --f-thumb-selected-opacity: 1;
-  --f-thumb-selected-shadow: inset 0 0 0 2px #ffffff, 0 0 12px rgba(255, 255, 255, 0.4);
+  --f-thumb-selected-shadow: inset 0 0 0 2px #ffffff;
 
   .f-thumbs {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .f-thumbs__slide {
-    transition: transform 0.2s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 
     &.is-selected {
-      transform: scale(1.05);
+      transform: scale(1.04);
     }
   }
 
   // Main Image styling
   img.f-panzoom__content {
-    border-radius: 6px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
   }
 
   // Mobile adjustments
   @media (max-width: 768px) {
-    --f-arrow-pos: 10px;
-    --f-arrow-width: 38px;
-    --f-arrow-height: 38px;
-    --f-arrow-svg-width: 18px;
-    --f-arrow-svg-height: 18px;
-    --f-thumb-width: 52px;
-    --f-thumb-height: 40px;
+    --f-arrow-pos: 12px;
+    --f-arrow-width: 36px;
+    --f-arrow-height: 36px;
+    --f-arrow-svg-width: 16px;
+    --f-arrow-svg-height: 16px;
+    --f-button-svg-width: 16px;
+    --f-button-svg-height: 16px;
+    --f-thumb-width: 50px;
+    --f-thumb-height: 38px;
     --f-thumbs-padding-y: 6px;
     --f-thumbs-padding-x: 10px;
 
     .f-button.is-close-button {
       top: 12px;
       right: 12px;
-      --f-button-width: 36px;
-      --f-button-height: 36px;
+      --f-button-width: 34px;
+      --f-button-height: 34px;
+    }
+
+    .fancybox__counter {
+      font-size: 12px;
+      padding: 4px 10px;
+      margin: 12px;
     }
 
     .f-thumbs.is-modern .f-thumbs__viewport {
