@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import { supabase } from '../lib/supabase';
+import { logActivity } from './activity-log';
 
 export interface TemplateCard {
   key: string;
@@ -74,7 +75,7 @@ const defaults: PlatformSettings = {
     { key: "noir", name: "Noir", price: "Rp 200.000", promoPrice: "Rp 125.000" },
   ],
   meta_title: 'Senadda - Undangan Pernikahan Digital',
-  meta_description: 'Layanan undangan pernikahan digital dengan desain elegan, personal, dan mudah dibagikan.',
+  meta_description: 'Undangan pernikahan digital dengan desain yang elegan, personal, dan mudah dibagikan.',
 };
 
 /**
@@ -139,4 +140,16 @@ export async function savePlatformSettings(input: Partial<PlatformSettings>): Pr
       .insert(payload);
     if (error) throw new Error(`Failed to create platform settings: ${error.message}`);
   }
+
+  await logActivity({
+    actor_type: 'admin',
+    action: 'platform.update',
+    entity_type: 'platform',
+    description: 'Platform settings updated by admin.',
+    metadata: {
+      site_name: input.site_name,
+      updated_fields: Object.keys(input)
+    }
+  });
 }
+

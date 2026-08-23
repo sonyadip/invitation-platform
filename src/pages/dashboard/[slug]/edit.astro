@@ -33,7 +33,7 @@ const toLocalInput = (value: string | null) => {
 
 let detail = slug ? await getSlugReportDetail(slug) : null;
 if (!detail) {
-  return new Response('Report slug tidak ditemukan.', { status: 404 });
+  return new Response('Invitation slug report not found.', { status: 404 });
 }
 
 let errorMessage = '';
@@ -67,9 +67,21 @@ if (Astro.request.method === 'POST') {
       return Astro.redirect(`/dashboard/${detail.summary.slug}/edit?resetRsvps=1`);
     }
 
+    if (action === 'reset-client-password') {
+      const { getSupabaseAdmin } = await import('../../../lib/supabase-admin');
+      const supabaseAdmin = await getSupabaseAdmin();
+      await supabaseAdmin
+        .from('weddings')
+        .update({ client_password_hash: null })
+        .eq('id', detail.wedding.id);
+      return Astro.redirect(`/dashboard/${detail.summary.slug}/edit?resetClient=1`);
+    }
+
     const parsed = parseInvitationForm(formData);
-    const updatedSlug = await updateInvitation(detail.wedding.id, parsed);
+    const revisionNote = String(formData.get('revisionNote') || '').trim();
+    const updatedSlug = await updateInvitation(detail.wedding.id, parsed, revisionNote);
     return Astro.redirect(`/dashboard/${updatedSlug}/edit?saved=1`);
+
   } catch (error) {
     console.error('Update invitation error:', error);
     errorMessage = error instanceof Error ? error.message : 'Failed to update invitation.';
@@ -86,6 +98,10 @@ if (Astro.url.searchParams.get('resetViews')) {
 
 if (Astro.url.searchParams.get('resetRsvps')) {
   successMessage = 'All RSVPs have been successfully deleted.';
+}
+
+if (Astro.url.searchParams.get('resetClient')) {
+  successMessage = 'Client password reset. A new setup link is ready to share.';
 }
 
 const settings = detail.settings;
@@ -135,7 +151,7 @@ if (!isClaimed) {
 ---
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -143,340 +159,696 @@ if (!isClaimed) {
     <meta name="robots" content="noindex, nofollow" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   </head>
   <body>
     <main class="shell">
+      <!-- Top Header -->
       <header class="header">
         <div>
-          <a class="back-link" href={`/dashboard/${detail.summary.slug}`}>Back to report</a>
-          <p class="eyebrow">Dashboard CRUD</p>
+          <a class="back-link" href={`/dashboard/${detail.summary.slug}`}>← Back to Report</a>
+          <p class="eyebrow">Invitation Editor</p>
           <h1>Edit Invitation</h1>
-          <p class="subtitle">{detail.summary.slug} · {detail.summary.coupleName}</p>
+          <p class="subtitle">
+            Slug: <code>{detail.summary.slug}</code> • Couple: <strong>{detail.summary.coupleName}</strong>
+          </p>
         </div>
-        <a class="secondary-action" href={`/${detail.summary.slug}`} target="_blank" rel="noopener noreferrer">Open invitation</a>
+        <div class="header-actions">
+          <a class="action-btn secondary-action" href={`/dashboard/${detail.summary.slug}`}>
+            <span class="material-symbols-outlined icon">analytics</span> RSVP & Analytics
+          </a>
+          <button type="button" class="action-btn secondary-action" id="global-expand-btn">
+            <span class="material-symbols-outlined icon">unfold_more</span> Expand All
+          </button>
+          <button type="button" class="action-btn secondary-action" id="global-collapse-btn">
+            <span class="material-symbols-outlined icon">unfold_less</span> Collapse All
+          </button>
+          <a class="action-btn secondary-action" href={`/dashboard/${detail.summary.slug}/revisions`}>
+            <span class="material-symbols-outlined icon">history</span> Revisions
+          </a>
+          <a class="action-btn primary-action" href={`/${detail.summary.slug}`} target="_blank" rel="noopener noreferrer">
+            <span class="material-symbols-outlined icon">open_in_new</span> Live Preview
+          </a>
+        </div>
       </header>
 
-      {successMessage && <div class="success-panel">{successMessage}</div>}
-      {errorMessage && <div class="error-panel">{errorMessage}</div>}
+      {successMessage && (
+        <div class="success-panel">
+          <span class="material-symbols-outlined icon">check_circle</span>
+          <div>
+            <strong>Success:</strong> {successMessage}
+          </div>
+        </div>
+      )}
+      {errorMessage && (
+        <div class="error-panel">
+          <span class="material-symbols-outlined icon">error</span>
+          <div>
+            <strong>Error:</strong> {errorMessage}
+          </div>
+        </div>
+      )}
 
-      <form class="form-panel" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="action" value="save" />
-        <section>
-          <h2>Settings</h2>
-          <div class="form-grid" style="margin-bottom: 18px;">
-            <label>Slug<input name="slug" value={detail.wedding.slug} required /></label>
-            <label>Status
-              <select name="status">
-                <option value="draft" selected={detail.wedding.status === 'draft'}>Draft</option>
-                <option value="published" selected={detail.wedding.status === 'published'}>Published</option>
-                <option value="archived" selected={detail.wedding.status === 'archived'}>Archived</option>
-              </select>
-            </label>
-            <label>Template
-              <select name="template">
-                {templateOptions.map((template) => (
-                  <option value={template} selected={detail.wedding.template === template}>{template}</option>
-                ))}
-              </select>
-            </label>
-            <label>Access Password<input name="accessPassword" value={settings?.accessPassword || ''} /></label>
-            <label>Client Password<input name="clientPassword" placeholder="Keep empty to keep existing" /></label>
-            
-            <div style="background: #f9fafb; padding: 12px; border-radius: 6px; border: 1px solid #e5e7eb; grid-column: 1 / -1;">
-              <strong>Client One-Time Setup Link</strong>
-              {isClaimed ? (
-                <p style="margin: 4px 0 0; color: #059669; font-size: 14px;">Akun telah diklaim (password sudah diset oleh client).</p>
-              ) : (
-                <div style="display: flex; gap: 8px; margin-top: 8px;">
-                  <input type="text" value={setupUrl} readonly style="flex: 1;" id="setupLinkInput" />
-                  <button type="button" class="secondary-action" onclick="navigator.clipboard.writeText(document.getElementById('setupLinkInput').value); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
+      <!-- 2-Column Editor Layout -->
+      <div class="editor-layout">
+        <!-- Main Content Area (Form) -->
+        <div class="editor-main">
+          <form id="edit-form" class="form-panel" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="save" />
+
+            <!-- SECTION 1: General Settings -->
+            <section class="collapsible-section is-collapsed" id="sec-general">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">⚙️</span>
+                  <div>
+                    <h2>General Settings</h2>
+                    <p class="section-sub">Slug URL, publication status, template theme, and validity date.</p>
+                  </div>
                 </div>
-              )}
+                <div class="collapsible-header__right">
+                  <span class={`status-pill status-pill--${detail.wedding.status}`}>{detail.wedding.status}</span>
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="form-grid">
+                  <label>
+                    Slug URL
+                    <input name="slug" value={detail.wedding.slug} required />
+                  </label>
+                  <label>
+                    Publication Status
+                    <select name="status">
+                      <option value="draft" selected={detail.wedding.status === 'draft'}>Draft</option>
+                      <option value="published" selected={detail.wedding.status === 'published'}>Published</option>
+                      <option value="archived" selected={detail.wedding.status === 'archived'}>Archived</option>
+                    </select>
+                  </label>
+                  <label>
+                    Template Theme
+                    <select name="template">
+                      {templateOptions.map((template) => (
+                        <option value={template} selected={detail.wedding.template === template}>{template}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Expiration Date
+                    <input type="datetime-local" name="expirationDate" value={toLocalInput(settings?.expirationDate || null)} />
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 2: Access & Client Security -->
+            <section class="collapsible-section is-collapsed" id="sec-security">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">🔐</span>
+                  <div>
+                    <h2>Access & Client Security</h2>
+                    <p class="section-sub">Guest password gate and client dashboard authentication.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  {isClaimed ? (
+                    <span class="badge-active">Client Password Set</span>
+                  ) : (
+                    <span class="badge-pending">Setup Link Active</span>
+                  )}
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <!-- Access Password (Guest Protection Gate) -->
+                <div class="security-card">
+                  <div class="security-card__top">
+                    <label class="checkbox-label">
+                      <input type="checkbox" name="passwordProtectionEnabled" id="passwordProtectionToggle" checked={settings?.passwordProtectionEnabled ?? false} />
+                      <span class="checkbox-text">Enable Guest Password Protection (Password Gate)</span>
+                    </label>
+                    <span class="security-badge">Public Gate</span>
+                  </div>
+                  <div class="form-grid single-col">
+                    <label>
+                      Guest Access Password
+                      <input name="accessPassword" id="accessPasswordInput" value={settings?.accessPassword || ''} placeholder="e.g. wedding2026" autocomplete="off" />
+                      <span class="hint">When enabled, visitors must enter this password to view <code>/{detail.wedding.slug}</code>.</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Client Password (Client Dashboard Authentication) -->
+                <div class="security-card">
+                  <div class="security-card__top">
+                    <div>
+                      <strong>Client Dashboard Account</strong>
+                      <p class="hint" style="margin:2px 0 0;">Authentication for the bride & groom to access their dashboard.</p>
+                    </div>
+                    {isClaimed ? (
+                      <span class="badge-active">● Password Active</span>
+                    ) : (
+                      <span class="badge-pending">● Not Claimed Yet</span>
+                    )}
+                  </div>
+
+                  <div class="form-grid single-col">
+                    <label>
+                      {isClaimed ? 'Change Client Password (leave empty to keep current):' : 'Set Client Password (or leave empty to use setup link):'}
+                      <input name="clientPassword" type="password" placeholder={isClaimed ? "Type new password to change..." : "Set initial password (optional)..."} autocomplete="new-password" />
+                    </label>
+                  </div>
+
+                  <div class="setup-link-box">
+                    <div class="setup-link-header">
+                      <strong>Client One-Time Onboarding Link</strong>
+                      {isClaimed && (
+                        <button type="submit" form="resetClientForm" class="reset-link-btn" onclick="return confirm('Reset client password? A new setup link will be generated and existing client credentials will be invalidated.');">
+                          Reset & Generate New Link
+                        </button>
+                      )}
+                    </div>
+                    {isClaimed ? (
+                      <p class="claimed-text">✓ Client account has been claimed and secured with SHA-256 encryption.</p>
+                    ) : (
+                      <div class="clipboard-row">
+                        <input type="text" value={setupUrl} readonly id="setupLinkInput" />
+                        <button type="button" class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('setupLinkInput').value); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy Link</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 3: Feature Toggles -->
+            <section class="collapsible-section is-collapsed" id="sec-features">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">🎛️</span>
+                  <div>
+                    <h2>Features & Modules</h2>
+                    <p class="section-sub">Enable or disable specific interactive sections on the live invitation.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="toggle-grid">
+                  <label class="toggle-item"><input type="checkbox" name="rsvpEnabled" checked={settings?.rsvpEnabled ?? true} /> <span>RSVP Form</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="musicEnabled" checked={settings?.musicEnabled ?? true} /> <span>Background Music</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="countdownEnabled" checked={settings?.countdownEnabled ?? true} /> <span>Countdown Timer</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="galleryEnabled" checked={settings?.galleryEnabled ?? true} /> <span>Photo Gallery</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="wishesEnabled" checked={settings?.wishesEnabled ?? true} /> <span>Wishes & Guestbook</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="giftEnabled" checked={settings?.giftEnabled ?? true} /> <span>Gift / Digital Bank</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="storyEnabled" checked={settings?.storyEnabled ?? true} /> <span>Love Story</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="viewCounterEnabled" checked={settings?.viewCounterEnabled ?? true} /> <span>View Counter</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="videoEnabled" checked={settings?.videoEnabled ?? true} /> <span>Video Player</span></label>
+                  <label class="toggle-item"><input type="checkbox" name="introAnimationEnabled" checked={settings?.introAnimationEnabled ?? true} /> <span>Intro Animation</span></label>
+                  <label class="toggle-item toggle-item--danger"><input type="checkbox" name="maintenanceMode" checked={settings?.maintenanceMode ?? false} /> <span>Maintenance Mode</span></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 4: Opening & Hero Section -->
+            <section class="collapsible-section is-collapsed" id="sec-opening">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">🌟</span>
+                  <div>
+                    <h2>Hero & Opening Section</h2>
+                    <p class="section-sub">Branding logo, popup / hero image, intro video, and welcome quotes.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="form-grid">
+                  <label class="wide">
+                    Logo Image URL
+                    <input name="logoImageUrl" value={assets.logoImage} placeholder="https://example.com/logo.png" />
+                  </label>
+                  <label class="wide">
+                    Upload Logo Image (Overrides URL)
+                    <input type="file" name="logoImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+                  </label>
+                  <label class="wide">
+                    Popup / Hero Image URL
+                    <input name="heroImageUrl" value={assets.heroImage} placeholder="https://example.com/hero.jpg" />
+                  </label>
+                  <label class="wide">
+                    Upload Popup / Hero Image (Overrides URL)
+                    <input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+                  </label>
+                  <label class="wide">
+                    Hero Video URL
+                    <input name="heroVideoUrl" value={assets.heroVideo || ''} placeholder="https://example.com/hero.mp4" />
+                  </label>
+                  <label class="wide">
+                    Intro Verse / Quotes
+                    <textarea name="introVerse" rows="4" placeholder="Enter opening verse or religious quote...">{content.introVerse || ''}</textarea>
+                  </label>
+                  <label class="wide">
+                    Intro Verse Source / Citation
+                    <input name="introVerseSource" value={content.introVerseSource || ''} placeholder="(e.g., Rgveda : X.85.42 or 1 Corinthians 13:4)" />
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 5: Couple Details -->
+            <section class="collapsible-section is-collapsed" id="sec-couple">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">👥</span>
+                  <div>
+                    <h2>Couple Information</h2>
+                    <p class="section-sub">Detailed profile, family pedigree, social links, and photos of the bride and groom.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="couple-grid">
+                  <fieldset class="couple-card">
+                    <legend>👨 Groom Details</legend>
+                    <div class="form-grid">
+                      <label>Groom Nickname<input name="groomName" value={detail.wedding.groomName} required /></label>
+                      <label>Groom Full Name<input name="groomFullName" value={detail.wedding.groomFullName} required /></label>
+                      <label>Father's Name<input name="groomFatherName" value={content.groomFatherName || ''} placeholder="Father's full name" /></label>
+                      <label>Mother's Name<input name="groomMotherName" value={content.groomMotherName || ''} placeholder="Mother's full name" /></label>
+                      <label>Child Order<input name="groomChildNumber" value={content.groomChildNumber || ''} placeholder="1st son of" /></label>
+                      <label>Family Origin / City<input name="groomAddress" value={content.groomAddress || ''} placeholder="Origin or city" /></label>
+                      <label>Photo URL<input name="groomImageUrl" value={assets.groomImage} placeholder="https://example.com/groom.jpg" /></label>
+                      <label>Upload Photo<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                      <label class="wide">Instagram URL<input name="groomInstagramUrl" value={content.groomInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="couple-card">
+                    <legend>👩 Bride Details</legend>
+                    <div class="form-grid">
+                      <label>Bride Nickname<input name="brideName" value={detail.wedding.brideName} required /></label>
+                      <label>Bride Full Name<input name="brideFullName" value={detail.wedding.brideFullName} required /></label>
+                      <label>Father's Name<input name="brideFatherName" value={content.brideFatherName || ''} placeholder="Father's full name" /></label>
+                      <label>Mother's Name<input name="brideMotherName" value={content.brideMotherName || ''} placeholder="Mother's full name" /></label>
+                      <label>Child Order<input name="brideChildNumber" value={content.brideChildNumber || ''} placeholder="2nd daughter of" /></label>
+                      <label>Family Origin / City<input name="brideAddress" value={content.brideAddress || ''} placeholder="Origin or city" /></label>
+                      <label>Photo URL<input name="brideImageUrl" value={assets.brideImage} placeholder="https://example.com/bride.jpg" /></label>
+                      <label>Upload Photo<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                      <label class="wide">Instagram URL<input name="brideInstagramUrl" value={content.brideInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 6: Wedding Events -->
+            <section class="collapsible-section is-collapsed" id="sec-events">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">📅</span>
+                  <div>
+                    <h2>Wedding Events Schedule</h2>
+                    <p class="section-sub">Ceremony, reception, banquet, times, venue locations, and Google Maps links.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="badge-count">{eventValues.length} Events</span>
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="form-grid" style="margin-bottom: 20px;">
+                  <label class="wide">Event Section Header Image URL<input name="eventImageUrl" value={assets.eventImage || ''} placeholder="https://example.com/event.jpg" /></label>
+                  <label class="wide">Upload Event Header Image<input type="file" name="eventImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                </div>
+                <div class="event-list" id="events_container">
+                  {eventValues.map((event, index) => (
+                    <fieldset class="event-card repeater-item">
+                      <legend>Event <span class="idx">{index + 1}</span></legend>
+                      <div class="form-grid">
+                        <label>Event Name<input name="eventName" value={event.name} required={index === 0} placeholder="Wedding Ceremony" /></label>
+                        <label>Date<input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} /></label>
+                        <label>Start Time<input type="time" name="eventStartTime" value={event.startTime} /></label>
+                        <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Finish" /></label>
+                        <label>Venue Name<input name="eventVenueName" value={event.venueName} /></label>
+                        <label>Google Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
+                        <label class="wide">Venue Full Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
+                      </div>
+                      {index > 0 && <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Event</button>}
+                    </fieldset>
+                  ))}
+                </div>
+                <button type="button" id="add_event_btn" class="secondary-action" style="margin-top: 16px;">+ Add Event</button>
+              </div>
+            </section>
+
+            <!-- SECTION 7: Our Story -->
+            <section class="collapsible-section is-collapsed" id="sec-story" data-setting-target="storyEnabled">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">📖</span>
+                  <div>
+                    <h2>Our Love Story</h2>
+                    <p class="section-sub">Timeline journey of how the couple met, dated, and decided to marry.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="badge-count">{storyValues.length} Milestones</span>
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="story-list" id="stories_container">
+                  {storyValues.map((story, index) => (
+                    <fieldset class="story-card repeater-item">
+                      <legend>Story Chapter <span class="idx">{index + 1}</span></legend>
+                      <div class="form-grid">
+                        <label>Milestone Title<input name="storyTitle" value={story.title} placeholder="HOW WE MET" /></label>
+                        <label class="wide">Story Description<textarea name="storyDescription" rows="3">{story.description}</textarea></label>
+                      </div>
+                      <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Story</button>
+                    </fieldset>
+                  ))}
+                </div>
+                <button type="button" id="add_story_btn" class="secondary-action" style="margin-top: 16px;">+ Add Story Chapter</button>
+              </div>
+            </section>
+
+            <!-- SECTION 8: Gallery & Media -->
+            <section class="collapsible-section is-collapsed" id="sec-gallery" data-setting-target="galleryEnabled">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">🖼️</span>
+                  <div>
+                    <h2>Photo & Video Gallery</h2>
+                    <p class="section-sub">Prewedding photos, gallery grid, and embedded YouTube / Vimeo video URLs.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="badge-count">{galleryImageUrls.length} Photos</span>
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="gallery-list" id="gallery_container">
+                  {galleryImageUrls.map((url, index) => (
+                    <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+                      <label style="flex: 1; margin: 0;">Image URL <span class="idx">{index + 1}</span><input name="galleryImageUrl" value={url} placeholder="https://example.com/gallery.jpg" /></label>
+                      <button type="button" class="remove-btn secondary-action">Delete</button>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" id="add_gallery_btn" class="secondary-action" style="margin-top: 10px; margin-bottom: 16px;">+ Add Photo URL</button>
+                <div class="form-grid" style="margin-bottom: 24px;">
+                  <label class="wide">Upload Multiple Gallery Images<input type="file" name="galleryImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple /></label>
+                </div>
+
+                <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 15px;">Gallery Video Links</h3>
+                <div class="gallery-video-list" id="gallery_videos_container">
+                  {galleryVideoUrls.map((url, index) => (
+                    <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+                      <label style="flex: 1; margin: 0;">Video URL <span class="idx">{index + 1}</span><input name="galleryVideoUrl" value={url} placeholder="https://www.youtube.com/watch?v=..." /></label>
+                      <button type="button" class="remove-btn secondary-action">Delete</button>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" id="add_gallery_video_btn" class="secondary-action" style="margin-top: 10px;">+ Add Video URL</button>
+              </div>
+            </section>
+
+            <!-- SECTION 9: RSVP & Countdown Media -->
+            <section class="collapsible-section is-collapsed" id="sec-countdown">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">💌</span>
+                  <div>
+                    <h2>RSVP & Countdown Media</h2>
+                    <p class="section-sub">Background banners and illustration assets for RSVP and countdown sections.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="form-grid">
+                  <label class="wide">RSVP Image URL<input name="rsvpImageUrl" value={assets.rsvpImage || ''} placeholder="https://example.com/rsvp.jpg" /></label>
+                  <label class="wide">Upload RSVP Image<input type="file" name="rsvpImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                  <label class="wide">Countdown Image URL<input name="countdownImageUrl" value={assets.countdownImage || ''} placeholder="https://example.com/countdown.jpg" /></label>
+                  <label class="wide">Upload Countdown Image<input type="file" name="countdownImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 10: Gifts & Digital Accounts -->
+            <section class="collapsible-section is-collapsed" id="sec-gifts" data-setting-target="giftEnabled">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">🎁</span>
+                  <div>
+                    <h2>Gifts & Bank Accounts</h2>
+                    <p class="section-sub">Digital gift envelope accounts, bank transfers, QRIS, and thank you remarks.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="badge-count">{giftValues.length} Accounts</span>
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="gift-list" id="gifts_container">
+                  {giftValues.map((gift, index) => (
+                    <fieldset class="gift-card-form repeater-item">
+                      <legend>Account / Gift Card <span class="idx">{index + 1}</span></legend>
+                      <div class="form-grid">
+                        <label>Bank / E-Wallet Name<input name="giftBankName" value={gift.bankName} placeholder="BCA / Chase / PayPal" /></label>
+                        <label>Account Number<input name="giftAccountNumber" value={gift.accountNumber} placeholder="1234567890" /></label>
+                        <label>Account Holder Name<input name="giftAccountName" value={gift.accountName} placeholder="Account holder name" /></label>
+                        <label>QRIS Image URL<input name="giftQrisUrl" value={gift.qrisUrl} placeholder="https://example.com/qris.png" /></label>
+                      </div>
+                      <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Gift Card</button>
+                    </fieldset>
+                  ))}
+                </div>
+                <button type="button" id="add_gift_btn" class="secondary-action" style="margin-top: 16px; margin-bottom: 24px;">+ Add Gift Account</button>
+                <div class="form-grid">
+                  <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4" placeholder="Description or gift address instructions...">{content.giftDescription || ''}</textarea></label>
+                  <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4" placeholder="Gratitude and closing remarks...">{content.thankYouMessage || ''}</textarea></label>
+                  <label class="wide">Closing Image URL<input name="closingImageUrl" value={assets.closingImage || ''} placeholder="https://example.com/closing.jpg" /></label>
+                  <label class="wide">Upload Closing Image<input type="file" name="closingImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 11: Background Music -->
+            <section class="collapsible-section is-collapsed" id="sec-music" data-setting-target="musicEnabled">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">🎵</span>
+                  <div>
+                    <h2>Background Music</h2>
+                    <p class="section-sub">Audio stream URL or uploaded background soundtrack.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="form-grid">
+                  <label class="wide">Music Audio URL<input name="musicUrl" value={detail.wedding.musicUrl || ''} placeholder="https://example.com/audio.mp3" /></label>
+                  <label class="wide">Upload Music File (MP3 / AAC / WAV)<input type="file" name="musicFile" accept="audio/*,.mp3,.wav,.ogg,.aac,.m4a,.webm" /></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 12: Revision Note -->
+            <section class="collapsible-section memo-section is-collapsed" id="sec-revision">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">📝</span>
+                  <div>
+                    <h2>Revision Note / Memo (Optional)</h2>
+                    <p class="section-sub">Summarize changes made in this version for version control audit history.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="form-grid single-col">
+                  <label>
+                    Version Memo Note
+                    <input type="text" name="revisionNote" placeholder="e.g., Updated reception start time to 19:00 and added new gallery photos" />
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <!-- Form Actions Footer -->
+            <footer class="form-actions">
+              <a class="cancel-link" href={`/dashboard/${detail.summary.slug}`}>Cancel</a>
+              <button type="submit" class="save-primary-btn">Save Changes</button>
+            </footer>
+          </form>
+        </div>
+
+        <!-- Sticky Right Sidebar -->
+        <aside class="editor-sidebar">
+          <div class="sticky-box">
+            <div class="sidebar-header">
+              <div>
+                <span class="sidebar-eyebrow">Quick Action Hub</span>
+                <h4 class="sidebar-title">{detail.summary.slug}</h4>
+              </div>
+              <span class={`status-pill status-pill--${detail.wedding.status}`}>{detail.wedding.status}</span>
             </div>
 
-            <label>Expiration Date<input type="datetime-local" name="expirationDate" value={toLocalInput(settings?.expirationDate || null)} /></label>
-          </div>
-          <div class="toggle-grid">
-            <label><input type="checkbox" name="rsvpEnabled" checked={settings?.rsvpEnabled ?? true} /> RSVP</label>
-            <label><input type="checkbox" name="musicEnabled" checked={settings?.musicEnabled ?? true} /> Music</label>
-            <label><input type="checkbox" name="countdownEnabled" checked={settings?.countdownEnabled ?? true} /> Countdown</label>
-            <label><input type="checkbox" name="galleryEnabled" checked={settings?.galleryEnabled ?? true} /> Gallery</label>
-            <label><input type="checkbox" name="wishesEnabled" checked={settings?.wishesEnabled ?? true} /> Wishes</label>
-            <label><input type="checkbox" name="giftEnabled" checked={settings?.giftEnabled ?? true} /> Gift</label>
-            <label><input type="checkbox" name="storyEnabled" checked={settings?.storyEnabled ?? true} /> Our Story</label>
-            <label><input type="checkbox" name="viewCounterEnabled" checked={settings?.viewCounterEnabled ?? true} /> View Counter</label>
-            <label><input type="checkbox" name="videoEnabled" checked={settings?.videoEnabled ?? true} /> Video</label>
-            <label><input type="checkbox" name="introAnimationEnabled" checked={settings?.introAnimationEnabled ?? true} /> Intro Animasi</label>
-            <label><input type="checkbox" name="maintenanceMode" checked={settings?.maintenanceMode ?? false} /> Maintenance</label>
-            <label><input type="checkbox" name="passwordProtectionEnabled" checked={settings?.passwordProtectionEnabled ?? false} /> Password Protection</label>
-          </div>
-        </section>
+            <!-- Primary Action Button -->
+            <div class="sidebar-main-actions">
+              <button type="button" class="sidebar-save-btn" id="sidebar-save-trigger">
+                <span class="material-symbols-outlined">save</span>
+                <span>Save Changes</span>
+              </button>
+              <p class="save-shortcut-hint">Shortcut: <kbd>Ctrl</kbd> + <kbd>S</kbd></p>
+            </div>
 
-        <section>
-          <h2>Opening</h2>
-          <div class="form-grid">
-            <label class="wide">Logo Image URL<input name="logoImageUrl" value={assets.logoImage} placeholder="https://example.com/logo.png" /></label>
-            <label class="wide">Upload Logo Image<input type="file" name="logoImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <label class="wide">Popup / Hero Image URL<input name="heroImageUrl" value={assets.heroImage} placeholder="https://example.com/hero.jpg" /></label>
-            <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <label class="wide">Hero Video URL<input name="heroVideoUrl" value={assets.heroVideo || ''} placeholder="https://example.com/hero.mp4" /></label>
-            <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{content.introVerse || ''}</textarea></label>
-            <label class="wide">Intro Verse Source<input name="introVerseSource" value={content.introVerseSource || ''} placeholder="(Rgveda : X.85.42)" /></label>
-          </div>
-        </section>
 
-        <section>
-          <h2>Couple</h2>
-          <div class="couple-grid">
-            <fieldset class="couple-card">
-              <legend>Groom</legend>
-              <div class="form-grid">
-                <label>Groom Name<input name="groomName" value={detail.wedding.groomName} required /></label>
-                <label>Groom Full Name<input name="groomFullName" value={detail.wedding.groomFullName} required /></label>
-                <label>Groom Father Name<input name="groomFatherName" value={content.groomFatherName || ''} placeholder="Groom father name" /></label>
-                <label>Groom Mother Name<input name="groomMotherName" value={content.groomMotherName || ''} placeholder="Groom mother name" /></label>
-                <label>Groom Anak Ke-<input name="groomChildNumber" value={content.groomChildNumber || ''} placeholder="pertama" /></label>
-                <label>Groom Alamat / Asal<input name="groomAddress" value={content.groomAddress || ''} placeholder="Br. Roban, gianyar" /></label>
-                <label>Groom Image URL<input name="groomImageUrl" value={assets.groomImage} placeholder="https://example.com/groom.jpg" /></label>
-                <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-                <label class="wide">Groom Instagram URL<input name="groomInstagramUrl" value={content.groomInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
+
+            <!-- Section Toggle Bar -->
+            <div class="sidebar-view-toggles">
+              <span class="nav-heading">Section Visibility</span>
+              <div class="toggle-btn-row">
+                <button type="button" class="view-toggle-btn" id="sidebar-expand-btn">
+                  <span class="material-symbols-outlined">unfold_more</span> Expand All
+                </button>
+                <button type="button" class="view-toggle-btn" id="sidebar-collapse-btn">
+                  <span class="material-symbols-outlined">unfold_less</span> Collapse All
+                </button>
               </div>
-            </fieldset>
-            <fieldset class="couple-card">
-              <legend>Bride</legend>
-              <div class="form-grid">
-                <label>Bride Name<input name="brideName" value={detail.wedding.brideName} required /></label>
-                <label>Bride Full Name<input name="brideFullName" value={detail.wedding.brideFullName} required /></label>
-                <label>Bride Father Name<input name="brideFatherName" value={content.brideFatherName || ''} placeholder="Bride father name" /></label>
-                <label>Bride Mother Name<input name="brideMotherName" value={content.brideMotherName || ''} placeholder="Bride mother name" /></label>
-                <label>Bride Anak Ke-<input name="brideChildNumber" value={content.brideChildNumber || ''} placeholder="kedua" /></label>
-                <label>Bride Alamat / Asal<input name="brideAddress" value={content.brideAddress || ''} placeholder="Br. Tengah, gianyar" /></label>
-                <label>Bride Image URL<input name="brideImageUrl" value={assets.brideImage} placeholder="https://example.com/bride.jpg" /></label>
-                <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-                <label class="wide">Bride Instagram URL<input name="brideInstagramUrl" value={content.brideInstagramUrl || content.instagramUrl} placeholder="https://www.instagram.com/username" /></label>
+            </div>
+
+            <!-- Danger Zone Action Buttons (Collapsible) -->
+            <details class="sidebar-danger-zone">
+              <summary class="danger-heading">
+                <span>⚠️ Danger Zone</span>
+                <span class="material-symbols-outlined danger-chevron">expand_more</span>
+              </summary>
+              <div class="danger-btn-list">
+                <form method="POST">
+                  <input type="hidden" name="action" value="reset-views" />
+                  <button type="submit" class="sidebar-danger-btn" onclick="return confirm('Reset page views for this invitation to zero?')">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                    <span>Reset Views</span>
+                  </button>
+                </form>
+
+                <form method="POST">
+                  <input type="hidden" name="action" value="reset-rsvps" />
+                  <button type="submit" class="sidebar-danger-btn" onclick="return confirm('Delete all RSVPs for this invitation? This cannot be undone.')">
+                    <span class="material-symbols-outlined">delete_sweep</span>
+                    <span>Reset RSVPs</span>
+                  </button>
+                </form>
+
+                <form method="POST">
+                  <input type="hidden" name="action" value="delete" />
+                  <button type="submit" class="sidebar-danger-btn warning" onclick="return confirm('Soft delete this invitation?')">
+                    <span class="material-symbols-outlined">archive</span>
+                    <span>Soft Delete</span>
+                  </button>
+                </form>
+
+                <form method="POST">
+                  <input type="hidden" name="action" value="permanent-delete" />
+                  <button
+                    type="submit"
+                    class="sidebar-danger-btn permanent"
+                    onclick="return confirm('Permanently delete this invitation and unshared Supabase images? This action cannot be undone.')"
+                  >
+                    <span class="material-symbols-outlined">delete_forever</span>
+                    <span>Delete Permanently</span>
+                  </button>
+                </form>
               </div>
-            </fieldset>
+            </details>
           </div>
-        </section>
+        </aside>
+      </div>
 
-        <section>
-          <h2>Events</h2>
-          <div class="form-grid" style="margin-bottom: 24px;">
-            <label class="wide">Event Section Image URL<input name="eventImageUrl" value={assets.eventImage || ''} placeholder="https://example.com/event.jpg" /></label>
-            <label class="wide">Upload Event Section Image<input type="file" name="eventImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-          </div>
-          <div class="event-list" id="events_container">
-            {eventValues.map((event, index) => (
-              <fieldset class="event-card repeater-item">
-                <legend>Event <span class="idx">{index + 1}</span></legend>
-                <div class="form-grid">
-                  <label>Event Name<input name="eventName" value={event.name} required={index === 0} placeholder="Akad Nikah" /></label>
-                  <label>Date<input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} /></label>
-                  <label>Start Time<input type="time" name="eventStartTime" value={event.startTime} /></label>
-                  <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Selesai" /></label>
-                  <label>Venue Name<input name="eventVenueName" value={event.venueName} /></label>
-                  <label>Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
-                  <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
-                </div>
-                {index > 0 && <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Event</button>}
-              </fieldset>
-            ))}
-          </div>
-          <button type="button" id="add_event_btn" class="secondary-action" style="margin-top: 16px;">+ Tambah Event</button>
-        </section>
-
-        <section data-setting-target="storyEnabled">
-          <h2>Our Story</h2>
-          <div class="story-list" id="stories_container">
-            {storyValues.map((story, index) => (
-              <fieldset class="story-card repeater-item">
-                <legend>Story <span class="idx">{index + 1}</span></legend>
-                <div class="form-grid">
-                  <label>Title<input name="storyTitle" value={story.title} placeholder="AWAL BERTEMU" /></label>
-                  <label class="wide">Description<textarea name="storyDescription" rows="3">{story.description}</textarea></label>
-                </div>
-                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Story</button>
-              </fieldset>
-            ))}
-          </div>
-          <button type="button" id="add_story_btn" class="secondary-action" style="margin-top: 16px;">+ Tambah Story</button>
-        </section>
-
-        <section data-setting-target="galleryEnabled">
-          <h2>Gallery</h2>
-          <div class="gallery-list" id="gallery_container">
-            {galleryImageUrls.map((url, index) => (
-              <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-                <label style="flex: 1; margin: 0;">Image URL <span class="idx">{index + 1}</span><input name="galleryImageUrl" value={url} placeholder="https://example.com/gallery.jpg" /></label>
-                <button type="button" class="remove-btn secondary-action">Hapus</button>
-              </div>
-            ))}
-          </div>
-          <button type="button" id="add_gallery_btn" class="secondary-action" style="margin-top: 10px; margin-bottom: 16px;">+ Tambah Image URL</button>
-          <div class="form-grid" style="margin-bottom: 24px;">
-            <label class="wide">Upload Gallery Images<input type="file" name="galleryImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple /></label>
-          </div>
-
-          <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 15px;">Gallery Videos</h3>
-          <div class="gallery-video-list" id="gallery_videos_container">
-            {galleryVideoUrls.map((url, index) => (
-              <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-                <label style="flex: 1; margin: 0;">Video URL <span class="idx">{index + 1}</span><input name="galleryVideoUrl" value={url} placeholder="https://www.youtube.com/watch?v=..." /></label>
-                <button type="button" class="remove-btn secondary-action">Hapus</button>
-              </div>
-            ))}
-          </div>
-          <button type="button" id="add_gallery_video_btn" class="secondary-action" style="margin-top: 10px;">+ Tambah Video URL</button>
-        </section>
-
-        <section>
-          <h2>RSVP & Countdown Images</h2>
-          <div class="form-grid">
-            <label class="wide">RSVP Image URL<input name="rsvpImageUrl" value={assets.rsvpImage || ''} placeholder="https://example.com/rsvp.jpg" /></label>
-            <label class="wide">Upload RSVP Image<input type="file" name="rsvpImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <label class="wide">Countdown Image URL<input name="countdownImageUrl" value={assets.countdownImage || ''} placeholder="https://example.com/countdown.jpg" /></label>
-            <label class="wide">Upload Countdown Image<input type="file" name="countdownImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-          </div>
-        </section>
-
-        <section>
-          <h2>Gift & Thank You</h2>
-          <div class="gift-list" id="gifts_container">
-            {giftValues.map((gift, index) => (
-              <fieldset class="gift-card-form repeater-item">
-                <legend>Gift Card <span class="idx">{index + 1}</span></legend>
-                <div class="form-grid">
-                  <label>Bank Name<input name="giftBankName" value={gift.bankName} placeholder="BCA" /></label>
-                  <label>Account Number<input name="giftAccountNumber" value={gift.accountNumber} placeholder="1234567890" /></label>
-                  <label>Account Name<input name="giftAccountName" value={gift.accountName} placeholder="Account holder name" /></label>
-                  <label>QRIS URL<input name="giftQrisUrl" value={gift.qrisUrl} placeholder="https://example.com/qris.png" /></label>
-                </div>
-                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Gift Card</button>
-              </fieldset>
-            ))}
-          </div>
-          <button type="button" id="add_gift_btn" class="secondary-action" style="margin-top: 16px; margin-bottom: 24px;">+ Tambah Gift Card</button>
-          <div class="form-grid">
-            <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4">{content.giftDescription || ''}</textarea></label>
-            <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4">{content.thankYouMessage || ''}</textarea></label>
-            <label class="wide">Closing Image URL<input name="closingImageUrl" value={assets.closingImage || ''} placeholder="https://example.com/closing.jpg" /></label>
-            <label class="wide">Upload Closing Image<input type="file" name="closingImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-          </div>
-        </section>
-
-
-
-        <section data-setting-target="musicEnabled">
-          <h2>Music</h2>
-          <div class="form-grid">
-            <label class="wide">Music URL<input name="musicUrl" value={detail.wedding.musicUrl || ''} placeholder="https://example.com/audio.mp3" /></label>
-            <label class="wide">Upload Music File (MP3 / AAC / WAV)<input type="file" name="musicFile" accept="audio/*,.mp3,.wav,.ogg,.aac,.m4a,.webm" /></label>
-          </div>
-        </section>
-
-        <footer class="form-actions">
-          <a href={`/dashboard/${detail.summary.slug}`}>Cancel</a>
-          <button type="submit">Save Changes</button>
-        </footer>
-      </form>
-
-      <form class="danger-panel" method="POST">
-        <input type="hidden" name="action" value="reset-views" />
-        <div>
-          <h2>Reset Page Views</h2>
-          <p>Reset the page view count for this invitation back to zero.</p>
-        </div>
-        <button type="submit" onclick="return confirm('Reset page views for this invitation to zero?')">Reset Views</button>
-      </form>
-
-      <form class="danger-panel" method="POST">
-        <input type="hidden" name="action" value="reset-rsvps" />
-        <div>
-          <h2>Reset RSVPs</h2>
-          <p>Delete all RSVPs for this invitation. This action cannot be undone.</p>
-        </div>
-        <button type="submit" onclick="return confirm('Delete all RSVPs for this invitation? This cannot be undone.')">Reset RSVPs</button>
-      </form>
-
-      <form class="danger-panel" method="POST">
-        <input type="hidden" name="action" value="delete" />
-        <div>
-          <h2>Soft Delete Invitation</h2>
-          <p>Soft delete hides this slug from public routes and reports without removing related RSVP or view data.</p>
-        </div>
-        <button type="submit" onclick="return confirm('Soft delete this invitation?')">Soft Delete</button>
-      </form>
-
-      <form class="danger-panel danger-panel--permanent" method="POST">
-        <input type="hidden" name="action" value="permanent-delete" />
-        <div>
-          <h2>Permanent Delete Invitation</h2>
-          <p>Permanently delete this slug, related database rows, and Supabase Storage images that are not used by another invitation.</p>
-        </div>
-        <button
-          type="submit"
-          onclick="return confirm('Permanently delete this invitation and unshared Supabase images? This cannot be undone.')"
-        >
-          Permanent Delete
-        </button>
+      <form id="resetClientForm" method="POST" style="display: none;">
+        <input type="hidden" name="action" value="reset-client-password" />
       </form>
     </main>
+
+    <!-- Dynamic Repeater Templates -->
     <template id="event_template">
       <fieldset class="event-card repeater-item">
         <legend>Event <span class="idx"></span></legend>
         <div class="form-grid">
-          <label>Event Name<input name="eventName" placeholder="Akad Nikah" /></label>
+          <label>Event Name<input name="eventName" placeholder="Wedding Ceremony" /></label>
           <label>Date<input type="datetime-local" name="eventDate" /></label>
           <label>Start Time<input type="time" name="eventStartTime" /></label>
-          <label>End Time<input name="eventEndTime" placeholder="Selesai" /></label>
+          <label>End Time<input name="eventEndTime" placeholder="Finish" /></label>
           <label>Venue Name<input name="eventVenueName" /></label>
-          <label>Maps URL<input name="eventMapsUrl" /></label>
-          <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3"></textarea></label>
+          <label>Google Maps URL<input name="eventMapsUrl" /></label>
+          <label class="wide">Venue Full Address<textarea name="eventVenueAddress" rows="3"></textarea></label>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Event</button>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Event</button>
       </fieldset>
     </template>
 
     <template id="story_template">
       <fieldset class="story-card repeater-item">
-        <legend>Story <span class="idx"></span></legend>
+        <legend>Story Chapter <span class="idx"></span></legend>
         <div class="form-grid">
-          <label>Title<input name="storyTitle" placeholder="AWAL BERTEMU" /></label>
-          <label class="wide">Description<textarea name="storyDescription" rows="3"></textarea></label>
+          <label>Milestone Title<input name="storyTitle" placeholder="HOW WE MET" /></label>
+          <label class="wide">Story Description<textarea name="storyDescription" rows="3"></textarea></label>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Story</button>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Story</button>
       </fieldset>
     </template>
 
     <template id="gallery_template">
       <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
         <label style="flex: 1; margin: 0;">Image URL <span class="idx"></span><input name="galleryImageUrl" placeholder="https://example.com/gallery.jpg" /></label>
-        <button type="button" class="remove-btn secondary-action">Hapus</button>
+        <button type="button" class="remove-btn secondary-action">Delete</button>
       </div>
     </template>
 
     <template id="gallery_video_template">
       <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
         <label style="flex: 1; margin: 0;">Video URL <span class="idx"></span><input name="galleryVideoUrl" placeholder="https://www.youtube.com/watch?v=..." /></label>
-        <button type="button" class="remove-btn secondary-action">Hapus</button>
+        <button type="button" class="remove-btn secondary-action">Delete</button>
       </div>
     </template>
 
     <template id="gift_template">
       <fieldset class="gift-card-form repeater-item">
-        <legend>Gift Card <span class="idx"></span></legend>
+        <legend>Account / Gift Card <span class="idx"></span></legend>
         <div class="form-grid">
-          <label>Bank Name<input name="giftBankName" placeholder="BCA" /></label>
+          <label>Bank / E-Wallet Name<input name="giftBankName" placeholder="BCA / Chase / PayPal" /></label>
           <label>Account Number<input name="giftAccountNumber" placeholder="1234567890" /></label>
-          <label>Account Name<input name="giftAccountName" placeholder="Account holder name" /></label>
-          <label>QRIS URL<input name="giftQrisUrl" placeholder="https://example.com/qris.png" /></label>
+          <label>Account Holder Name<input name="giftAccountName" placeholder="Account holder name" /></label>
+          <label>QRIS Image URL<input name="giftQrisUrl" placeholder="https://example.com/qris.png" /></label>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Gift Card</button>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Gift Card</button>
       </fieldset>
     </template>
 
     <script>
+      // 1. Repeater Handler
       function setupRepeater(containerId, btnId, templateId) {
         const container = document.getElementById(containerId);
         const btn = document.getElementById(btnId);
@@ -500,7 +872,7 @@ if (!isClaimed) {
 
         container.addEventListener('click', (e) => {
           if (e.target.classList.contains('remove-btn')) {
-            if (!confirm('Hapus item ini?')) return;
+            if (!confirm('Delete this item?')) return;
             const item = e.target.closest('.repeater-item');
             if (item) {
               item.remove();
@@ -516,8 +888,8 @@ if (!isClaimed) {
       setupRepeater('gallery_videos_container', 'add_gallery_video_btn', 'gallery_video_template');
       setupRepeater('gifts_container', 'add_gift_btn', 'gift_template');
 
+      // 2. Feature Toggles & Conditional Display
       const settingTargets = document.querySelectorAll('[data-setting-target]');
-
       function syncSettingTargets() {
         settingTargets.forEach((target) => {
           const toggleName = target.getAttribute('data-setting-target');
@@ -527,85 +899,855 @@ if (!isClaimed) {
           target.hidden = !toggle.checked;
         });
       }
-
       document
         .querySelectorAll('.toggle-grid input[type="checkbox"]')
         .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
-
       syncSettingTargets();
+
+      // 3. Password Input helper
+      const accessPasswordInput = document.getElementById('accessPasswordInput');
+      const passwordProtectionToggle = document.getElementById('passwordProtectionToggle');
+      if (accessPasswordInput && passwordProtectionToggle) {
+        accessPasswordInput.addEventListener('input', () => {
+          if (accessPasswordInput.value.trim().length > 0 && !(passwordProtectionToggle as HTMLInputElement).checked) {
+            (passwordProtectionToggle as HTMLInputElement).checked = true;
+          }
+        });
+      }
+
+      // 4. Collapsible Section Handler
+      const sections = document.querySelectorAll('.collapsible-section');
+      sections.forEach(section => {
+        const header = section.querySelector('.collapsible-header');
+        if (header) {
+          header.addEventListener('click', () => {
+            section.classList.toggle('is-collapsed');
+          });
+        }
+      });
+
+      function expandAll() {
+        sections.forEach(sec => sec.classList.remove('is-collapsed'));
+      }
+      function collapseAll() {
+        sections.forEach(sec => sec.classList.add('is-collapsed'));
+      }
+
+      document.getElementById('global-expand-btn')?.addEventListener('click', expandAll);
+      document.getElementById('global-collapse-btn')?.addEventListener('click', collapseAll);
+      document.getElementById('sidebar-expand-btn')?.addEventListener('click', expandAll);
+      document.getElementById('sidebar-collapse-btn')?.addEventListener('click', collapseAll);
+
+      // 5. Sidebar Save Button & Shortcut (Ctrl+S)
+      const editForm = document.getElementById('edit-form') as HTMLFormElement;
+      document.getElementById('sidebar-save-trigger')?.addEventListener('click', () => {
+        if (editForm) {
+          if (typeof editForm.requestSubmit === 'function') {
+            editForm.requestSubmit();
+          } else {
+            editForm.submit();
+          }
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          if (editForm) {
+            if (typeof editForm.requestSubmit === 'function') {
+              editForm.requestSubmit();
+            } else {
+              editForm.submit();
+            }
+          }
+        }
+      });
     </script>
   </body>
 </html>
 
 <style lang="scss">
-  :global(*) { box-sizing: border-box; }
+  :global(*) {
+    box-sizing: border-box;
+  }
   :global(body) {
     margin: 0;
     min-height: 100vh;
-    background: #f4f5f7;
-    color: #20242c;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
-  .shell { width: min(1100px, 100%); margin: 0 auto; padding: 28px; }
-  .header { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; margin-bottom: 22px; }
-  .back-link { display: inline-flex; margin-bottom: 18px; color: #2563eb; font-size: 13px; font-weight: 700; text-decoration: none; }
-  .secondary-action { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d9dde5; border-radius: 6px; background: #ffffff; color: #394150; font-size: 13px; font-weight: 700; text-decoration: none; }
-  .eyebrow { margin: 0 0 8px; color: #687080; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-  h1 { margin: 0 0 8px; font-size: 32px; }
-  h2 { margin: 0 0 16px; font-size: 18px; }
-  .subtitle { margin: 0; color: #687080; font-size: 14px; }
-  .form-panel, .error-panel, .success-panel, .danger-panel {
-    border: 1px solid #d9dde5;
+
+  .shell {
+    width: min(1560px, 96vw);
+    margin: 0 auto;
+    padding: 28px 16px 60px;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 18px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 12px;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s;
+    &:hover { color: #1d4ed8; text-decoration: underline; }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .action-btn {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    .icon { font-size: 18px; }
+  }
+
+  .secondary-action {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    &:hover { background: #f8fafc; border-color: #94a3b8; }
+  }
+
+  .primary-action {
+    border: 1px solid #0f172a;
+    background: #0f172a;
+    color: #ffffff;
+    &:hover { background: #1e293b; }
+  }
+
+  .eyebrow {
+    margin: 0 0 4px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  h1 { margin: 0 0 6px; font-size: 28px; font-weight: 800; color: #0f172a; }
+  .subtitle {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    font-family: 'Montserrat', sans-serif;
+
+    code {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0f172a;
+      font-size: 13px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+    }
+
+    strong {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      color: #0f172a;
+    }
+  }
+
+  .error-panel, .success-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    .icon { font-size: 22px; flex-shrink: 0; }
+  }
+  .error-panel { color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; }
+  .success-panel { color: #065f46; background: #ecfdf5; border: 1px solid #a7f3d0; }
+
+  /* 2-Column Layout */
+  .editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .editor-main {
+    min-width: 0;
+  }
+
+  .form-panel {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+
+  /* Collapsible Sections */
+  .collapsible-section {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s ease;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+
+  .collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    background: #ffffff;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+
+  .collapsible-header__title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .section-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .section-sub {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #64748b;
+    }
+  }
+
+  .collapsible-header__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .chevron {
+    color: #94a3b8;
+    font-size: 24px;
+    transition: transform 0.25s ease;
+  }
+
+  .collapsible-body {
+    padding: 20px 24px 28px;
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  /* Collapsed state */
+  .collapsible-section.is-collapsed {
+    .chevron {
+      transform: rotate(-90deg);
+    }
+    .collapsible-body {
+      display: none;
+    }
+  }
+
+  .memo-section {
+    border-left: 4px solid #0284c7;
+  }
+
+  /* Badges & Pills */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #f1f5f9;
+    color: #475569;
+  }
+  .status-pill--published { background: #dcfce7; color: #15803d; }
+  .status-pill--draft { background: #fef3c7; color: #b45309; }
+  .status-pill--archived { background: #f1f5f9; color: #64748b; }
+
+  .badge-active {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #dcfce7;
+    color: #15803d;
+  }
+  .badge-pending {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #fef3c7;
+    color: #b45309;
+  }
+  .badge-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  /* Security Components */
+  .security-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  .security-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #0f172a;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    min-height: 17px;
+    cursor: pointer;
+  }
+
+  .security-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: #e2e8f0;
+    color: #475569;
+    border-radius: 4px;
+  }
+
+  .setup-link-box {
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px dashed #cbd5e1;
+  }
+
+  .setup-link-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #475569;
+  }
+
+  .reset-link-btn {
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    background: #fff5f5;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover { background: #fee2e2; }
+  }
+
+  .claimed-text {
+    margin: 0;
+    color: #059669;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .clipboard-row {
+    display: flex;
+    gap: 8px;
+    input { background: #f8fafc; font-size: 13px; }
+  }
+
+  .copy-btn {
+    min-height: 38px;
+    padding: 0 14px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    &:hover { background: #f8fafc; border-color: #94a3b8; }
+  }
+
+  /* Form Grids */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .form-grid.single-col { grid-template-columns: 1fr; }
+  .couple-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .event-list, .story-list, .gift-list { display: grid; gap: 14px; }
+  .event-card, .story-card, .couple-card, .gift-card-form {
+    margin: 0;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     background: #ffffff;
   }
-  .error-panel, .success-panel { margin-bottom: 16px; padding: 14px 16px; }
-  .error-panel { color: #991b1b; background: #fff5f5; }
-  .success-panel { color: #047857; background: #ecfdf5; }
-  section { padding: 20px; border-bottom: 1px solid #eef0f4; }
-  section[hidden] { display: none; }
-  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .couple-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .event-list, .story-list, .gift-list { display: grid; gap: 14px; }
-  .event-card, .story-card, .couple-card, .gift-card-form { margin: 0; padding: 16px; border: 1px solid #eef0f4; border-radius: 8px; }
-  .event-card legend, .story-card legend, .couple-card legend, .gift-card-form legend { padding: 0 6px; color: #687080; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-  label { display: grid; gap: 7px; color: #394150; font-size: 13px; font-weight: 700; }
+  .event-card legend, .story-card legend, .couple-card legend, .gift-card-form legend {
+    padding: 0 8px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  label {
+    display: grid;
+    gap: 6px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+  }
   label.wide { grid-column: 1 / -1; }
+
+  .hint {
+    font-weight: 400;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
   input, select, textarea {
     width: 100%;
-    min-height: 42px;
-    padding: 9px 11px;
+    min-height: 40px;
+    padding: 9px 12px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     font: inherit;
+    font-size: 13px;
     font-weight: 400;
+    color: #0f172a;
+    background: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
   }
+
   textarea { resize: vertical; }
-  .toggle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
-  .toggle-grid label { display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #eef0f4; border-radius: 6px; }
-  .toggle-grid input { width: 16px; min-height: 16px; }
-  .form-actions, .danger-panel { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 20px; }
-  .form-actions a, .form-actions button, .danger-panel button {
+
+  /* Feature Toggles */
+  .toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      min-height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    span {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+  }
+
+  .toggle-item--danger {
+    background: #fff5f5;
+    border-color: #fecaca;
+    span { color: #991b1b; }
+  }
+
+  /* Form Actions Bottom Bar */
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .cancel-link {
     min-height: 40px;
     display: inline-flex;
     align-items: center;
-    padding: 0 14px;
+    padding: 0 16px;
+    border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font: inherit;
-    font-weight: 700;
+    background: #ffffff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
     text-decoration: none;
+    &:hover { background: #f8fafc; }
   }
-  .form-actions a { border: 1px solid #d9dde5; color: #394150; }
-  .form-actions button { border: 0; background: #111827; color: #ffffff; cursor: pointer; }
-  .danger-panel { margin-top: 18px; border-color: #fecdd3; background: #fff7f8; }
-  .danger-panel h2 { margin-bottom: 6px; color: #9f1239; }
-  .danger-panel p { margin: 0; color: #687080; font-size: 13px; }
-  .danger-panel button { border: 0; background: #be123c; color: #ffffff; cursor: pointer; }
-  .danger-panel--permanent { border-color: #991b1b; background: #fff1f2; }
-  .danger-panel--permanent button { background: #7f1d1d; }
+
+  .save-primary-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 20px;
+    border: none;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    &:hover { background: #1e293b; }
+  }
+
+  /* Sticky Right Sidebar */
+  .editor-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    z-index: 30;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  }
+
+  .sticky-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .sidebar-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .sidebar-title {
+    margin: 2px 0 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .sidebar-main-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sidebar-save-btn {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+    }
+  }
+
+  .save-shortcut-hint {
+    margin: 0;
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+    kbd {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 10px;
+      color: #475569;
+    }
+  }
+
+
+
+  .sidebar-view-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .nav-heading {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .toggle-btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .view-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    .material-symbols-outlined { font-size: 15px; }
+
+    &:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+  }
+
+  /* Sidebar Danger Zone */
+  .sidebar-danger-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &[open] {
+      .danger-chevron {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .danger-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #b91c1c;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    .danger-chevron {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+      color: #b91c1c;
+    }
+
+    &:hover {
+      color: #991b1b;
+    }
+  }
+
+  .danger-btn-list {
+    display: grid;
+    gap: 6px;
+    margin-top: 4px;
+
+    form {
+      margin: 0;
+    }
+  }
+
+  .sidebar-danger-btn {
+    width: 100%;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    background: #fff5f5;
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+  }
+
+  .sidebar-danger-btn.warning {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+    &:hover {
+      background: #ffedd5;
+      border-color: #fb923c;
+    }
+  }
+
+  .sidebar-danger-btn.permanent {
+    background: #991b1b;
+    border-color: #991b1b;
+    color: #ffffff;
+    &:hover {
+      background: #7f1d1d;
+      border-color: #7f1d1d;
+    }
+  }
+
+  @media (max-width: 1080px) {
+    .editor-layout {
+      grid-template-columns: 1fr;
+    }
+    .editor-sidebar {
+      width: 100%;
+      position: static;
+      max-height: none;
+    }
+  }
+
   @media (max-width: 720px) {
-    .shell { padding: 18px; }
-    .header, .form-actions, .danger-panel { align-items: flex-start; flex-direction: column; }
-    .form-grid, .toggle-grid, .couple-grid { grid-template-columns: 1fr; }
+    .shell { padding: 16px 12px; }
+    .header { flex-direction: column; align-items: flex-start; }
+    .form-grid, .couple-grid, .toggle-grid { grid-template-columns: 1fr; }
+    .collapsible-header { padding: 14px 16px; }
+    .collapsible-body { padding: 16px; }
   }
 </style>

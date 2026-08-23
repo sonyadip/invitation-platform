@@ -270,3 +270,50 @@ CREATE POLICY "Allow public read platform_settings" ON platform_settings FOR SEL
 CREATE TRIGGER trigger_update_platform_settings_updated_at
     BEFORE UPDATE ON platform_settings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 16. Create ACTIVITY LOGS Table (Centralized audit trail)
+CREATE TABLE IF NOT EXISTS activity_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    wedding_id UUID REFERENCES weddings(id) ON DELETE CASCADE,
+    slug VARCHAR(255) NULL,
+    actor_type VARCHAR(50) NOT NULL DEFAULT 'admin', -- 'admin', 'client', 'guest', 'system'
+    actor_name VARCHAR(255) NULL,
+    action VARCHAR(100) NOT NULL,
+    entity_type VARCHAR(50) NOT NULL DEFAULT 'invitation',
+    entity_id VARCHAR(255) NULL,
+    description TEXT NOT NULL,
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_wedding_id ON activity_logs(wedding_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_slug ON activity_logs(slug, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_action ON activity_logs(action);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at DESC);
+
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read activity_logs" ON activity_logs;
+CREATE POLICY "Allow public read activity_logs" ON activity_logs FOR SELECT TO public USING (true);
+DROP POLICY IF EXISTS "Allow public insert activity_logs" ON activity_logs;
+CREATE POLICY "Allow public insert activity_logs" ON activity_logs FOR INSERT TO public WITH CHECK (true);
+
+-- 17. Create INVITATION REVISIONS Table (Snapshot history & rollback)
+CREATE TABLE IF NOT EXISTS invitation_revisions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    wedding_id UUID NOT NULL REFERENCES weddings(id) ON DELETE CASCADE,
+    revision_number INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    note TEXT NULL,
+    created_by VARCHAR(100) NOT NULL DEFAULT 'admin',
+    snapshot JSONB NOT NULL,
+    changes_summary JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_invitation_revisions_wedding ON invitation_revisions(wedding_id, revision_number DESC);
+
+ALTER TABLE invitation_revisions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read invitation_revisions" ON invitation_revisions;
+CREATE POLICY "Allow public read invitation_revisions" ON invitation_revisions FOR SELECT TO public USING (true);
+DROP POLICY IF EXISTS "Allow public insert invitation_revisions" ON invitation_revisions;
+CREATE POLICY "Allow public insert invitation_revisions" ON invitation_revisions FOR INSERT TO public WITH CHECK (true);

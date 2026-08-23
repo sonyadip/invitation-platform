@@ -53,7 +53,7 @@ export async function handlePasswordUnlock(input: {
   url: URL;
   weddingId: string;
   accessPassword: string | null;
-}): Promise<{ errorMessage: string; redirect?: Response }> {
+}): Promise<{ errorMessage: string; success?: boolean; redirectUrl?: string }> {
   if (input.request.method !== 'POST') {
     return { errorMessage: '' };
   }
@@ -68,24 +68,26 @@ export async function handlePasswordUnlock(input: {
     const hashedAccess = await hashPasswordSHA256(input.accessPassword || '');
 
     if (hashedEntered !== hashedAccess) {
-      return { errorMessage: 'The password you entered is incorrect.' };
+      return { errorMessage: 'Kata sandi akses tidak sesuai.' };
     }
 
+    const isSecure = input.url.protocol === 'https:';
     input.cookies.set(getUnlockCookieName(input.weddingId), hashedEntered, {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict'
+      secure: isSecure,
+      sameSite: 'lax'
     });
 
     return {
       errorMessage: '',
-      redirect: Response.redirect(`${input.url.origin}${input.url.pathname}${input.url.search}`, 302)
+      success: true,
+      redirectUrl: `${input.url.pathname}${input.url.search}`
     };
   } catch (err) {
     console.error('Password gate processing error:', err);
-    return { errorMessage: '' };
+    return { errorMessage: 'Terjadi kesalahan. Silakan coba lagi.' };
   }
 }
 
@@ -96,7 +98,7 @@ export function getInvitationAccessState(
 ) {
   const isMaintenance = settings.maintenance_mode;
   const isExpired = Boolean(settings.expiration_date && new Date(settings.expiration_date) < now);
-  const isPasswordLocked = settings.password_protection_enabled && !isUnlocked;
+  const isPasswordLocked = Boolean(settings.password_protection_enabled && settings.access_password) && !isUnlocked;
 
   return {
     isMaintenance,

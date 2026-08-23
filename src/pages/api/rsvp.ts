@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { jsonResponse } from '../../utils/http';
 import { validateRSVPInput } from '../../utils/security';
+import { logActivity } from '../../services/activity-log';
 
 export const prerender = false;
 
@@ -24,7 +25,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     if (!weddingId) {
-      return jsonResponse({ error: 'ID Pernikahan (weddingId) wajib disertakan.' }, 400);
+      return jsonResponse({ error: 'Wedding ID (weddingId) is required.' }, 400);
     }
 
     const normalizedMessage = message ? String(message).trim().slice(0, 500) : '';
@@ -43,7 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
       };
       return jsonResponse({
         success: true,
-        message: 'Kehadiran berhasil dikonfirmasi.',
+        message: 'RSVP confirmation submitted successfully.',
         item: mockItem
       });
     }
@@ -62,17 +63,17 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (settingsError || !settings) {
       console.error('[Noir RSVP API] settings lookup failed', { weddingId, settingsError });
-      return jsonResponse({ error: 'Pengaturan undangan tidak valid atau tidak ditemukan.' }, 404);
+      return jsonResponse({ error: 'Invitation settings not found or invalid.' }, 404);
     }
 
     // 2. Enforce RSVP enabled constraint
     if (!settings.rsvp_enabled) {
-      return jsonResponse({ error: 'Penerimaan konfirmasi kehadiran RSVP untuk undangan ini telah ditutup oleh admin.' }, 403);
+      return jsonResponse({ error: 'RSVP confirmation for this invitation has been closed by admin.' }, 403);
     }
 
     // 3. Enforce expiration constraint
     if (settings.expiration_date && new Date(settings.expiration_date) < new Date()) {
-      return jsonResponse({ error: 'Masa aktif undangan online telah berakhir. Pengiriman RSVP diblokir.' }, 403);
+      return jsonResponse({ error: 'The online invitation has expired. RSVP submission is closed.' }, 403);
     }
 
     // 4. Sanitize and validate parameters using our security engine
@@ -110,14 +111,33 @@ export const POST: APIRoute = async ({ request }) => {
       hasMessage: Boolean(insertedRSVP.message)
     });
 
+    // Log activity (fail-safe)
+    const statusText = validated.status === 'attending' ? 'Attending' : (validated.status === 'tentative' ? 'Tentative' : 'Declined');
+    await logActivity({
+      wedding_id: weddingId,
+      actor_type: 'guest',
+      actor_name: validated.name,
+      action: 'rsvp.submit',
+      entity_type: 'rsvp',
+      entity_id: insertedRSVP.id,
+      description: `Guest '${validated.name}' submitted RSVP confirmation (${statusText} - ${validated.count} pax).` + (normalizedMessage ? ` Message: "${normalizedMessage.slice(0, 80)}"` : ''),
+      metadata: {
+        guest_name: validated.name,
+        attendance_status: validated.status,
+        guest_count: validated.count,
+        has_message: Boolean(normalizedMessage)
+      }
+    });
+
     return jsonResponse({
       success: true,
-      message: 'Kehadiran berhasil dikonfirmasi.',
+      message: 'RSVP confirmation submitted successfully.',
       item: insertedRSVP
     });
+
   } catch (error: any) {
     console.error('RSVP submission api error:', error);
-    return jsonResponse({ error: error.message || 'Gagal memproses konfirmasi kehadiran.' }, 500);
+    return jsonResponse({ error: error.message || 'Failed to process RSVP confirmation.' }, 500);
   }
 };
 
@@ -127,7 +147,7 @@ export const DELETE: APIRoute = async ({ request }) => {
     const { id } = payload;
 
     if (!id) {
-      return jsonResponse({ error: 'id wajib disertakan.' }, 400);
+      return jsonResponse({ error: 'id is required.' }, 400);
     }
 
     const adminSupabase = await getSupabaseAdmin();
@@ -140,11 +160,11 @@ export const DELETE: APIRoute = async ({ request }) => {
 
     return jsonResponse({
       success: true,
-      message: 'Data RSVP berhasil dihapus.'
+      message: 'RSVP entry deleted successfully.'
     });
   } catch (error: any) {
     console.error('RSVP delete API error:', error);
-    return jsonResponse({ error: error.message || 'Gagal menghapus data RSVP.' }, 500);
+    return jsonResponse({ error: error.message || 'Failed to delete RSVP entry.' }, 500);
   }
 };
 

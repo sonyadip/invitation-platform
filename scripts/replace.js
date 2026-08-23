@@ -32,7 +32,8 @@ for (const t of templateDirs) {
     
     fs.writeFileSync(filePath, content, 'utf-8');
     changed++;
-    console.log(Updated  + t);
+    console.log('Updated ' + t);
   }
 }
-console.log(Updated  + changed +  templates.);
+console.log('Updated ' + changed + ' templates.');
+

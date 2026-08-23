@@ -32,8 +32,8 @@ const unlockResult = await handlePasswordUnlock({
   accessPassword: settings.access_password
 });
 
-if (unlockResult.redirect) {
-  return unlockResult.redirect;
+if (unlockResult.success && unlockResult.redirectUrl) {
+  return Astro.redirect(unlockResult.redirectUrl);
 }
 
 const errorMessage = unlockResult.errorMessage;

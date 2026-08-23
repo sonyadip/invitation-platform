@@ -52,9 +52,9 @@ if (Astro.request.method === 'POST') {
       meta_title: val('meta_title'),
       meta_description: val('meta_description'),
     });
-    successMessage = 'Settings berhasil disimpan.';
+    successMessage = 'Settings saved successfully.';
   } catch (error) {
-    errorMessage = error instanceof Error ? error.message : 'Gagal menyimpan settings.';
+    errorMessage = error instanceof Error ? error.message : 'Failed to save settings.';
   }
 }
 
@@ -62,7 +62,7 @@ const settings = await getPlatformSettings();
 ---
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -70,69 +70,69 @@ const settings = await getPlatformSettings();
     <meta name="robots" content="noindex, nofollow" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <main class="shell">
       <header class="header">
         <div>
-          <a class="back-link" href="/dashboard">← Back to dashboard</a>
-          <p class="eyebrow">Dashboard</p>
+          <a class="back-link" href="/dashboard">← Back to Dashboard</a>
+          <p class="eyebrow">Platform Management</p>
           <h1>Platform Settings</h1>
-          <p class="subtitle">Kelola identitas platform, link sosial media, dan konten homepage.</p>
+          <p class="subtitle">Manage brand identity, contact channels, homepage content, and SEO metadata.</p>
         </div>
-        <a class="secondary-action" href="/" target="_blank" rel="noopener noreferrer">Lihat Homepage</a>
+        <a class="secondary-action" href="/" target="_blank" rel="noopener noreferrer">🌐 View Landing Page</a>
       </header>
 
       {successMessage && <div class="success-panel">{successMessage}</div>}
       {errorMessage && <div class="error-panel">{errorMessage}</div>}
 
       <form class="form-panel" method="POST">
-        <!-- IDENTITAS -->
+        <!-- IDENTITY -->
         <section>
           <div class="section-label">
             <span class="section-icon">🏢</span>
             <div>
-              <h2>Identitas Platform</h2>
-              <p>Nama, tagline, dan logo yang tampil di seluruh platform.</p>
+              <h2>Platform Identity</h2>
+              <p>Name, tagline, and logos displayed across the platform.</p>
             </div>
           </div>
           <div class="form-grid">
             <label>
-              Nama Platform
+              Platform Name
               <input name="site_name" value={settings.site_name} placeholder="Senadda" required />
             </label>
             <label>
               Tagline
-              <input name="site_tagline" value={settings.site_tagline} placeholder="Undangan Digital Pernikahan" />
+              <input name="site_tagline" value={settings.site_tagline} placeholder="Digital Wedding Invitation Platform" />
             </label>
             <label class="wide">
-              URL Logo (Light)
+              Logo URL (Light)
               <input name="logo_url" value={settings.logo_url} placeholder="/images/senadda-logo.png" />
               {settings.logo_url && <img class="logo-preview" src={settings.logo_url} alt="Logo preview" />}
             </label>
             <label class="wide">
-              URL Logo (Dark / Alternatif)
+              Logo URL (Dark / Alternative)
               <input name="logo_dark_url" value={settings.logo_dark_url} placeholder="https://example.com/logo-dark.png" />
               {settings.logo_dark_url && <img class="logo-preview" src={settings.logo_dark_url} alt="Logo dark preview" />}
             </label>
           </div>
         </section>
 
-        <!-- SOCIAL MEDIA & KONTAK -->
+        <!-- SOCIAL MEDIA & CONTACT -->
         <section>
           <div class="section-label">
             <span class="section-icon">📱</span>
             <div>
-              <h2>Kontak & Sosial Media</h2>
-              <p>Link yang digunakan di tombol CTA, footer, dan link sosial media.</p>
+              <h2>Contact & Social Media</h2>
+              <p>Links used in CTA buttons, footer, and social media channels.</p>
             </div>
           </div>
           <div class="form-grid">
             <label>
               WhatsApp URL
               <input name="whatsapp_url" value={settings.whatsapp_url} placeholder="https://wa.me/6281234567890" />
-              <span class="hint">Gunakan format: https://wa.me/62812xxxxx</span>
+              <span class="hint">Format: https://wa.me/62812xxxxx</span>
             </label>
             <label>
               Email
@@ -157,113 +157,113 @@ const settings = await getPlatformSettings();
           </div>
         </section>
 
-        <!-- KONTEN HOMEPAGE -->
+        <!-- HOMEPAGE CONTENT -->
         <section>
           <div class="section-label">
             <span class="section-icon">🏠</span>
             <div>
-              <h2>Konten Homepage</h2>
-              <p>Teks hero, deskripsi, dan label tombol yang tampil di halaman utama.</p>
+              <h2>Homepage Content</h2>
+              <p>Hero texts, descriptions, and button labels on the main landing page.</p>
             </div>
           </div>
           <div class="form-grid">
             <label>
-              Heading Kata 1
-              <input name="home_heading_1" value={settings.home_heading_1} placeholder="Undangan" />
+              Heading Word 1
+              <input name="home_heading_1" value={settings.home_heading_1} placeholder="Wedding" />
             </label>
             <label>
-              Heading Kata 2
+              Heading Word 2
               <input name="home_heading_2" value={settings.home_heading_2} placeholder="Digital" />
             </label>
             <label>
-              Heading Kata 3
-              <input name="home_heading_3" value={settings.home_heading_3} placeholder="Pernikahan" />
+              Heading Word 3
+              <input name="home_heading_3" value={settings.home_heading_3} placeholder="Invitations" />
             </label>
             <label>
-              Label CTA (Tombol Utama)
-              <input name="home_cta_label" value={settings.home_cta_label} placeholder="Lihat Koleksi" />
+              CTA Button Label
+              <input name="home_cta_label" value={settings.home_cta_label} placeholder="View Collection" />
             </label>
             <label class="wide">
-              Teks Segel Animasi
-              <input name="home_hero_seal_text" value={settings.home_hero_seal_text} placeholder="SENADDA • DIGITAL STUDIO • UNDANGAN •" />
+              Animated Seal Text
+              <input name="home_hero_seal_text" value={settings.home_hero_seal_text} placeholder="SENADDA • DIGITAL STUDIO • INVITATION •" />
             </label>
             <label class="wide">
-              Deskripsi Hero
+              Hero Description
               <textarea name="home_description" rows="3">{settings.home_description}</textarea>
             </label>
           </div>
         </section>
 
-        <!-- KONTEN STATISTIK -->
+        <!-- HERO STATS -->
         <section>
           <div class="section-label">
             <span class="section-icon">📈</span>
             <div>
-              <h2>Statistik (Hero)</h2>
-              <p>Angka dan label untuk statistik yang muncul di hero section.</p>
+              <h2>Hero Statistics</h2>
+              <p>Stat metric and label displayed in the hero section.</p>
             </div>
           </div>
           <div class="form-grid">
             <label>
-              Angka Statistik
+              Statistic Number
               <input name="home_stat_number" value={settings.home_stat_number} placeholder="5+" />
             </label>
             <label>
-              Label Statistik
-              <input name="home_stat_label" value={settings.home_stat_label} placeholder="Koleksi Eksklusif" />
+              Statistic Label
+              <input name="home_stat_label" value={settings.home_stat_label} placeholder="Exclusive Designs" />
             </label>
           </div>
         </section>
 
-        <!-- KONTEN TEMPLATE -->
+        <!-- TEMPLATES COLLECTION -->
         <section>
           <div class="section-label">
             <span class="section-icon">🎨</span>
             <div>
-              <h2>Koleksi Desain</h2>
-              <p>Teks untuk section koleksi desain (templates).</p>
+              <h2>Design Collection</h2>
+              <p>Texts and catalog cards for the template showcase section.</p>
             </div>
           </div>
           <div class="form-grid">
             <label>
-              Label Kecil (Eyebrow)
-              <input name="home_templates_eyebrow" value={settings.home_templates_eyebrow} placeholder="Koleksi Desain" />
+              Eyebrow Subtitle
+              <input name="home_templates_eyebrow" value={settings.home_templates_eyebrow} placeholder="Design Collection" />
             </label>
             <label>
               Heading
-              <input name="home_templates_heading" value={settings.home_templates_heading} placeholder="Pilih Nuansa." />
+              <input name="home_templates_heading" value={settings.home_templates_heading} placeholder="Choose Your Theme." />
             </label>
             <div class="wide repeater-field">
-              <label>Data Kartu Desain</label>
+              <label>Design Catalog Cards</label>
               <input type="hidden" name="home_template_cards" id="template_cards_input" value={JSON.stringify(settings.home_template_cards)} />
               <div id="template_cards_container" class="repeater-container"></div>
-              <button type="button" id="add_template_card_btn" class="secondary-action" style="margin-top: 10px;">+ Tambah Kartu</button>
-              <span class="hint" style="display:block; margin-top: 8px;">Default template key: lumiere, deauville, air, editorial, noir, sage, ochre, ivory. Jika image kosong, gambar bawaan template akan digunakan.</span>
+              <button type="button" id="add_template_card_btn" class="secondary-action" style="margin-top: 10px;">+ Add Card</button>
+              <span class="hint" style="display:block; margin-top: 8px;">Default template keys: lumiere, deauville, air, editorial, noir, sage, ochre, ivory. If image URL is blank, default theme preview will be used.</span>
             </div>
           </div>
         </section>
 
-        <!-- KONTEN BOOKING -->
+        <!-- BOOKING / CONTACT SECTION -->
         <section>
           <div class="section-label">
             <span class="section-icon">💬</span>
             <div>
-              <h2>Section Booking</h2>
-              <p>Teks untuk section hubungi kami / booking.</p>
+              <h2>Booking & Contact Section</h2>
+              <p>Texts for the booking inquiry call-to-action.</p>
             </div>
           </div>
           <div class="form-grid">
             <label>
-              Label Kecil (Eyebrow)
-              <input name="home_booking_eyebrow" value={settings.home_booking_eyebrow} placeholder="Langkah Selanjutnya" />
+              Eyebrow Subtitle
+              <input name="home_booking_eyebrow" value={settings.home_booking_eyebrow} placeholder="Next Steps" />
             </label>
             <label>
               Heading
-              <input name="home_booking_heading" value={settings.home_booking_heading} placeholder="Ceritakan undangan Anda." />
+              <input name="home_booking_heading" value={settings.home_booking_heading} placeholder="Tell us about your wedding." />
             </label>
             <label class="wide">
-              Label Tombol WhatsApp
-              <input name="home_booking_cta" value={settings.home_booking_cta} placeholder="Hubungi via WhatsApp" />
+              WhatsApp Button Label
+              <input name="home_booking_cta" value={settings.home_booking_cta} placeholder="Contact via WhatsApp" />
             </label>
           </div>
         </section>
@@ -273,14 +273,14 @@ const settings = await getPlatformSettings();
           <div class="section-label">
             <span class="section-icon">🔍</span>
             <div>
-              <h2>SEO & Meta</h2>
-              <p>Title dan deskripsi yang tampil di Google dan share link.</p>
+              <h2>SEO & Metadata</h2>
+              <p>Title and description displayed on search engines and social share previews.</p>
             </div>
           </div>
           <div class="form-grid">
             <label class="wide">
               Meta Title
-              <input name="meta_title" value={settings.meta_title} placeholder="Senadda - Undangan Digital Pernikahan" />
+              <input name="meta_title" value={settings.meta_title} placeholder="Senadda - Digital Wedding Invitations" />
             </label>
             <label class="wide">
               Meta Description
@@ -290,8 +290,8 @@ const settings = await getPlatformSettings();
         </section>
 
         <footer class="form-actions">
-          <a href="/dashboard">Batal</a>
-          <button type="submit">Simpan Settings</button>
+          <a href="/dashboard">Cancel</a>
+          <button type="submit">Save Settings</button>
         </footer>
       </form>
     </main>
@@ -318,27 +318,27 @@ const settings = await getPlatformSettings();
             row.innerHTML = `
               <div class="repeater-grid">
                 <label>
-                  Key (Tema)
+                  Theme Key
                   <input type="text" placeholder="lumiere" value="${card.key || ''}" data-idx="${index}" data-field="key" />
                 </label>
                 <label>
-                  Nama Kartu
+                  Card Name
                   <input type="text" placeholder="Lumiere" value="${card.name || ''}" data-idx="${index}" data-field="name" />
                 </label>
                 <label>
-                  Harga
+                  Price
                   <input type="text" placeholder="Rp 350.000" value="${card.price || ''}" data-idx="${index}" data-field="price" />
                 </label>
                 <label>
-                  Harga Promo
+                  Promo Price
                   <input type="text" placeholder="Rp 200.000" value="${card.promoPrice || ''}" data-idx="${index}" data-field="promoPrice" />
                 </label>
                 <label>
                   Image URL
-                  <input type="text" placeholder="(Opsional)" value="${card.image || ''}" data-idx="${index}" data-field="image" />
+                  <input type="text" placeholder="(Optional)" value="${card.image || ''}" data-idx="${index}" data-field="image" />
                 </label>
               </div>
-              <button type="button" class="remove-btn" data-idx="${index}">Hapus</button>
+              <button type="button" class="remove-btn" data-idx="${index}">Delete</button>
             `;
             container.appendChild(row);
           });
@@ -382,13 +382,14 @@ const settings = await getPlatformSettings();
     min-height: 100vh;
     background: #f4f5f7;
     color: #20242c;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   .shell {
     width: min(1100px, 100%);
     margin: 0 auto;
     padding: 28px;
+    font-family: 'Montserrat', sans-serif;
   }
 
   .header {
@@ -406,6 +407,7 @@ const settings = await getPlatformSettings();
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
   }
 
   .secondary-action {
@@ -421,6 +423,7 @@ const settings = await getPlatformSettings();
     font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
+    font-family: 'Montserrat', sans-serif;
   }
 
   .eyebrow {
@@ -430,12 +433,13 @@ const settings = await getPlatformSettings();
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
   }
 
-  h1 { margin: 0 0 8px; font-size: 32px; }
-  h2 { margin: 0 0 4px; font-size: 17px; }
+  h1 { margin: 0 0 8px; font-size: 32px; font-family: 'Montserrat', sans-serif; }
+  h2 { margin: 0 0 4px; font-size: 17px; font-family: 'Montserrat', sans-serif; }
 
-  .subtitle { margin: 0; color: #687080; font-size: 14px; }
+  .subtitle { margin: 0; color: #687080; font-size: 14px; font-family: 'Montserrat', sans-serif; }
 
   .success-panel,
   .error-panel {

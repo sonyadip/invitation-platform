@@ -1,0 +1,858 @@
+---
+import { getActivityLogs, getActivityStats } from '../../services/activity-log';
+import { getDashboardReport } from '../../services/dashboard-report';
+
+export const prerender = false;
+
+const authRole = Astro.cookies.get('auth_role')?.value;
+if (authRole !== 'admin') {
+  return Astro.redirect('/?login=admin');
+}
+
+const url = Astro.url;
+const searchParam = url.searchParams.get('q') || '';
+const slugParam = url.searchParams.get('slug') || '';
+const actionParam = url.searchParams.get('action') || '';
+const actorParam = url.searchParams.get('actor') || '';
+const pageParam = parseInt(url.searchParams.get('page') || '1', 10);
+const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+const pageSize = 30;
+const offset = (currentPage - 1) * pageSize;
+
+const [stats, logsResponse, report] = await Promise.all([
+  getActivityStats(),
+  getActivityLogs({
+    search: searchParam || undefined,
+    slug: slugParam || undefined,
+    action: actionParam || undefined,
+    actorType: actorParam || undefined,
+    limit: pageSize,
+    offset
+  }),
+  getDashboardReport().catch(() => null)
+]);
+
+const totalPages = Math.ceil(logsResponse.total / pageSize) || 1;
+const allSlugs = (report?.reports || []).map(r => r.slug).sort();
+
+function getActionBadge(action: string): { label: string; bg: string; color: string; icon: string } {
+  switch (action) {
+    case 'invitation.create':
+      return { label: 'Create Invitation', bg: '#dcfce7', color: '#15803d', icon: '✨' };
+    case 'invitation.update':
+      return { label: 'Update Data', bg: '#e0f2fe', color: '#0369a1', icon: '✏️' };
+    case 'invitation.duplicate':
+      return { label: 'Duplicate', bg: '#fef3c7', color: '#b45309', icon: '📋' };
+    case 'invitation.soft_delete':
+      return { label: 'Soft Delete', bg: '#fee2e2', color: '#b91c1c', icon: '🗑️' };
+    case 'invitation.restore':
+      return { label: 'Restore Invitation', bg: '#f3e8ff', color: '#7e22ce', icon: '♻️' };
+    case 'invitation.permanent_delete':
+      return { label: 'Permanent Delete', bg: '#fecaca', color: '#991b1b', icon: '🔥' };
+    case 'invitation.reset_views':
+      return { label: 'Reset Views', bg: '#f1f5f9', color: '#475569', icon: '👁️' };
+    case 'invitation.reset_rsvps':
+      return { label: 'Reset RSVPs', bg: '#fee2e2', color: '#991b1b', icon: '🧹' };
+    case 'rsvp.submit':
+      return { label: 'Guest RSVP', bg: '#dcfce7', color: '#166534', icon: '💌' };
+    case 'rsvp.delete':
+      return { label: 'Delete RSVP', bg: '#fee2e2', color: '#991b1b', icon: '❌' };
+    case 'platform.update':
+      return { label: 'Platform Settings', bg: '#ffedd5', color: '#c2410c', icon: '⚙️' };
+    case 'revision.restore':
+      return { label: 'Rollback Revision', bg: '#fae8ff', color: '#86198f', icon: '⏪' };
+    case 'revision.checkpoint':
+      return { label: 'Checkpoint', bg: '#e0e7ff', color: '#3730a3', icon: '🔖' };
+    case 'auth.login':
+      return { label: 'Login Success', bg: '#f1f5f9', color: '#334155', icon: '🔑' };
+    case 'auth.login_failed':
+      return { label: 'Login Failed', bg: '#fee2e2', color: '#991b1b', icon: '⚠️' };
+    case 'auth.logout':
+      return { label: 'Logout', bg: '#f1f5f9', color: '#64748b', icon: '🚪' };
+    case 'auth.setup':
+      return { label: 'Client Setup', bg: '#dbeafe', color: '#1e40af', icon: '🎉' };
+    default:
+      return { label: action, bg: '#f1f5f9', color: '#475569', icon: '📌' };
+  }
+}
+
+function getActorBadge(actorType: string): { label: string; bg: string; color: string } {
+  switch (actorType) {
+    case 'admin':
+      return { label: 'Admin', bg: '#1e293b', color: '#ffffff' };
+    case 'client':
+      return { label: 'Client', bg: '#6b21a8', color: '#ffffff' };
+    case 'guest':
+      return { label: 'Guest', bg: '#047857', color: '#ffffff' };
+    default:
+      return { label: 'System', bg: '#64748b', color: '#ffffff' };
+  }
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function formatFullDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleString('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activity Log & Audit Trail - Dashboard</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <main class="dashboard-shell">
+      <header class="dashboard-header">
+        <div>
+          <a class="back-link" href="/dashboard">← Back to Dashboard</a>
+          <p class="eyebrow">Audit Trail & Security Monitoring</p>
+          <h1>Activity Log</h1>
+          <p class="subtitle">System audit trail, administrative actions, client updates, and security events.</p>
+        </div>
+        <div class="header-actions">
+          <a class="secondary-action" href="/dashboard">📊 Dashboard Overview</a>
+          <a class="secondary-action" href="/dashboard/settings">⚙ Platform Settings</a>
+        </div>
+      </header>
+
+      <!-- Stats Overview -->
+      <section class="metric-grid" aria-label="Activity summary">
+        <div class="metric">
+          <span>Total Logs</span>
+          <strong>{stats.totalLogs.toLocaleString('en-US')}</strong>
+        </div>
+        <div class="metric">
+          <span>Activities (24h)</span>
+          <strong>{stats.recent24h.toLocaleString('en-US')}</strong>
+        </div>
+        <div class="metric">
+          <span>Revisions (24h)</span>
+          <strong>{stats.revisionCount24h.toLocaleString('en-US')}</strong>
+        </div>
+        <div class="metric">
+          <span>Admin Actions (24h)</span>
+          <strong>{stats.adminActions24h.toLocaleString('en-US')}</strong>
+        </div>
+      </section>
+
+      <!-- Filter Form -->
+      <section class="filter-card">
+        <form method="GET" class="filter-form">
+          <div class="filter-field search-field">
+            <label for="q">Search</label>
+            <input
+              type="text"
+              id="q"
+              name="q"
+              placeholder="Search by keyword, description, or user..."
+              value={searchParam}
+            />
+          </div>
+
+          <div class="filter-field">
+            <label for="slug">Invitation (Slug)</label>
+            <select id="slug" name="slug">
+              <option value="">-- All Invitations --</option>
+              {allSlugs.map(slug => (
+                <option value={slug} selected={slugParam === slug}>{slug}</option>
+              ))}
+            </select>
+          </div>
+
+          <div class="filter-field">
+            <label for="action">Action</label>
+            <select id="action" name="action">
+              <option value="">-- All Actions --</option>
+              <option value="invitation.create" selected={actionParam === 'invitation.create'}>✨ Create Invitation</option>
+              <option value="invitation.update" selected={actionParam === 'invitation.update'}>✏️ Update Invitation</option>
+              <option value="invitation.duplicate" selected={actionParam === 'invitation.duplicate'}>📋 Duplicate Invitation</option>
+              <option value="invitation.soft_delete" selected={actionParam === 'invitation.soft_delete'}>🗑️ Soft Delete</option>
+              <option value="invitation.restore" selected={actionParam === 'invitation.restore'}>♻️ Restore Invitation</option>
+              <option value="revision.restore" selected={actionParam === 'revision.restore'}>⏪ Rollback Revision</option>
+              <option value="rsvp.submit" selected={actionParam === 'rsvp.submit'}>💌 Guest RSVP</option>
+              <option value="platform.update" selected={actionParam === 'platform.update'}>⚙️ Platform Settings</option>
+              <option value="auth.login" selected={actionParam === 'auth.login'}>🔑 Login Success</option>
+              <option value="auth.login_failed" selected={actionParam === 'auth.login_failed'}>⚠️ Login Failed</option>
+              <option value="auth.logout" selected={actionParam === 'auth.logout'}>🚪 Logout</option>
+              <option value="auth.setup" selected={actionParam === 'auth.setup'}>🎉 Client Setup</option>
+            </select>
+          </div>
+
+          <div class="filter-field">
+            <label for="actor">Role Type</label>
+            <select id="actor" name="actor">
+              <option value="">-- All Roles --</option>
+              <option value="admin" selected={actorParam === 'admin'}>Admin</option>
+              <option value="client" selected={actorParam === 'client'}>Client</option>
+            </select>
+          </div>
+
+          <div class="filter-actions">
+            <button type="submit" class="apply-btn">Apply Filters</button>
+            {(searchParam || slugParam || actionParam || actorParam) && (
+              <a href="/dashboard/activity" class="reset-btn">Reset</a>
+            )}
+          </div>
+        </form>
+      </section>
+
+      <!-- Logs Table -->
+      <section class="report-section">
+        <div class="section-heading">
+          <div>
+            <h2>Audit Logs</h2>
+            <p>Showing {logsResponse.items.length} of {logsResponse.total} total recorded activities</p>
+          </div>
+        </div>
+
+        {logsResponse.items.length === 0 ? (
+          <div class="empty-state">
+            <p class="empty-title">No activity logs match the current filter.</p>
+            <p class="empty-sub">New system and user activities will automatically appear here.</p>
+          </div>
+        ) : (
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th style="width: 170px;">Timestamp</th>
+                  <th style="width: 120px;">Role Type</th>
+                  <th style="width: 150px;">Action</th>
+                  <th style="width: 140px;">Invitation</th>
+                  <th>Description</th>
+                  <th style="width: 80px; text-align: center;">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logsResponse.items.map((log) => {
+                  const actionBadge = getActionBadge(log.action);
+                  const actorBadge = getActorBadge(log.actor_type);
+                  const hasMeta = log.metadata && Object.keys(log.metadata).length > 0;
+
+                  return (
+                    <tr class="log-row">
+                      <td>
+                        <div class="time-col">
+                          <strong>{timeAgo(log.created_at)}</strong>
+                          <span>{formatFullDate(log.created_at)}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="actor-badge" style={`background:${actorBadge.bg}; color:${actorBadge.color};`}>
+                          {log.actor_name || actorBadge.label}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="action-badge" style={`background:${actionBadge.bg}; color:${actionBadge.color};`}>
+                          <span class="action-icon">{actionBadge.icon}</span>
+                          <span>{actionBadge.label}</span>
+                        </span>
+                      </td>
+                      <td>
+                        {log.slug ? (
+                          <div class="slug-cell">
+                            <a href={`/dashboard/${log.slug}`} class="slug-link">{log.slug}</a>
+                            <div class="slug-subactions">
+                              <a href={`/dashboard/${log.slug}/edit`}>Edit</a>
+                              <span class="dot">•</span>
+                              <a href={`/dashboard/${log.slug}/revisions`}>Revisions</a>
+                            </div>
+                          </div>
+                        ) : (
+                          <span class="text-muted">Global</span>
+                        )}
+                      </td>
+                      <td>
+                        <p class="description-text">{log.description}</p>
+                      </td>
+                      <td style="text-align: center;">
+                        {hasMeta ? (
+                          <details class="meta-details">
+                            <summary class="meta-toggle" title="View metadata details">JSON</summary>
+                            <div class="meta-content">
+                              <pre>{JSON.stringify(log.metadata, null, 2)}</pre>
+                            </div>
+                          </details>
+                        ) : (
+                          <span class="text-muted">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <!-- Pagination -->
+        {totalPages > 1 && (
+          <div class="pagination">
+            {currentPage > 1 ? (
+              <a
+                class="page-btn"
+                href={`/dashboard/activity?page=${currentPage - 1}${searchParam ? `&q=${encodeURIComponent(searchParam)}` : ''}${slugParam ? `&slug=${encodeURIComponent(slugParam)}` : ''}${actionParam ? `&action=${encodeURIComponent(actionParam)}` : ''}${actorParam ? `&actor=${encodeURIComponent(actorParam)}` : ''}`}
+              >
+                ← Previous
+              </a>
+            ) : (
+              <span class="page-btn disabled">← Previous</span>
+            )}
+
+            <span class="page-info">
+              Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+            </span>
+
+            {currentPage < totalPages ? (
+              <a
+                class="page-btn"
+                href={`/dashboard/activity?page=${currentPage + 1}${searchParam ? `&q=${encodeURIComponent(searchParam)}` : ''}${slugParam ? `&slug=${encodeURIComponent(slugParam)}` : ''}${actionParam ? `&action=${encodeURIComponent(actionParam)}` : ''}${actorParam ? `&actor=${encodeURIComponent(actorParam)}` : ''}`}
+              >
+                Next →
+              </a>
+            ) : (
+              <span class="page-btn disabled">Next →</span>
+            )}
+          </div>
+        )}
+      </section>
+    </main>
+  </body>
+</html>
+
+<style lang="scss">
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  :global(body) {
+    margin: 0;
+    min-height: 100vh;
+    background: #f4f5f7;
+    color: #20242c;
+    font-family: Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .dashboard-shell {
+    width: min(1440px, 100%);
+    margin: 0 auto;
+    padding: 28px;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #4b5563;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #111827;
+      text-decoration: underline;
+    }
+  }
+
+  .eyebrow {
+    margin: 0 0 4px;
+    color: #687080;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: #687080;
+    font-size: 14px;
+    line-height: 1.5;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .primary-action {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 16px;
+    border-radius: 6px;
+    background: #1e293b;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #0f172a;
+    }
+  }
+
+  .secondary-action {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border: 1px solid #d9dde5;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #394150;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      background: #f9fafb;
+    }
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .metric {
+    padding: 16px 18px;
+    border: 1px solid #e2e5eb;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+
+    span {
+      display: block;
+      margin-bottom: 6px;
+      color: #687080;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    strong {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+  }
+
+  .filter-card {
+    margin-bottom: 22px;
+    padding: 18px 20px;
+    border: 1px solid #e2e5eb;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+  }
+
+  .filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 170px;
+    flex: 1;
+
+    &.search-field {
+      min-width: 260px;
+      flex: 2;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    input, select {
+      height: 38px;
+      padding: 0 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #1e293b;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease;
+
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+      }
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .apply-btn {
+    height: 38px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 6px;
+    background: #0284c7;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #0369a1;
+    }
+  }
+
+  .reset-btn {
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+
+  .report-section {
+    padding: 20px 22px;
+    border: 1px solid #e2e5eb;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    p {
+      margin: 0;
+      color: #64748b;
+      font-size: 13px;
+    }
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    th {
+      padding: 10px 14px;
+      border-bottom: 2px solid #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: left;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #edf2f7;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: #fcfdfe;
+    }
+  }
+
+  .time-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      color: #0f172a;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    span {
+      color: #94a3b8;
+      font-size: 11px;
+    }
+  }
+
+  .actor-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .action-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .slug-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .slug-link {
+    color: #0284c7;
+    font-weight: 700;
+    text-decoration: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .slug-subactions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+
+    a {
+      color: #64748b;
+      text-decoration: none;
+
+      &:hover {
+        color: #0f172a;
+        text-decoration: underline;
+      }
+    }
+
+    .dot {
+      color: #cbd5e1;
+    }
+  }
+
+  .description-text {
+    margin: 0;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .meta-details {
+    position: relative;
+    display: inline-block;
+  }
+
+  .meta-toggle {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background: #e2e8f0;
+    }
+  }
+
+  .meta-content {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 50;
+    margin-top: 6px;
+    min-width: 320px;
+    max-width: 440px;
+    max-height: 250px;
+    overflow: auto;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #f8fafc;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+
+    pre {
+      margin: 0;
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  }
+
+  .text-muted {
+    color: #94a3b8;
+    font-size: 12px;
+  }
+
+  .empty-state {
+    padding: 48px 20px;
+    text-align: center;
+
+    .empty-title {
+      margin: 0 0 6px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .empty-sub {
+      margin: 0;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #edf2f7;
+  }
+
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+
+    &:hover:not(.disabled) {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    &.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      background: #f1f5f9;
+    }
+  }
+
+  .page-info {
+    font-size: 13px;
+    color: #64748b;
+
+    strong {
+      color: #0f172a;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-shell {
+      padding: 16px;
+    }
+
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .filter-form {
+      flex-direction: column;
+    }
+
+    .filter-field {
+      width: 100%;
+    }
+  }
+</style>

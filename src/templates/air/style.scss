@@ -205,7 +205,7 @@ body.template-air {
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: clamp(20px, 4vw, 36px);
+    padding: 20px;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.14em;
@@ -235,8 +235,8 @@ body.template-air {
     z-index: 1;
     align-self: end;
     width: min(960px, 100%);
-    padding: clamp(24px, 5vw, 64px);
-    padding-bottom: clamp(70px, 12vw, 110px);
+    padding: 24px;
+    padding-bottom: 70px;
   }
 
   .cover-section__subtitle,
@@ -257,7 +257,7 @@ body.template-air {
     position: relative;
     display: block;
     margin: 16px 0 28px;
-    font-size: clamp(52px, 14vw, 180px);
+    font-size: 52px;
     font-weight: 600;
     line-height: 0.84;
     letter-spacing: -0.02em;
@@ -269,7 +269,7 @@ body.template-air {
     font-family: "La Luxes Script", var(--air-font-serif);
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(85px, 16vw, 210px);
+    font-size: 85px;
     position: absolute;
     right: 50%;
     left: -8px;
@@ -325,16 +325,16 @@ body.template-air {
 
   .cover-section__btn {
     position: absolute;
-    bottom: clamp(24px, 5vw, 64px);
-    left: clamp(24px, 5vw, 64px);
+    bottom: 24px;
+    left: 24px;
     z-index: 2;
     width: max-content;
   }
 
   .hero-section__scroll-btn {
     position: absolute;
-    bottom: clamp(24px, 5vw, 64px);
-    right: clamp(24px, 5vw, 64px);
+    bottom: 24px;
+    right: 24px;
     z-index: 2;
     display: flex;
     align-items: center;
@@ -366,8 +366,8 @@ body.template-air {
   /* INTRO SECTION */
   .intro-section {
     display: grid;
-    gap: clamp(28px, 5vw, 64px);
-    padding: clamp(60px, 10vw, 140px) clamp(20px, 4vw, 64px);
+    gap: 28px;
+    padding: 60px 20px;
   }
 
   .intro-section__logo {
@@ -375,7 +375,7 @@ body.template-air {
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 16px;
-    font-size: clamp(64px, 18vw, 200px);
+    font-size: 64px;
     font-weight: 600;
     line-height: 0.8;
     letter-spacing: -0.03em;
@@ -390,7 +390,7 @@ body.template-air {
   .intro-section p {
     max-width: 860px;
     margin: 0 0 0 auto;
-    font-size: clamp(16px, 3.8vw, 32px);
+    font-size: 16px;
     line-height: 1.3;
     font-weight: 400;
     text-align: center;
@@ -402,7 +402,7 @@ body.template-air {
 
   /* SECTIONS COMMON */
   .template-section {
-    padding: clamp(80px, 9vw, 160px) clamp(20px, 4vw, 64px);
+    padding: 80px 20px;
   }
 
   .template-section__head {
@@ -410,13 +410,13 @@ body.template-air {
     flex-direction: column;
     gap: 8px;
     align-items: flex-start;
-    margin-bottom: clamp(32px, 6vw, 76px);
+    margin-bottom: 32px;
   }
 
   .template-section__head h3,
   .countdown-section__head h3 {
     margin: 0;
-    font-size: clamp(38px, 8.5vw, 120px);
+    font-size: 38px;
     font-weight: 600;
     line-height: 0.88;
     letter-spacing: -0.02em;
@@ -426,13 +426,13 @@ body.template-air {
   /* COUPLE SECTION REDESIGN */
 
   .couple-section {
-    padding: clamp(32px, 9vw, 80px) clamp(20px, 4vw, 64px) clamp(80px, 9vw, 240px);
+    padding: 32px 20px 80px;
   }
 
   .couple-section__intro {
     max-width: 820px;
-    margin-bottom: clamp(36px, 6vw, 72px);
-    font-size: clamp(17px, 2.4vw, 24px);
+    margin-bottom: 36px;
+    font-size: 17px;
     line-height: 1.5;
     color: var(--air-muted);
   }
@@ -442,7 +442,7 @@ body.template-air {
   .couple-swiss {
     display: flex;
     flex-direction: column;
-    gap: clamp(140px, 20vw, 240px);
+    gap: 140px;
     max-width: 1200px;
     margin: 0 auto;
     position: relative;
@@ -490,7 +490,7 @@ body.template-air {
     grid-row: 1;
     z-index: 2;
     background: rgba(255, 255, 255, 0.95);
-    padding: clamp(32px, 5vw, 64px);
+    padding: 32px;
     align-self: end;
     margin-bottom: -40px; /* Overlaps bottom edge of image */
     text-align: left;
@@ -507,7 +507,7 @@ body.template-air {
     grid-row: 1;
     z-index: 2;
     background: rgba(255, 255, 255, 0.95);
-    padding: clamp(32px, 5vw, 64px);
+    padding: 32px;
     align-self: start;
     margin-top: -40px; /* Overlaps top edge of image */
     text-align: right;
@@ -519,7 +519,7 @@ body.template-air {
     left: 50%;
     transform: translate(-50%, -50%);
     font-family: var(--air-display);
-    font-size: clamp(120px, 20vw, 300px);
+    font-size: 120px;
     color: var(--air-soft);
     z-index: 0;
     pointer-events: none;
@@ -552,7 +552,7 @@ body.template-air {
   }
 
   .couple-swiss__item h4 {
-    font-size: clamp(32px, 4vw, 56px);
+    font-size: 32px;
     margin: 0 0 16px;
     font-weight: 500;
     line-height: 1.1;
@@ -632,13 +632,13 @@ body.template-air {
     flex-direction: column;
     gap: 16px;
     min-height: 420px;
-    padding: clamp(24px, 4vw, 48px);
+    padding: 24px;
     background: var(--air-dark);
   }
 
   .event-card h4 {
     margin: 4px 0;
-    font-size: clamp(28px, 4vw, 56px);
+    font-size: 28px;
     font-weight: 600;
     line-height: 0.94;
   }
@@ -668,16 +668,15 @@ body.template-air {
   .countdown-section {
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(280px, 1fr) auto;
-    gap: clamp(24px, 4vw, 56px);
+    gap: 24px;
     align-items: center;
-    // padding: clamp(48px, 8vw, 100px) clamp(20px, 4vw, 64px);
     background: var(--air-white);
     border-bottom: 1px solid var(--air-line);
   }
 
   .countdown-section__head h3 {
     margin-top: 10px;
-    font-size: clamp(32px, 5.5vw, 76px);
+    font-size: 32px;
   }
 
   .countdown-grid {
@@ -702,7 +701,7 @@ body.template-air {
   }
 
   .countdown-item__value {
-    font-size: clamp(26px, 4.5vw, 58px);
+    font-size: 26px;
     font-weight: 700;
     line-height: 1;
   }
@@ -721,42 +720,38 @@ body.template-air {
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
-    margin-bottom: clamp(14px, 3vw, 20px);
+    margin-bottom: 14px;
     overflow: hidden;
-    background: var(--air-dark);
     border-radius: var(--air-radius-sm);
-    border: 1px solid var(--air-line);
+    background: #000;
+  }
 
-    img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 600ms ease;
-    }
-
-    &:hover img {
-      transform: scale(1.04);
-    }
+  .gallery-section__video-el {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .gallery-section__play {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-items: center;
-    background: rgba(13, 18, 16, 0.35);
-    color: var(--air-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13, 18, 16, 0.25);
+    border: 0;
+    cursor: pointer;
     transition: background 300ms ease;
 
     svg {
       width: 56px;
       height: 56px;
+      color: #fff;
       padding: 14px;
-      border-radius: 50%;
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
       transition: transform 300ms ease, background 300ms ease;
     }
   }
@@ -773,7 +768,7 @@ body.template-air {
   .gallery-section__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: clamp(130px, 15vw, 210px);
+    grid-auto-rows: 130px;
     grid-auto-flow: dense;
     gap: 8px;
   }
@@ -832,12 +827,12 @@ body.template-air {
   .rsvp-section__grid {
     display: grid;
     grid-template-columns: minmax(280px, 0.8fr) minmax(280px, 1fr);
-    gap: clamp(24px, 4vw, 56px);
+    gap: 24px;
   }
 
   .rsvp-section__panel,
   .gift-card {
-    padding: clamp(24px, 3.5vw, 40px);
+    padding: 24px;
     border: 1px solid var(--air-line);
     border-radius: var(--air-radius-sm);
     background: var(--air-white);
@@ -1141,7 +1136,7 @@ body.template-air {
     margin: 0;
     color: var(--air-white);
     font-family: 'Billion Miracles', cursive;
-    font-size: clamp(55px, 12vw, 65px);
+    font-size: 55px;
     font-weight: 400;
     line-height: 0.5;
     letter-spacing: 1px;
@@ -1337,7 +1332,7 @@ body.template-air {
     .couple-swiss__item--bride-text,
     .couple-swiss__item--groom-text {
       width: 85%;
-      padding: clamp(32px, 8vw, 48px);
+      padding: 32px;
       background: rgba(255, 255, 255, 1);
       position: relative;
       z-index: 2;
@@ -1379,7 +1374,7 @@ body.template-air {
 
     .gallery-section__grid {
       grid-template-columns: repeat(3, 1fr);
-      grid-auto-rows: clamp(100px, 18vw, 150px);
+      grid-auto-rows: 100px;
       gap: 6px;
     }
 
@@ -1406,7 +1401,7 @@ body.template-air {
 
     .cover-section__title,
     .hero-section__title {
-      font-size: clamp(48px, 18vw, 84px);
+      font-size: 48px;
     }
 
     .hero-section__meta,
@@ -1416,7 +1411,7 @@ body.template-air {
     }
 
     .intro-section__logo {
-      font-size: 22vw;
+      font-size: 52px;
     }
 
     .gallery-section__grid {
@@ -1468,12 +1463,12 @@ body.template-air {
       min-height: unset;
 
       .cover-section__title {
-        font-size: clamp(36px, 5vw, 84px);
+        font-size: 64px;
         margin: 12px 0 20px;
       }
 
       .cover-section__amp {
-        font-size: clamp(56px, 7vw, 120px);
+        font-size: 96px;
       }
 
       .cover-section__btn {

@@ -1,17 +1,39 @@
 # Senadda
 
-> Layanan undangan digital dan Undangan Digital dengan desain elegan, personal, dan mudah dibagikan.
+> Undangan pernikahan digital dengan desain yang elegan, personal, dan mudah dibagikan.
 
-Senadda adalah platform pembuatan undangan digital (wedding invitation) yang berfokus pada desain yang premium, elegan, dan eksklusif. Kami membantu pasangan membagikan momen bahagia mereka tanpa batas jarak dan waktu.
+Senadda adalah platform undangan pernikahan digital yang membantu pasangan membuat dan membagikan undangan untuk hari istimewa mereka.
+
+Kami menghadirkan berbagai desain undangan yang dirancang dengan perhatian pada tampilan, detail, dan pengalaman saat dibagikan kepada keluarga dan teman.
 
 ## Layanan Kami
-- Pembuatan Undangan Digital Pernikahan
-- Template eksklusif (Lumiere, Deauville, Air, Editorial, Noir, dll.)
-- Undangan Digital dengan fitur RSVP, integrasi kalender, dan galeri foto.
+
+- Undangan pernikahan digital
+- Beragam template dengan gaya elegan, modern, dan personal
+- Fitur RSVP dan ucapan dari tamu
+- Galeri foto dan video
+- Integrasi Google Maps untuk lokasi acara
+- Integrasi kalender untuk mengingatkan tanggal acara
+- Musik dan berbagai elemen pendukung lainnya
+
+## Koleksi Template
+
+Senadda menyediakan berbagai pilihan desain undangan, termasuk:
+
+- Lumiere
+- Deauville
+- Air
+- Editorial
+- Noir
+- dan koleksi lainnya
+
+Setiap template memiliki karakter dan tampilan yang berbeda sehingga pasangan dapat memilih desain yang paling sesuai dengan konsep pernikahan mereka.
 
 ## Informasi Kontak
-- Website Resmi: https://senadda.id
-- Layanan Pelanggan & Konsultasi: Melalui WhatsApp yang tertera di website.
 
-## Catatan Privasi
-Undangan klien yang dibuat melalui platform kami bersifat privat dan tidak diindeks oleh mesin pencari demi menjaga privasi acara pernikahan klien kami.
+- Website resmi: https://senadda.id
+- Pemesanan dan konsultasi: melalui WhatsApp yang tersedia di website Senadda.
+
+## Privasi
+
+Undangan yang dibuat melalui Senadda bersifat privat dan tidak diindeks oleh mesin pencari. Hal ini dilakukan untuk membantu menjaga privasi informasi dan detail acara pernikahan pengguna.

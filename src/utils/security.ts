@@ -21,16 +21,16 @@ export function sanitizeHTML(input: string): string {
 export function validateRSVPInput(name: string, status: string, countStr: string | number) {
   const sanitizedName = sanitizeHTML(name);
   if (!sanitizedName || sanitizedName.length < 2 || sanitizedName.length > 80) {
-    throw new Error('Nama tamu harus diisi (2 - 80 karakter).');
+    throw new Error('Guest name is required (2 - 80 characters).');
   }
 
   if (status !== 'attending' && status !== 'declined' && status !== 'tentative') {
-    throw new Error('Status kehadiran tidak valid.');
+    throw new Error('Invalid attendance status.');
   }
 
   const count = parseInt(countStr as string, 10);
   if (isNaN(count) || count < 1 || count > 50) {
-    throw new Error('Jumlah tamu harus berupa angka antara 1 dan 50.');
+    throw new Error('Guest count must be a number between 1 and 50.');
   }
 
   return {

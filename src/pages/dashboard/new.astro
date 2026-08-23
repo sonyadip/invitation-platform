@@ -121,7 +121,7 @@ if (Astro.request.method === 'POST') {
 ---
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -129,16 +129,16 @@ if (Astro.request.method === 'POST') {
     <meta name="robots" content="noindex, nofollow" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <main class="shell">
       <header class="header">
         <div>
-          <a class="back-link" href="/dashboard">Back to dashboard</a>
-          <p class="eyebrow">Dashboard CRUD</p>
+          <a class="back-link" href="/dashboard">← Back to Dashboard</a>
+          <p class="eyebrow">Invitation Creator</p>
           <h1>Create Invitation</h1>
-          <p class="subtitle">Create core wedding data and default invitation settings.</p>
+          <p class="subtitle">Set up new wedding details and default configuration.</p>
         </div>
       </header>
 
@@ -146,7 +146,7 @@ if (Astro.request.method === 'POST') {
 
       <form class="form-panel" method="POST" enctype="multipart/form-data">
         <section>
-          <h2>Settings</h2>
+          <h2>General Settings</h2>
           <div class="form-grid" style="margin-bottom: 18px;">
             <label>Slug<input name="slug" value={values.slug} placeholder="wayan-ayu" required /></label>
             <label>Status
@@ -163,10 +163,47 @@ if (Astro.request.method === 'POST') {
                 ))}
               </select>
             </label>
-            <label>Access Password (Guest)<input name="accessPassword" value={values.accessPassword} /></label>
-            <label>Client Dashboard Password<input name="clientPassword" value={values.clientPassword} /></label>
             <label>Expiration Date<input type="datetime-local" name="expirationDate" value={values.expirationDate} /></label>
           </div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="font-weight: 700; font-size: 14px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <span>🔐</span> Access & Client Security
+            </div>
+
+            <!-- Access Password (Guest Protection Gate) -->
+            <div style="display: flex; flex-direction: column; gap: 8px; background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 6px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 0; cursor: pointer; color: #1e293b;">
+                  <input type="checkbox" name="passwordProtectionEnabled" id="passwordProtectionToggle" checked={values.passwordProtectionEnabled} style="width: 16px; min-height: 16px; margin: 0;" />
+                  <span>Guest Password Protection (Password Gate)</span>
+                </label>
+                <span style="font-size: 12px; color: #64748b;">Lock public invitation page</span>
+              </div>
+              <div style="display: grid; gap: 6px;">
+                <label style="font-size: 12px; color: #475569; margin: 0;">Guest Access Password:</label>
+                <input name="accessPassword" id="accessPasswordInput" value={values.accessPassword} placeholder="e.g. wedding2026" autocomplete="off" />
+                <p style="margin: 0; font-size: 12px; color: #64748b;">
+                  When enabled, visitors must enter this password to view the invitation in public.
+                </p>
+              </div>
+            </div>
+
+            <!-- Client Password (Client Dashboard Authentication) -->
+            <div style="display: flex; flex-direction: column; gap: 8px; background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 6px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <span style="font-weight: 700; font-size: 13px; color: #334155;">Client Dashboard Password</span>
+                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 10px; border-radius: 9999px;">
+                  Optional (can be set via One-Time Link later)
+                </span>
+              </div>
+              <div style="display: grid; gap: 6px;">
+                <label style="font-size: 12px; color: #475569; margin: 0;">Set Client Password (Initial):</label>
+                <input name="clientPassword" type="password" value={values.clientPassword} placeholder="Set initial password (or leave empty to use setup link later)..." autocomplete="new-password" />
+              </div>
+            </div>
+          </div>
+
           <div class="toggle-grid">
             <label><input type="checkbox" name="rsvpEnabled" checked={values.rsvpEnabled} /> RSVP</label>
             <label><input type="checkbox" name="musicEnabled" checked={values.musicEnabled} /> Music</label>
@@ -177,9 +214,8 @@ if (Astro.request.method === 'POST') {
             <label><input type="checkbox" name="storyEnabled" checked={values.storyEnabled} /> Our Story</label>
             <label><input type="checkbox" name="viewCounterEnabled" checked={values.viewCounterEnabled} /> View Counter</label>
             <label><input type="checkbox" name="videoEnabled" checked={values.videoEnabled} /> Video</label>
-            <label><input type="checkbox" name="introAnimationEnabled" checked={values.introAnimationEnabled} /> Intro Animasi</label>
+            <label><input type="checkbox" name="introAnimationEnabled" checked={values.introAnimationEnabled} /> Intro Animation</label>
             <label><input type="checkbox" name="maintenanceMode" checked={values.maintenanceMode} /> Maintenance</label>
-            <label><input type="checkbox" name="passwordProtectionEnabled" checked={values.passwordProtectionEnabled} /> Password Protection</label>
           </div>
         </section>
 
@@ -192,7 +228,7 @@ if (Astro.request.method === 'POST') {
             <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
             <label class="wide">Hero Video URL<input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" /></label>
             <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{values.introVerse}</textarea></label>
-            <label class="wide">Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(Rgveda : X.85.42)" /></label>
+            <label class="wide">Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(e.g. Rgveda : X.85.42 or 1 Corinthians 13:4)" /></label>
           </div>
         </section>
 
@@ -206,8 +242,8 @@ if (Astro.request.method === 'POST') {
                 <label>Groom Full Name<input name="groomFullName" value={values.groomFullName} required /></label>
                 <label>Groom Father Name<input name="groomFatherName" value={values.groomFatherName} placeholder="Groom father name" /></label>
                 <label>Groom Mother Name<input name="groomMotherName" value={values.groomMotherName} placeholder="Groom mother name" /></label>
-                <label>Groom Anak Ke-<input name="groomChildNumber" value={values.groomChildNumber || ''} placeholder="pertama" /></label>
-                <label>Groom Alamat / Asal<input name="groomAddress" value={values.groomAddress || ''} placeholder="Br. Roban, gianyar" /></label>
+                <label>Groom Child Order<input name="groomChildNumber" value={values.groomChildNumber || ''} placeholder="1st son of" /></label>
+                <label>Groom Family Address / Origin<input name="groomAddress" value={values.groomAddress || ''} placeholder="Origin or city" /></label>
                 <label>Groom Image URL<input name="groomImageUrl" value={values.groomImageUrl} placeholder="https://example.com/groom.jpg" /></label>
                 <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Groom Instagram URL<input name="groomInstagramUrl" value={values.groomInstagramUrl} placeholder="https://www.instagram.com/username" /></label>
@@ -220,8 +256,8 @@ if (Astro.request.method === 'POST') {
                 <label>Bride Full Name<input name="brideFullName" value={values.brideFullName} required /></label>
                 <label>Bride Father Name<input name="brideFatherName" value={values.brideFatherName} placeholder="Bride father name" /></label>
                 <label>Bride Mother Name<input name="brideMotherName" value={values.brideMotherName} placeholder="Bride mother name" /></label>
-                <label>Bride Anak Ke-<input name="brideChildNumber" value={values.brideChildNumber || ''} placeholder="kedua" /></label>
-                <label>Bride Alamat / Asal<input name="brideAddress" value={values.brideAddress || ''} placeholder="Br. Tengah, gianyar" /></label>
+                <label>Bride Child Order<input name="brideChildNumber" value={values.brideChildNumber || ''} placeholder="2nd daughter of" /></label>
+                <label>Bride Family Address / Origin<input name="brideAddress" value={values.brideAddress || ''} placeholder="Origin or city" /></label>
                 <label>Bride Image URL<input name="brideImageUrl" value={values.brideImageUrl} placeholder="https://example.com/bride.jpg" /></label>
                 <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
                 <label class="wide">Bride Instagram URL<input name="brideInstagramUrl" value={values.brideInstagramUrl} placeholder="https://www.instagram.com/username" /></label>
@@ -241,19 +277,19 @@ if (Astro.request.method === 'POST') {
               <fieldset class="event-card repeater-item">
                 <legend>Event <span class="idx">{index + 1}</span></legend>
                 <div class="form-grid">
-                  <label>Event Name<input name="eventName" value={event.name} required={index === 0} placeholder="Akad Nikah" /></label>
+                  <label>Event Name<input name="eventName" value={event.name} required={index === 0} placeholder="Wedding Ceremony" /></label>
                   <label>Date<input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} /></label>
                   <label>Start Time<input type="time" name="eventStartTime" value={event.startTime} /></label>
-                  <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Selesai" /></label>
+                  <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Finish" /></label>
                   <label>Venue Name<input name="eventVenueName" value={event.venueName} /></label>
                   <label>Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
                   <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
                 </div>
-                {index > 0 && <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Event</button>}
+                {index > 0 && <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Event</button>}
               </fieldset>
             ))}
           </div>
-          <button type="button" id="add_event_btn" class="secondary-action" style="margin-top: 16px;">+ Tambah Event</button>
+          <button type="button" id="add_event_btn" class="secondary-action" style="margin-top: 16px;">+ Add Event</button>
         </section>
 
         <section data-setting-target="storyEnabled">
@@ -263,14 +299,14 @@ if (Astro.request.method === 'POST') {
               <fieldset class="story-card repeater-item">
                 <legend>Story <span class="idx">{index + 1}</span></legend>
                 <div class="form-grid">
-                  <label>Title<input name="storyTitle" value={story.title} placeholder="AWAL BERTEMU" /></label>
+                  <label>Title<input name="storyTitle" value={story.title} placeholder="HOW WE MET" /></label>
                   <label class="wide">Description<textarea name="storyDescription" rows="3">{story.description}</textarea></label>
                 </div>
-                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Story</button>
+                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Story</button>
               </fieldset>
             ))}
           </div>
-          <button type="button" id="add_story_btn" class="secondary-action" style="margin-top: 16px;">+ Tambah Story</button>
+          <button type="button" id="add_story_btn" class="secondary-action" style="margin-top: 16px;">+ Add Story</button>
         </section>
 
         <section data-setting-target="galleryEnabled">
@@ -279,11 +315,11 @@ if (Astro.request.method === 'POST') {
             {(Array.isArray(values.galleryImageUrls) ? values.galleryImageUrls : []).map((url, index) => (
               <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
                 <label style="flex: 1; margin: 0;">Image URL <span class="idx">{index + 1}</span><input name="galleryImageUrl" value={url} placeholder="https://example.com/gallery.jpg" /></label>
-                <button type="button" class="remove-btn secondary-action">Hapus</button>
+                <button type="button" class="remove-btn secondary-action">Delete</button>
               </div>
             ))}
           </div>
-          <button type="button" id="add_gallery_btn" class="secondary-action" style="margin-top: 10px; margin-bottom: 16px;">+ Tambah Image URL</button>
+          <button type="button" id="add_gallery_btn" class="secondary-action" style="margin-top: 10px; margin-bottom: 16px;">+ Add Image URL</button>
           <div class="form-grid" style="margin-bottom: 24px;">
             <label class="wide">Upload Gallery Images<input type="file" name="galleryImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple /></label>
           </div>
@@ -293,11 +329,11 @@ if (Astro.request.method === 'POST') {
             {(Array.isArray(values.galleryVideoUrls) ? values.galleryVideoUrls : []).map((url, index) => (
               <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
                 <label style="flex: 1; margin: 0;">Video URL <span class="idx">{index + 1}</span><input name="galleryVideoUrl" value={url} placeholder="https://www.youtube.com/watch?v=..." /></label>
-                <button type="button" class="remove-btn secondary-action">Hapus</button>
+                <button type="button" class="remove-btn secondary-action">Delete</button>
               </div>
             ))}
           </div>
-          <button type="button" id="add_gallery_video_btn" class="secondary-action" style="margin-top: 10px;">+ Tambah Video URL</button>
+          <button type="button" id="add_gallery_video_btn" class="secondary-action" style="margin-top: 10px;">+ Add Video URL</button>
         </section>
 
         <section>
@@ -317,16 +353,16 @@ if (Astro.request.method === 'POST') {
               <fieldset class="gift-card-form repeater-item">
                 <legend>Gift Card <span class="idx">{index + 1}</span></legend>
                 <div class="form-grid">
-                  <label>Bank Name<input name="giftBankName" value={gift.bankName} placeholder="BCA" /></label>
+                  <label>Bank Name<input name="giftBankName" value={gift.bankName} placeholder="BCA / Chase" /></label>
                   <label>Account Number<input name="giftAccountNumber" value={gift.accountNumber} placeholder="1234567890" /></label>
                   <label>Account Name<input name="giftAccountName" value={gift.accountName} placeholder="Account holder name" /></label>
                   <label>QRIS URL<input name="giftQrisUrl" value={gift.qrisUrl} placeholder="https://example.com/qris.png" /></label>
                 </div>
-                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Gift Card</button>
+                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Gift Card</button>
               </fieldset>
             ))}
           </div>
-          <button type="button" id="add_gift_btn" class="secondary-action" style="margin-top: 16px; margin-bottom: 24px;">+ Tambah Gift Card</button>
+          <button type="button" id="add_gift_btn" class="secondary-action" style="margin-top: 16px; margin-bottom: 24px;">+ Add Gift Card</button>
           <div class="form-grid">
             <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4">{values.giftDescription}</textarea></label>
             <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4">{values.thankYouMessage}</textarea></label>
@@ -355,15 +391,15 @@ if (Astro.request.method === 'POST') {
       <fieldset class="event-card repeater-item">
         <legend>Event <span class="idx"></span></legend>
         <div class="form-grid">
-          <label>Event Name<input name="eventName" placeholder="Akad Nikah" /></label>
+          <label>Event Name<input name="eventName" placeholder="Wedding Ceremony" /></label>
           <label>Date<input type="datetime-local" name="eventDate" /></label>
           <label>Start Time<input type="time" name="eventStartTime" /></label>
-          <label>End Time<input name="eventEndTime" placeholder="Selesai" /></label>
+          <label>End Time<input name="eventEndTime" placeholder="Finish" /></label>
           <label>Venue Name<input name="eventVenueName" /></label>
           <label>Maps URL<input name="eventMapsUrl" /></label>
           <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3"></textarea></label>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Event</button>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Event</button>
       </fieldset>
     </template>
 
@@ -371,24 +407,24 @@ if (Astro.request.method === 'POST') {
       <fieldset class="story-card repeater-item">
         <legend>Story <span class="idx"></span></legend>
         <div class="form-grid">
-          <label>Title<input name="storyTitle" placeholder="AWAL BERTEMU" /></label>
+          <label>Title<input name="storyTitle" placeholder="HOW WE MET" /></label>
           <label class="wide">Description<textarea name="storyDescription" rows="3"></textarea></label>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Story</button>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Story</button>
       </fieldset>
     </template>
 
     <template id="gallery_template">
       <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
         <label style="flex: 1; margin: 0;">Image URL <span class="idx"></span><input name="galleryImageUrl" placeholder="https://example.com/gallery.jpg" /></label>
-        <button type="button" class="remove-btn secondary-action">Hapus</button>
+        <button type="button" class="remove-btn secondary-action">Delete</button>
       </div>
     </template>
 
     <template id="gallery_video_template">
       <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
         <label style="flex: 1; margin: 0;">Video URL <span class="idx"></span><input name="galleryVideoUrl" placeholder="https://www.youtube.com/watch?v=..." /></label>
-        <button type="button" class="remove-btn secondary-action">Hapus</button>
+        <button type="button" class="remove-btn secondary-action">Delete</button>
       </div>
     </template>
 
@@ -396,12 +432,12 @@ if (Astro.request.method === 'POST') {
       <fieldset class="gift-card-form repeater-item">
         <legend>Gift Card <span class="idx"></span></legend>
         <div class="form-grid">
-          <label>Bank Name<input name="giftBankName" placeholder="BCA" /></label>
+          <label>Bank Name<input name="giftBankName" placeholder="BCA / Chase" /></label>
           <label>Account Number<input name="giftAccountNumber" placeholder="1234567890" /></label>
           <label>Account Name<input name="giftAccountName" placeholder="Account holder name" /></label>
           <label>QRIS URL<input name="giftQrisUrl" placeholder="https://example.com/qris.png" /></label>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Hapus Gift Card</button>
+        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Gift Card</button>
       </fieldset>
     </template>
 
@@ -429,6 +465,7 @@ if (Astro.request.method === 'POST') {
 
         container.addEventListener('click', (e) => {
           if (e.target.classList.contains('remove-btn')) {
+            if (!confirm('Delete this item?')) return;
             const item = e.target.closest('.repeater-item');
             if (item) {
               item.remove();
@@ -461,6 +498,16 @@ if (Astro.request.method === 'POST') {
         .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
 
       syncSettingTargets();
+
+      const accessPasswordInput = document.getElementById('accessPasswordInput');
+      const passwordProtectionToggle = document.getElementById('passwordProtectionToggle');
+      if (accessPasswordInput && passwordProtectionToggle) {
+        accessPasswordInput.addEventListener('input', () => {
+          if (accessPasswordInput.value.trim().length > 0 && !(passwordProtectionToggle as HTMLInputElement).checked) {
+            (passwordProtectionToggle as HTMLInputElement).checked = true;
+          }
+        });
+      }
     </script>
   </body>
 </html>
@@ -472,20 +519,26 @@ if (Astro.request.method === 'POST') {
     min-height: 100vh;
     background: #f4f5f7;
     color: #20242c;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
-  .shell { width: min(1100px, 100%); margin: 0 auto; padding: 28px; }
+  .shell {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: 28px;
+    font-family: 'Montserrat', sans-serif;
+  }
   .header { margin-bottom: 22px; }
-  .back-link { display: inline-flex; margin-bottom: 18px; color: #2563eb; font-size: 13px; font-weight: 700; text-decoration: none; }
-  .secondary-action { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d9dde5; border-radius: 6px; background: #ffffff; color: #394150; font-size: 13px; font-weight: 700; text-decoration: none; }
-  .eyebrow { margin: 0 0 8px; color: #687080; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-  h1 { margin: 0 0 8px; font-size: 32px; }
-  h2 { margin: 0 0 16px; font-size: 18px; }
-  .subtitle { margin: 0; color: #687080; font-size: 14px; }
+  .back-link { display: inline-flex; margin-bottom: 18px; color: #2563eb; font-size: 13px; font-weight: 700; text-decoration: none; font-family: 'Montserrat', sans-serif; }
+  .secondary-action { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d9dde5; border-radius: 6px; background: #ffffff; color: #394150; font-size: 13px; font-weight: 700; text-decoration: none; font-family: 'Montserrat', sans-serif; }
+  .eyebrow { margin: 0 0 8px; color: #687080; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-family: 'Montserrat', sans-serif; }
+  h1 { margin: 0 0 8px; font-size: 32px; font-family: 'Montserrat', sans-serif; }
+  h2 { margin: 0 0 16px; font-size: 18px; font-family: 'Montserrat', sans-serif; }
+  .subtitle { margin: 0; color: #687080; font-size: 14px; font-family: 'Montserrat', sans-serif; }
   .form-panel, .error-panel {
     border: 1px solid #d9dde5;
     border-radius: 8px;
     background: #ffffff;
+    font-family: 'Montserrat', sans-serif;
   }
   .error-panel { margin-bottom: 16px; padding: 14px 16px; color: #991b1b; background: #fff5f5; }
   section { padding: 20px; border-bottom: 1px solid #eef0f4; }

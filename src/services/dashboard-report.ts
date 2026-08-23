@@ -78,15 +78,22 @@ export interface SlugReportDetail {
     maintenanceMode: boolean;
     expirationDate: string | null;
     passwordProtectionEnabled: boolean;
+    accessPassword: string | null;
     videoEnabled: boolean;
     introAnimationEnabled: boolean;
     assets: {
-      heroVideo: string;
-      heroImage: string;
-      brideImage: string;
-      groomImage: string;
-      logoImage: string;
+      heroVideo?: string;
+      heroImage?: string;
+      brideImage?: string;
+      groomImage?: string;
+      logoImage?: string;
+      closingImage?: string;
+      eventImage?: string;
+      rsvpImage?: string;
+      countdownImage?: string;
+      [key: string]: any;
     };
+
     content: {
       instagramUrl: string;
       groomInstagramUrl: string;
@@ -319,7 +326,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvpsRes, viewsRes, guestsRes] = await Promise.all([
     supabase
       .from('invitation_settings')
-      .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, sections, theme_config, wa_templates')
+      .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, access_password, sections, theme_config, wa_templates')
       .eq('wedding_id', wedding.id)
       .maybeSingle(),
     supabase
@@ -458,6 +465,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       introAnimationEnabled: settings.sections?.introAnimation !== false,
       expirationDate: settings.expiration_date,
       passwordProtectionEnabled: Boolean(settings.password_protection_enabled),
+      accessPassword: settings.access_password || '',
       assets: {
         heroVideo: assets.heroVideo || '',
         heroImage: assets.coverImage || assets.heroImage || '',

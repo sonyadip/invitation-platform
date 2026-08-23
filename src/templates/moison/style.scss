@@ -152,7 +152,7 @@ body.template-moison {
 
     &__title {
       font-family: 'Edensor', serif;
-      font-size: clamp(2.8rem, 10vw, 4rem);
+      font-size: 2.8rem;
       line-height: 1.1;
       color: var(--lm-white);
       text-transform: uppercase;
@@ -287,7 +287,7 @@ body.template-moison {
 
     &__title {
       font-family: 'Edensor', serif;
-      font-size: clamp(2.8rem, 11vw, 4.2rem);
+      font-size: 2.8rem;
       line-height: 1.05;
       color: var(--lm-white);
       margin: 0 0 14px;
@@ -510,7 +510,7 @@ body.template-moison {
 
     &__name {
       font-family: 'Edensor', serif;
-      font-size: clamp(1.9rem, 7vw, 2.5rem);
+      font-size: 1.9rem;
       color: var(--lm-white, #ffffff);
       font-weight: 400;
       letter-spacing: 0.5px;
@@ -1415,7 +1415,7 @@ body.template-moison {
 
     &__message {
       font-family: 'Alegreya Sans', serif;
-      font-size: clamp(12px, 1.06vw, 15.2px);
+      font-size: 12px;
       font-weight: 300;
       line-height: 1.78;
       color: var(--lm-blue);
@@ -1584,7 +1584,7 @@ body.template-moison {
   .thankyou-section__footer {
     display: grid;
     gap: 12px;
-    margin-top: clamp(32px, 8vh, 72px);
+    margin-top: 32px;
     color: rgba(255, 255, 255, 0.72);
   }
 

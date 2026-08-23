@@ -1,5 +1,7 @@
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem, SectionToggles, ThemeConfig } from '../types';
+import { logActivity } from './activity-log';
+import { captureRevisionSnapshot } from './revision';
 
 export interface InvitationFormInput {
   slug: string;
@@ -34,6 +36,10 @@ export interface InvitationFormInput {
   brideImageUrl: string | null;
   groomImageUrl: string | null;
   logoImageUrl: string | null;
+  closingImageUrl: string | null;
+  eventImageUrl: string | null;
+  rsvpImageUrl: string | null;
+  countdownImageUrl: string | null;
   galleryImageUrls: string[];
   galleryVideoUrls: string[];
   instagramUrl: string | null;
@@ -871,10 +877,25 @@ export async function createInvitation(input: InvitationFormInput) {
   await replaceGalleryImages(supabase, wedding.id, resolvedInput.galleryImageUrls);
   await replaceGiftAccounts(supabase, wedding.id, resolvedInput.gifts);
 
+  // Capture initial revision & log activity (non-blocking)
+  await captureRevisionSnapshot(wedding.id, {
+    title: 'Revision #1 (Initial Creation)',
+    createdBy: 'admin',
+    changesSummary: ['Initial invitation creation']
+  });
+
+  await logActivity({
+    wedding_id: wedding.id,
+    slug: wedding.slug,
+    actor_type: 'admin',
+    action: 'invitation.create',
+    description: `New invitation '${wedding.slug}' (${resolvedInput.brideName} & ${resolvedInput.groomName}) successfully created.`
+  });
+
   return wedding.slug as string;
 }
 
-export async function updateInvitation(weddingId: string, input: InvitationFormInput) {
+export async function updateInvitation(weddingId: string, input: InvitationFormInput, revisionNote?: string) {
   validateInvitationForm(input);
   const supabase = await getSupabaseAdmin();
   const resolvedInput = await resolveUploadedImages(supabase, input);
@@ -941,11 +962,28 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
   await replaceGalleryImages(supabase, weddingId, resolvedInput.galleryImageUrls);
   await replaceGiftAccounts(supabase, weddingId, resolvedInput.gifts);
 
+  // Capture revision snapshot & log activity (non-blocking)
+  await captureRevisionSnapshot(weddingId, {
+    note: revisionNote || undefined,
+    createdBy: 'admin'
+  });
+
+  await logActivity({
+    wedding_id: weddingId,
+    slug: resolvedInput.slug,
+    actor_type: 'admin',
+    action: 'invitation.update',
+    description: `Invitation '${resolvedInput.slug}' updated.` + (revisionNote ? ` Note: "${revisionNote}"` : '')
+  });
+
   return resolvedInput.slug;
 }
 
 export async function softDeleteInvitation(weddingId: string) {
   const supabase = await getSupabaseAdmin();
+
+  // Load slug for log
+  const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
 
   const { error } = await supabase
     .from('weddings')
@@ -956,10 +994,20 @@ export async function softDeleteInvitation(weddingId: string) {
     .eq('id', weddingId);
 
   if (error) throw toDashboardError(error, 'Failed to soft delete invitation.');
+
+  await logActivity({
+    wedding_id: weddingId,
+    slug: wedding?.slug || null,
+    actor_type: 'admin',
+    action: 'invitation.soft_delete',
+    description: `Invitation '${wedding?.slug || weddingId}' moved to trash (soft deleted).`
+  });
 }
 
 export async function restoreInvitation(weddingId: string) {
   const supabase = await getSupabaseAdmin();
+
+  const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
 
   const { error } = await supabase
     .from('weddings')
@@ -970,10 +1018,21 @@ export async function restoreInvitation(weddingId: string) {
     .eq('id', weddingId);
 
   if (error) throw toDashboardError(error, 'Failed to restore invitation.');
+
+  await logActivity({
+    wedding_id: weddingId,
+    slug: wedding?.slug || null,
+    actor_type: 'admin',
+    action: 'invitation.restore',
+    description: `Invitation '${wedding?.slug || weddingId}' restored from trash.`
+  });
 }
 
 export async function permanentlyDeleteInvitation(weddingId: string) {
   const supabase = await getSupabaseAdmin();
+
+  const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
+  const slug = wedding?.slug || weddingId;
 
   await deleteUnsharedStorageImages(supabase, weddingId);
 
@@ -983,6 +1042,14 @@ export async function permanentlyDeleteInvitation(weddingId: string) {
     .eq('id', weddingId);
 
   if (error) throw toDashboardError(error, 'Failed to permanently delete invitation.');
+
+  await logActivity({
+    wedding_id: null,
+    slug: slug,
+    actor_type: 'admin',
+    action: 'invitation.permanent_delete',
+    description: `Invitation '${slug}' permanently deleted along with unshared storage assets.`
+  });
 }
 
 async function buildDuplicateSlug(supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>, sourceSlug: string) {
@@ -1134,32 +1201,74 @@ export async function duplicateInvitation(weddingId: string) {
     if (error) throw toDashboardError(error, 'Failed to duplicate gift accounts.');
   }
 
+  // Capture initial revision for duplicate & log activity
+  await captureRevisionSnapshot(duplicatedWedding.id, {
+    title: `Revision #1 (Duplicated from '${wedding.slug}')`,
+    createdBy: 'admin',
+    changesSummary: [`Duplicated from template '${wedding.slug}'`]
+  });
+
+  await logActivity({
+    wedding_id: duplicatedWedding.id,
+    slug: duplicatedWedding.slug,
+    actor_type: 'admin',
+    action: 'invitation.duplicate',
+    description: `New invitation '${duplicatedWedding.slug}' created by duplicating '${wedding.slug}'.`
+  });
+
   return duplicatedWedding.slug as string;
 }
 
 export async function resetInvitationViews(weddingId: string): Promise<void> {
   const supabase = await getSupabaseAdmin();
+  const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
   const { error } = await supabase.from('invitation_views').delete().eq('wedding_id', weddingId);
   if (error) {
     throw toDashboardError(error, 'Failed to reset page views.');
   }
+
+  await logActivity({
+    wedding_id: weddingId,
+    slug: wedding?.slug || null,
+    actor_type: 'admin',
+    action: 'invitation.reset_views',
+    description: `Page views statistics for '${wedding?.slug || weddingId}' reset to zero.`
+  });
 }
 
 export async function resetInvitationRsvps(weddingId: string): Promise<void> {
   const supabase = await getSupabaseAdmin();
+  const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
   const { error } = await supabase.from('rsvps').delete().eq('wedding_id', weddingId);
   if (error) {
     throw toDashboardError(error, 'Failed to reset RSVPs.');
   }
+
+  await logActivity({
+    wedding_id: weddingId,
+    slug: wedding?.slug || null,
+    actor_type: 'admin',
+    action: 'invitation.reset_rsvps',
+    description: `All RSVP & wishes data for '${wedding?.slug || weddingId}' cleared.`
+  });
 }
 
 export async function deleteRsvp(id: string): Promise<void> {
   const supabase = await getSupabaseAdmin();
+  const { data: rsvp } = await supabase.from('rsvps').select('wedding_id, guest_name').eq('id', id).maybeSingle();
   const { error } = await supabase.from('rsvps').delete().eq('id', id);
   if (error) {
     throw toDashboardError(error, 'Failed to delete RSVP.');
   }
+
+  await logActivity({
+    wedding_id: rsvp?.wedding_id || null,
+    actor_type: 'admin',
+    action: 'rsvp.delete',
+    description: `RSVP from guest '${rsvp?.guest_name || id}' deleted by admin.`
+  });
 }
+
 
 
 

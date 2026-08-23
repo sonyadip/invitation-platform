@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '../../../lib/supabase-admin';
 import { supabase } from '../../../lib/supabase';
 import { hashPasswordSHA256 } from '../../../utils/security';
 import { verifySetupToken } from '../../../utils/token';
+import { logActivity } from '../../../services/activity-log';
 
 export const prerender = false;
 
@@ -24,7 +25,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   // 2. Check if already claimed
   const { data: wedding, error: checkError } = await supabase
     .from('weddings')
-    .select('id, client_password_hash')
+    .select('id, slug, bride_name, groom_name, client_password_hash')
     .eq('slug', slug)
     .single();
 
@@ -51,6 +52,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect('/?error=setup_failed');
   }
 
+  await logActivity({
+    wedding_id: wedding.id,
+    slug: wedding.slug,
+    actor_type: 'client',
+    actor_name: `Client (${wedding.bride_name} & ${wedding.groom_name})`,
+    action: 'auth.setup',
+    entity_type: 'auth',
+    description: `Client '${wedding.slug}' successfully claimed account and set up password.`
+  });
+
   // 4. Log the user in
   const isSecure = import.meta.env.PROD;
   cookies.set('auth_role', 'client', { path: '/', maxAge: 60 * 60 * 24, httpOnly: true, secure: isSecure, sameSite: 'strict' });
@@ -58,3 +69,4 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   
   return redirect(`/dashboard/${slug}`);
 };
+

@@ -94,16 +94,16 @@ if (isUnlocked && Astro.url.searchParams.get('restored')) {
   successMessage = 'Invitation restored to active dashboard.';
 }
 
-const formatNumber = (value: number) => new Intl.NumberFormat('id-ID').format(value);
+const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value);
 const formatDate = (value: string | null) => value
-  ? new Date(value).toLocaleDateString('id-ID', {
+  ? new Date(value).toLocaleDateString('en-US', {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
     })
   : '-';
 const formatDateTime = (value: string | null) => value
-  ? new Date(value).toLocaleString('id-ID', {
+  ? new Date(value).toLocaleString('en-US', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -120,13 +120,13 @@ if (isUnlocked) {
     report = await getDashboardReport();
   } catch (error) {
     console.error('Dashboard report load error:', error);
-    loadError = formatUnknownError(error, 'Gagal memuat report dashboard.');
+    loadError = formatUnknownError(error, 'Failed to load dashboard report.');
   }
 }
 ---
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -134,22 +134,23 @@ if (isUnlocked) {
     <meta name="robots" content="noindex, nofollow" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     {isUnlocked ? (
       <main class="dashboard-shell">
         <header class="dashboard-header">
           <div>
-            <p class="eyebrow">Invitation Platform</p>
-            <h1>Dashboard Report</h1>
-            <p class="subtitle">Ringkasan performa dan RSVP untuk semua slug undangan.</p>
+            <p class="eyebrow">Admin Console</p>
+            <h1>Dashboard Overview</h1>
+            <p class="subtitle">Performance metrics, invitation records, and RSVP analytics across all slugs.</p>
           </div>
           <div class="header-actions">
-            <a class="settings-action" href="/dashboard/settings">⚙ Settings</a>
+            <a class="settings-action" href="/dashboard/activity">📋 Activity Log</a>
+            <a class="settings-action" href="/dashboard/settings">⚙ Platform Settings</a>
             {report && (
               <div class="generated-at">
-                <span>Generated</span>
+                <span>Last Updated</span>
                 <strong>{formatDateTime(report.generatedAt)}</strong>
               </div>
             )}
@@ -158,26 +159,26 @@ if (isUnlocked) {
 
         {loadError ? (
           <section class="error-panel">
-            <strong>Report gagal dimuat</strong>
+            <strong>Failed to load report</strong>
             <p>{loadError}</p>
           </section>
         ) : report && (
           <>
             {successMessage && (
               <section class="success-panel">
-                <strong>Dashboard updated</strong>
+                <strong>Dashboard Updated</strong>
                 <p>{successMessage}</p>
               </section>
             )}
             {duplicateError && (
               <section class="error-panel">
-                <strong>Duplicate failed</strong>
+                <strong>Duplicate Operation Failed</strong>
                 <p>{duplicateError}</p>
               </section>
             )}
             <section class="metric-grid" aria-label="Dashboard summary">
               <div class="metric">
-                <span>Total Slug</span>
+                <span>Total Slugs</span>
                 <strong>{formatNumber(report.totals.invitations)}</strong>
               </div>
               <div class="metric">
@@ -189,11 +190,11 @@ if (isUnlocked) {
                 <strong>{formatNumber(report.totals.views)}</strong>
               </div>
               <div class="metric">
-                <span>Total RSVP</span>
+                <span>Total RSVPs</span>
                 <strong>{formatNumber(report.totals.rsvps)}</strong>
               </div>
               <div class="metric">
-                <span>Guests</span>
+                <span>Total Guests (Pax)</span>
                 <strong>{formatNumber(report.totals.guests)}</strong>
               </div>
               <div class="metric">
@@ -201,7 +202,7 @@ if (isUnlocked) {
                 <strong>{formatNumber(report.totals.wishes)}</strong>
               </div>
               <div class="metric">
-                <span>Deleted</span>
+                <span>Soft Deleted</span>
                 <strong>{formatNumber(report.totals.deleted)}</strong>
               </div>
             </section>
@@ -209,10 +210,10 @@ if (isUnlocked) {
             <section class="report-section">
               <div class="section-heading">
                 <div>
-                  <h2>Report Per Slug</h2>
-                  <p>{formatNumber(report.reports.length)} invitation records</p>
+                  <h2>Invitations</h2>
+                  <p>{formatNumber(report.reports.length)} active invitation records</p>
                 </div>
-                <a class="primary-action" href="/dashboard/new">Create Invitation</a>
+                <a class="primary-action" href="/dashboard/new">+ Create Invitation</a>
               </div>
 
               <div class="table-wrap">
@@ -222,7 +223,7 @@ if (isUnlocked) {
                       <th>Slug</th>
                       <th>Couple</th>
                       <th>Status</th>
-                      <th>Date</th>
+                      <th>Wedding Date</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -240,7 +241,7 @@ if (isUnlocked) {
                         <td>{formatDate(item.weddingDate)}</td>
                         <td>
                           <div class="row-actions">
-                            <a href={`/dashboard/${item.slug}`}>Report</a>
+                            <a href={`/dashboard/${item.slug}`}>Analytics</a>
                             <a href={`/dashboard/${item.slug}/edit`}>Edit</a>
                             <form method="POST">
                               <input type="hidden" name="action" value="duplicate" />
@@ -253,16 +254,17 @@ if (isUnlocked) {
                               <button
                                 class="warning-action"
                                 type="submit"
-                                onclick="return confirm('Soft delete this invitation? It will move to Soft Deleted Slugs.')"
+                                onclick="return confirm('Soft delete this invitation? It will move to Deleted Invitations.')"
                               >
                                 Soft Delete
                               </button>
                             </form>
-                            <a href={`/${item.slug}`} target="_blank" rel="noopener noreferrer">Open</a>
+                            <a href={`/${item.slug}`} target="_blank" rel="noopener noreferrer">Preview</a>
                           </div>
                         </td>
                       </tr>
                     ))}
+
                   </tbody>
                 </table>
               </div>
@@ -271,8 +273,8 @@ if (isUnlocked) {
             <section class="report-section deleted-section">
               <div class="section-heading">
                 <div>
-                  <h2>Soft Deleted Slugs</h2>
-                  <p>{formatNumber(report.deletedReports.length)} deleted invitation records</p>
+                  <h2>Deleted Invitations</h2>
+                  <p>{formatNumber(report.deletedReports.length)} soft-deleted invitation records</p>
                 </div>
               </div>
 
@@ -283,7 +285,7 @@ if (isUnlocked) {
                       <th>Slug</th>
                       <th>Couple</th>
                       <th>Status</th>
-                      <th>Date</th>
+                      <th>Wedding Date</th>
                       <th>Deleted At</th>
                       <th>Deleted By</th>
                       <th>Actions</th>
@@ -311,9 +313,9 @@ if (isUnlocked) {
                               <button
                                 class="danger-action"
                                 type="submit"
-                                onclick="return confirm('Permanently delete this soft-deleted invitation and unshared Supabase images? This cannot be undone.')"
+                                onclick="return confirm('Permanently delete this soft-deleted invitation and unshared images? This action cannot be undone.')"
                               >
-                                Permanent Delete
+                                Delete Permanently
                               </button>
                             </form>
                           </div>
@@ -336,13 +338,13 @@ if (isUnlocked) {
       <main class="login-shell">
         <form class="login-card" method="POST">
           <input type="hidden" name="action" value="login" />
-          <p class="eyebrow">Private Report</p>
+          <p class="eyebrow">Admin Console</p>
           <h1>Dashboard Login</h1>
-          <p class="subtitle">Masukkan password dashboard untuk melihat report semua slug.</p>
+          <p class="subtitle">Enter dashboard password to manage invitations and access reports.</p>
           <label for="password">Password</label>
           <input id="password" type="password" name="password" required autofocus />
           {errorMessage && <p class="form-error">{errorMessage}</p>}
-          <button type="submit">Open Dashboard</button>
+          <button type="submit">Log In</button>
         </form>
       </main>
     )}
@@ -359,13 +361,14 @@ if (isUnlocked) {
     min-height: 100vh;
     background: #f4f5f7;
     color: #20242c;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   .dashboard-shell {
     width: min(1440px, 100%);
     margin: 0 auto;
     padding: 28px;
+    font-family: 'Montserrat', sans-serif;
   }
 
   .dashboard-header {
@@ -396,6 +399,7 @@ if (isUnlocked) {
     font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
+    font-family: 'Montserrat', sans-serif;
   }
 
 
@@ -406,6 +410,7 @@ if (isUnlocked) {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
   }
 
   h1,
@@ -418,11 +423,13 @@ if (isUnlocked) {
     margin-bottom: 8px;
     font-size: 30px;
     letter-spacing: 0;
+    font-family: 'Montserrat', sans-serif;
   }
 
   h2 {
     margin-bottom: 4px;
     font-size: 18px;
+    font-family: 'Montserrat', sans-serif;
   }
 
   .subtitle {
@@ -430,6 +437,7 @@ if (isUnlocked) {
     color: #687080;
     font-size: 14px;
     line-height: 1.6;
+    font-family: 'Montserrat', sans-serif;
   }
 
   .generated-at {

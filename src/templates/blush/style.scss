@@ -599,7 +599,6 @@ body.template-blush.template-no-scroll {
       line-height: 1.6;
 
       @media (min-width: 1024px) {
-        font-size: 32px;
         width: 83.333%; // 5/6
       }
     }
@@ -1665,9 +1664,9 @@ body.template-blush.template-no-scroll {
 
   .thankyou-section__title {
     margin: 0;
-    color: #ffffff;
+    color: var(--template-text);
     font-family: 'Billion Miracles', cursive;
-    font-size: clamp(55px, 12vw, 65px);
+    font-size: 55px;
     font-weight: 400;
     line-height: 0.5;
     letter-spacing: 1px;

@@ -66,9 +66,11 @@ export interface ThemeConfig {
     brideMotherName?: string;
     groomAddress?: string;
     brideAddress?: string;
-    [key: string]: string | undefined;
+    galleryVideoUrls?: string[];
+    [key: string]: any;
   };
 }
+
 
 export interface SectionToggles {
   hero: boolean;
@@ -179,3 +181,79 @@ export interface FullInvitationData {
   gifts: GiftAccount[];
   wishes: RSVP[]; // Attending RSVPs with messages
 }
+
+export type ActivityActorType = 'admin' | 'client' | 'guest' | 'system';
+
+export type ActivityActionType =
+  | 'invitation.create'
+  | 'invitation.update'
+  | 'invitation.duplicate'
+  | 'invitation.soft_delete'
+  | 'invitation.restore'
+  | 'invitation.permanent_delete'
+  | 'invitation.reset_views'
+  | 'invitation.reset_rsvps'
+  | 'invitation.reset_client_password'
+  | 'rsvp.submit'
+  | 'platform.update'
+  | 'revision.checkpoint'
+  | 'revision.restore'
+  | 'auth.login'
+  | 'auth.setup'
+  | string;
+
+export interface ActivityLogItem {
+  id: string;
+  wedding_id: string | null;
+  slug: string | null;
+  actor_type: ActivityActorType;
+  actor_name: string | null;
+  action: ActivityActionType;
+  entity_type: string;
+  entity_id: string | null;
+  description: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface CreateActivityLogInput {
+  wedding_id?: string | null;
+  slug?: string | null;
+  actor_type?: ActivityActorType;
+  actor_name?: string | null;
+  action: ActivityActionType;
+  entity_type?: string;
+  entity_id?: string | null;
+  description: string;
+  metadata?: Record<string, any>;
+}
+
+export interface RevisionSnapshot {
+  wedding: Wedding;
+  settings: InvitationSettings | null;
+  events: WeddingEvent[];
+  gallery: GalleryImage[];
+  gifts: GiftAccount[];
+  captured_at: string;
+}
+
+export interface RevisionDiffItem {
+  field: string;
+  label: string;
+  category: 'mempelai' | 'acara' | 'tema' | 'fitur' | 'galeri' | 'kado' | 'lainnya';
+  oldValue: any;
+  newValue: any;
+}
+
+export interface InvitationRevision {
+  id: string;
+  wedding_id: string;
+  revision_number: number;
+  title: string;
+  note: string | null;
+  created_by: string;
+  snapshot: RevisionSnapshot;
+  changes_summary: string[];
+  created_at: string;
+}
+

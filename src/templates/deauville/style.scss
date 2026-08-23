@@ -592,8 +592,7 @@ body.template-deauville {
     gap: 14px;
     padding-block: 0 !important;
     background: url("./assets/deauville-event.jpg") center / cover;
-    background-attachment: fixed;
-    background-position: right center;
+    background-position: center;
     isolation: isolate;
   }
 
@@ -606,7 +605,7 @@ body.template-deauville {
   .event-section__title {
     color: rgba(255, 255, 255, 0.72);
     font-family: "La Luxes Serif", var(--font-heading), Georgia, serif;
-    font-size: clamp(52px, 10vw, 67px);
+    font-size: 52px;
     font-weight: 400;
     display: grid;
     line-height: 1;
@@ -624,7 +623,7 @@ body.template-deauville {
     margin-top: -24px;
     font-family: "La Luxes Script", cursive;
     font-family: "Billion Miracles", cursive;
-    font-size: clamp(60px, 8.5vw, 70px);
+    font-size: 60px;
     letter-spacing: 0;
     line-height: 0.92;
   }
@@ -842,7 +841,7 @@ body.template-deauville {
   }
 
   .video-section__panel h3 {
-    font-size: clamp(2.7rem, 12vw, 4.4rem);
+    font-size: 2.7rem;
   }
 
   .video-section__panel p {
@@ -908,7 +907,7 @@ body.template-deauville {
   .gallery-section {
     background:
       linear-gradient(rgba(49, 49, 49, 0.62), rgba(49, 49, 49, 0.62)),
-      url("./assets/deauville-closing.jpg") right center / cover fixed;
+      url("./assets/deauville-closing.jpg") center / cover;
     padding-block: 0 !important;
   }
 
@@ -916,7 +915,7 @@ body.template-deauville {
   .gift-section h3,
   .rsvp-section h3,
   .thankyou-section h3 {
-    font-size: clamp(2.5rem, 11vw, 4.6rem);
+    font-size: 2.5rem;
     text-align: left;
     margin-bottom: 24px;
   }
@@ -1006,7 +1005,7 @@ body.template-deauville {
     padding: 72px 30px;
     background:
       linear-gradient(rgba(21, 21, 21, 0.68), rgba(21, 21, 21, 0.72)),
-      url("./assets/deauville-save-date.jpg") center / cover fixed;
+      url("./assets/deauville-save-date.jpg") center / cover;
     color: var(--dea-ink);
     text-align: center;
   }
@@ -1014,7 +1013,7 @@ body.template-deauville {
   .rsvp-section {
     background:
       linear-gradient(rgba(49, 49, 49, 0.72), rgba(49, 49, 49, 0.72)),
-      url("./assets/deauville-rsvp.jpg") right center / cover fixed;
+      url("./assets/deauville-rsvp.jpg") center / cover;
     padding-block: 0 !important;
 
     h3 {
@@ -1047,7 +1046,7 @@ body.template-deauville {
     margin: 0;
     color: var(--dea-ink);
     font-family: "La Luxes Serif", var(--font-heading), "Cormorant Garamond", Georgia, serif;
-    font-size: clamp(46px, 10vw, 70px);
+    font-size: 46px;
     font-weight: 400;
     line-height: 0.98;
     letter-spacing: -1px;
@@ -1628,7 +1627,7 @@ body.template-deauville {
     margin: 0;
     color: var(--dea-ink);
     font-family: 'Billion Miracles', cursive;
-    font-size: clamp(55px, 12vw, 65px);
+    font-size: 55px;
     font-weight: 400;
     line-height: 0.5;
     letter-spacing: 1px;
@@ -1688,79 +1687,4 @@ body.template-deauville {
       margin-top: 8px;
     }
   }
-  // @media (max-height: 750px) {
-  //   .snap-section {
-  //     padding: 30px 24px;
-  //   }
-
-  //   .event-section__title {
-  //     font-size: clamp(38px, 9vw, 67px);
-  //   }
-    
-  //   .event-section__title-script {
-  //     font-size: clamp(44px, 8vw, 70px);
-  //     margin-top: -12px;
-  //   }
-
-  //   .event-card {
-  //     padding: 12px 16px;
-  //     gap: 4px;
-  //   }
-
-  //   .event-card__title {
-  //     font-size: 20px;
-  //     margin-bottom: 4px;
-  //   }
-
-  //   .countdown-section {
-  //     padding-top: 10px;
-  //     gap: 10px;
-  //   }
-
-  //   .countdown-item {
-  //     padding: 8px 4px 6px;
-  //   }
-    
-  //   .countdown-item__value {
-  //     font-size: 1.15rem;
-  //   }
-    
-  //   .countdown-item__label {
-  //     margin-top: 2px;
-  //   }
-
-  //   .gallery-section h3,
-  //   .gift-section h3,
-  //   .rsvp-section h3,
-  //   .thankyou-section h3 {
-  //     font-size: clamp(1.8rem, 10vw, 4.6rem);
-  //     margin-bottom: 12px;
-  //   }
-
-  //   .gallery-grid {
-  //     grid-auto-rows: 80px;
-  //   }
-
-  //   .rsvp-form {
-  //     gap: 6px;
-  //   }
-
-  //   .rsvp-form input,
-  //   .rsvp-form select {
-  //     min-height: 36px;
-  //   }
-
-  //   .rsvp-form textarea {
-  //     min-height: 60px;
-  //   }
-
-  //   .rsvp-section > p {
-  //     margin: 0 auto 10px;
-  //     font-size: 0.85em;
-  //   }
-
-  //   .wishes-list {
-  //     max-height: calc(100vh - 440px);
-  //   }
-  // }
 }
