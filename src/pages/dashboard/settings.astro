@@ -4,16 +4,10 @@ import { hashPasswordSHA256 } from '../../utils/security';
 
 export const prerender = false;
 
-const dashboardPassword =
-  import.meta.env.DASHBOARD_PASSWORD ||
-  (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') ||
-  '';
-const cookieName = 'dashboard_unlocked';
-const isUnlocked = !dashboardPassword ||
-  Astro.cookies.get(cookieName)?.value === await hashPasswordSHA256(dashboardPassword);
+const session = Astro.locals.session;
 
-if (!isUnlocked) {
-  return Astro.redirect('/dashboard');
+if (session?.role !== 'admin') {
+  return Astro.redirect('/?login=admin');
 }
 
 let successMessage = '';

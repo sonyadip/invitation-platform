@@ -4,8 +4,8 @@ import { getDashboardReport } from '../../services/dashboard-report';
 
 export const prerender = false;
 
-const authRole = Astro.cookies.get('auth_role')?.value;
-if (authRole !== 'admin') {
+const session = Astro.locals.session;
+if (session?.role !== 'admin') {
   return Astro.redirect('/?login=admin');
 }
 

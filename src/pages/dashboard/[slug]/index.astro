@@ -1,9 +1,8 @@
 ---
 const { slug } = Astro.params;
-const authRole = Astro.cookies.get('auth_role')?.value;
-const authSlug = Astro.cookies.get('auth_slug')?.value;
+const session = Astro.locals.session;
 
-if (!authRole || (authRole === 'client' && authSlug !== slug)) {
+if (!session || (session.role === 'client' && session.slug !== slug)) {
   return Astro.redirect('/?login=client');
 }
 

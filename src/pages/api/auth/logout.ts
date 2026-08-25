@@ -1,11 +1,13 @@
 import type { APIRoute } from 'astro';
 import { logActivity } from '../../../services/activity-log';
+import { clearSessionCookies, getSessionFromCookies } from '../../../utils/session';
 
 export const prerender = false;
 
 const doLogout = async ({ cookies, redirect }: Parameters<APIRoute>[0]) => {
-  const authRole = cookies.get('auth_role')?.value;
-  const authSlug = cookies.get('auth_slug')?.value;
+  const session = await getSessionFromCookies(cookies);
+  const authRole = session?.role || cookies.get('auth_role')?.value;
+  const authSlug = session?.slug || cookies.get('auth_slug')?.value;
 
   if (authRole) {
     await logActivity({
@@ -18,12 +20,9 @@ const doLogout = async ({ cookies, redirect }: Parameters<APIRoute>[0]) => {
     });
   }
 
-  cookies.delete('auth_role', { path: '/' });
-  cookies.delete('auth_slug', { path: '/' });
-  cookies.delete('dashboard_unlocked', { path: '/' });
+  clearSessionCookies(cookies);
   return redirect('/');
 };
 
 export const GET: APIRoute = doLogout;
 export const POST: APIRoute = doLogout;
-

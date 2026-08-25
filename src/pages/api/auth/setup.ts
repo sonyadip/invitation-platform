@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '../../../lib/supabase-admin';
 import { supabase } from '../../../lib/supabase';
 import { hashPasswordSHA256 } from '../../../utils/security';
 import { verifySetupToken } from '../../../utils/token';
+import { setSessionCookie } from '../../../utils/session';
 import { logActivity } from '../../../services/activity-log';
 
 export const prerender = false;
@@ -62,11 +63,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     description: `Client '${wedding.slug}' successfully claimed account and set up password.`
   });
 
-  // 4. Log the user in
+  // 4. Log the user in with signed session cookie
   const isSecure = import.meta.env.PROD;
-  cookies.set('auth_role', 'client', { path: '/', maxAge: 60 * 60 * 24, httpOnly: true, secure: isSecure, sameSite: 'strict' });
-  cookies.set('auth_slug', slug, { path: '/', maxAge: 60 * 60 * 24, httpOnly: true, secure: isSecure, sameSite: 'strict' });
+  await setSessionCookie(cookies, {
+    role: 'client',
+    slug: slug,
+    weddingId: wedding.id
+  }, isSecure);
   
   return redirect(`/dashboard/${slug}`);
 };
-

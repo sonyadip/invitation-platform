@@ -17,9 +17,9 @@ export const prerender = false;
 
 const { slug } = Astro.params;
 const templateOptions = listTemplateKeys();
-const authRole = Astro.cookies.get('auth_role')?.value;
+const session = Astro.locals.session;
 
-if (authRole !== 'admin') {
+if (session?.role !== 'admin') {
   return Astro.redirect('/?login=admin');
 }
 

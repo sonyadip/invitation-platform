@@ -27,8 +27,8 @@ const formatUnknownError = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-const authRole = Astro.cookies.get('auth_role')?.value;
-const isUnlocked = authRole === 'admin';
+const session = Astro.locals.session;
+const isUnlocked = session?.role === 'admin';
 
 if (!isUnlocked) {
   return Astro.redirect('/?login=admin');

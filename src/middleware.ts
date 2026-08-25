@@ -1,11 +1,13 @@
 import { defineMiddleware } from 'astro:middleware';
+import { getSessionFromCookies } from './utils/session';
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  const url = context.url;
+  const pathname = url.pathname;
   const acceptHeader = context.request.headers.get('accept') || '';
-  
-  // Turndown doesn't work in Cloudflare Workers due to lack of DOM.
-  // For the homepage, we can just return a lightweight, static Markdown string.
-  if (acceptHeader.includes('text/markdown') && (context.url.pathname === '/' || context.url.pathname === '')) {
+
+  // 1. LLM Markdown context
+  if (acceptHeader.includes('text/markdown') && (pathname === '/' || pathname === '')) {
     const markdown = `# Senadda - Undangan Pernikahan Digital
 
 Selamat datang di Senadda, platform pembuatan undangan digital yang premium, elegan, dan eksklusif.
@@ -31,6 +33,45 @@ Silakan merujuk ke [/llms.txt](/llms.txt) untuk konteks lengkap agen AI.
       }
     });
   }
-  
+
+  // 2. Resolve cryptographically verified session
+  const session = await getSessionFromCookies(context.cookies);
+  context.locals.session = session;
+
+  // 3. Protect /dashboard routes
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+    const segments = pathname.split('/').filter(Boolean); // e.g. ['dashboard'] or ['dashboard', 'slug', 'edit']
+    const isRootDashboard = segments.length === 1; // '/dashboard'
+    const subRoute = segments[1]; // 'activity', 'new', 'settings', or [slug]
+
+    // Admin exclusive global pages
+    if (isRootDashboard || subRoute === 'activity' || subRoute === 'new' || subRoute === 'settings') {
+      if (session?.role !== 'admin') {
+        return context.redirect('/?login=admin');
+      }
+    } else {
+      // Slug-based dashboard: /dashboard/:slug[/subpage]
+      const slug = subRoute;
+      const action = segments[2]; // 'edit', 'revisions', 'rsvp', 'kirim-undangan', 'profile'
+
+      // Admin has full access to all client dashboards and edit tools
+      if (session?.role === 'admin') {
+        return next();
+      }
+
+      // Client role check
+      if (session?.role === 'client' && session.slug === slug) {
+        // Edit and Revisions are strictly Admin-only
+        if (action === 'edit' || action === 'revisions') {
+          return context.redirect(`/dashboard/${slug}`);
+        }
+        return next();
+      }
+
+      // Not authenticated or attempting to access unauthorized slug
+      return context.redirect('/?login=client');
+    }
+  }
+
   return next();
 });

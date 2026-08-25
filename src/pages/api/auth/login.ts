@@ -1,17 +1,10 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../../lib/supabase';
 import { hashPasswordSHA256 } from '../../../utils/security';
+import { setSessionCookie } from '../../../utils/session';
 import { logActivity } from '../../../services/activity-log';
 
 export const prerender = false;
-
-const cookieOpts = (secure: boolean) => ({
-  path: '/',
-  maxAge: 60 * 60 * 24,
-  httpOnly: true,
-  secure,
-  sameSite: 'strict' as const,
-});
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
@@ -29,9 +22,15 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
                               (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') || '';
     
     if (password === dashboardPassword) {
+      await setSessionCookie(cookies, { role: 'admin' }, isSecure);
       const hashed = await hashPasswordSHA256(password);
-      cookies.set('auth_role', 'admin', cookieOpts(isSecure));
-      cookies.set('dashboard_unlocked', hashed, cookieOpts(isSecure));
+      cookies.set('dashboard_unlocked', hashed, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: 'lax'
+      });
 
       await logActivity({
         actor_type: 'admin',
@@ -78,8 +77,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const enteredHash = await hashPasswordSHA256(password);
   
   if (enteredHash === wedding.client_password_hash) {
-    cookies.set('auth_role', 'client', cookieOpts(isSecure));
-    cookies.set('auth_slug', username, cookieOpts(isSecure));
+    await setSessionCookie(cookies, {
+      role: 'client',
+      slug: username,
+      weddingId: wedding.id
+    }, isSecure);
 
     await logActivity({
       wedding_id: wedding.id,
@@ -106,4 +108,3 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   return redirect('/?login=client&error=1');
 };
-

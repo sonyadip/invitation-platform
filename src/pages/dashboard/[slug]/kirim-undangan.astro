@@ -1,9 +1,8 @@
 ---
 const { slug } = Astro.params;
-const authRole = Astro.cookies.get('auth_role')?.value;
-const authSlug = Astro.cookies.get('auth_slug')?.value;
+const session = Astro.locals.session;
 
-if (!authRole || (authRole === 'client' && authSlug !== slug)) {
+if (!session || (session.role === 'client' && session.slug !== slug)) {
   return Astro.redirect('/?login=client');
 }
 
@@ -556,48 +555,48 @@ Om Shanti, Shanti, Shanti, Om.`
             return;
           }
 
-          importInput.disabled = true;
           importBtn.disabled = true;
           importBtn.innerText = 'Mengimpor...';
 
-          let addedCount = 0;
-          let newGuests = [];
-          for (const row of rows) {
-            let { name, phone } = row;
-            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
-            phone = phone.replace(/[^0-9]/g, '');
-            try {
-              const response = await fetch('/api/guests', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ weddingId, name, phone })
-              });
-              const result = await response.json();
-              if (result.success && result.item) {
-                newGuests.push({
-                  id: result.item.id,
-                  name: result.item.guest_name,
-                  phone: result.item.phone
-                });
-                addedCount++;
-              }
-            } catch (err) {
-              console.error('Gagal menambah tamu', name, err);
+          try {
+            const formattedGuests = rows.map(r => {
+              let p = r.phone || '';
+              if (p.startsWith('0')) p = '62' + p.substring(1);
+              p = p.replace(/[^0-9]/g, '');
+              return { name: r.name, phone: p };
+            });
+
+            const response = await fetch('/api/guests', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ weddingId, guests: formattedGuests })
+            });
+
+            const result = await response.json();
+            if (result.success && Array.isArray(result.items)) {
+              const newGuests = result.items.map(item => ({
+                id: item.id,
+                name: item.guest_name,
+                phone: item.phone
+              }));
+
+              guestsData = [...newGuests, ...guestsData];
+              filteredData = [...guestsData];
+              currentPage = 1;
+              renderGuests();
+              alert(`Berhasil mengimpor ${newGuests.length} tamu.`);
+            } else {
+              alert(result.error || 'Gagal mengimpor data tamu.');
             }
+          } catch (err) {
+            console.error('Gagal mengimpor tamu:', err);
+            alert('Terjadi kesalahan saat mengimpor data tamu.');
+          } finally {
+            importInput.value = '';
+            importInput.disabled = false;
+            importBtn.disabled = false;
+            importBtn.innerHTML = '<span class="material-symbols-outlined rsvp-filter-icon">upload_file</span> Import';
           }
-
-          if (newGuests.length > 0) {
-            guestsData = [...newGuests, ...guestsData];
-            filteredData = [...guestsData];
-            currentPage = 1;
-            renderGuests();
-          }
-
-          importInput.value = '';
-          importInput.disabled = false;
-          importBtn.disabled = false;
-          importBtn.innerHTML = '<span class="material-symbols-outlined rsvp-filter-icon">upload_file</span> Import';
-          alert(`Berhasil mengimpor ${addedCount} tamu dari ${file.name}`);
         });
       }
 

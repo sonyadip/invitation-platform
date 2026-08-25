@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { jsonResponse } from '../../utils/http';
 import { validateRSVPInput } from '../../utils/security';
+import { getSessionFromCookies } from '../../utils/session';
 import { logActivity } from '../../services/activity-log';
 
 export const prerender = false;
@@ -141,8 +142,13 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ request }) => {
+export const DELETE: APIRoute = async ({ request, cookies, locals }) => {
   try {
+    const session = locals.session || await getSessionFromCookies(cookies);
+    if (!session) {
+      return jsonResponse({ error: 'Unauthorized: Sesi tidak valid atau telah berakhir.' }, 401);
+    }
+
     const payload = await request.json();
     const { id } = payload;
 
@@ -151,6 +157,29 @@ export const DELETE: APIRoute = async ({ request }) => {
     }
 
     const adminSupabase = await getSupabaseAdmin();
+
+    if (session.role !== 'admin') {
+      const { data: rsvpRecord } = await adminSupabase
+        .from('rsvps')
+        .select('wedding_id')
+        .eq('id', id)
+        .single();
+
+      if (!rsvpRecord) {
+        return jsonResponse({ error: 'Data RSVP tidak ditemukan.' }, 404);
+      }
+
+      const { data: wedding } = await adminSupabase
+        .from('weddings')
+        .select('id')
+        .eq('slug', session.slug)
+        .single();
+
+      if (!wedding || wedding.id !== rsvpRecord.wedding_id) {
+        return jsonResponse({ error: 'Forbidden: Anda tidak memiliki akses untuk menghapus RSVP ini.' }, 403);
+      }
+    }
+
     const { error } = await adminSupabase
       .from('rsvps')
       .delete()
@@ -167,4 +196,3 @@ export const DELETE: APIRoute = async ({ request }) => {
     return jsonResponse({ error: error.message || 'Failed to delete RSVP entry.' }, 500);
   }
 };
-
