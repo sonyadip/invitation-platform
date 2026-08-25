@@ -1,6 +1,7 @@
 ---
 import { getPlatformSettings, savePlatformSettings } from '../../services/platform-settings';
 import { hashPasswordSHA256 } from '../../utils/security';
+import PopupDialog from '../../components/common/PopupDialog.astro';
 
 export const prerender = false;
 
@@ -67,6 +68,7 @@ const settings = await getPlatformSettings();
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <PopupDialog />
     <main class="shell">
       <header class="header">
         <div>

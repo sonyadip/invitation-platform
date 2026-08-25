@@ -8,6 +8,7 @@ import {
   getRevisionById
 } from '../../../services/revision';
 import { logActivity } from '../../../services/activity-log';
+import PopupDialog from '../../../components/common/PopupDialog.astro';
 
 export const prerender = false;
 
@@ -156,6 +157,7 @@ function timeAgo(dateStr: string): string {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <PopupDialog />
     <main class="dashboard-shell">
       <header class="dashboard-header">
         <div>

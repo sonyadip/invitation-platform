@@ -1,6 +1,7 @@
 ---
 import { getActivityLogs, getActivityStats } from '../../services/activity-log';
 import { getDashboardReport } from '../../services/dashboard-report';
+import PopupDialog from '../../components/common/PopupDialog.astro';
 
 export const prerender = false;
 
@@ -124,6 +125,7 @@ function formatFullDate(dateStr: string): string {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <PopupDialog />
     <main class="dashboard-shell">
       <header class="dashboard-header">
         <div>

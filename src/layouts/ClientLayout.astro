@@ -3,6 +3,7 @@ const { title = "Dashboard" } = Astro.props;
 const slug = Astro.params.slug || "wayan-ayu"; // default fallback for safety
 const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/${slug}`, '')}`;
 import "../styles/dashboard.scss";
+import PopupDialog from "../components/common/PopupDialog.astro";
 ---
 <!DOCTYPE html>
 <html lang="id">
@@ -18,6 +19,7 @@ import "../styles/dashboard.scss";
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <PopupDialog />
   
   <!-- TopAppBar -->
   <header class="dashboard-header" id="dashboard-header">
@@ -59,6 +61,10 @@ import "../styles/dashboard.scss";
           <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/rsvp` ? "font-variation-settings: 'FILL' 1" : ""}>mail</span>
           RSVP
         </a>
+        <a href={`/dashboard/${slug}/profile`} class={`nav-link ${currentPath === `/dashboard/${slug}/profile` ? 'nav-link--active' : ''}`}>
+          <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/profile` ? "font-variation-settings: 'FILL' 1" : ""}>person</span>
+          Profil & Akun
+        </a>
       </div>
       <div class="dashboard-drawer__footer">
         <a href="/api/auth/logout" class="nav-link nav-link--error" data-logout>
@@ -76,13 +82,17 @@ import "../styles/dashboard.scss";
         <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}` ? "font-variation-settings: 'FILL' 1" : ""}>home</span>
         <span class="bottom-nav-item__text">Home</span>
       </a>
+      <a href={`/dashboard/${slug}/kirim-undangan`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/kirim-undangan` ? 'bottom-nav-item--active' : ''}`}>
+        <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/kirim-undangan` ? "font-variation-settings: 'FILL' 1" : ""}>send</span>
+        <span class="bottom-nav-item__text">Kirim</span>
+      </a>
       <a href={`/dashboard/${slug}/rsvp`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/rsvp` ? 'bottom-nav-item--active' : ''}`}>
         <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/rsvp` ? "font-variation-settings: 'FILL' 1" : ""}>mail</span>
         <span class="bottom-nav-item__text">RSVP</span>
       </a>
-      <a href={`/dashboard/${slug}/kirim-undangan`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/kirim-undangan` ? 'bottom-nav-item--active' : ''}`}>
-        <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/kirim-undangan` ? "font-variation-settings: 'FILL' 1" : ""}>send</span>
-        <span class="bottom-nav-item__text">Kirim</span>
+      <a href={`/dashboard/${slug}/profile`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/profile` ? 'bottom-nav-item--active' : ''}`}>
+        <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/profile` ? "font-variation-settings: 'FILL' 1" : ""}>person</span>
+        <span class="bottom-nav-item__text">Profil</span>
       </a>
     </div>
   </nav>
@@ -121,9 +131,17 @@ import "../styles/dashboard.scss";
 
       // Logout confirmation
       document.querySelectorAll('[data-logout]').forEach(el => {
-        el.addEventListener('click', (e) => {
+        el.addEventListener('click', async (e) => {
           e.preventDefault();
-          if (confirm('Yakin ingin logout?')) {
+          const confirmed = await window.showConfirm({
+            title: 'Konfirmasi Keluar',
+            message: 'Apakah Anda yakin ingin keluar dari akun ini?',
+            confirmText: 'Keluar',
+            cancelText: 'Batal',
+            variant: 'danger',
+            icon: 'logout'
+          });
+          if (confirmed) {
             window.location.href = '/api/auth/logout';
           }
         });

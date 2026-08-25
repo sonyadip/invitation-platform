@@ -1,0 +1,927 @@
+---
+// PopupDialog.astro - Universal Clean, Smooth & Luxury Modal Popup & Toast System for Senadda
+---
+
+<div id="senadda-popup-root">
+  <!-- Toast Notification Stack -->
+  <div id="senadda-toast-container" class="senadda-toasts" aria-live="polite" role="region" aria-label="Notifications"></div>
+
+  <!-- Universal Modal Dialog (Confirm & Alert) -->
+  <div id="senadda-dialog" class="senadda-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="senadda-dialog-title" aria-describedby="senadda-dialog-message">
+    <div class="senadda-modal__backdrop" id="senadda-dialog-backdrop"></div>
+    <div class="senadda-modal__container">
+      <div class="senadda-modal__card" id="senadda-dialog-card">
+        <!-- Close Button (Top-Right) -->
+        <button type="button" class="senadda-modal__close" id="senadda-dialog-close" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- Icon Badge (Hero Avatar) -->
+        <div class="senadda-modal__icon-wrap" id="senadda-dialog-icon">
+          <!-- Injected dynamically based on variant/icon -->
+        </div>
+
+        <!-- Typography Content -->
+        <div class="senadda-modal__body">
+          <h3 class="senadda-modal__title" id="senadda-dialog-title"></h3>
+          <p class="senadda-modal__message" id="senadda-dialog-message"></p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="senadda-modal__actions" id="senadda-dialog-actions">
+          <button type="button" class="senadda-modal__btn senadda-modal__btn--cancel" id="senadda-dialog-cancel">
+            Batal
+          </button>
+          <button type="button" class="senadda-modal__btn senadda-modal__btn--confirm" id="senadda-dialog-confirm">
+            Lanjutkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style lang="scss">
+  #senadda-popup-root {
+    position: relative;
+    z-index: 100000;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ==========================================================================
+     TOAST NOTIFICATIONS (Clean, Soft UI, Floating)
+     ========================================================================== */
+  .senadda-toasts {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 100005;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 390px;
+    width: calc(100% - 32px);
+    pointer-events: none;
+
+    @media (max-width: 640px) {
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      width: auto;
+      max-width: 100%;
+    }
+  }
+
+  :global(.senadda-toast) {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+    pointer-events: auto;
+    overflow: hidden;
+    will-change: transform, opacity;
+    animation: senaddaToastSlideIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.14), 0 6px 12px -3px rgba(15, 23, 42, 0.06);
+    }
+  }
+
+  :global(.senadda-toast.senadda-toast--hiding) {
+    animation: senaddaToastSlideOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  :global(.senadda-toast--success) {
+    border-left: 4px solid #16a34a;
+  }
+  :global(.senadda-toast--success .senadda-toast__icon) {
+    color: #16a34a;
+    background: #ecfdf5;
+    border: 1px solid #d1fae5;
+  }
+
+  :global(.senadda-toast--error) {
+    border-left: 4px solid #e11d48;
+  }
+  :global(.senadda-toast--error .senadda-toast__icon) {
+    color: #e11d48;
+    background: #fff1f2;
+    border: 1px solid #ffe4e6;
+  }
+
+  :global(.senadda-toast--warning) {
+    border-left: 4px solid #d97706;
+  }
+  :global(.senadda-toast--warning .senadda-toast__icon) {
+    color: #d97706;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+  }
+
+  :global(.senadda-toast--info) {
+    border-left: 4px solid #94805e;
+  }
+  :global(.senadda-toast--info .senadda-toast__icon) {
+    color: #94805e;
+    background: #fbf9f6;
+    border: 1px solid #f0eae1;
+  }
+
+  :global(.senadda-toast__icon) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    flex-shrink: 0;
+
+    svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+    }
+  }
+
+  :global(.senadda-toast__body) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  :global(.senadda-toast__title) {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px 0;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+
+  :global(.senadda-toast__msg) {
+    font-size: 13px;
+    font-weight: 400;
+    color: #475569;
+    margin: 0;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  :global(.senadda-toast__close) {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 4px;
+    margin: -4px -4px 0 0;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+
+    &:hover {
+      color: #334155;
+      background: #f1f5f9;
+    }
+
+    svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+    }
+  }
+
+  :global(.senadda-toast__progress) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2.5px;
+    width: 100%;
+    background: currentColor;
+    opacity: 0.3;
+    transform-origin: left center;
+    animation: senaddaToastProgress linear forwards;
+  }
+
+  @keyframes senaddaToastSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-16px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes senaddaToastSlideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+  }
+
+  @keyframes senaddaToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+
+  /* ==========================================================================
+     MODAL POPUP DIALOG (Ultra Smooth Transitions, Clean & Responsive)
+     ========================================================================== */
+  .senadda-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    pointer-events: none;
+
+    &.senadda-modal--open {
+      pointer-events: auto;
+
+      .senadda-modal__backdrop {
+        opacity: 1;
+      }
+
+      .senadda-modal__card {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    &.senadda-modal--closing {
+      pointer-events: none;
+
+      .senadda-modal__backdrop {
+        opacity: 0;
+        transition: opacity 0.18s cubic-bezier(0.4, 0, 1, 1);
+      }
+
+      .senadda-modal__card {
+        opacity: 0;
+        transform: scale(0.95) translateY(6px);
+        transition: transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.16s cubic-bezier(0.4, 0, 1, 1);
+      }
+    }
+  }
+
+  .senadda-modal__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity;
+  }
+
+  .senadda-modal__container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    justify-content: center;
+    margin: auto;
+  }
+
+  .senadda-modal__card {
+    position: relative;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.03);
+    padding: 26px 24px 22px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+
+    @media (max-width: 480px) {
+      padding: 22px 18px 18px 18px;
+      border-radius: 18px;
+    }
+  }
+
+  .senadda-modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    svg {
+      width: 17px;
+      height: 17px;
+    }
+  }
+
+  .senadda-modal__icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+
+    svg {
+      width: 25px;
+      height: 25px;
+      stroke: currentColor;
+    }
+
+    &--danger {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 4px solid #fff5f5;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.14);
+    }
+
+    &--warning {
+      background: #fffbeb;
+      color: #d97706;
+      border: 4px solid #fffdf5;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.14);
+    }
+
+    &--success {
+      background: #ecfdf5;
+      color: #16a34a;
+      border: 4px solid #f0fdf4;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.14);
+    }
+
+    &--info, &--primary {
+      background: #faf7f2;
+      color: #94805e;
+      border: 4px solid #fbf9f6;
+      box-shadow: 0 4px 12px rgba(148, 128, 94, 0.14);
+    }
+  }
+
+  .senadda-modal__body {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .senadda-modal__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+
+    @media (max-width: 480px) {
+      font-size: 17px;
+    }
+  }
+
+  .senadda-modal__message {
+    font-size: 13.5px;
+    font-weight: 400;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.55;
+    word-break: break-word;
+
+    @media (max-width: 480px) {
+      font-size: 13px;
+    }
+  }
+
+  .senadda-modal__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+
+    @media (max-width: 360px) {
+      flex-direction: column-reverse;
+      gap: 8px;
+    }
+  }
+
+  .senadda-modal__btn {
+    flex: 1;
+    width: 100%;
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.18s ease;
+    border: none;
+    outline: none;
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px rgba(148, 128, 94, 0.35);
+    }
+
+    &--cancel {
+      background: #ffffff;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+
+      &:hover {
+        background: #f8fafc;
+        color: #0f172a;
+        border-color: #cbd5e1;
+      }
+    }
+
+    &--confirm {
+      background: #94805e;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(148, 128, 94, 0.25);
+
+      &:hover {
+        background: #826f4f;
+        box-shadow: 0 4px 10px rgba(148, 128, 94, 0.32);
+      }
+
+      &.senadda-modal__btn--danger {
+        background: #dc2626;
+        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+
+        &:hover {
+          background: #b91c1c;
+          box-shadow: 0 4px 10px rgba(220, 38, 38, 0.32);
+        }
+
+        &:focus-visible {
+          box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.35);
+        }
+      }
+
+      &.senadda-modal__btn--warning {
+        background: #d97706;
+        box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+
+        &:hover {
+          background: #b45309;
+          box-shadow: 0 4px 10px rgba(217, 119, 6, 0.32);
+        }
+
+        &:focus-visible {
+          box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.35);
+        }
+      }
+
+      &.senadda-modal__btn--success {
+        background: #16a34a;
+        box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+
+        &:hover {
+          background: #15803d;
+          box-shadow: 0 4px 10px rgba(22, 163, 74, 0.32);
+        }
+
+        &:focus-visible {
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.35);
+        }
+      }
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    // Vector SVGs with crisp stroke-width 2.2
+    const ICONS = {
+      success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+      error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+      warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+      info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+      logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>',
+      delete: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>'
+    };
+
+    /**
+     * Check if currently in Admin dashboard context
+     * Admin: /dashboard, /dashboard/new, /dashboard/settings, /dashboard/activity, /dashboard/[slug]/edit, /dashboard/[slug]/revisions
+     * Client: /dashboard/[slug], /dashboard/[slug]/kirim-undangan, /dashboard/[slug]/rsvp, /dashboard/[slug]/profile
+     */
+    function isAdminRoute() {
+      const p = window.location.pathname;
+      if (p === '/dashboard' || p === '/dashboard/') return true;
+      if (p.startsWith('/dashboard/new') || p.startsWith('/dashboard/settings') || p.startsWith('/dashboard/activity')) return true;
+      if (p.includes('/edit') || p.includes('/revisions')) return true;
+      return false;
+    }
+
+    /**
+     * Show Toast Notification
+     * @param {Object|string} options
+     * @param {string} options.message
+     * @param {'success'|'error'|'warning'|'info'} [options.type='info']
+     * @param {string} [options.title]
+     * @param {number} [options.duration=3500]
+     */
+    window.showToast = function (options) {
+      if (typeof options === 'string') {
+        options = { message: options };
+      }
+      const isAdmin = isAdminRoute();
+      const defaultTitle = (type) => {
+        if (isAdmin) {
+          return type === 'success' ? 'Success' : type === 'error' ? 'Error' : type === 'warning' ? 'Warning' : 'Information';
+        }
+        return type === 'success' ? 'Berhasil' : type === 'error' ? 'Gagal' : type === 'warning' ? 'Perhatian' : 'Informasi';
+      };
+
+      const {
+        message = '',
+        type = 'info',
+        title = defaultTitle(type),
+        duration = 3500
+      } = options || {};
+
+      const container = document.getElementById('senadda-toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `senadda-toast senadda-toast--${type}`;
+
+      const iconSvg = ICONS[type] || ICONS.info;
+
+      toast.innerHTML = `
+        <div class="senadda-toast__icon">${iconSvg}</div>
+        <div class="senadda-toast__body">
+          <div class="senadda-toast__title">${title}</div>
+          <div class="senadda-toast__msg">${message}</div>
+        </div>
+        <button type="button" class="senadda-toast__close" aria-label="Tutup notifikasi">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        ${duration > 0 ? `<div class="senadda-toast__progress" style="animation-duration: ${duration}ms;"></div>` : ''}
+      `;
+
+      let hideTimeout;
+      const removeToast = () => {
+        if (toast.classList.contains('senadda-toast--hiding')) return;
+        toast.classList.add('senadda-toast--hiding');
+        clearTimeout(hideTimeout);
+        setTimeout(() => {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 220);
+      };
+
+      const closeBtn = toast.querySelector('.senadda-toast__close');
+      if (closeBtn) closeBtn.addEventListener('click', removeToast);
+
+      // Pause on hover
+      if (duration > 0) {
+        let remainingTime = duration;
+        let startTime = Date.now();
+
+        const startTimer = () => {
+          startTime = Date.now();
+          hideTimeout = setTimeout(removeToast, remainingTime);
+        };
+
+        toast.addEventListener('mouseenter', () => {
+          clearTimeout(hideTimeout);
+          remainingTime -= Date.now() - startTime;
+          const progressBar = toast.querySelector('.senadda-toast__progress');
+          if (progressBar) progressBar.style.animationPlayState = 'paused';
+        });
+
+        toast.addEventListener('mouseleave', () => {
+          if (remainingTime > 0) {
+            const progressBar = toast.querySelector('.senadda-toast__progress');
+            if (progressBar) progressBar.style.animationPlayState = 'running';
+            startTimer();
+          } else {
+            removeToast();
+          }
+        });
+
+        startTimer();
+      }
+
+      container.appendChild(toast);
+    };
+
+    // Dialog state management
+    let activeDialogResolve = null;
+
+    function closeDialog(result) {
+      const dialog = document.getElementById('senadda-dialog');
+      if (!dialog) return;
+
+      dialog.classList.remove('senadda-modal--open');
+      dialog.classList.add('senadda-modal--closing');
+      dialog.setAttribute('aria-hidden', 'true');
+
+      setTimeout(() => {
+        dialog.classList.remove('senadda-modal--closing');
+        if (activeDialogResolve) {
+          const resolve = activeDialogResolve;
+          activeDialogResolve = null;
+          resolve(result);
+        }
+      }, 190);
+    }
+
+    /**
+     * Show Modern Confirm Dialog
+     * @param {Object|string} options
+     * @param {string} options.title
+     * @param {string} options.message
+     * @param {string} [options.confirmText]
+     * @param {string} [options.cancelText]
+     * @param {'primary'|'danger'|'warning'|'success'} [options.variant='danger']
+     * @param {string} [options.icon]
+     * @returns {Promise<boolean>}
+     */
+    window.showConfirm = function (options) {
+      if (typeof options === 'string') {
+        options = { message: options };
+      }
+      return new Promise((resolve) => {
+        const isAdmin = isAdminRoute();
+        const {
+          title = isAdmin ? 'Confirm Action' : 'Konfirmasi Tindakan',
+          message = isAdmin ? 'Are you sure you want to proceed?' : 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
+          confirmText = isAdmin ? 'Confirm' : 'Lanjutkan',
+          cancelText = isAdmin ? 'Cancel' : 'Batal',
+          variant = 'danger',
+          icon = variant
+        } = options || {};
+
+        activeDialogResolve = resolve;
+
+        const dialog = document.getElementById('senadda-dialog');
+        const iconEl = document.getElementById('senadda-dialog-icon');
+        const titleEl = document.getElementById('senadda-dialog-title');
+        const msgEl = document.getElementById('senadda-dialog-message');
+        const confirmBtn = document.getElementById('senadda-dialog-confirm');
+        const cancelBtn = document.getElementById('senadda-dialog-cancel');
+
+        if (!dialog) {
+          resolve(window.confirm(message));
+          return;
+        }
+
+        if (titleEl) titleEl.innerText = title;
+        if (msgEl) msgEl.innerText = message;
+
+        if (iconEl) {
+          iconEl.className = `senadda-modal__icon-wrap senadda-modal__icon-wrap--${variant}`;
+          iconEl.innerHTML = ICONS[icon] || ICONS[variant] || ICONS.warning;
+        }
+
+        if (confirmBtn) {
+          confirmBtn.innerText = confirmText;
+          confirmBtn.className = `senadda-modal__btn senadda-modal__btn--confirm ${
+            variant === 'danger'
+              ? 'senadda-modal__btn--danger'
+              : variant === 'warning'
+              ? 'senadda-modal__btn--warning'
+              : variant === 'success'
+              ? 'senadda-modal__btn--success'
+              : ''
+          }`;
+        }
+
+        if (cancelBtn) {
+          cancelBtn.innerText = cancelText;
+          cancelBtn.style.display = 'inline-flex';
+        }
+
+        dialog.classList.remove('senadda-modal--closing');
+        
+        // Use requestAnimationFrame for smooth CSS transition trigger
+        requestAnimationFrame(() => {
+          dialog.classList.add('senadda-modal--open');
+          dialog.setAttribute('aria-hidden', 'false');
+        });
+
+        setTimeout(() => {
+          if (confirmBtn) confirmBtn.focus();
+        }, 50);
+      });
+    };
+
+    /**
+     * Show Modern Alert Dialog (Single Button)
+     * @param {Object|string} options
+     * @returns {Promise<void>}
+     */
+    window.showAlert = function (options) {
+      if (typeof options === 'string') {
+        options = { message: options };
+      }
+      return new Promise((resolve) => {
+        const isAdmin = isAdminRoute();
+        const {
+          title = isAdmin ? 'Information' : 'Informasi',
+          message = '',
+          confirmText = isAdmin ? 'OK' : 'Mengerti',
+          variant = 'info',
+          icon = variant
+        } = options || {};
+
+        activeDialogResolve = () => resolve();
+
+        const dialog = document.getElementById('senadda-dialog');
+        const iconEl = document.getElementById('senadda-dialog-icon');
+        const titleEl = document.getElementById('senadda-dialog-title');
+        const msgEl = document.getElementById('senadda-dialog-message');
+        const confirmBtn = document.getElementById('senadda-dialog-confirm');
+        const cancelBtn = document.getElementById('senadda-dialog-cancel');
+
+        if (!dialog) {
+          window.alert(message);
+          resolve();
+          return;
+        }
+
+        if (titleEl) titleEl.innerText = title;
+        if (msgEl) msgEl.innerText = message;
+
+        if (iconEl) {
+          iconEl.className = `senadda-modal__icon-wrap senadda-modal__icon-wrap--${variant}`;
+          iconEl.innerHTML = ICONS[icon] || ICONS[variant] || ICONS.info;
+        }
+
+        if (confirmBtn) {
+          confirmBtn.innerText = confirmText;
+          confirmBtn.className = `senadda-modal__btn senadda-modal__btn--confirm ${
+            variant === 'danger'
+              ? 'senadda-modal__btn--danger'
+              : variant === 'warning'
+              ? 'senadda-modal__btn--warning'
+              : variant === 'success'
+              ? 'senadda-modal__btn--success'
+              : ''
+          }`;
+        }
+
+        if (cancelBtn) {
+          cancelBtn.style.display = 'none';
+        }
+
+        dialog.classList.remove('senadda-modal--closing');
+        
+        requestAnimationFrame(() => {
+          dialog.classList.add('senadda-modal--open');
+          dialog.setAttribute('aria-hidden', 'false');
+        });
+
+        setTimeout(() => {
+          if (confirmBtn) confirmBtn.focus();
+        }, 50);
+      });
+    };
+
+    // Attach listeners once DOM is ready
+    function setupDialogEvents() {
+      const confirmBtn = document.getElementById('senadda-dialog-confirm');
+      const cancelBtn = document.getElementById('senadda-dialog-cancel');
+      const closeBtn = document.getElementById('senadda-dialog-close');
+      const backdrop = document.getElementById('senadda-dialog-backdrop');
+
+      if (confirmBtn) {
+        confirmBtn.onclick = () => closeDialog(true);
+      }
+      if (cancelBtn) {
+        cancelBtn.onclick = () => closeDialog(false);
+      }
+      if (closeBtn) {
+        closeBtn.onclick = () => closeDialog(false);
+      }
+      if (backdrop) {
+        backdrop.onclick = () => closeDialog(false);
+      }
+
+      // Keyboard support: Escape cancels, Enter confirms
+      document.addEventListener('keydown', (e) => {
+        const dialog = document.getElementById('senadda-dialog');
+        if (!dialog || !dialog.classList.contains('senadda-modal--open')) return;
+
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeDialog(false);
+        } else if (e.key === 'Enter') {
+          if (document.activeElement !== cancelBtn && document.activeElement !== closeBtn) {
+            e.preventDefault();
+            closeDialog(true);
+          }
+        }
+      });
+
+      // Global listener for [data-confirm] buttons and forms
+      document.addEventListener('click', async (e) => {
+        const trigger = e.target.closest('[data-confirm]');
+        if (!trigger) return;
+
+        if (trigger.dataset.confirmed === 'true') {
+          delete trigger.dataset.confirmed;
+          return;
+        }
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        const isAdmin = isAdminRoute();
+        const message = trigger.getAttribute('data-confirm') || (isAdmin ? 'Are you sure you want to proceed?' : 'Apakah Anda yakin ingin melanjutkan tindakan ini?');
+        const title = trigger.getAttribute('data-confirm-title') || (isAdmin ? 'Confirm Action' : 'Konfirmasi Tindakan');
+        const confirmText = trigger.getAttribute('data-confirm-text') || (isAdmin ? 'Confirm' : 'Lanjutkan');
+        const cancelText = trigger.getAttribute('data-cancel-text') || (isAdmin ? 'Cancel' : 'Batal');
+        const variant = trigger.getAttribute('data-confirm-variant') || 'danger';
+        const icon = trigger.getAttribute('data-confirm-icon') || variant;
+
+        const confirmed = await window.showConfirm({
+          title,
+          message,
+          confirmText,
+          cancelText,
+          variant,
+          icon
+        });
+
+        if (confirmed) {
+          if (trigger.tagName === 'A' && trigger.href) {
+            window.location.href = trigger.href;
+          } else if (trigger.type === 'submit' && trigger.form) {
+            trigger.dataset.confirmed = 'true';
+            if (trigger.name) {
+              const hidden = document.createElement('input');
+              hidden.type = 'hidden';
+              hidden.name = trigger.name;
+              hidden.value = trigger.value;
+              trigger.form.appendChild(hidden);
+            }
+            trigger.form.submit();
+          } else if (trigger.tagName === 'FORM') {
+            trigger.dataset.confirmed = 'true';
+            trigger.submit();
+          } else {
+            trigger.dataset.confirmed = 'true';
+            trigger.click();
+          }
+        }
+      }, true);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupDialogEvents);
+    } else {
+      setupDialogEvents();
+    }
+  })();
+</script>

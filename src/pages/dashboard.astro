@@ -7,6 +7,7 @@ import {
 } from '../services/dashboard-crud';
 import { getDashboardReport } from '../services/dashboard-report';
 import { hashPasswordSHA256 } from '../utils/security';
+import PopupDialog from '../components/common/PopupDialog.astro';
 
 export const prerender = false;
 
@@ -137,6 +138,7 @@ if (isUnlocked) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <PopupDialog />
     {isUnlocked ? (
       <main class="dashboard-shell">
         <header class="dashboard-header">
@@ -254,7 +256,11 @@ if (isUnlocked) {
                               <button
                                 class="warning-action"
                                 type="submit"
-                                onclick="return confirm('Soft delete this invitation? It will move to Deleted Invitations.')"
+                                data-confirm="Soft delete this invitation? It will be moved to Deleted Invitations."
+                                data-confirm-title="Confirm Soft Delete"
+                                data-confirm-text="Soft Delete"
+                                data-cancel-text="Cancel"
+                                data-confirm-variant="warning"
                               >
                                 Soft Delete
                               </button>
@@ -313,7 +319,11 @@ if (isUnlocked) {
                               <button
                                 class="danger-action"
                                 type="submit"
-                                onclick="return confirm('Permanently delete this soft-deleted invitation and unshared images? This action cannot be undone.')"
+                                data-confirm="Permanently delete this soft-deleted invitation and unshared images? This action cannot be undone."
+                                data-confirm-title="Delete Permanently"
+                                data-confirm-text="Delete Permanently"
+                                data-cancel-text="Cancel"
+                                data-confirm-variant="danger"
                               >
                                 Delete Permanently
                               </button>

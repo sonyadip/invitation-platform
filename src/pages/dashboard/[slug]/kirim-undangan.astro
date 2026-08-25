@@ -364,12 +364,13 @@ Om Shanti, Shanti, Shanti, Om.`
             filteredData = [...guestsData];
             currentPage = 1;
             renderGuests();
+            window.showToast({ type: 'success', message: 'Tamu baru berhasil ditambahkan.' });
           } else {
-            alert(result.error || 'Gagal menambahkan tamu');
+            window.showToast({ type: 'error', message: result.error || 'Gagal menambahkan tamu.' });
           }
         } catch (error) {
           console.error(error);
-          alert('Terjadi kesalahan jaringan.');
+          window.showToast({ type: 'error', message: 'Terjadi kesalahan jaringan. Periksa koneksi internet Anda.' });
         } finally {
           addBtn.disabled = false;
           addInput.disabled = false;
@@ -387,12 +388,23 @@ Om Shanti, Shanti, Shanti, Om.`
 
       // --- HAPUS & SALIN (Event Delegation) ---
       if (guestsContainer) {
-        guestsContainer.addEventListener('click', (e) => {
+        guestsContainer.addEventListener('click', async (e) => {
           // Tombol Hapus
           const deleteBtn = e.target.closest('.kirim-guests__btn-delete');
           if (deleteBtn) {
-            if (!confirm('Hapus tamu ini?')) return;
             const row = deleteBtn.closest('.kirim-guests__item');
+            const guestName = row?.querySelector('.kirim-guests__name')?.innerText?.trim() || 'tamu ini';
+
+            const confirmed = await window.showConfirm({
+              title: 'Hapus Data Tamu',
+              message: `Apakah Anda yakin ingin menghapus data tamu "${guestName}"?`,
+              confirmText: 'Hapus Tamu',
+              cancelText: 'Batal',
+              variant: 'danger',
+              icon: 'delete'
+            });
+            if (!confirmed) return;
+
             if (row && row.dataset.id) {
               const id = row.dataset.id;
               
@@ -411,6 +423,7 @@ Om Shanti, Shanti, Shanti, Om.`
                 filteredData = [...guestsData];
               }
               renderGuests();
+              window.showToast({ type: 'success', message: 'Data tamu berhasil dihapus.' });
             }
             return;
           }
@@ -550,7 +563,7 @@ Om Shanti, Shanti, Shanti, Om.`
           }
 
           if (rows.length === 0) {
-            alert('Tidak ada data tamu yang ditemukan.');
+            window.showToast({ type: 'warning', message: 'Tidak ada data tamu yang ditemukan.' });
             importInput.value = '';
             return;
           }
@@ -584,13 +597,13 @@ Om Shanti, Shanti, Shanti, Om.`
               filteredData = [...guestsData];
               currentPage = 1;
               renderGuests();
-              alert(`Berhasil mengimpor ${newGuests.length} tamu.`);
+              window.showToast({ type: 'success', message: `Berhasil mengimpor ${newGuests.length} tamu.` });
             } else {
-              alert(result.error || 'Gagal mengimpor data tamu.');
+              window.showToast({ type: 'error', message: result.error || 'Gagal mengimpor data tamu.' });
             }
           } catch (err) {
             console.error('Gagal mengimpor tamu:', err);
-            alert('Terjadi kesalahan saat mengimpor data tamu.');
+            window.showToast({ type: 'error', message: 'Terjadi kesalahan saat mengimpor data tamu.' });
           } finally {
             importInput.value = '';
             importInput.disabled = false;

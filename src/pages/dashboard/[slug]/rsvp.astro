@@ -326,7 +326,15 @@ function formatRsvpDateTime(dateStr: string | null): string {
           const nameEl = rowWrapper.querySelector('.rsvp-row__name');
           const guestName = nameEl ? nameEl.innerText.trim() : 'tamu ini';
 
-          if (!confirm(`Hapus konfirmasi RSVP dari "${guestName}"?`)) return;
+          const confirmed = await window.showConfirm({
+            title: 'Hapus RSVP',
+            message: `Apakah Anda yakin ingin menghapus konfirmasi RSVP dari "${guestName}"?`,
+            confirmText: 'Hapus RSVP',
+            cancelText: 'Batal',
+            variant: 'danger',
+            icon: 'delete'
+          });
+          if (!confirmed) return;
 
           try {
             deleteBtn.disabled = true;
@@ -345,6 +353,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
 
             // Remove row from DOM
             rowWrapper.remove();
+            window.showToast({ type: 'success', message: 'Data RSVP berhasil dihapus.' });
 
             // Update summary counters
             const statusAttr = rowWrapper.getAttribute('data-status') || '';
@@ -398,7 +407,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
             filterGuests();
           } catch (err) {
             console.error('Error deleting RSVP:', err);
-            alert(err.message || 'Terjadi kesalahan saat menghapus RSVP.');
+            window.showToast({ type: 'error', message: err.message || 'Terjadi kesalahan saat menghapus RSVP.' });
             deleteBtn.disabled = false;
             deleteBtn.style.opacity = '1';
           }
@@ -411,7 +420,7 @@ function formatRsvpDateTime(dateStr: string | null): string {
       if (exportBtn) {
         exportBtn.addEventListener('click', () => {
           if (typeof XLSX === 'undefined') {
-            alert('Fitur export masih dimuat, silakan coba sebentar lagi.');
+            window.showToast({ type: 'info', message: 'Fitur export masih dimuat, silakan coba sebentar lagi.' });
             return;
           }
 
