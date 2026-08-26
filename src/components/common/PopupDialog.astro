@@ -366,10 +366,11 @@
     flex-shrink: 0;
     transition: all 0.2s ease;
 
-    svg {
-      width: 25px;
-      height: 25px;
+    :global(svg) {
+      width: 26px;
+      height: 26px;
       stroke: currentColor;
+      display: block;
     }
 
     &--danger {

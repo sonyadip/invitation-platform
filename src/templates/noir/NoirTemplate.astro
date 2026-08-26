@@ -263,41 +263,8 @@ const activeGifts = gifts && gifts.length > 0
               </div> */}
 
               <div class="couple-section__row">
-                <!-- Bride card -->
-                <div class="person-card" data-animate="fade-right" style="--animate-delay: 500ms;">
-                  <div class="person-card__photo-wrap">
-                    <SmartImage
-                      class="person-card__photo"
-                      src={brideImage}
-                      alt={wedding.bride_name}
-                      loading="lazy"
-                    />
-                  </div>
-                  <p class="person-card__role">Bride</p>
-                  <p class="person-card__fullname">{wedding.bride_full_name}</p>
-                  <p class="person-card__parents">
-                    {brideParentLines.map((line, index) => (
-                      <>
-                        {index > 0 && <br />}
-                        {line}
-                      </>
-                    ))}
-                  </p>
-                  <a class="person-card__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-                      <rect x="3" y="3" width="18" height="18" rx="5"></rect>
-                      <circle cx="12" cy="12" r="4"></circle>
-                      <circle cx="17.5" cy="6.5" r="1"></circle>
-                    </svg>
-                    <span>{getInstagramUsername(brideInstagramUrl)}</span>
-                  </a>
-                </div>
-
-                <!-- Ampersand -->
-                <div class="couple-section__amp" data-animate="zoom-in" style="--animate-delay: 500ms;">&amp;</div>
-
                 <!-- Groom card -->
-                <div class="person-card" data-animate="fade-left" style="--animate-delay: 800ms;">
+                <div class="person-card" data-animate="fade-right" style="--animate-delay: 500ms;">
                   <div class="person-card__photo-wrap">
                     <SmartImage
                       class="person-card__photo"
@@ -323,6 +290,39 @@ const activeGifts = gifts && gifts.length > 0
                       <circle cx="17.5" cy="6.5" r="1"></circle>
                     </svg>
                     <span>{getInstagramUsername(groomInstagramUrl)}</span>
+                  </a>
+                </div>
+
+                <!-- Ampersand -->
+                <div class="couple-section__amp" data-animate="zoom-in" style="--animate-delay: 500ms;">&amp;</div>
+
+                <!-- Bride card -->
+                <div class="person-card" data-animate="fade-left" style="--animate-delay: 800ms;">
+                  <div class="person-card__photo-wrap">
+                    <SmartImage
+                      class="person-card__photo"
+                      src={brideImage}
+                      alt={wedding.bride_name}
+                      loading="lazy"
+                    />
+                  </div>
+                  <p class="person-card__role">Bride</p>
+                  <p class="person-card__fullname">{wedding.bride_full_name}</p>
+                  <p class="person-card__parents">
+                    {brideParentLines.map((line, index) => (
+                      <>
+                        {index > 0 && <br />}
+                        {line}
+                      </>
+                    ))}
+                  </p>
+                  <a class="person-card__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                      <circle cx="12" cy="12" r="4"></circle>
+                      <circle cx="17.5" cy="6.5" r="1"></circle>
+                    </svg>
+                    <span>{getInstagramUsername(brideInstagramUrl)}</span>
                   </a>
                 </div>
               </div>

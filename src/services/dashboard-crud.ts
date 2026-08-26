@@ -404,6 +404,27 @@ async function ensureStorageBucket(supabase: Awaited<ReturnType<typeof getSupaba
   }
 }
 
+function sanitizeFileName(fileName: string, fallbackExt = '') {
+  const lastDotIndex = fileName.lastIndexOf('.');
+  const rawBase = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
+  const rawExt = lastDotIndex !== -1 ? fileName.substring(lastDotIndex + 1) : fallbackExt;
+
+  const cleanBase = rawBase
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'file';
+
+  const cleanExt = (rawExt || fallbackExt)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]/g, '');
+
+  return cleanExt ? `${cleanBase}.${cleanExt}` : cleanBase;
+}
+
 async function uploadImageFile(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   slug: string,
@@ -413,18 +434,20 @@ async function uploadImageFile(
   validateImageFile(file);
   await ensureStorageBucket(supabase);
 
+  const cleanName = sanitizeFileName(file.name, fileExtension(file));
+
   const path = [
     slug,
     scope,
-    `${Date.now()}-${crypto.randomUUID()}.${fileExtension(file)}`
+    cleanName
   ].join('/');
 
   const { error: uploadError } = await supabase
     .storage
     .from(storageBucket)
     .upload(path, file, {
-      cacheControl: '31536000',
-      upsert: false,
+      cacheControl: '3600',
+      upsert: true,
       contentType: file.type
     });
 
@@ -443,18 +466,20 @@ async function uploadAudioFile(
   await ensureStorageBucket(supabase);
 
   const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
+  const cleanName = sanitizeFileName(file.name, ext);
+
   const path = [
     slug,
     'music',
-    `${Date.now()}-${crypto.randomUUID()}.${ext}`
+    cleanName
   ].join('/');
 
   const { error: uploadError } = await supabase
     .storage
     .from(storageBucket)
     .upload(path, file, {
-      cacheControl: '31536000',
-      upsert: false,
+      cacheControl: '3600',
+      upsert: true,
       contentType: file.type || 'audio/mpeg'
     });
 

@@ -157,3 +157,20 @@ button {
   margin-left: auto !important;
   margin-right: auto !important;
 }
+
+// --- 7. Floating Audio Toggle Component ---
+.audio-toggle {
+  transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, border-color 0.3s ease;
+}
+
+// Hide audio toggle while cover popup or cinematic preloader is active
+body.template-no-scroll .audio-toggle,
+body.template-cover-active .audio-toggle,
+body:has([data-template-cover]:not([style*="display: none"])) .audio-toggle,
+body:has(#cinematic-preloader:not([style*="display: none"])) .audio-toggle {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: scale(0.8) !important;
+}
+
