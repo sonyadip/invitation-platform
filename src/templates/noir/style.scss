@@ -161,7 +161,7 @@ body.template-noir {
       position: absolute;
       inset: 0;
       z-index: 0;
-      background: linear-gradient(360deg, #111111 0%, rgba(17, 17, 17, 0.4) 100%);
+      background: linear-gradient(360deg, #111111b3 0%, rgba(17, 17, 17, 0.4) 100%);
       pointer-events: none;
     }
   }
@@ -373,7 +373,7 @@ body.template-noir {
       position: absolute;
       inset: 0;
       z-index: 0;
-      background: linear-gradient(180deg, rgba(17, 17, 17, 0.3) 0%, #111111 100%);
+      background: linear-gradient(180deg, rgba(17, 17, 17, 0.1) 0%, #111111 100%);
       pointer-events: none;
     }
   }
