@@ -27,6 +27,8 @@ const formattedDate = new Date(wedding.wedding_date).toLocaleDateString("id-ID",
 const description = `Undangan pernikahan ${groomName} & ${brideName}.\n${formattedDate}.`;
 
 const theme = settings.theme_config.theme;
+const imageUrl = image ? new URL(image, Astro.url).toString() : null;
+const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith('.jpg') || imageUrl?.endsWith('.jpeg')) ? 'image/jpeg' : 'image/webp';
 ---
 
 <!doctype html>
@@ -42,7 +44,7 @@ const theme = settings.theme_config.theme;
     <FontLoader fontHeading={theme.fontHeading} fontBody={theme.fontBody} />
 
     <!-- LCP Image Preload -->
-    {image && <link rel="preload" as="image" href={image} fetchpriority="high" />}
+    {imageUrl && <link rel="preload" as="image" href={imageUrl} fetchpriority="high" />}
 
     <!-- SEO Meta Tags -->
     <title>{docTitle}</title>
@@ -55,14 +57,22 @@ const theme = settings.theme_config.theme;
     <meta property="og:title" content={docTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={defaultTitle} />
-    {image && <meta property="og:image" content={new URL(image, Astro.url).toString()} />}
-    {image && <meta property="og:image:secure_url" content={new URL(image, Astro.url).toString()} />}
+    {imageUrl && (
+      <>
+        <meta property="og:image" content={imageUrl} />
+        <meta property="og:image:secure_url" content={imageUrl} />
+        <meta property="og:image:type" content={imageType} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="1200" />
+        <meta property="og:image:alt" content={docTitle} />
+      </>
+    )}
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={docTitle} />
     <meta name="twitter:description" content={description} />
-    {image && <meta name="twitter:image" content={new URL(image, Astro.url).toString()} />}
+    {imageUrl && <meta name="twitter:image" content={imageUrl} />}
 
     <!-- Dynamic Theme Styling Injection -->
     <style
