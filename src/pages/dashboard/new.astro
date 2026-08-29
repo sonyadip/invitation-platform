@@ -160,7 +160,7 @@ if (Astro.request.method === 'POST') {
 
       {errorMessage && <div class="error-panel">{errorMessage}</div>}
 
-      <form class="form-panel" method="POST" enctype="multipart/form-data">
+      <form class="form-panel" id="new-invitation-form" method="POST" enctype="multipart/form-data">
         <section>
           <h2>General Settings</h2>
           <div class="form-grid" style="margin-bottom: 18px;">
@@ -242,33 +242,8 @@ if (Astro.request.method === 'POST') {
             <label class="wide">Upload Logo Image<input type="file" name="logoImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
             <label class="wide">Popup / Hero Image URL<input name="heroImageUrl" id="hero-image-url-input" value={values.heroImageUrl} placeholder="https://example.com/hero.jpg" /></label>
             <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" id="hero-image-file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <div style="grid-column: 1 / -1; margin-top: 12px; margin-bottom: 8px; padding: 16px; background: rgba(0,0,0,0.02); border-radius: 8px; border: 1px solid #d9dde5;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                <div>
-                  <h3 style="font-size: 14px; font-weight: 700; margin: 0;">Thumbnail Medsos (Instagram, WhatsApp, Facebook)</h3>
-                  <p class="section-sub" style="margin: 4px 0 0 0; font-size: 12px; color: #687080;">Format standar 1200 × 630 px (1.91:1). Gambar ini yang akan muncul saat link dibagikan di Instagram DM, WhatsApp, dan Facebook agar foto tidak terpotong.</p>
-                </div>
-                <button type="button" id="btn-generate-og" class="secondary-action" style="padding: 0 12px; font-size: 12px; height: 32px; cursor: pointer;">
-                  Generate dari Foto Cover
-                </button>
-              </div>
-
-              <!-- Live OG Card Preview -->
-              <div id="og-preview-card" style="margin: 12px 0; max-width: 440px; aspect-ratio: 1200 / 630; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; background: #0f172a; display: flex; align-items: center; justify-content: center; position: relative;">
-                <img id="og-preview-img" src={values.ogImageUrl || ''} alt="OG Preview" style={`width: 100%; height: 100%; object-fit: cover; display: ${values.ogImageUrl ? 'block' : 'none'};`} />
-                <div id="og-preview-placeholder" style={`color: #94a3b8; font-size: 12px; text-align: center; padding: 12px; display: ${values.ogImageUrl ? 'none' : 'block'};`}>
-                  Belum ada thumbnail khusus (otomatis dibuat dari Foto Cover atau upload manual).
-                </div>
-                <div id="og-preview-loading" style="display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.8); color: #f8fafc; align-items: center; justify-content: center; font-size: 12px; font-weight: 500;">
-                  Memproses thumbnail 1200x630...
-                </div>
-              </div>
-
-              <div class="form-grid" style="margin-top: 10px;">
-                <label class="wide">Thumbnail URL (Opsional)<input name="ogImageUrl" id="og-image-url-input" value={values.ogImageUrl || ''} placeholder="https://example.com/og-image.jpg" /></label>
-                <label class="wide">Upload Thumbnail Custom (1200x630)<input type="file" name="ogImageFile" id="og-image-file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-              </div>
-            </div>
+            <input type="hidden" name="ogImageUrl" id="og-image-url-input" value={values.ogImageUrl || ''} />
+            <input type="file" name="ogImageFile" id="og-image-file-input" style="display: none;" />
             <label class="wide">Hero Video URL<input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" /></label>
             <div style="grid-column: 1 / -1; margin-top: 16px; margin-bottom: 4px; padding-top: 16px; border-top: 1px solid var(--border, #e5e7eb);">
               <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Image Slider / Slideshow Photos</h3>
@@ -585,74 +560,68 @@ if (Astro.request.method === 'POST') {
         });
       }
 
-      // Smart OG Image Generator (1200x630)
+      // Automatic Smart OG Image Generator (1200x630)
       import { createOgImageBlob } from '../../utils/og-generator';
 
       const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
       const heroFileInput = document.getElementById('hero-image-file-input') as HTMLInputElement | null;
-      const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
       const ogFileInput = document.getElementById('og-image-file-input') as HTMLInputElement | null;
-      const btnGenerateOg = document.getElementById('btn-generate-og');
-      const ogPreviewImg = document.getElementById('og-preview-img') as HTMLImageElement | null;
-      const ogPreviewPlaceholder = document.getElementById('og-preview-placeholder');
-      const ogPreviewLoading = document.getElementById('og-preview-loading');
+      const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
+      const newForm = document.getElementById('new-invitation-form') as HTMLFormElement | null;
 
-      async function generateOgPreview(source: File | string) {
-        if (!source) return;
-        if (ogPreviewLoading) ogPreviewLoading.style.display = 'flex';
-        try {
-          const blob = await createOgImageBlob(source);
-          const previewUrl = URL.createObjectURL(blob);
-          if (ogPreviewImg) {
-            ogPreviewImg.src = previewUrl;
-            ogPreviewImg.style.display = 'block';
-          }
-          if (ogPreviewPlaceholder) {
-            ogPreviewPlaceholder.style.display = 'none';
-          }
+      async function ensureOgImageGenerated() {
+        const sourceFile = heroFileInput?.files?.[0];
+        const sourceUrl = heroUrlInput?.value.trim();
 
-          if (ogFileInput) {
-            const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            ogFileInput.files = dt.files;
+        if (sourceFile) {
+          try {
+            const blob = await createOgImageBlob(sourceFile);
+            if (ogFileInput) {
+              const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              ogFileInput.files = dt.files;
+            }
+          } catch (err) {
+            console.warn('Auto OG generation from file error:', err);
           }
-          if (ogUrlInput) {
-            ogUrlInput.value = '';
+        } else if (sourceUrl && !ogUrlInput?.value) {
+          try {
+            const blob = await createOgImageBlob(sourceUrl);
+            if (ogFileInput) {
+              const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              ogFileInput.files = dt.files;
+            }
+          } catch (err) {
+            console.warn('Auto OG generation from URL error:', err);
           }
-        } catch (err) {
-          console.error('Failed to generate OG image:', err);
-          alert('Gagal membuat thumbnail otomatis. Pastikan foto cover valid.');
-        } finally {
-          if (ogPreviewLoading) ogPreviewLoading.style.display = 'none';
         }
       }
 
-      btnGenerateOg?.addEventListener('click', () => {
-        if (heroFileInput?.files?.[0]) {
-          generateOgPreview(heroFileInput.files[0]);
-        } else if (heroUrlInput?.value.trim()) {
-          generateOgPreview(heroUrlInput.value.trim());
-        } else {
-          alert('Silakan upload atau masukkan URL Popup / Hero Image terlebih dahulu.');
-        }
-      });
-
-      // Auto generate when new hero image is selected if custom OG file is not yet selected
+      // Auto generate when hero file is chosen
       heroFileInput?.addEventListener('change', () => {
         const file = heroFileInput.files?.[0];
-        if (file && (!ogFileInput?.files?.length && !ogUrlInput?.value.trim())) {
-          generateOgPreview(file);
+        if (file) {
+          createOgImageBlob(file).then((blob) => {
+            if (ogFileInput) {
+              const f = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
+              const dt = new DataTransfer();
+              dt.items.add(f);
+              ogFileInput.files = dt.files;
+            }
+          }).catch(console.warn);
         }
       });
 
-      // Preview manual custom OG upload
-      ogFileInput?.addEventListener('change', () => {
-        const file = ogFileInput.files?.[0];
-        if (file && ogPreviewImg) {
-          ogPreviewImg.src = URL.createObjectURL(file);
-          ogPreviewImg.style.display = 'block';
-          if (ogPreviewPlaceholder) ogPreviewPlaceholder.style.display = 'none';
+      newForm?.addEventListener('submit', async (e) => {
+        const sourceFile = heroFileInput?.files?.[0];
+        const sourceUrl = heroUrlInput?.value.trim();
+        if ((sourceFile || sourceUrl) && !ogFileInput?.files?.length) {
+          e.preventDefault();
+          await ensureOgImageGenerated();
+          newForm.submit();
         }
       });
     </script>

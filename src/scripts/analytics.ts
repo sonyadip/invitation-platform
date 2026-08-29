@@ -108,7 +108,7 @@ export function initAutomaticInteractionTracking() {
     }
 
     // 5. Vendor / Platform WhatsApp (Pemilik Jasa / Pesan Undangan)
-    const vendorWaLink = target.closest('[data-track-vendor-whatsapp], .thankyou-section__socials a[aria-label="WhatsApp"], a[href*="wa.me"][href*="Senadda"], a[href*="whatsapp.com"][href*="Senadda"]');
+    const vendorWaLink = target.closest('[data-track-vendor-whatsapp], .thankyou-section__socials a[aria-label="WhatsApp"], .thankyou-section a[aria-label="WhatsApp"], .thankyou-section a[href*="wa.me"], .thankyou-section a[href*="whatsapp.com"], a[href*="wa.me"][href*="Senadda"], a[href*="whatsapp.com"][href*="Senadda"]');
     if (vendorWaLink) {
       sendAnalyticsEvent('click_vendor_whatsapp', {
         metadata: { href: (vendorWaLink as HTMLAnchorElement).href }
@@ -117,7 +117,7 @@ export function initAutomaticInteractionTracking() {
     }
 
     // 6. Vendor / Platform Instagram
-    const vendorIgLink = target.closest('[data-track-vendor-instagram], .thankyou-section__socials a[aria-label="Instagram"]');
+    const vendorIgLink = target.closest('[data-track-vendor-instagram], .thankyou-section__socials a[aria-label="Instagram"], .thankyou-section a[aria-label="Instagram"], .thankyou-section a[href*="instagram.com"]');
     if (vendorIgLink) {
       sendAnalyticsEvent('click_vendor_instagram', {
         metadata: { href: (vendorIgLink as HTMLAnchorElement).href }
@@ -126,7 +126,7 @@ export function initAutomaticInteractionTracking() {
     }
 
     // 7. Vendor / Platform Website
-    const vendorSiteLink = target.closest('[data-track-vendor-site], .thankyou-section__socials a[aria-label="Website"], .thankyou-section a[href="/"]');
+    const vendorSiteLink = target.closest('[data-track-vendor-site], .thankyou-section__socials a[aria-label="Website"], .thankyou-section a[aria-label="Website"], .thankyou-section a[href="/"], .thankyou-section a[href*="senadda"]');
     if (vendorSiteLink) {
       sendAnalyticsEvent('click_vendor_site', {
         metadata: { href: (vendorSiteLink as HTMLAnchorElement).href }
@@ -135,7 +135,7 @@ export function initAutomaticInteractionTracking() {
     }
 
     // 8. Couple Instagram link (Pengantin Pria / Wanita)
-    const coupleIgLink = target.closest('[data-track-couple-instagram], .person-card__social, .couple-section__social');
+    const coupleIgLink = target.closest('[data-track-couple-instagram], .person-card__social, .couple-section__social, .couple-swiss a[href*="instagram.com"], .couple-section a[href*="instagram.com"]');
     if (coupleIgLink) {
       const role = coupleIgLink.getAttribute('data-track-couple-instagram') || 'couple';
       sendAnalyticsEvent('click_couple_instagram', {

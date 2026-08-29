@@ -27,8 +27,15 @@ const formattedDate = new Date(wedding.wedding_date).toLocaleDateString("id-ID",
 const description = `Undangan pernikahan ${groomName} & ${brideName}.\n${formattedDate}.`;
 
 const theme = settings.theme_config.theme;
-const ogImageCandidate = settings.theme_config?.assets?.ogImage || image;
-const imageUrl = ogImageCandidate ? new URL(ogImageCandidate, Astro.url).toString() : null;
+
+const userAgent = Astro.request.headers.get("user-agent") || "";
+const isVerticalPlatform = /WhatsApp/i.test(userAgent);
+
+const verticalImage = image || settings.theme_config?.assets?.coverImage || settings.theme_config?.assets?.heroImage;
+const landscapeImage = settings.theme_config?.assets?.ogImage || verticalImage;
+const selectedImage = isVerticalPlatform ? (verticalImage || landscapeImage) : (landscapeImage || verticalImage);
+
+const imageUrl = selectedImage ? new URL(selectedImage, Astro.url).toString() : null;
 const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith('.jpg') || imageUrl?.endsWith('.jpeg')) ? 'image/jpeg' : 'image/webp';
 ---
 
@@ -53,7 +60,7 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href={Astro.url.href} />
 
-    <!-- Open Graph (Facebook / WhatsApp) -->
+    <!-- Open Graph (Facebook / Instagram / WhatsApp) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={Astro.url.href} />
     <meta property="og:title" content={docTitle} />
@@ -64,8 +71,12 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
         <meta property="og:image" content={imageUrl} />
         <meta property="og:image:secure_url" content={imageUrl} />
         <meta property="og:image:type" content={imageType} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
+        {!isVerticalPlatform && (
+          <>
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
+          </>
+        )}
         <meta property="og:image:alt" content={docTitle} />
       </>
     )}
