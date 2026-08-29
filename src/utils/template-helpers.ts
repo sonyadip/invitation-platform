@@ -118,7 +118,8 @@ export const formatWishDate = (isoStr: string): string => new Date(isoStr).toLoc
   month: 'short',
   year: 'numeric',
   hour: '2-digit',
-  minute: '2-digit'
+  minute: '2-digit',
+  timeZone: 'Asia/Makassar'
 });
 
 export const getCompactDate = (iso: string): string => new Date(iso)

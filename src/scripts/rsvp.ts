@@ -73,7 +73,8 @@ export function createWishCard({ id, name, attendance, message, createdAt }: any
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: 'Asia/Makassar'
   });
 
   const messageEl = document.createElement('p');
