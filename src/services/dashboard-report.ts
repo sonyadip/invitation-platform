@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem } from '../types';
 import { decodeHtmlEntities } from '../utils/template-helpers';
+import { parseUserAgent } from '../utils/analytics';
 
 export interface SlugReport {
   weddingId: string;
@@ -400,16 +401,16 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   // Resilient queries with graceful fallback for database schema safety
   let views: any[] = [];
   try {
-    const enrichedViews = await supabase
+    const enrichedViews = await adminSupabase
       .from('invitation_views')
-      .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at')
+      .select('id, guest_name, device_type, os, browser, city, country, referrer, user_agent, created_at')
       .eq('wedding_id', wedding.id)
       .order('created_at', { ascending: false });
 
     if (enrichedViews.error) {
-      const basicViews = await supabase
+      const basicViews = await adminSupabase
         .from('invitation_views')
-        .select('created_at')
+        .select('created_at, user_agent')
         .eq('wedding_id', wedding.id)
         .order('created_at', { ascending: false });
       views = basicViews.data || [];
@@ -444,7 +445,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
 
   let trackedEvents: any[] = [];
   try {
-    const { data: eventsData, error: eventsError } = await supabase
+    const { data: eventsData, error: eventsError } = await adminSupabase
       .from('invitation_events')
       .select('id, event_type, guest_name, metadata, created_at')
       .eq('wedding_id', wedding.id)
@@ -495,12 +496,13 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     const date = new Date(view.created_at).toISOString().slice(0, 10);
     dailyViewMap.set(date, (dailyViewMap.get(date) || 0) + 1);
 
-    const dt = (view.device_type || '').toLowerCase();
+    const parsed = parseUserAgent(view.user_agent || '');
+    const dt = (view.device_type || parsed.deviceType || 'mobile').toLowerCase();
     if (dt === 'desktop') desktopCount++;
     else if (dt === 'tablet') tabletCount++;
     else mobileCount++;
 
-    const b = view.browser || 'Other';
+    const b = (view.browser && view.browser !== 'Other' ? view.browser : null) || parsed.browser || 'Other';
     browserMap.set(b, (browserMap.get(b) || 0) + 1);
   }
 
@@ -520,7 +522,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       count,
       percent: totalViews > 0 ? Math.round((count / totalViews) * 100) : 0
     }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => {
+      if (a.browser === 'Other' && b.browser !== 'Other') return 1;
+      if (b.browser === 'Other' && a.browser !== 'Other') return -1;
+      return b.count - a.count;
+    });
 
   let openCoverCount = 0;
   let clickMapsCount = 0;
@@ -554,15 +560,18 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     totalInteractions: trackedEvents.length
   };
 
-  const recentVisitors = views.slice(0, 10).map((v) => ({
-    guestName: v.guest_name || null,
-    deviceType: v.device_type || 'mobile',
-    os: v.os || 'Unknown',
-    browser: v.browser || 'Unknown',
-    city: v.city || null,
-    country: v.country || null,
-    createdAt: v.created_at
-  }));
+  const recentVisitors = views.slice(0, 10).map((v) => {
+    const parsed = parseUserAgent(v.user_agent || '');
+    return {
+      guestName: v.guest_name || null,
+      deviceType: v.device_type || parsed.deviceType || 'mobile',
+      os: v.os || parsed.os || 'Unknown',
+      browser: (v.browser && v.browser !== 'Other' ? v.browser : null) || parsed.browser || 'Unknown',
+      city: v.city || null,
+      country: v.country || null,
+      createdAt: v.created_at
+    };
+  });
 
   const analytics = {
     deviceStats,

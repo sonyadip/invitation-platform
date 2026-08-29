@@ -98,7 +98,7 @@ const weddingId = report.summary.weddingId;
     </section>
   </div>
   
-  <script is:inline define:vars={{ initialGuests, initialTemplates, weddingId }}>
+  <script is:inline define:vars={{ initialGuests, initialTemplates, weddingId, slug }}>
     document.addEventListener('DOMContentLoaded', () => {
       const guestsContainer = document.querySelector('.kirim-guests');
       let guestsData = initialGuests.map(g => ({
@@ -520,9 +520,11 @@ Om Shanti, Shanti, Shanti, Om.`
              const templateEl = document.getElementById('wa-template');
              
              if (nameEl && templateEl) {
+                const guestNameText = nameEl.innerText.trim();
+                const guestLink = `${window.location.origin}/${slug}?to=${encodeURIComponent(guestNameText)}`;
                 let text = templateEl.innerText;
-                text = text.replace(/\[NAMA\]/g, nameEl.innerText);
-                text = text.replace(/\[LINK\]/g, window.location.origin + window.location.pathname + '?to=' + encodeURIComponent(nameEl.innerText));
+                text = text.replace(/\[NAMA\]/g, guestNameText);
+                text = text.replace(/\[LINK\]/g, guestLink);
                 
                 navigator.clipboard.writeText(text).then(() => {
                    const originalText = copyBtn.innerText;
@@ -542,9 +544,11 @@ Om Shanti, Shanti, Shanti, Om.`
              const templateEl = document.getElementById('wa-template');
              
              if (nameEl && templateEl) {
+                const guestNameText = nameEl.innerText.trim();
+                const guestLink = `${window.location.origin}/${slug}?to=${encodeURIComponent(guestNameText)}`;
                 let text = templateEl.innerText;
-                text = text.replace(/\[NAMA\]/g, nameEl.innerText);
-                text = text.replace(/\[LINK\]/g, window.location.origin + window.location.pathname + '?to=' + encodeURIComponent(nameEl.innerText));
+                text = text.replace(/\[NAMA\]/g, guestNameText);
+                text = text.replace(/\[LINK\]/g, guestLink);
                 
                 let phone = waBtn.getAttribute('data-phone') || '';
                 const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;

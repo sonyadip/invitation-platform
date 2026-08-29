@@ -23,11 +23,12 @@ export function shouldTrackInvitationView(
   isMaintenance: boolean,
   isPasswordLocked: boolean
 ): boolean {
+  const isDev = Boolean(typeof import.meta !== 'undefined' && import.meta.env?.DEV);
   return (
-    settings.view_counter_enabled &&
+    (settings.view_counter_enabled || isDev) &&
     !isMaintenance &&
     !isPasswordLocked &&
-    status === 'published'
+    (status === 'published' || isDev)
   );
 }
 
@@ -46,11 +47,13 @@ export async function trackInvitationView({
 }: TrackInvitationViewInput): Promise<void> {
   try {
     const todayStr = now.toISOString().slice(0, 10);
-    const ipHash = await hashPasswordSHA256(`${clientIp}_${weddingId}_${todayStr}`);
+    const guestKey = (guestName || '').trim().toLowerCase();
+    const ipHash = await hashPasswordSHA256(`${clientIp}_${guestKey || 'public'}_${weddingId}_${todayStr}`);
 
-    const { data: viewExists } = await supabase
+    const adminSupabase = await getSupabaseAdmin();
+    const { data: viewExists } = await adminSupabase
       .from('invitation_views')
-      .select('id')
+      .select('id, device_type, browser, guest_name')
       .eq('wedding_id', weddingId)
       .eq('ip_hash', ipHash)
       .maybeSingle();
@@ -70,18 +73,34 @@ export async function trackInvitationView({
         referrer: referrer || null
       };
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await adminSupabase
         .from('invitation_views')
         .insert(enrichedPayload);
 
       // Safe fallback if new columns don't exist yet in the database
       if (insertError) {
-        await supabase.from('invitation_views').insert({
+        await adminSupabase.from('invitation_views').insert({
           wedding_id: weddingId,
           ip_hash: ipHash,
           user_agent: userAgent
         });
       }
+    } else {
+      // If visitor visits again today, update with latest timestamp & details
+      await adminSupabase
+        .from('invitation_views')
+        .update({
+          guest_name: guestName || viewExists.guest_name || null,
+          user_agent: userAgent,
+          device_type: deviceType || viewExists.device_type || null,
+          os: os || null,
+          browser: browser || viewExists.browser || null,
+          city: city || null,
+          country: country || null,
+          referrer: referrer || null,
+          created_at: now.toISOString()
+        })
+        .eq('id', viewExists.id);
     }
 
     // 2. Track Guest Read-Receipt (if guestName is present)

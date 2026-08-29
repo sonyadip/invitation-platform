@@ -247,7 +247,7 @@ const analytics = report.analytics || {
             <div style="margin-top: 14px; border-top: 1px dashed var(--color-outline-variant); padding-top: 10px;">
               <span style="font-size: 11px; color: var(--color-outline); font-weight: 500;">Browser / WebView Terpopuler:</span>
               <div class="browser-tag-list">
-                {analytics.browserStats.slice(0, 5).map(b => (
+                {analytics.browserStats.slice(0, 8).map(b => (
                   <span class="browser-tag">
                     {b.browser} <span class="browser-tag__count">{b.count}</span>
                   </span>

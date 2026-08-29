@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../../lib/supabase';
+import { getSupabaseAdmin } from '../../../lib/supabase-admin';
 import { jsonResponse } from '../../../utils/http';
 
 export const prerender = false;
@@ -19,8 +20,21 @@ const ALLOWED_EVENTS = new Set([
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const payload = await request.json().catch(() => null);
-    if (!payload) {
+    let payload: any = null;
+    try {
+      payload = await request.json();
+    } catch {
+      const rawText = await request.text().catch(() => '');
+      if (rawText) {
+        try {
+          payload = JSON.parse(rawText);
+        } catch {
+          payload = null;
+        }
+      }
+    }
+
+    if (!payload || typeof payload !== 'object') {
       return jsonResponse({ error: 'Invalid JSON payload' }, 400);
     }
 
@@ -34,8 +48,9 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonResponse({ error: 'Invalid or unsupported eventType' }, 400);
     }
 
-    // Insert into invitation_events
-    const { error } = await supabase.from('invitation_events').insert({
+    // Insert into invitation_events using admin supabase
+    const adminSupabase = await getSupabaseAdmin();
+    const { error } = await adminSupabase.from('invitation_events').insert({
       wedding_id: weddingId,
       event_type: eventType,
       guest_name: guestName ? String(guestName).trim().slice(0, 255) : null,
@@ -43,9 +58,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     if (error) {
-      // Non-blocking log if table or policies are not ready
       console.warn('Analytics event tracking error:', error.message);
-      return jsonResponse({ success: false, message: 'Event logged with notice' });
+      return jsonResponse({ success: false, message: error.message });
     }
 
     return jsonResponse({ success: true });

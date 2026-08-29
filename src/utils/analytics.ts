@@ -18,7 +18,7 @@ export function parseUserAgent(uaString: string | null | undefined): ParsedUserA
   // 1. Detect Device Type
   let deviceType: 'mobile' | 'tablet' | 'desktop' = 'desktop';
   const isTablet = /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk)/i.test(ua);
-  const isMobile = /(iphone|ipod|android.*mobile|windows phone|blackberry|mobile|opera mini|iemobile)/i.test(ua);
+  const isMobile = /(iphone|ipod|android.*mobile|windows phone|blackberry|mobile|opera mini|iemobile|facebookexternalhit|whatsapp|instagram|telegram)/i.test(ua);
 
   if (isTablet) {
     deviceType = 'tablet';
@@ -50,12 +50,30 @@ export function parseUserAgent(uaString: string | null | undefined): ParsedUserA
     browser = 'Instagram';
   } else if (/tiktok|bytedance/i.test(ua)) {
     browser = 'TikTok';
+  } else if (/facebookexternalhit|meta-externalagent/i.test(ua)) {
+    browser = 'Instagram / Meta (Preview)';
   } else if (/fban|fbav/i.test(ua)) {
+    browser = 'Facebook App';
+  } else if (/messenger/i.test(ua)) {
+    browser = 'Messenger';
+  } else if (/facebook/i.test(ua)) {
     browser = 'Facebook';
+  } else if (/telegram/i.test(ua)) {
+    browser = 'Telegram';
+  } else if (/twitter|x-agent/i.test(ua)) {
+    browser = 'Twitter (X)';
   } else if (/line\//i.test(ua)) {
     browser = 'Line';
   } else if (/samsungbrowser/i.test(ua)) {
     browser = 'Samsung Internet';
+  } else if (/ucbrowser|ubrowser/i.test(ua)) {
+    browser = 'UC Browser';
+  } else if (/oppobrowser|heytapbrowser/i.test(ua)) {
+    browser = 'Oppo Browser';
+  } else if (/vivobrowser/i.test(ua)) {
+    browser = 'Vivo Browser';
+  } else if (/miuibrowser/i.test(ua)) {
+    browser = 'Mi Browser';
   } else if (/edg|edge/i.test(ua)) {
     browser = 'Edge';
   } else if (/opr|opera/i.test(ua)) {
