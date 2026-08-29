@@ -647,6 +647,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       assets: {
         heroVideo: assets.heroVideo || '',
         heroImage: assets.coverImage || assets.heroImage || '',
+        ogImage: assets.ogImage || '',
         brideImage: assets.brideImage || '',
         groomImage: assets.groomImage || '',
         logoImage: assets.logoImage || '',

@@ -443,9 +443,9 @@ Om Shanti, Shanti, Shanti, Om.`
               id: result.item.id,
               name: result.item.guest_name,
               phone: result.item.phone,
-              openedAt: null,
-              lastOpenedAt: null,
-              openCount: 0
+              openedAt: result.item.opened_at || null,
+              lastOpenedAt: result.item.last_opened_at || null,
+              openCount: Number(result.item.open_count || 0)
             });
             
             addInput.value = '';

@@ -33,6 +33,7 @@ export interface InvitationFormInput {
   expirationDate: string | null;
   heroVideoUrl: string | null;
   heroImageUrl: string | null;
+  ogImageUrl: string | null;
   brideImageUrl: string | null;
   groomImageUrl: string | null;
   logoImageUrl: string | null;
@@ -62,6 +63,7 @@ export interface InvitationFormInput {
   gifts: InvitationGiftInput[];
   story: LoveStoryItem[];
   heroImageFile: File | null;
+  ogImageFile: File | null;
   brideImageFile: File | null;
   groomImageFile: File | null;
   logoImageFile: File | null;
@@ -248,6 +250,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     })(),
     heroVideoUrl: nullableValue('heroVideoUrl'),
     heroImageUrl: nullableValue('heroImageUrl'),
+    ogImageUrl: nullableValue('ogImageUrl'),
     brideImageUrl: nullableValue('brideImageUrl'),
     groomImageUrl: nullableValue('groomImageUrl'),
     logoImageUrl: nullableValue('logoImageUrl'),
@@ -277,6 +280,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     gifts,
     story,
     heroImageFile: fileValue('heroImageFile'),
+    ogImageFile: fileValue('ogImageFile'),
     brideImageFile: fileValue('brideImageFile'),
     groomImageFile: fileValue('groomImageFile'),
     logoImageFile: fileValue('logoImageFile'),
@@ -500,6 +504,7 @@ async function resolveUploadedImages(
 ): Promise<InvitationFormInput> {
   const [
     heroImageUrl,
+    ogImageUrl,
     brideImageUrl,
     groomImageUrl,
     logoImageUrl,
@@ -514,6 +519,9 @@ async function resolveUploadedImages(
     input.heroImageFile
       ? uploadImageFile(supabase, input.slug, 'hero', input.heroImageFile)
       : Promise.resolve(input.heroImageUrl),
+    input.ogImageFile
+      ? uploadImageFile(supabase, input.slug, 'og', input.ogImageFile)
+      : Promise.resolve(input.ogImageUrl),
     input.brideImageFile
       ? uploadImageFile(supabase, input.slug, 'couple', input.brideImageFile)
       : Promise.resolve(input.brideImageUrl),
@@ -545,6 +553,7 @@ async function resolveUploadedImages(
   return {
     ...input,
     heroImageUrl,
+    ogImageUrl,
     brideImageUrl,
     groomImageUrl,
     logoImageUrl,
@@ -578,6 +587,7 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     heroVideo: input.heroVideoUrl || undefined,
     coverImage: input.heroImageUrl || undefined,
     heroImage: input.heroImageUrl || undefined,
+    ogImage: input.ogImageUrl || undefined,
     sliderImages: input.sliderImageUrls?.length ? input.sliderImageUrls : undefined,
     brideImage: input.brideImageUrl || undefined,
     groomImage: input.groomImageUrl || undefined,
@@ -775,6 +785,7 @@ function collectAssetPaths(themeConfig: any) {
   return [
     extractStoragePath(assets.coverImage),
     extractStoragePath(assets.heroImage),
+    extractStoragePath(assets.ogImage),
     extractStoragePath(assets.brideImage),
     extractStoragePath(assets.groomImage),
     extractStoragePath(assets.logoImage),

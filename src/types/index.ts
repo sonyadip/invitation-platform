@@ -43,6 +43,7 @@ export interface ThemeConfig {
   assets?: {
     coverImage?: string;
     heroImage?: string;
+    ogImage?: string;
     heroImageTwo?: string;
     heroImageThree?: string;
     brideImage?: string;

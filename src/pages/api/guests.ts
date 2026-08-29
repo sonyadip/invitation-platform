@@ -42,22 +42,51 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     // Support batch insertion
     if (Array.isArray(guests) && guests.length > 0) {
-      const recordsToInsert = guests
-        .filter((g: any) => g && g.name && String(g.name).trim())
-        .map((g: any) => ({
-          wedding_id: weddingId,
-          guest_name: String(g.name).trim(),
-          phone: g.phone ? String(g.phone).trim() : null
-        }));
-
-      if (recordsToInsert.length === 0) {
+      const validGuests = guests.filter((g: any) => g && g.name && String(g.name).trim());
+      if (validGuests.length === 0) {
         return jsonResponse({ error: 'Tidak ada data tamu valid untuk diimpor.' }, 400);
       }
+
+      // Check past views for all guests in batch
+      const { data: allPastViews } = await adminSupabase
+        .from('invitation_views')
+        .select('guest_name, created_at')
+        .eq('wedding_id', weddingId)
+        .not('guest_name', 'is', null)
+        .order('created_at', { ascending: true });
+
+      const pastViewsMap = new Map<string, { first: string; last: string; count: number }>();
+      if (allPastViews) {
+        for (const pv of allPastViews) {
+          const key = (pv.guest_name || '').trim().toLowerCase();
+          if (!key) continue;
+          const existing = pastViewsMap.get(key);
+          if (!existing) {
+            pastViewsMap.set(key, { first: pv.created_at, last: pv.created_at, count: 1 });
+          } else {
+            existing.last = pv.created_at;
+            existing.count += 1;
+          }
+        }
+      }
+
+      const recordsToInsert = validGuests.map((g: any) => {
+        const cleanName = String(g.name).trim();
+        const past = pastViewsMap.get(cleanName.toLowerCase());
+        return {
+          wedding_id: weddingId,
+          guest_name: cleanName,
+          phone: g.phone ? String(g.phone).trim() : null,
+          opened_at: past ? past.first : null,
+          last_opened_at: past ? past.last : null,
+          open_count: past ? past.count : 0
+        };
+      });
 
       const { data, error } = await adminSupabase
         .from('sent_invitations')
         .insert(recordsToInsert)
-        .select('id, guest_name, phone, created_at');
+        .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at');
 
       if (error) throw error;
 
@@ -73,14 +102,37 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       return jsonResponse({ error: 'Nama tamu (name) diperlukan.' }, 400);
     }
 
+    const cleanName = String(name).trim();
+
+    // Check if there are existing views for this guest in invitation_views
+    const { data: pastViews } = await adminSupabase
+      .from('invitation_views')
+      .select('created_at')
+      .eq('wedding_id', weddingId)
+      .ilike('guest_name', cleanName)
+      .order('created_at', { ascending: true });
+
+    let openedAt: string | null = null;
+    let lastOpenedAt: string | null = null;
+    let openCount = 0;
+
+    if (pastViews && pastViews.length > 0) {
+      openedAt = pastViews[0].created_at;
+      lastOpenedAt = pastViews[pastViews.length - 1].created_at;
+      openCount = pastViews.length;
+    }
+
     const { data, error } = await adminSupabase
       .from('sent_invitations')
       .insert({
         wedding_id: weddingId,
-        guest_name: String(name).trim(),
-        phone: phone ? String(phone).trim() : null
+        guest_name: cleanName,
+        phone: phone ? String(phone).trim() : null,
+        opened_at: openedAt,
+        last_opened_at: lastOpenedAt,
+        open_count: openCount
       })
-      .select('id, guest_name, phone, created_at')
+      .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
       .single();
 
     if (error) throw error;
