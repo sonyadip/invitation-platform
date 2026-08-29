@@ -21,6 +21,7 @@ import {
   formatDate,
   buildGoogleCalendarUrl,
   getInstagramUsername,
+  formatWishDate,
   generatePaginationItems
 } from '../../utils/template-helpers';
 import { getPlatformSettings } from '../../services/platform-settings';
@@ -508,9 +509,7 @@ const brideParentLines = buildCoupleLines(
                           {wish.attendance_status === "attending" ? "Hadir" : wish.attendance_status === "tentative" ? "Ragu" : "Tidak Hadir"}
                         </span>
                       </div>
-                      <span class="wish-card__date">
-                        {new Date(wish.created_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      <span class="wish-card__date">{formatWishDate(wish.created_at)}</span>
                     </div>
                     <p class="wish-card__message">{wish.message}</p>
                   </article>
