@@ -170,3 +170,21 @@ export const generatePaginationItems = (currentPage: number, totalPages: number)
 
   return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
 };
+
+export const decodeHtmlEntities = (str: string | undefined | null): string => {
+  if (!str) return '';
+  let decoded = String(str);
+  for (let i = 0; i < 2; i++) {
+    const next = decoded
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;|&#39;/g, "'")
+      .replace(/&#x2F;/g, '/');
+    if (next === decoded) break;
+    decoded = next;
+  }
+  return decoded;
+};
+

@@ -26,7 +26,8 @@ import {
   buildGoogleCalendarUrl,
   getInstagramUsername,
   formatWishDate,
-  generatePaginationItems
+  generatePaginationItems,
+  decodeHtmlEntities
 } from '../../utils/template-helpers';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
 import GiftGrid from '../../components/common/GiftGrid.astro';
@@ -363,6 +364,7 @@ const activeGifts = gifts && gifts.length > 0
                       target="_blank"
                       rel="noopener noreferrer"
                       class="event-card__map-btn"
+                      data-track-maps
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
@@ -393,6 +395,7 @@ const activeGifts = gifts && gifts.length > 0
               rel="noopener noreferrer"
               class="countdown-section__calendar-btn"
               data-animate="zoom-in"
+              data-track-calendar
               style="--animate-delay: 500ms;"
               aria-label="Save wedding date to Google Calendar"
             >
@@ -477,7 +480,7 @@ const activeGifts = gifts && gifts.length > 0
                       <form class="rsvp-form" data-rsvp-form>
                         <input type="hidden" name="weddingId" value={wedding.id} />
                         <div class="rsvp-form__field">
-                          <input type="text" id="rsvp-name" name="name" required placeholder="Nama" class="rsvp-form__input" />
+                          <input type="text" id="rsvp-name" name="name" required placeholder="Nama" class="rsvp-form__input" value={guestName || ''} />
                         </div>
                         <div class="rsvp-form__field">
                           <select id="rsvp-attendance" name="attendance" required class="rsvp-form__select" data-rsvp-attendance>
@@ -522,14 +525,14 @@ const activeGifts = gifts && gifts.length > 0
                         >
                           <div class="wish-card__header">
                             <div class="wish-card__meta">
-                              <span class="wish-card__name">{wish.guest_name}</span>
+                              <span class="wish-card__name">{decodeHtmlEntities(wish.guest_name)}</span>
                               <span class={`wish-card__badge ${wish.attendance_status === "attending" ? "wish-card__badge--attend" : wish.attendance_status === "tentative" ? "wish-card__badge--tentative" : "wish-card__badge--absent"}`}>
                                 {wish.attendance_status === "attending" ? "Hadir" : wish.attendance_status === "tentative" ? "Ragu" : "Tidak Hadir"}
                               </span>
                             </div>
                             <span class="wish-card__date">{formatWishDate(wish.created_at)}</span>
                           </div>
-                          <p class="wish-card__message">{wish.message}</p>
+                          <p class="wish-card__message">{decodeHtmlEntities(wish.message)}</p>
                         </div>
                       ))}
                     </div>

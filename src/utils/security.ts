@@ -19,8 +19,8 @@ export function sanitizeHTML(input: string): string {
  * Enforces field lengths, data types, and bounds.
  */
 export function validateRSVPInput(name: string, status: string, countStr: string | number) {
-  const sanitizedName = sanitizeHTML(name);
-  if (!sanitizedName || sanitizedName.length < 2 || sanitizedName.length > 80) {
+  const cleanName = String(name || '').trim().slice(0, 80);
+  if (!cleanName || cleanName.length < 2) {
     throw new Error('Guest name is required (2 - 80 characters).');
   }
 
@@ -34,7 +34,7 @@ export function validateRSVPInput(name: string, status: string, countStr: string
   }
 
   return {
-    name: sanitizedName,
+    name: cleanName,
     status: status as 'attending' | 'declined' | 'tentative',
     count
   };

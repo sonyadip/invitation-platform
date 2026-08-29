@@ -27,6 +27,23 @@ export function getRenderedWishKeys(container: Element) {
   );
 }
 
+export function decodeHtmlEntities(str: string | undefined | null): string {
+  if (!str) return '';
+  let decoded = String(str);
+  for (let i = 0; i < 2; i++) {
+    const next = decoded
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;|&#39;/g, "'")
+      .replace(/&#x2F;/g, '/');
+    if (next === decoded) break;
+    decoded = next;
+  }
+  return decoded;
+}
+
 export function createWishCard({ id, name, attendance, message, createdAt }: any) {
   const wishCard = document.createElement('article');
   wishCard.className = 'wish-card';
@@ -41,7 +58,7 @@ export function createWishCard({ id, name, attendance, message, createdAt }: any
 
   const nameEl = document.createElement('span');
   nameEl.className = 'wish-card__name';
-  nameEl.textContent = name;
+  nameEl.textContent = decodeHtmlEntities(name);
 
   const badge = document.createElement('span');
   const isAttending = attendance === 'attending';
@@ -61,7 +78,7 @@ export function createWishCard({ id, name, attendance, message, createdAt }: any
 
   const messageEl = document.createElement('p');
   messageEl.className = 'wish-card__message';
-  messageEl.textContent = message;
+  messageEl.textContent = decodeHtmlEntities(message);
 
   meta.append(nameEl, badge);
   header.append(meta, date);
@@ -136,6 +153,16 @@ export function initRSVPForm(root: Element | Document = document) {
   if (!(form instanceof HTMLFormElement) || !(successState instanceof HTMLElement) || !(submitBtn instanceof HTMLButtonElement)) return;
   if (form.dataset.rsvpBound === 'true') return;
   form.dataset.rsvpBound = 'true';
+
+  const nameInput = form.querySelector('input[name="name"]') as HTMLInputElement | null;
+  if (nameInput && !nameInput.value) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const toParam = urlParams.get('to');
+    if (toParam) {
+      nameInput.value = toParam;
+    }
+  }
+
   const submitLabel = submitBtn.textContent || 'Submit';
 
   form.addEventListener('submit', async (event) => {

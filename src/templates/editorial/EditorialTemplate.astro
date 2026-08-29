@@ -22,7 +22,8 @@ import {
   formatWishDate,
   getYouTubeId,
   getInstagramUsername,
-  generatePaginationItems
+  generatePaginationItems,
+  decodeHtmlEntities
 } from '../../utils/template-helpers';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
 import GiftGrid from '../../components/common/GiftGrid.astro';
@@ -403,7 +404,7 @@ const activeGifts = gifts && gifts.length > 0
                     {event.venue_name && <p class="event-card__venue">{event.venue_name}</p>}
                     {event.venue_address && <p class="event-card__address">{event.venue_address}</p>}
                     {event.maps_url && (
-                      <a class="event-card__map-btn" href={event.maps_url} target="_blank" rel="noopener noreferrer">
+                      <a class="event-card__map-btn" href={event.maps_url} target="_blank" rel="noopener noreferrer" data-track-maps>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                           <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
                           <circle cx="12" cy="10" r="3"></circle>
@@ -424,7 +425,7 @@ const activeGifts = gifts && gifts.length > 0
             <div class="countdown-section__timer" data-animate>
               <CountdownTimer date={wedding.wedding_date} />
             </div>
-            <a class="countdown-section__calendar-btn" href={buildGoogleCalendarUrl(wedding as any, activeEvents[0] as any)} target="_blank" rel="noopener noreferrer">
+            <a class="countdown-section__calendar-btn" href={buildGoogleCalendarUrl(wedding as any, activeEvents[0] as any)} target="_blank" rel="noopener noreferrer" data-track-calendar>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="18" rx="2"></rect>
                 <path d="M16 2v4M8 2v4M3 10h18"></path>
@@ -565,14 +566,14 @@ const activeGifts = gifts && gifts.length > 0
                         >
                           <div class="wish-card__header">
                             <div class="wish-card__meta">
-                              <span class="wish-card__name">{wish.guest_name}</span>
+                              <span class="wish-card__name">{decodeHtmlEntities(wish.guest_name)}</span>
                               <span class={`wish-card__badge ${wish.attendance_status === "attending" ? "wish-card__badge--attend" : wish.attendance_status === "tentative" ? "wish-card__badge--tentative" : "wish-card__badge--absent"}`}>
                                 {wish.attendance_status === "attending" ? "Hadir" : wish.attendance_status === "tentative" ? "Ragu" : "Tidak Hadir"}
                               </span>
                             </div>
                             <span class="wish-card__date">{formatWishDate(wish.created_at)}</span>
                           </div>
-                          <p class="wish-card__message">{wish.message}</p>
+                          <p class="wish-card__message">{decodeHtmlEntities(wish.message)}</p>
                         </div>
                       ))}
                     </div>
