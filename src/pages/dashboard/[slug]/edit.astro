@@ -1084,6 +1084,20 @@ if (!isClaimed) {
         handleSaveSubmit();
       });
 
+      editForm?.addEventListener('submit', async (e) => {
+        const ogFileInput = document.getElementById('og-image-file-input') as HTMLInputElement | null;
+        const heroFileInput = document.getElementById('hero-image-file-input') as HTMLInputElement | null;
+        const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
+        const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
+        const hasHero = heroFileInput?.files?.[0] || heroUrlInput?.value.trim();
+
+        if (hasHero && !ogFileInput?.files?.length && !ogUrlInput?.value.trim()) {
+          e.preventDefault();
+          await ensureOgImageGenerated();
+          editForm.submit();
+        }
+      });
+
       document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
           e.preventDefault();

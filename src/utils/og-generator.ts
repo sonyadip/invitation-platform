@@ -9,7 +9,11 @@
 export async function createOgImageBlob(source: File | string): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+
+    const isHttpUrl = typeof source === 'string' && /^https?:\/\//i.test(source);
+    if (isHttpUrl) {
+      img.crossOrigin = 'anonymous';
+    }
 
     const cleanUp = () => {
       if (typeof source !== 'string' && img.src.startsWith('blob:')) {
