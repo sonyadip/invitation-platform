@@ -552,7 +552,7 @@ const activeGifts =
               <p data-animate>{text.rsvpDescription}</p>
               <form class="rsvp-form" data-animate data-rsvp-form>
                 <input type="hidden" name="weddingId" value={wedding.id} />
-                <input type="text" name="name" required placeholder="Nama" />
+                <input type="text" name="name" required placeholder="Nama" value={guestName || ''} />
                 <div class="rsvp-form__row">
                   <select name="attendance" required data-rsvp-attendance>
                     <option value="" disabled>

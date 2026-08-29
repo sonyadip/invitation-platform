@@ -43,6 +43,7 @@ const defaults = {
   brideImageUrl: '',
   groomImageUrl: '',
   logoImageUrl: '',
+  sliderImageUrls: [] as string[],
   galleryImageUrls: [] as string[],
   galleryVideoUrls: [] as string[],
   instagramUrl: '',
@@ -60,7 +61,17 @@ const defaults = {
   thankYouMessage: '',
   introVerse: '',
   introVerseSource: '',
-  events: [] as any[],
+  events: [
+    {
+      name: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+      venueName: '',
+      venueAddress: '',
+      mapsUrl: ''
+    }
+  ] as any[],
   gifts: [] as any[],
   story: [] as any[]
 };
@@ -89,9 +100,10 @@ if (Astro.request.method === 'POST') {
     brideImageUrl: parsed.brideImageUrl || '',
     groomImageUrl: parsed.groomImageUrl || '',
     logoImageUrl: parsed.logoImageUrl || '',
-    galleryImageUrls: parsed.galleryImageUrls,
+    sliderImageUrls: parsed.sliderImageUrls || [],
+    galleryImageUrls: parsed.galleryImageUrls || [],
     instagramUrl: parsed.instagramUrl || '',
-    whatsappUrl: parsed.whatsappUrl || '',
+    whatsappUrl: (parsed as any).whatsappUrl || '',
     groomInstagramUrl: parsed.groomInstagramUrl || '',
     brideInstagramUrl: parsed.brideInstagramUrl || '',
     groomFatherName: parsed.groomFatherName || '',
@@ -106,9 +118,9 @@ if (Astro.request.method === 'POST') {
     thankYouMessage: parsed.thankYouMessage || '',
     introVerse: parsed.introVerse || '',
     introVerseSource: parsed.introVerseSource || '',
-    events: parsed.events,
-    gifts: parsed.gifts.map((gift) => ({ ...gift, qrisUrl: gift.qrisUrl || '' })),
-    story: parsed.story
+    events: parsed.events.length > 0 ? parsed.events : defaults.events,
+    gifts: (parsed.gifts || []).map((gift) => ({ ...gift, qrisUrl: gift.qrisUrl || '' })),
+    story: parsed.story || []
   };
 
   try {
@@ -229,6 +241,23 @@ if (Astro.request.method === 'POST') {
             <label class="wide">Popup / Hero Image URL<input name="heroImageUrl" value={values.heroImageUrl} placeholder="https://example.com/hero.jpg" /></label>
             <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
             <label class="wide">Hero Video URL<input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" /></label>
+            <div style="grid-column: 1 / -1; margin-top: 16px; margin-bottom: 4px; padding-top: 16px; border-top: 1px solid var(--border, #e5e7eb);">
+              <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Image Slider / Slideshow Photos</h3>
+              <p class="section-sub" style="margin-bottom: 12px;">Opsional. Masukkan foto khusus untuk banner slider / slideshow. Jika dikosongkan, slider akan otomatis mengambil foto dari Photo Gallery.</p>
+            </div>
+            <div class="wide gallery-list" id="slider_container" style="grid-column: 1 / -1;">
+              {(Array.isArray(values.sliderImageUrls) ? values.sliderImageUrls : []).map((url, index) => (
+                <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+                  <label style="flex: 1; margin: 0;">Slider Image URL <span class="idx">{index + 1}</span><input name="sliderImageUrl" value={url} placeholder="https://example.com/slide.jpg" /></label>
+                  <button type="button" class="remove-btn secondary-action">Delete</button>
+                </div>
+              ))}
+            </div>
+            <button type="button" id="add_slider_btn" class="secondary-action" style="grid-column: 1 / -1; margin-bottom: 16px; width: fit-content;">+ Add Slider Photo URL</button>
+            <label class="wide">
+              Upload Multiple Slider Images
+              <input type="file" name="sliderImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple />
+            </label>
             <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{values.introVerse}</textarea></label>
             <label class="wide">Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(e.g. Rgveda : X.85.42 or 1 Corinthians 13:4)" /></label>
           </div>
@@ -416,6 +445,13 @@ if (Astro.request.method === 'POST') {
       </fieldset>
     </template>
 
+    <template id="slider_template">
+      <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
+        <label style="flex: 1; margin: 0;">Slider Image URL <span class="idx"></span><input name="sliderImageUrl" placeholder="https://example.com/slide.jpg" /></label>
+        <button type="button" class="remove-btn secondary-action">Delete</button>
+      </div>
+    </template>
+
     <template id="gallery_template">
       <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
         <label style="flex: 1; margin: 0;">Image URL <span class="idx"></span><input name="galleryImageUrl" placeholder="https://example.com/gallery.jpg" /></label>
@@ -485,6 +521,7 @@ if (Astro.request.method === 'POST') {
         });
       }
 
+      setupRepeater('slider_container', 'add_slider_btn', 'slider_template');
       setupRepeater('events_container', 'add_event_btn', 'event_template');
       setupRepeater('stories_container', 'add_story_btn', 'story_template');
       setupRepeater('gallery_container', 'add_gallery_btn', 'gallery_template');

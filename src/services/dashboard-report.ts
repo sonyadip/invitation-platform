@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem } from '../types';
+import { decodeHtmlEntities } from '../utils/template-helpers';
 
 export interface SlugReport {
   weddingId: string;
@@ -91,6 +92,7 @@ export interface SlugReportDetail {
       eventImage?: string;
       rsvpImage?: string;
       countdownImage?: string;
+      sliderImages?: string[];
       [key: string]: any;
     };
 
@@ -142,6 +144,9 @@ export interface SlugReportDetail {
     id: string;
     guestName: string;
     phone: string | null;
+    openedAt: string | null;
+    lastOpenedAt: string | null;
+    openCount: number;
     createdAt: string;
   }>;
   waTemplates: any;
@@ -149,6 +154,41 @@ export interface SlugReportDetail {
     date: string;
     count: number;
   }>;
+  analytics?: {
+    deviceStats: {
+      mobile: number;
+      desktop: number;
+      tablet: number;
+      mobilePercent: number;
+      desktopPercent: number;
+      tabletPercent: number;
+    };
+    browserStats: Array<{
+      browser: string;
+      count: number;
+      percent: number;
+    }>;
+    interactionStats: {
+      openCover: number;
+      clickMaps: number;
+      clickCalendar: number;
+      copyGift: number;
+      clickCoupleInstagram: number;
+      clickVendorWhatsApp: number;
+      clickVendorInstagram: number;
+      clickVendorSite: number;
+      totalInteractions: number;
+    };
+    recentVisitors: Array<{
+      guestName: string | null;
+      deviceType: string;
+      os: string;
+      browser: string;
+      city: string | null;
+      country: string | null;
+      createdAt: string;
+    }>;
+  };
 }
 
 interface CountBucket {
@@ -323,7 +363,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
 
   const adminSupabase = await getSupabaseAdmin();
 
-  const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvpsRes, viewsRes, guestsRes] = await Promise.all([
+  const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvpsRes] = await Promise.all([
     supabase
       .from('invitation_settings')
       .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, access_password, sections, theme_config, wa_templates')
@@ -354,18 +394,67 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .from('rsvps')
       .select('id, guest_name, attendance_status, guest_count, message, created_at')
       .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('invitation_views')
-      .select('created_at')
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false }),
-    adminSupabase
-      .from('sent_invitations')
-      .select('id, guest_name, phone, created_at')
-      .eq('wedding_id', wedding.id)
       .order('created_at', { ascending: false })
   ]);
+
+  // Resilient queries with graceful fallback for database schema safety
+  let views: any[] = [];
+  try {
+    const enrichedViews = await supabase
+      .from('invitation_views')
+      .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at')
+      .eq('wedding_id', wedding.id)
+      .order('created_at', { ascending: false });
+
+    if (enrichedViews.error) {
+      const basicViews = await supabase
+        .from('invitation_views')
+        .select('created_at')
+        .eq('wedding_id', wedding.id)
+        .order('created_at', { ascending: false });
+      views = basicViews.data || [];
+    } else {
+      views = enrichedViews.data || [];
+    }
+  } catch (e) {
+    views = [];
+  }
+
+  let rawGuests: any[] = [];
+  try {
+    const enrichedGuests = await adminSupabase
+      .from('sent_invitations')
+      .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
+      .eq('wedding_id', wedding.id)
+      .order('created_at', { ascending: false });
+
+    if (enrichedGuests.error) {
+      const basicGuests = await adminSupabase
+        .from('sent_invitations')
+        .select('id, guest_name, phone, created_at')
+        .eq('wedding_id', wedding.id)
+        .order('created_at', { ascending: false });
+      rawGuests = basicGuests.data || [];
+    } else {
+      rawGuests = enrichedGuests.data || [];
+    }
+  } catch (e) {
+    rawGuests = [];
+  }
+
+  let trackedEvents: any[] = [];
+  try {
+    const { data: eventsData, error: eventsError } = await supabase
+      .from('invitation_events')
+      .select('id, event_type, guest_name, metadata, created_at')
+      .eq('wedding_id', wedding.id)
+      .order('created_at', { ascending: false });
+    if (!eventsError && eventsData) {
+      trackedEvents = eventsData;
+    }
+  } catch (e) {
+    trackedEvents = [];
+  }
 
   if (settingsRes.error) throw settingsRes.error;
   if (domainsRes.error) throw domainsRes.error;
@@ -373,19 +462,19 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   if (galleryRes.error) throw galleryRes.error;
   if (giftsRes.error) throw giftsRes.error;
   if (rsvpsRes.error) throw rsvpsRes.error;
-  if (viewsRes.error) throw viewsRes.error;
-  if (guestsRes.error) throw guestsRes.error;
 
   const settings = settingsRes.data as any;
   const assets = settings?.theme_config?.assets || {};
   const content = settings?.theme_config?.content || {};
   const waTemplates = settings?.wa_templates || { "Formal": "", "Teman": "", "Keluarga": "" };
   const rsvps = (rsvpsRes.data || []) as any[];
-  const views = (viewsRes.data || []) as any[];
-  const sentInvitations = ((guestsRes.data || []) as any[]).map((g) => ({
+  const sentInvitations = rawGuests.map((g) => ({
     id: g.id,
-    guestName: g.guest_name,
+    guestName: decodeHtmlEntities(g.guest_name),
     phone: g.phone || '',
+    openedAt: g.opened_at || null,
+    lastOpenedAt: g.last_opened_at || null,
+    openCount: Number(g.open_count || 0),
     createdAt: g.created_at
   }));
   const isExpired = Boolean(settings?.expiration_date && new Date(settings.expiration_date) < now);
@@ -397,10 +486,90 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   const latestRsvpAt = rsvps[0]?.created_at || null;
   const dailyViewMap = new Map<string, number>();
 
+  let mobileCount = 0;
+  let desktopCount = 0;
+  let tabletCount = 0;
+  const browserMap = new Map<string, number>();
+
   for (const view of views) {
     const date = new Date(view.created_at).toISOString().slice(0, 10);
     dailyViewMap.set(date, (dailyViewMap.get(date) || 0) + 1);
+
+    const dt = (view.device_type || '').toLowerCase();
+    if (dt === 'desktop') desktopCount++;
+    else if (dt === 'tablet') tabletCount++;
+    else mobileCount++;
+
+    const b = view.browser || 'Other';
+    browserMap.set(b, (browserMap.get(b) || 0) + 1);
   }
+
+  const totalViews = views.length;
+  const deviceStats = {
+    mobile: mobileCount,
+    desktop: desktopCount,
+    tablet: tabletCount,
+    mobilePercent: totalViews > 0 ? Math.round((mobileCount / totalViews) * 100) : 0,
+    desktopPercent: totalViews > 0 ? Math.round((desktopCount / totalViews) * 100) : 0,
+    tabletPercent: totalViews > 0 ? Math.round((tabletCount / totalViews) * 100) : 0
+  };
+
+  const browserStats = Array.from(browserMap.entries())
+    .map(([browser, count]) => ({
+      browser,
+      count,
+      percent: totalViews > 0 ? Math.round((count / totalViews) * 100) : 0
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  let openCoverCount = 0;
+  let clickMapsCount = 0;
+  let clickCalendarCount = 0;
+  let copyGiftCount = 0;
+  let clickCoupleInstagramCount = 0;
+  let clickVendorWhatsAppCount = 0;
+  let clickVendorInstagramCount = 0;
+  let clickVendorSiteCount = 0;
+
+  for (const ev of trackedEvents) {
+    if (ev.event_type === 'open_cover') openCoverCount++;
+    else if (ev.event_type === 'click_maps') clickMapsCount++;
+    else if (ev.event_type === 'click_calendar') clickCalendarCount++;
+    else if (ev.event_type === 'copy_gift') copyGiftCount++;
+    else if (ev.event_type === 'click_couple_instagram') clickCoupleInstagramCount++;
+    else if (ev.event_type === 'click_vendor_whatsapp') clickVendorWhatsAppCount++;
+    else if (ev.event_type === 'click_vendor_instagram') clickVendorInstagramCount++;
+    else if (ev.event_type === 'click_vendor_site') clickVendorSiteCount++;
+  }
+
+  const interactionStats = {
+    openCover: openCoverCount,
+    clickMaps: clickMapsCount,
+    clickCalendar: clickCalendarCount,
+    copyGift: copyGiftCount,
+    clickCoupleInstagram: clickCoupleInstagramCount,
+    clickVendorWhatsApp: clickVendorWhatsAppCount,
+    clickVendorInstagram: clickVendorInstagramCount,
+    clickVendorSite: clickVendorSiteCount,
+    totalInteractions: trackedEvents.length
+  };
+
+  const recentVisitors = views.slice(0, 10).map((v) => ({
+    guestName: v.guest_name || null,
+    deviceType: v.device_type || 'mobile',
+    os: v.os || 'Unknown',
+    browser: v.browser || 'Unknown',
+    city: v.city || null,
+    country: v.country || null,
+    createdAt: v.created_at
+  }));
+
+  const analytics = {
+    deviceStats,
+    browserStats,
+    interactionStats,
+    recentVisitors
+  };
 
   const dailyViews = Array.from(dailyViewMap.entries())
     .map(([date, count]) => ({ date, count }))
@@ -475,7 +644,8 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
         closingImage: assets.closingImage || '',
         eventImage: assets.eventImage || '',
         rsvpImage: assets.rsvpImage || '',
-        countdownImage: assets.countdownImage || ''
+        countdownImage: assets.countdownImage || '',
+        sliderImages: Array.isArray(assets.sliderImages) ? assets.sliderImages : []
       },
       content: {
         instagramUrl: content.instagramUrl || '',
@@ -517,14 +687,15 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     })),
     rsvps: rsvps.map((rsvp) => ({
       id: rsvp.id,
-      guestName: rsvp.guest_name,
+      guestName: decodeHtmlEntities(rsvp.guest_name),
       attendanceStatus: rsvp.attendance_status,
       guestCount: Number(rsvp.guest_count || 0),
-      message: rsvp.message,
+      message: decodeHtmlEntities(rsvp.message),
       createdAt: rsvp.created_at
     })),
     sentInvitations,
     waTemplates,
-    dailyViews
+    dailyViews,
+    analytics
   };
 }

@@ -55,6 +55,7 @@ export interface ThemeConfig {
     eventImage?: string;
     rsvpImage?: string;
     countdownImage?: string;
+    sliderImages?: string[];
   };
   content?: {
     instagramUrl?: string;

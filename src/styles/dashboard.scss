@@ -2256,3 +2256,223 @@ button, input, textarea, select {
   color: var(--color-outline);
   font-size: 13px;
 }
+
+/* =========================================================================
+   VISITOR ANALYTICS & GUEST READ-RECEIPT STYLES
+   ========================================================================= */
+
+.kirim-guests__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.guest-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  width: fit-content;
+  line-height: 1.3;
+
+  &--opened {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+  }
+
+  &--unopened {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+  }
+}
+
+.guest-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--opened {
+    background-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+
+  &--unopened {
+    background-color: #9ca3af;
+  }
+}
+
+/* Analytics Dashboard Card */
+.analytics-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analytics-subcard {
+  background: var(--color-surface-container-lowest, #ffffff);
+  border: 1px solid var(--color-outline-variant, #e5e7eb);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.analytics-bar-wrapper {
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #f3f4f6;
+  display: flex;
+  overflow: hidden;
+  margin: 12px 0 10px;
+}
+
+.analytics-bar-segment {
+  height: 100%;
+  transition: width 0.4s ease;
+
+  &--mobile {
+    background-color: var(--color-primary, #6366f1);
+  }
+  &--desktop {
+    background-color: #06b6d4;
+  }
+  &--tablet {
+    background-color: #f59e0b;
+  }
+}
+
+.analytics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--color-on-surface-variant, #4b5563);
+}
+
+.analytics-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  strong {
+    color: var(--color-on-surface, #111827);
+  }
+}
+
+.analytics-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.interaction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.interaction-card {
+  background: var(--color-surface-container-low, #f9fafb);
+  border: 1px solid var(--color-outline-variant, #e5e7eb);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__icon {
+    font-size: 18px;
+    color: var(--color-primary);
+  }
+
+  &__label {
+    font-size: 11px;
+    color: var(--color-on-surface-variant);
+    font-weight: 500;
+  }
+
+  &__value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-on-surface);
+  }
+}
+
+.browser-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.browser-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 4px 8px;
+  background-color: var(--color-surface-container-low, #f3f4f6);
+  border: 1px solid var(--color-outline-variant, #e5e7eb);
+  border-radius: 6px;
+  color: var(--color-on-surface);
+
+  &__count {
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+}
+
+.recent-visitors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.recent-visitor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 8px 10px;
+  background: var(--color-surface-container-low, #fafafa);
+  border-radius: 8px;
+  border: 1px solid var(--color-outline-variant, #f3f4f6);
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__name {
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+
+  &__meta {
+    font-size: 11px;
+    color: var(--color-on-surface-variant);
+  }
+
+  &__time {
+    font-size: 11px;
+    color: var(--color-outline);
+    white-space: nowrap;
+  }
+}

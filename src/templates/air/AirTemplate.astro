@@ -455,7 +455,7 @@ const brideParentLines = buildCoupleLines(
                 <form class="rsvp-form" data-rsvp-form>
                   <input type="hidden" name="weddingId" value={wedding.id} />
                   <div class="rsvp-form__field">
-                    <input type="text" id="rsvp-section-name" name="name" required placeholder="Nama Anda" aria-label="Nama Anda" />
+                    <input type="text" id="rsvp-section-name" name="name" required placeholder="Nama Anda" aria-label="Nama Anda" value={guestName || ''} />
                   </div>
                   <div class="rsvp-form__field">
                     <select id="rsvp-section-attendance" name="attendance" required data-rsvp-attendance aria-label="Konfirmasi Kehadiran">

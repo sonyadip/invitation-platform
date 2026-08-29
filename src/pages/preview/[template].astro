@@ -149,6 +149,8 @@ const ActiveTemplate = loadedTemplate.component as any;
 if (!ActiveTemplate) {
   return new Response(`Template "${templateKey}" tidak ditemukan.`, { status: 404 });
 }
+
+const guestName = Astro.url.searchParams.get('to') || null;
 ---
 
-<ActiveTemplate data={data} guestName={null} />
+<ActiveTemplate data={data} guestName={guestName} />

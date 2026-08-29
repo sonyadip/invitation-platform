@@ -9,6 +9,7 @@ import {
 } from '../services/invitation-runtime';
 import { shouldTrackInvitationView, trackInvitationView } from '../services/view-tracking';
 import { loadTemplate } from '../templates/registry';
+import { extractClientContext } from '../utils/analytics';
 
 // Force dynamic SSR execution for Cloudflare Pages serverless runtime
 export const prerender = false;
@@ -42,10 +43,18 @@ const { isMaintenance, isExpired, isPasswordLocked } = getInvitationAccessState(
 const guestName = Astro.url.searchParams.get('to') || null;
 
 if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked)) {
+  const clientCtx = extractClientContext(Astro.request);
   trackInvitationView({
     weddingId: wedding.id,
     clientIp: getClientIp(Astro.request, Astro.clientAddress),
-    userAgent: Astro.request.headers.get('user-agent') || 'Unknown',
+    userAgent: clientCtx.userAgent || 'Unknown',
+    guestName,
+    deviceType: clientCtx.deviceType,
+    os: clientCtx.os,
+    browser: clientCtx.browser,
+    city: clientCtx.city,
+    country: clientCtx.country,
+    referrer: clientCtx.referrer,
     now
   }).catch(console.error);
 }

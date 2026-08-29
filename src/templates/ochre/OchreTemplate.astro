@@ -418,7 +418,7 @@ const activeGifts = gifts && gifts.length > 0
                       <form class="rsvp-form" data-rsvp-form>
                         <input type="hidden" name="weddingId" value={wedding.id} />
                         <div class="rsvp-form__field">
-                          <input type="text" id="rsvp-name" name="name" required placeholder="Nama" class="rsvp-form__input" />
+                          <input type="text" id="rsvp-name" name="name" required placeholder="Nama" class="rsvp-form__input" value={guestName || ''} />
                         </div>
                         <div class="rsvp-form__field">
                           <select id="rsvp-attendance" name="attendance" required class="rsvp-form__select" data-rsvp-attendance>

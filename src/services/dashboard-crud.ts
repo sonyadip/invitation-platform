@@ -40,6 +40,7 @@ export interface InvitationFormInput {
   eventImageUrl: string | null;
   rsvpImageUrl: string | null;
   countdownImageUrl: string | null;
+  sliderImageUrls: string[];
   galleryImageUrls: string[];
   galleryVideoUrls: string[];
   instagramUrl: string | null;
@@ -68,6 +69,7 @@ export interface InvitationFormInput {
   eventImageFile: File | null;
   rsvpImageFile: File | null;
   countdownImageFile: File | null;
+  sliderImageFiles: File[];
   galleryImageFiles: File[];
   musicFile: File | null;
 }
@@ -179,6 +181,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
   const giftAccountNumbers = values('giftAccountNumber');
   const giftAccountNames = values('giftAccountName');
   const giftQrisUrls = values('giftQrisUrl');
+  const sliderImageUrlValues = values('sliderImageUrl');
   const galleryImageUrlValues = values('galleryImageUrl');
   const galleryVideoUrlValues = values('galleryVideoUrl');
   const events = eventNames
@@ -252,6 +255,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     eventImageUrl: nullableValue('eventImageUrl'),
     rsvpImageUrl: nullableValue('rsvpImageUrl'),
     countdownImageUrl: nullableValue('countdownImageUrl'),
+    sliderImageUrls: sliderImageUrlValues.filter(Boolean),
     galleryImageUrls: galleryImageUrlValues.filter(Boolean),
     galleryVideoUrls: galleryVideoUrlValues.filter(Boolean),
     instagramUrl: formatInstagramUrl(nullableValue('instagramUrl')),
@@ -280,6 +284,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     eventImageFile: fileValue('eventImageFile'),
     rsvpImageFile: fileValue('rsvpImageFile'),
     countdownImageFile: fileValue('countdownImageFile'),
+    sliderImageFiles: fileList('sliderImageFiles'),
     galleryImageFiles: fileList('galleryImageFiles'),
     musicFile: fileValue('musicFile')
   };
@@ -493,7 +498,19 @@ async function resolveUploadedImages(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   input: InvitationFormInput
 ): Promise<InvitationFormInput> {
-  const [heroImageUrl, brideImageUrl, groomImageUrl, logoImageUrl, closingImageUrl, eventImageUrl, rsvpImageUrl, countdownImageUrl, galleryImageUrls, musicUrl] = await Promise.all([
+  const [
+    heroImageUrl,
+    brideImageUrl,
+    groomImageUrl,
+    logoImageUrl,
+    closingImageUrl,
+    eventImageUrl,
+    rsvpImageUrl,
+    countdownImageUrl,
+    sliderImageUrls,
+    galleryImageUrls,
+    musicUrl
+  ] = await Promise.all([
     input.heroImageFile
       ? uploadImageFile(supabase, input.slug, 'hero', input.heroImageFile)
       : Promise.resolve(input.heroImageUrl),
@@ -518,7 +535,8 @@ async function resolveUploadedImages(
     input.countdownImageFile
       ? uploadImageFile(supabase, input.slug, 'countdown', input.countdownImageFile)
       : Promise.resolve(input.countdownImageUrl),
-    Promise.all(input.galleryImageFiles.map((file) => uploadImageFile(supabase, input.slug, 'gallery', file))),
+    Promise.all((input.sliderImageFiles || []).map((file) => uploadImageFile(supabase, input.slug, 'slider', file))),
+    Promise.all((input.galleryImageFiles || []).map((file) => uploadImageFile(supabase, input.slug, 'gallery', file))),
     input.musicFile
       ? uploadAudioFile(supabase, input.slug, input.musicFile)
       : Promise.resolve(input.musicUrl)
@@ -535,8 +553,12 @@ async function resolveUploadedImages(
     rsvpImageUrl,
     countdownImageUrl,
     musicUrl,
+    sliderImageUrls: [
+      ...(input.sliderImageUrls || []),
+      ...sliderImageUrls
+    ],
     galleryImageUrls: [
-      ...input.galleryImageUrls,
+      ...(input.galleryImageUrls || []),
       ...galleryImageUrls
     ]
   };
@@ -556,6 +578,7 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     heroVideo: input.heroVideoUrl || undefined,
     coverImage: input.heroImageUrl || undefined,
     heroImage: input.heroImageUrl || undefined,
+    sliderImages: input.sliderImageUrls?.length ? input.sliderImageUrls : undefined,
     brideImage: input.brideImageUrl || undefined,
     groomImage: input.groomImageUrl || undefined,
     logoImage: input.logoImageUrl || undefined,
@@ -746,6 +769,9 @@ function extractStoragePath(url: string | null | undefined) {
 
 function collectAssetPaths(themeConfig: any) {
   const assets = themeConfig?.assets || {};
+  const sliderPaths = Array.isArray(assets.sliderImages)
+    ? assets.sliderImages.map(extractStoragePath)
+    : [];
   return [
     extractStoragePath(assets.coverImage),
     extractStoragePath(assets.heroImage),
@@ -755,7 +781,8 @@ function collectAssetPaths(themeConfig: any) {
     extractStoragePath(assets.closingImage),
     extractStoragePath(assets.eventImage),
     extractStoragePath(assets.rsvpImage),
-    extractStoragePath(assets.countdownImage)
+    extractStoragePath(assets.countdownImage),
+    ...sliderPaths
   ].filter(Boolean) as string[];
 }
 

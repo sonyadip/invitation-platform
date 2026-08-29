@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { FullInvitationData, LoveStoryItem } from '../types';
+import { decodeHtmlEntities } from '../utils/template-helpers';
 
 function parseLoveStory(story: unknown): LoveStoryItem[] {
   if (!story) return [];
@@ -105,7 +106,11 @@ export async function getInvitationByDomainOrSlug(
       events: eventsRes.data || [],
       gallery: galleryRes.data || [],
       gifts: giftsRes.data || [],
-      wishes: wishesRes.data || []
+      wishes: (wishesRes.data || []).map((w: any) => ({
+        ...w,
+        guest_name: decodeHtmlEntities(w.guest_name),
+        message: decodeHtmlEntities(w.message)
+      }))
     };
   } catch (error) {
     console.error('getInvitationByDomainOrSlug critical error:', error);

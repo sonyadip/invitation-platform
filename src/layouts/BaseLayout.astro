@@ -102,9 +102,14 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
       templateClass,
     ]}
     style={`color: ${theme.textColor}`}
+    data-wedding-id={wedding.id}
+    data-guest-name={to || ''}
   >
     <slot />
     <script>
+      import { initAutomaticInteractionTracking } from "../scripts/analytics";
+      initAutomaticInteractionTracking();
+
       const openBtns = document.querySelectorAll("[data-template-open]");
       openBtns.forEach((btn) => {
         btn.addEventListener("click", () => {

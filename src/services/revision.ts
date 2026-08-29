@@ -496,6 +496,18 @@ export function computeSnapshotDiff(
         });
       }
     });
+
+    const oldSlider = Array.isArray(oldAssets.sliderImages) ? oldAssets.sliderImages : [];
+    const newSlider = Array.isArray(newAssets.sliderImages) ? newAssets.sliderImages : [];
+    if (JSON.stringify(oldSlider) !== JSON.stringify(newSlider)) {
+      diffs.push({
+        field: 'assets.sliderImages',
+        label: 'Image Slider Photos',
+        category: 'theme',
+        oldValue: `${oldSlider.length} Photos`,
+        newValue: `${newSlider.length} Photos`
+      });
+    }
   }
 
   // 5. Wedding Events (wedding_events)

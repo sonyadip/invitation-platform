@@ -46,6 +46,13 @@ const newWishesCount = wishesWithMessage.filter(r => {
   const diff = Date.now() - new Date(r.createdAt).getTime();
   return diff < 24 * 60 * 60 * 1000; // last 24h
 }).length;
+
+const analytics = report.analytics || {
+  deviceStats: { mobile: 0, desktop: 0, tablet: 0, mobilePercent: 0, desktopPercent: 0, tabletPercent: 0 },
+  browserStats: [],
+  interactionStats: { openCover: 0, clickMaps: 0, clickCalendar: 0, copyGift: 0, clickCoupleInstagram: 0, clickVendorWhatsApp: 0, clickVendorInstagram: 0, clickVendorSite: 0, totalInteractions: 0 },
+  recentVisitors: []
+};
 ---
 
 <ClientLayout title="Dashboard">
@@ -198,6 +205,150 @@ const newWishesCount = wishesWithMessage.filter(r => {
       </div>
     </div>
   </section>
+
+  <!-- Visitor Analytics & Engagement (Admin Only) -->
+  {session?.role === 'admin' && (
+    <section class="fade-in-bottom animate-on-scroll">
+      <div class="bento-card">
+        <h3 class="bento-card__title">
+          Analitik Pengunjung & Interaksi
+          <span style="font-size: 11px; font-weight: 500; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 9999px; margin-left: 8px;">Admin Only</span>
+        </h3>
+        
+        <!-- Device Distribution -->
+        <div class="analytics-subcard">
+          <h4 class="analytics-section-title">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">devices</span>
+            Perangkat Pengunjung
+          </h4>
+          
+          <div class="analytics-bar-wrapper">
+            <div class="analytics-bar-segment analytics-bar-segment--mobile" style={`width: ${analytics.deviceStats.mobilePercent || (report.summary.viewCount ? 100 : 0)}%`} title={`Mobile: ${analytics.deviceStats.mobilePercent}%`}></div>
+            <div class="analytics-bar-segment analytics-bar-segment--desktop" style={`width: ${analytics.deviceStats.desktopPercent}%`} title={`Desktop: ${analytics.deviceStats.desktopPercent}%`}></div>
+            <div class="analytics-bar-segment analytics-bar-segment--tablet" style={`width: ${analytics.deviceStats.tabletPercent}%`} title={`Tablet: ${analytics.deviceStats.tabletPercent}%`}></div>
+          </div>
+          
+          <div class="analytics-legend">
+            <div class="analytics-legend-item">
+              <span class="analytics-legend-dot" style="background-color: var(--color-primary, #6366f1);"></span>
+              <span>Mobile: <strong>{analytics.deviceStats.mobilePercent || (report.summary.viewCount ? 100 : 0)}%</strong> ({analytics.deviceStats.mobile})</span>
+            </div>
+            <div class="analytics-legend-item">
+              <span class="analytics-legend-dot" style="background-color: #06b6d4;"></span>
+              <span>Desktop: <strong>{analytics.deviceStats.desktopPercent}%</strong> ({analytics.deviceStats.desktop})</span>
+            </div>
+            <div class="analytics-legend-item">
+              <span class="analytics-legend-dot" style="background-color: #f59e0b;"></span>
+              <span>Tablet: <strong>{analytics.deviceStats.tabletPercent}%</strong> ({analytics.deviceStats.tablet})</span>
+            </div>
+          </div>
+
+          {analytics.browserStats.length > 0 && (
+            <div style="margin-top: 14px; border-top: 1px dashed var(--color-outline-variant); padding-top: 10px;">
+              <span style="font-size: 11px; color: var(--color-outline); font-weight: 500;">Browser / WebView Terpopuler:</span>
+              <div class="browser-tag-list">
+                {analytics.browserStats.slice(0, 5).map(b => (
+                  <span class="browser-tag">
+                    {b.browser} <span class="browser-tag__count">{b.count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <!-- Feature Interactions -->
+        <div class="analytics-subcard">
+          <h4 class="analytics-section-title">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">touch_app</span>
+            Interaksi Tamu pada Undangan
+          </h4>
+          <div class="interaction-grid">
+            <div class="interaction-card">
+              <span class="material-symbols-outlined interaction-card__icon">drafts</span>
+              <span class="interaction-card__label">Buka Undangan</span>
+              <span class="interaction-card__value">{analytics.interactionStats.openCover}</span>
+            </div>
+            <div class="interaction-card">
+              <span class="material-symbols-outlined interaction-card__icon">location_on</span>
+              <span class="interaction-card__label">Petunjuk Maps</span>
+              <span class="interaction-card__value">{analytics.interactionStats.clickMaps}</span>
+            </div>
+            <div class="interaction-card">
+              <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
+              <span class="interaction-card__label">Simpan Kalender</span>
+              <span class="interaction-card__value">{analytics.interactionStats.clickCalendar}</span>
+            </div>
+            <div class="interaction-card">
+              <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
+              <span class="interaction-card__label">Salin Rekening</span>
+              <span class="interaction-card__value">{analytics.interactionStats.copyGift}</span>
+            </div>
+            <div class="interaction-card">
+              <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+              <span class="interaction-card__label">Instagram Pengantin</span>
+              <span class="interaction-card__value">{analytics.interactionStats.clickCoupleInstagram || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vendor & Branding Leads (Pemilik Jasa) -->
+        <div class="analytics-subcard">
+          <h4 class="analytics-section-title">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #10b981;">storefront</span>
+            Leads & Branding Pemilik Jasa (Senadda)
+          </h4>
+          <div class="interaction-grid">
+            <div class="interaction-card" style="border-left: 3px solid #22c55e;">
+              <span class="material-symbols-outlined interaction-card__icon" style="color: #22c55e;">chat</span>
+              <span class="interaction-card__label">Klik Chat WhatsApp</span>
+              <span class="interaction-card__value">{analytics.interactionStats.clickVendorWhatsApp || 0}</span>
+            </div>
+            <div class="interaction-card" style="border-left: 3px solid #e1306c;">
+              <span class="material-symbols-outlined interaction-card__icon" style="color: #e1306c;">photo_camera</span>
+              <span class="interaction-card__label">Klik Instagram Jasa</span>
+              <span class="interaction-card__value">{analytics.interactionStats.clickVendorInstagram || 0}</span>
+            </div>
+            <div class="interaction-card" style="border-left: 3px solid #3b82f6;">
+              <span class="material-symbols-outlined interaction-card__icon" style="color: #3b82f6;">language</span>
+              <span class="interaction-card__label">Klik Website Jasa</span>
+              <span class="interaction-card__value">{analytics.interactionStats.clickVendorSite || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Visitors -->
+        {analytics.recentVisitors.length > 0 && (
+          <div class="analytics-subcard">
+            <h4 class="analytics-section-title">
+              <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">history</span>
+              Kunjungan Terbaru
+            </h4>
+            <div class="recent-visitors-list">
+              {analytics.recentVisitors.slice(0, 5).map(v => (
+                <div class="recent-visitor-item">
+                  <div class="recent-visitor-item__left">
+                    <span class="material-symbols-outlined" style="font-size: 16px; color: var(--color-primary);">
+                      {v.deviceType === 'desktop' ? 'computer' : v.deviceType === 'tablet' ? 'tablet' : 'smartphone'}
+                    </span>
+                    <div>
+                      <div class="recent-visitor-item__name">
+                        {v.guestName || 'Pengunjung Umum'}
+                      </div>
+                      <div class="recent-visitor-item__meta">
+                        {v.browser} {v.city ? `• ${v.city}` : ''}
+                      </div>
+                    </div>
+                  </div>
+                  <span class="recent-visitor-item__time">{timeAgo(v.createdAt)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
 
   <!-- Wishes Section -->
   <section class="fade-in-bottom animate-on-scroll">

@@ -517,6 +517,53 @@ body.template-ochre {
     align-items: center;
     gap: 12px;
     text-align: center;
+
+    > * {
+      opacity: 0;
+      transform: translateY(20px);
+      transition:
+        opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+      transition-delay: var(--item-delay, 0ms);
+      will-change: opacity, transform;
+    }
+
+    > *:nth-child(1),
+    .person-card__photo-wrap {
+      --item-delay: calc(var(--animate-delay, 0ms) + 0ms);
+      transform: translateY(22px) scale(0.96);
+    }
+
+    > *:nth-child(2),
+    .person-card__role {
+      --item-delay: calc(var(--animate-delay, 0ms) + 180ms);
+    }
+
+    > *:nth-child(3),
+    .person-card__fullname {
+      --item-delay: calc(var(--animate-delay, 0ms) + 360ms);
+    }
+
+    > *:nth-child(4),
+    .person-card__parents {
+      --item-delay: calc(var(--animate-delay, 0ms) + 540ms);
+    }
+
+    > *:nth-child(5),
+    .person-card__social {
+      --item-delay: calc(var(--animate-delay, 0ms) + 720ms);
+    }
+
+    &.is-animated > * {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .person-card[data-animate] {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 
   .person-card__photo-wrap {

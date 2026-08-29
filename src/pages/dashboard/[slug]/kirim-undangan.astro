@@ -77,6 +77,13 @@ const weddingId = report.summary.weddingId;
         </button>
       </div>
 
+      <!-- Status Filters -->
+      <div class="guest-status-filters" id="guest-status-filters" style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+        <button class="filter-btn filter-btn--active" data-status="all">Semua (<span id="count-all">0</span>)</button>
+        <button class="filter-btn filter-btn--outline" data-status="opened">Sudah Dibuka (<span id="count-opened">0</span>)</button>
+        <button class="filter-btn filter-btn--outline" data-status="unopened">Belum Dibuka (<span id="count-unopened">0</span>)</button>
+      </div>
+
       <!-- Guest List -->
       <div class="kirim-guests" id="kirim-guests-container">
         <!-- Rendered via JS to support localStorage -->
@@ -97,12 +104,53 @@ const weddingId = report.summary.weddingId;
       let guestsData = initialGuests.map(g => ({
         id: g.id,
         name: g.guestName || g.name,
-        phone: g.phone
+        phone: g.phone,
+        openedAt: g.openedAt || null,
+        lastOpenedAt: g.lastOpenedAt || null,
+        openCount: Number(g.openCount || 0)
       }));
       
+      let activeStatusFilter = 'all';
       let filteredData = [...guestsData];
       let currentPage = 1;
       const itemsPerPage = 10;
+
+      function formatShortDate(isoStr) {
+        if (!isoStr) return '';
+        const d = new Date(isoStr);
+        return d.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function updateFilterCounts() {
+        const total = guestsData.length;
+        const opened = guestsData.filter(g => Boolean(g.openedAt)).length;
+        const unopened = total - opened;
+
+        const countAll = document.getElementById('count-all');
+        const countOpened = document.getElementById('count-opened');
+        const countUnopened = document.getElementById('count-unopened');
+        if (countAll) countAll.textContent = total;
+        if (countOpened) countOpened.textContent = opened;
+        if (countUnopened) countUnopened.textContent = unopened;
+      }
+
+      function applyFilters() {
+        const addInput = document.querySelector('.kirim-search__input');
+        const query = (addInput ? addInput.value : '').toLowerCase().trim();
+        filteredData = guestsData.filter(g => {
+          const matchSearch = !query || g.name.toLowerCase().includes(query) || (g.phone && g.phone.includes(query));
+          if (!matchSearch) return false;
+          if (activeStatusFilter === 'opened') return Boolean(g.openedAt);
+          if (activeStatusFilter === 'unopened') return !g.openedAt;
+          return true;
+        });
+        updateFilterCounts();
+      }
       
       function renderGuests() {
         guestsContainer.innerHTML = '';
@@ -115,6 +163,14 @@ const weddingId = report.summary.weddingId;
         const end = start + itemsPerPage;
         const paginatedData = filteredData.slice(start, end);
         
+        if (paginatedData.length === 0) {
+          guestsContainer.innerHTML = `
+            <div style="text-align: center; padding: 32px 16px; color: var(--color-on-surface-variant); font-size: 14px;">
+              Tidak ada data tamu yang sesuai filter.
+            </div>
+          `;
+        }
+
         paginatedData.forEach((guest, i) => {
           const newRow = document.createElement('div');
           newRow.className = `kirim-guests__item ${i < paginatedData.length - 1 ? 'kirim-guests__item--bordered' : ''}`;
@@ -125,8 +181,20 @@ const weddingId = report.summary.weddingId;
             waButtonHtml = `<a href="#" data-phone="${guest.phone}" class="kirim-guests__btn-wa">Kirim WA</a>`;
           }
 
+          const isOpened = Boolean(guest.openedAt);
+          const statusBadge = isOpened
+            ? `<span class="guest-status-badge guest-status-badge--opened" title="${new Date(guest.openedAt).toLocaleString('id-ID')}">
+                <span class="guest-status-dot guest-status-dot--opened"></span> Dibuka ${formatShortDate(guest.openedAt)}${guest.openCount > 1 ? ` (${guest.openCount}x)` : ''}
+               </span>`
+            : `<span class="guest-status-badge guest-status-badge--unopened">
+                <span class="guest-status-dot guest-status-dot--unopened"></span> Belum dibuka
+               </span>`;
+
           newRow.innerHTML = `
-              <h4 class="kirim-guests__name">${guest.name}</h4>
+              <div class="kirim-guests__info">
+                <h4 class="kirim-guests__name">${guest.name}</h4>
+                ${statusBadge}
+              </div>
               <div class="kirim-guests__actions">
                 <button class="kirim-guests__btn-copy">Salin</button>
                 ${waButtonHtml}
@@ -315,6 +383,26 @@ Om Shanti, Shanti, Shanti, Om.`
         });
       }
 
+      // --- STATUS FILTER EVENTS ---
+      const statusFilterContainer = document.getElementById('guest-status-filters');
+      if (statusFilterContainer) {
+        const sBtns = statusFilterContainer.querySelectorAll('.filter-btn');
+        sBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            sBtns.forEach(b => {
+              b.classList.remove('filter-btn--active');
+              b.classList.add('filter-btn--outline');
+            });
+            btn.classList.add('filter-btn--active');
+            btn.classList.remove('filter-btn--outline');
+            activeStatusFilter = btn.getAttribute('data-status') || 'all';
+            applyFilters();
+            currentPage = 1;
+            renderGuests();
+          });
+        });
+      }
+
       // --- TAMBAH & CARI TAMU ---
       const addInput = document.querySelector('.kirim-search__input');
       const addWaInput = document.querySelector('.kirim-search__input-wa');
@@ -322,9 +410,8 @@ Om Shanti, Shanti, Shanti, Om.`
 
       // Fungsi Search Live
       if (addInput) {
-        addInput.addEventListener('input', (e) => {
-          const query = e.target.value.toLowerCase().trim();
-          filteredData = guestsData.filter(g => g.name.toLowerCase().includes(query));
+        addInput.addEventListener('input', () => {
+          applyFilters();
           currentPage = 1;
           renderGuests();
         });
@@ -355,13 +442,16 @@ Om Shanti, Shanti, Shanti, Om.`
             guestsData.unshift({
               id: result.item.id,
               name: result.item.guest_name,
-              phone: result.item.phone
+              phone: result.item.phone,
+              openedAt: null,
+              lastOpenedAt: null,
+              openCount: 0
             });
             
             addInput.value = '';
             if (addWaInput) addWaInput.value = '';
             
-            filteredData = [...guestsData];
+            applyFilters();
             currentPage = 1;
             renderGuests();
             window.showToast({ type: 'success', message: 'Tamu baru berhasil ditambahkan.' });
@@ -415,13 +505,7 @@ Om Shanti, Shanti, Shanti, Om.`
               }).catch(err => console.error("Gagal menghapus:", err));
 
               guestsData = guestsData.filter(g => String(g.id) !== String(id));
-              
-              const query = addInput ? addInput.value.toLowerCase().trim() : '';
-              if (query) {
-                filteredData = guestsData.filter(g => g.name.toLowerCase().includes(query));
-              } else {
-                filteredData = [...guestsData];
-              }
+              applyFilters();
               renderGuests();
               window.showToast({ type: 'success', message: 'Data tamu berhasil dihapus.' });
             }
@@ -590,11 +674,14 @@ Om Shanti, Shanti, Shanti, Om.`
               const newGuests = result.items.map(item => ({
                 id: item.id,
                 name: item.guest_name,
-                phone: item.phone
+                phone: item.phone,
+                openedAt: item.opened_at || null,
+                lastOpenedAt: item.last_opened_at || null,
+                openCount: Number(item.open_count || 0)
               }));
 
               guestsData = [...newGuests, ...guestsData];
-              filteredData = [...guestsData];
+              applyFilters();
               currentPage = 1;
               renderGuests();
               window.showToast({ type: 'success', message: `Berhasil mengimpor ${newGuests.length} tamu.` });
@@ -636,6 +723,7 @@ Om Shanti, Shanti, Shanti, Om.`
       }
 
       // Initialize on load
+      applyFilters();
       renderGuests();
     });
   </script>

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
 import { jsonResponse, parseBoundedInt } from '../../utils/http';
+import { decodeHtmlEntities } from '../../utils/template-helpers';
 
 export const prerender = false;
 
@@ -61,7 +62,11 @@ export const GET: APIRoute = async ({ url }) => {
 
     if (error) throw error;
 
-    const items = data || [];
+    const items = (data || []).map((w) => ({
+      ...w,
+      guest_name: decodeHtmlEntities(w.guest_name),
+      message: decodeHtmlEntities(w.message)
+    }));
     const total = count || 0;
     const totalPages = Math.max(1, Math.ceil(total / limit));
     const currentPage = Math.floor(offset / limit) + 1;
