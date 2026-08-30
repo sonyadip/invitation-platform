@@ -73,20 +73,6 @@ function initAirTemplate() {
     });
   }
 
-  if (audioBtn && song instanceof HTMLAudioElement && audioBtn.dataset.bound !== 'true') {
-    audioBtn.dataset.bound = 'true';
-    audioBtn.addEventListener('click', () => {
-      if (!song.paused) {
-        song.pause();
-        audioBtn.classList.remove('audio-toggle--playing');
-      } else {
-        song.play().then(() => {
-          audioBtn.classList.add('audio-toggle--playing');
-        }).catch(() => { });
-      }
-    });
-  }
-
   initBackgroundAudioHandler(song, audioBtn);
 
   function initHeroSlideshows() {

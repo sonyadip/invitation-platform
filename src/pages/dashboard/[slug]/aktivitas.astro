@@ -342,6 +342,15 @@ for (const act of activities) {
 const maxHourlyActivity = Math.max(...hourlyBuckets, 1);
 const peakHour = hourlyBuckets.indexOf(Math.max(...hourlyBuckets));
 
+// Serialized compact activities for live interactive client-side graph engine
+const chartActivitiesData = activities.map(a => ({
+  t: a.createdAt,
+  e: a.eventType,
+  c: a.category,
+  g: !!a.guestName,
+  n: a.guestName || ''
+}));
+
 // Group activities by unique Guest
 interface GuestJourney {
   key: string;
@@ -632,38 +641,123 @@ const originUrl = Astro.url.origin;
           </div>
         </div>
 
-        <!-- Hourly Peak Activity Heatmap -->
-        <div class="hourly-trend-card">
-          <div class="hourly-header">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="material-symbols-outlined" style="font-size: 16px; color: #d97706;">query_builder</span>
-              <span class="hourly-title">Distribusi Waktu Kunjungan (24 Jam WITA)</span>
+        <!-- Interactive Analytics Chart & Trend Graph with Full Filters -->
+        <div class="activity-graph-card" id="activityGraphSection">
+          <div class="graph-card-header">
+            <div class="graph-card-title-group">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined" style="font-size: 20px; color: var(--color-primary, #a68966);">monitoring</span>
+                <h4 class="graph-card-title">Grafik & Tren Aktivitas Pengunjung</h4>
+              </div>
+              <p class="graph-card-subtitle">Visualisasi interaktif pola kunjungan, respon amplop, dan interaksi tamu secara real-time</p>
             </div>
-            <span class="hourly-badge">
-              Jam Paling Aktif: <strong>{peakHour.toString().padStart(2, '0')}:00 - {((peakHour + 1) % 24).toString().padStart(2, '0')}:00</strong>
-            </span>
+
+            <!-- Granularity & Metric Filter Controls -->
+            <div class="graph-controls-panel">
+              <!-- Metric Filter -->
+              <div class="graph-filter-select-wrapper">
+                <select id="graphMetricFilter" class="form-input graph-select" title="Filter jenis aktivitas">
+                  <option value="all">📊 Semua Aktivitas</option>
+                  <option value="views">👁️ Kunjungan Halaman</option>
+                  <option value="cover">💌 Buka Cover Undangan</option>
+                  <option value="interaction">🎯 Interaksi Undangan</option>
+                  <option value="guests">👤 Tamu Teridentifikasi</option>
+                  <option value="vendor">💼 Leads Vendor (Senadda)</option>
+                </select>
+              </div>
+
+              <!-- Time Range Tabs -->
+              <div class="graph-time-tabs" role="tablist">
+                <button type="button" class="graph-time-tab graph-time-tab--active" data-range="24h" title="Lihat distribusi 24 jam per jam (WITA)">
+                  24 Jam
+                </button>
+                <button type="button" class="graph-time-tab" data-range="7d" title="Lihat tren harian 7 hari terakhir">
+                  7 Hari
+                </button>
+                <button type="button" class="graph-time-tab" data-range="30d" title="Lihat tren 30 hari terakhir">
+                  30 Hari
+                </button>
+                <button type="button" class="graph-time-tab" data-range="all" title="Lihat seluruh riwayat waktu">
+                  Semua
+                </button>
+              </div>
+
+              <!-- Chart Type Switcher (Area vs Bar) -->
+              <div class="graph-type-switcher">
+                <button type="button" class="graph-type-btn graph-type-btn--active" data-type="area" title="Tampilan Grafik Garis & Area">
+                  <span class="material-symbols-outlined">show_chart</span>
+                </button>
+                <button type="button" class="graph-type-btn" data-type="bar" title="Tampilan Grafik Batang">
+                  <span class="material-symbols-outlined">bar_chart</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div class="hourly-bars">
-            {hourlyBuckets.map((count, hour) => {
-              const heightPercent = maxHourlyActivity > 0 ? Math.round((count / maxHourlyActivity) * 100) : 0;
-              const isPeak = hour === peakHour && count > 0;
-              return (
-                <div class="hourly-bar-col" title={`Jam ${hour.toString().padStart(2, '0')}:00 WITA: ${count} aktivitas`}>
-                  <div class="hourly-bar-track">
-                    <div
-                      class={`hourly-bar-fill ${isPeak ? 'hourly-bar-fill--peak' : ''}`}
-                      style={`height: ${Math.max(6, heightPercent)}%;`}
-                    ></div>
-                  </div>
-                  <span class={`hourly-bar-label ${hour % 4 === 0 ? 'hourly-bar-label--visible' : ''}`}>
-                    {hour % 4 === 0 ? hour.toString().padStart(2, '0') : ''}
-                  </span>
-                </div>
-              );
-            })}
+          <!-- Dynamic Live KPI Summary Bar -->
+          <div class="graph-kpi-bar">
+            <div class="graph-kpi-item">
+              <span class="graph-kpi-label">Total Terpilih</span>
+              <span class="graph-kpi-val" id="graphKpiTotal">0</span>
+            </div>
+            <div class="graph-kpi-item">
+              <span class="graph-kpi-label">Puncak Tertinggi</span>
+              <span class="graph-kpi-val" id="graphKpiPeak">-</span>
+            </div>
+            <div class="graph-kpi-item">
+              <span class="graph-kpi-label">Rata-rata</span>
+              <span class="graph-kpi-val" id="graphKpiAvg">0</span>
+            </div>
+            <div class="graph-kpi-item">
+              <span class="graph-kpi-label">Tamu Terlibat</span>
+              <span class="graph-kpi-val" id="graphKpiGuests">0</span>
+            </div>
+          </div>
+
+          <!-- Interactive Chart Canvas & Tooltip Container -->
+          <div class="graph-canvas-container" id="graphCanvasContainer">
+            <!-- SVG Interactive Chart (Area / Line & Bar modes) -->
+            <div class="graph-svg-wrapper" id="graphSvgWrapper">
+              <svg class="graph-svg" id="activityGraphSvg" viewBox="0 0 800 220" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#a68966" stop-opacity="0.32" />
+                    <stop offset="100%" stop-color="#a68966" stop-opacity="0.01" />
+                  </linearGradient>
+                </defs>
+                <!-- Grid Lines -->
+                <g id="graphGridGroup"></g>
+                <!-- Bar Chart Group -->
+                <g id="graphBarsGroup" style="display: none;"></g>
+                <!-- Area Chart Group -->
+                <g id="graphAreaGroup">
+                  <path id="graphAreaPath" class="graph-area-path" d="" fill="url(#areaGradient)" />
+                  <path id="graphLinePath" class="graph-line-path" d="" fill="none" stroke="var(--color-primary, #a68966)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <g id="graphPointsGroup"></g>
+                </g>
+                <!-- Interactive Vertical Guide Line & Active Indicator -->
+                <g id="graphTrackerGroup" style="display: none;">
+                  <line id="graphTrackerLine" x1="0" y1="25" x2="0" y2="190" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3,3" />
+                  <circle id="graphTrackerCircle" cx="0" cy="0" r="5.5" fill="#a68966" stroke="#ffffff" stroke-width="2.5" />
+                </g>
+              </svg>
+            </div>
+
+            <!-- X-Axis Labels Row -->
+            <div class="graph-xaxis" id="graphXAxisLabels"></div>
+
+            <!-- Floating Interactive Tooltip -->
+            <div class="graph-tooltip" id="graphTooltip" style="display: none;">
+              <div class="graph-tooltip__header" id="graphTooltipTitle">Waktu</div>
+              <div class="graph-tooltip__body">
+                <span class="graph-tooltip__badge" id="graphTooltipVal">0 Aksi</span>
+                <span class="graph-tooltip__sub" id="graphTooltipSub"></span>
+              </div>
+            </div>
           </div>
         </div>
+
+        <script is:inline id="analytics-activities-json" type="application/json" set:html={JSON.stringify(chartActivitiesData)}></script>
 
         <!-- 3 Detailed Breakdown Cards -->
         <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
@@ -869,6 +963,7 @@ const originUrl = Astro.url.origin;
               {showCalendarStat && <option value="click_calendar">Simpan ke Kalender</option>}
               {showGiftStat && <option value="copy_gift">Salin No. Rekening</option>}
               {showMusicStat && <option value="play_music">Putar Musik Latar</option>}
+              {showMusicStat && <option value="pause_music">Jeda Musik Latar</option>}
               {showVideoStat && <option value="play_video">Putar Video Momen</option>}
               {showGalleryStat && <option value="view_gallery">Lihat Galeri Foto</option>}
               {showRsvpStat && <option value="click_rsvp">Klik Form RSVP</option>}
@@ -1810,12 +1905,464 @@ const originUrl = Astro.url.origin;
         });
       }
 
-      // Resize listener for responsive pagination button count
+      // ==========================================
+      // --- INTERACTIVE ANALYTICS GRAPH ENGINE ---
+      // ==========================================
+      const rawActivitiesJson = document.getElementById('analytics-activities-json')?.textContent;
+      const chartRawData = rawActivitiesJson ? JSON.parse(rawActivitiesJson) : [];
+
+      const graphMetricSelect = document.getElementById('graphMetricFilter');
+      const graphTimeTabs = document.querySelectorAll('.graph-time-tab');
+      const graphTypeBtns = document.querySelectorAll('.graph-type-btn');
+
+      const svgEl = document.getElementById('activityGraphSvg');
+      const gridGroup = document.getElementById('graphGridGroup');
+      const barsGroup = document.getElementById('graphBarsGroup');
+      const areaGroup = document.getElementById('graphAreaGroup');
+      const areaPath = document.getElementById('graphAreaPath');
+      const linePath = document.getElementById('graphLinePath');
+      const pointsGroup = document.getElementById('graphPointsGroup');
+      const trackerGroup = document.getElementById('graphTrackerGroup');
+      const trackerLine = document.getElementById('graphTrackerLine');
+      const trackerCircle = document.getElementById('graphTrackerCircle');
+      const xAxisEl = document.getElementById('graphXAxisLabels');
+      const graphTooltip = document.getElementById('graphTooltip');
+      const tooltipTitle = document.getElementById('graphTooltipTitle');
+      const tooltipVal = document.getElementById('graphTooltipVal');
+      const tooltipSub = document.getElementById('graphTooltipSub');
+      const graphContainer = document.getElementById('graphCanvasContainer');
+
+      const kpiTotal = document.getElementById('graphKpiTotal');
+      const kpiPeak = document.getElementById('graphKpiPeak');
+      const kpiAvg = document.getElementById('graphKpiAvg');
+      const kpiGuests = document.getElementById('graphKpiGuests');
+
+      let currentGraphRange = '24h'; // '24h' | '7d' | '30d' | 'all'
+      let currentGraphMetric = 'all'; // 'all' | 'views' | 'cover' | 'interaction' | 'guests' | 'vendor'
+      let currentGraphType = 'area'; // 'area' | 'bar'
+
+      const monthNamesIndo = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+      function getWitaDate(dateObj) {
+        return new Date(dateObj.getTime() + 8 * 3600000);
+      }
+
+      function renderInteractiveChart() {
+        if (!svgEl) return;
+
+        // 1. Filter raw activities by metric
+        const filteredData = chartRawData.filter(item => {
+          if (currentGraphMetric === 'views') return item.e === 'page_view';
+          if (currentGraphMetric === 'cover') return item.e === 'open_cover';
+          if (currentGraphMetric === 'interaction') return item.c === 'interaksi' && item.e !== 'page_view';
+          if (currentGraphMetric === 'guests') return item.g === true;
+          if (currentGraphMetric === 'vendor') return item.c === 'vendor';
+          return true;
+        });
+
+        // 2. Build time buckets
+        let buckets = [];
+        const now = new Date();
+        const nowWita = getWitaDate(now);
+
+        if (currentGraphRange === '24h') {
+          // 24 hours buckets (00:00 to 23:00 WITA)
+          for (let h = 0; h < 24; h++) {
+            const hStr = h.toString().padStart(2, '0');
+            buckets.push({
+              key: h,
+              label: `${hStr}:00`,
+              fullLabel: `Pukul ${hStr}:00 - ${hStr}:59 WITA`,
+              count: 0,
+              guestNames: new Set()
+            });
+          }
+
+          filteredData.forEach(item => {
+            if (!item.t) return;
+            const d = getWitaDate(new Date(item.t));
+            const h = d.getUTCHours();
+            if (buckets[h]) {
+              buckets[h].count++;
+              if (item.n) buckets[h].guestNames.add(item.n);
+            }
+          });
+        } else if (currentGraphRange === '7d' || currentGraphRange === '30d') {
+          const daysCount = currentGraphRange === '7d' ? 7 : 30;
+          const dayMap = new Map();
+
+          for (let i = daysCount - 1; i >= 0; i--) {
+            const d = new Date(nowWita);
+            d.setUTCDate(d.getUTCDate() - i);
+            const dateKey = d.toISOString().slice(0, 10);
+            const dateNum = d.getUTCDate();
+            const monthStr = monthNamesIndo[d.getUTCMonth()];
+            const dayLabel = currentGraphRange === '7d' ? `${dateNum} ${monthStr}` : `${dateNum.toString().padStart(2, '0')}`;
+            const fullLabel = `${dateNum} ${monthStr} ${d.getUTCFullYear()}`;
+
+            const bucketObj = {
+              key: dateKey,
+              label: dayLabel,
+              fullLabel,
+              count: 0,
+              guestNames: new Set()
+            };
+            buckets.push(bucketObj);
+            dayMap.set(dateKey, bucketObj);
+          }
+
+          filteredData.forEach(item => {
+            if (!item.t) return;
+            const d = getWitaDate(new Date(item.t));
+            const dateKey = d.toISOString().slice(0, 10);
+            if (dayMap.has(dateKey)) {
+              const b = dayMap.get(dateKey);
+              b.count++;
+              if (item.n) b.guestNames.add(item.n);
+            }
+          });
+        } else {
+          // 'all' time: Group by days or months
+          if (filteredData.length === 0) {
+            buckets = [{ key: 'all', label: 'Hari ini', fullLabel: 'Hari ini', count: 0, guestNames: new Set() }];
+          } else {
+            const timestamps = filteredData.map(a => new Date(a.t).getTime()).filter(Boolean);
+            const minTime = Math.min(...timestamps);
+            const maxTime = Math.max(...timestamps);
+            const dayDiff = Math.max(1, Math.ceil((maxTime - minTime) / (1000 * 3600 * 24)));
+
+            const dayMap = new Map();
+            for (let i = dayDiff; i >= 0; i--) {
+              const d = new Date(nowWita);
+              d.setUTCDate(d.getUTCDate() - i);
+              const dateKey = d.toISOString().slice(0, 10);
+              const dateNum = d.getUTCDate();
+              const monthStr = monthNamesIndo[d.getUTCMonth()];
+
+              const bucketObj = {
+                key: dateKey,
+                label: `${dateNum} ${monthStr}`,
+                fullLabel: `${dateNum} ${monthStr} ${d.getUTCFullYear()}`,
+                count: 0,
+                guestNames: new Set()
+              };
+              buckets.push(bucketObj);
+              dayMap.set(dateKey, bucketObj);
+            }
+
+            filteredData.forEach(item => {
+              if (!item.t) return;
+              const d = getWitaDate(new Date(item.t));
+              const dateKey = d.toISOString().slice(0, 10);
+              if (dayMap.has(dateKey)) {
+                const b = dayMap.get(dateKey);
+                b.count++;
+                if (item.n) b.guestNames.add(item.n);
+              }
+            });
+
+            if (buckets.length > 30) {
+              const step = Math.ceil(buckets.length / 30);
+              const sampled = [];
+              for (let i = 0; i < buckets.length; i += step) {
+                const slice = buckets.slice(i, i + step);
+                const totalC = slice.reduce((sum, b) => sum + b.count, 0);
+                const allG = new Set();
+                slice.forEach(b => b.guestNames.forEach(n => allG.add(n)));
+                sampled.push({
+                  key: slice[0].key,
+                  label: slice[0].label,
+                  fullLabel: `${slice[0].fullLabel} - ${slice[slice.length - 1].fullLabel}`,
+                  count: totalC,
+                  guestNames: allG
+                });
+              }
+              buckets = sampled;
+            }
+          }
+        }
+
+        // 3. Compute KPIs
+        const totalCount = buckets.reduce((sum, b) => sum + b.count, 0);
+        let maxCount = 0;
+        let peakBucket = null;
+        const allUniqueGuests = new Set();
+
+        buckets.forEach(b => {
+          if (b.count > maxCount) {
+            maxCount = b.count;
+            peakBucket = b;
+          }
+          b.guestNames.forEach(n => allUniqueGuests.add(n));
+        });
+
+        const avgCount = buckets.length > 0 ? (totalCount / buckets.length).toFixed(1) : '0';
+
+        if (kpiTotal) kpiTotal.textContent = `${totalCount} aksi`;
+        if (kpiPeak) {
+          kpiPeak.textContent = maxCount > 0 && peakBucket ? `${maxCount} aksi (${peakBucket.label})` : '-';
+        }
+        if (kpiAvg) kpiAvg.textContent = `${avgCount} / titik`;
+        if (kpiGuests) kpiGuests.textContent = `${allUniqueGuests.size} tamu`;
+
+        // 4. Render Grid & Scales
+        const svgW = 800;
+        const svgH = 220;
+        const padTop = 25;
+        const padBottom = 30;
+        const padLeft = 45;
+        const padRight = 20;
+        const chartW = svgW - padLeft - padRight;
+        const chartH = svgH - padTop - padBottom;
+
+        const maxScale = Math.max(4, Math.ceil(maxCount * 1.15));
+
+        // Draw horizontal gridlines (4 levels: 0, 33%, 66%, 100%)
+        let gridHtml = '';
+        for (let i = 0; i <= 3; i++) {
+          const val = Math.round((maxScale / 3) * i);
+          const y = padTop + chartH - (i / 3) * chartH;
+          gridHtml += `
+            <line x1="${padLeft}" y1="${y}" x2="${svgW - padRight}" y2="${y}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+            <text x="${padLeft - 8}" y="${y + 4}" fill="#94a3b8" font-size="10" font-weight="600" text-anchor="end">${val}</text>
+          `;
+        }
+        if (gridGroup) gridGroup.innerHTML = gridHtml;
+
+        // 5. Render Chart Type (Area vs Bar in SVG)
+        if (currentGraphType === 'area') {
+          if (areaGroup) areaGroup.style.display = 'block';
+          if (barsGroup) barsGroup.style.display = 'none';
+
+          const points = buckets.map((b, idx) => {
+            const x = padLeft + (buckets.length === 1 ? chartW / 2 : (idx / Math.max(1, buckets.length - 1)) * chartW);
+            const y = padTop + chartH - (b.count / maxScale) * chartH;
+            return { x, y, bucket: b, idx };
+          });
+
+          function createCurve(pts) {
+            if (!pts.length) return '';
+            if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+            let path = `M ${pts[0].x} ${pts[0].y}`;
+            for (let i = 0; i < pts.length - 1; i++) {
+              const p0 = pts[i];
+              const p1 = pts[i + 1];
+              const mx = (p0.x + p1.x) / 2;
+              path += ` C ${mx} ${p0.y}, ${mx} ${p1.y}, ${p1.x} ${p1.y}`;
+            }
+            return path;
+          }
+
+          const lineD = createCurve(points);
+          const baselineY = padTop + chartH;
+          const areaD = points.length > 0
+            ? `${lineD} L ${points[points.length - 1].x} ${baselineY} L ${points[0].x} ${baselineY} Z`
+            : '';
+
+          if (linePath) linePath.setAttribute('d', lineD);
+          if (areaPath) areaPath.setAttribute('d', areaD);
+
+          let ptsHtml = '';
+          points.forEach((p) => {
+            const isPeak = p.bucket.count === maxCount && maxCount > 0;
+            ptsHtml += `
+              <circle cx="${p.x}" cy="${p.y}" r="${isPeak ? 5.5 : 4}" class="graph-point-circle ${isPeak ? 'graph-point-circle--peak' : ''}" fill="#ffffff" stroke="var(--color-primary, #a68966)" stroke-width="${isPeak ? 2.5 : 2}" />
+            `;
+          });
+          if (pointsGroup) pointsGroup.innerHTML = ptsHtml;
+        } else {
+          // Bar Chart rendering inside SVG
+          if (areaGroup) areaGroup.style.display = 'none';
+          if (barsGroup) {
+            barsGroup.style.display = 'block';
+            let barsHtml = '';
+            const colW = chartW / Math.max(1, buckets.length);
+            const barWidth = Math.max(6, Math.min(32, colW * 0.65));
+
+            buckets.forEach((b, idx) => {
+              const cx = padLeft + (idx + 0.5) * colW;
+              const barH = (b.count / maxScale) * chartH;
+              const barY = (padTop + chartH) - barH;
+              const isPeak = b.count === maxCount && maxCount > 0;
+              const barColor = isPeak ? '#a68966' : '#cbd5e1';
+
+              barsHtml += `
+                <g class="graph-svg-bar-col" data-idx="${idx}" style="cursor: pointer;">
+                  <rect x="${cx - barWidth / 2}" y="${padTop}" width="${barWidth}" height="${chartH}" rx="3" fill="#f8fafc" class="graph-svg-bar-track" />
+                  <rect x="${cx - barWidth / 2}" y="${barY}" width="${barWidth}" height="${Math.max(3, barH)}" rx="3" fill="${barColor}" class="graph-svg-bar ${isPeak ? 'graph-svg-bar--peak' : ''}" />
+                </g>
+              `;
+            });
+            barsGroup.innerHTML = barsHtml;
+          }
+        }
+
+        // 6. Render X-Axis Labels
+        if (xAxisEl) {
+          let xHtml = '';
+          const totalB = buckets.length;
+          const labelInterval = totalB <= 8 ? 1 : totalB <= 15 ? 2 : totalB <= 24 ? 4 : 5;
+
+          buckets.forEach((b, idx) => {
+            const isVisible = idx % labelInterval === 0 || idx === totalB - 1;
+            xHtml += `
+              <div class="graph-xaxis__item ${isVisible ? 'graph-xaxis__item--visible' : ''}">
+                ${isVisible ? b.label : ''}
+              </div>
+            `;
+          });
+          xAxisEl.innerHTML = xHtml;
+        }
+
+        // 7. Unified 0ms-Lag Mouse & Touch Tracking
+        if (!graphContainer) return;
+
+        function showTooltipAtBucket(idx) {
+          const b = buckets[idx];
+          if (!b || !graphTooltip || !graphContainer) return;
+
+          if (tooltipTitle) tooltipTitle.textContent = b.fullLabel;
+          if (tooltipVal) tooltipVal.textContent = `${b.count} Aktivitas`;
+          if (tooltipSub) {
+            const pct = totalCount > 0 ? Math.round((b.count / totalCount) * 100) : 0;
+            const guestsText = b.guestNames.size > 0 ? ` • ${b.guestNames.size} tamu terdeteksi` : '';
+            tooltipSub.textContent = `${pct}% dari total periode${guestsText}`;
+          }
+
+          const containerRect = graphContainer.getBoundingClientRect();
+          let ptX = 0;
+          let ptY = 0;
+
+          if (currentGraphType === 'area') {
+            ptX = padLeft + (buckets.length === 1 ? chartW / 2 : (idx / Math.max(1, buckets.length - 1)) * chartW);
+            ptY = padTop + chartH - (b.count / maxScale) * chartH;
+          } else {
+            const colW = chartW / Math.max(1, buckets.length);
+            ptX = padLeft + (idx + 0.5) * colW;
+            const barH = (b.count / maxScale) * chartH;
+            ptY = (padTop + chartH) - barH;
+
+            // Highlight active bar and restore others
+            const allBars = svgEl.querySelectorAll('.graph-svg-bar');
+            allBars.forEach((bar, bIdx) => {
+              if (bIdx === idx) {
+                bar.classList.add('graph-svg-bar--active');
+                bar.setAttribute('fill', '#a68966');
+              } else {
+                bar.classList.remove('graph-svg-bar--active');
+                const isPeak = buckets[bIdx]?.count === maxCount && maxCount > 0;
+                bar.setAttribute('fill', isPeak ? '#a68966' : '#cbd5e1');
+              }
+            });
+          }
+
+          // Move Guide Line & Active Circle Indicator
+          if (trackerLine) {
+            trackerLine.setAttribute('x1', ptX);
+            trackerLine.setAttribute('x2', ptX);
+            trackerLine.setAttribute('y1', padTop);
+            trackerLine.setAttribute('y2', padTop + chartH);
+          }
+          if (trackerCircle) {
+            trackerCircle.setAttribute('cx', ptX);
+            trackerCircle.setAttribute('cy', ptY);
+          }
+          if (trackerGroup) trackerGroup.style.display = 'block';
+
+          // Position Tooltip Floating Above Point
+          const pixelX = (ptX / 800) * containerRect.width;
+          const pixelY = (ptY / 220) * containerRect.height;
+
+          const clampedX = Math.max(85, Math.min(containerRect.width - 85, pixelX));
+          const clampedY = Math.max(8, pixelY - 12);
+
+          graphTooltip.style.left = `${clampedX}px`;
+          graphTooltip.style.top = `${clampedY}px`;
+          graphTooltip.style.display = 'block';
+          graphTooltip.style.opacity = '1';
+        }
+
+        function hideTooltip() {
+          if (graphTooltip) {
+            graphTooltip.style.opacity = '0';
+            graphTooltip.style.display = 'none';
+          }
+          if (trackerGroup) trackerGroup.style.display = 'none';
+          if (svgEl) {
+            svgEl.querySelectorAll('.graph-svg-bar').forEach((bar, bIdx) => {
+              bar.classList.remove('graph-svg-bar--active');
+              const isPeak = buckets[bIdx]?.count === maxCount && maxCount > 0;
+              bar.setAttribute('fill', isPeak ? '#a68966' : '#cbd5e1');
+            });
+          }
+        }
+
+        function handlePointer(e) {
+          if (!buckets.length || !graphContainer) return;
+          const containerRect = graphContainer.getBoundingClientRect();
+          const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+          const relX = clientX - containerRect.left;
+
+          const padLeftPx = (padLeft / 800) * containerRect.width;
+          const chartWPx = (chartW / 800) * containerRect.width;
+
+          let idx = 0;
+          if (currentGraphType === 'area') {
+            const ratio = (relX - padLeftPx) / Math.max(1, chartWPx);
+            idx = Math.max(0, Math.min(buckets.length - 1, Math.round(ratio * Math.max(1, buckets.length - 1))));
+          } else {
+            const colWidthPx = chartWPx / Math.max(1, buckets.length);
+            idx = Math.max(0, Math.min(buckets.length - 1, Math.floor((relX - padLeftPx) / colWidthPx)));
+          }
+
+          showTooltipAtBucket(idx);
+        }
+
+        // Attach directly for 100% continuous coverage without dead zones
+        graphContainer.onmousemove = handlePointer;
+        graphContainer.onmouseenter = handlePointer;
+        graphContainer.onmouseleave = hideTooltip;
+        graphContainer.ontouchstart = handlePointer;
+        graphContainer.ontouchmove = handlePointer;
+        graphContainer.ontouchend = hideTooltip;
+      }
+
+      // Graph Controls Listeners
+      if (graphMetricSelect) {
+        graphMetricSelect.addEventListener('change', () => {
+          currentGraphMetric = graphMetricSelect.value;
+          renderInteractiveChart();
+        });
+      }
+
+      graphTimeTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          graphTimeTabs.forEach(t => t.classList.remove('graph-time-tab--active'));
+          tab.classList.add('graph-time-tab--active');
+          currentGraphRange = tab.getAttribute('data-range') || '24h';
+          renderInteractiveChart();
+        });
+      });
+
+      graphTypeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          graphTypeBtns.forEach(b => b.classList.remove('graph-type-btn--active'));
+          btn.classList.add('graph-type-btn--active');
+          currentGraphType = btn.getAttribute('data-type') || 'area';
+          renderInteractiveChart();
+        });
+      });
+
+      // Initial Graph Render
+      renderInteractiveChart();
+
+      // Resize listener for responsive pagination button count and graph redraw
       let resizeTimer;
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
           updatePagination();
+          renderInteractiveChart();
         }, 150);
       });
 
@@ -1974,95 +2521,318 @@ const originUrl = Astro.url.origin;
     }
   }
 
-  /* Hourly Activity Trend */
-  .hourly-trend-card {
+  /* Interactive Activity Graph Card */
+  .activity-graph-card {
     background: #ffffff;
     border: 1px solid var(--color-outline-variant, #e2e8f0);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-top: 14px;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-top: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   }
 
-  .hourly-header {
+  .graph-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    gap: 14px;
     flex-wrap: wrap;
-    gap: 6px;
+    margin-bottom: 16px;
+  }
 
-    .hourly-title {
-      font-size: 13px;
+  .graph-card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .graph-card-title {
+      margin: 0;
+      font-size: 14.5px;
       font-weight: 700;
       color: var(--color-on-surface);
     }
 
-    .hourly-badge {
-      font-size: 11px;
-      background: #fffbeb;
-      color: #b45309;
-      border: 1px solid #fef3c7;
-      padding: 2px 8px;
-      border-radius: 6px;
+    .graph-card-subtitle {
+      margin: 0;
+      font-size: 12px;
+      color: var(--color-outline);
     }
   }
 
-  .hourly-bars {
+  .graph-controls-panel {
     display: flex;
-    align-items: flex-end;
-    gap: 3px;
-    height: 65px;
-    padding-top: 5px;
-  }
-
-  .hourly-bar-col {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    @media (max-width: 640px) {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  .graph-filter-select-wrapper {
+    min-width: 165px;
+
+    @media (max-width: 640px) {
+      flex: 1;
+      min-width: 130px;
+    }
+
+    .graph-select {
+      height: 34px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 10px;
+      border-radius: 8px;
+      background-color: #f8fafc;
+      border-color: #e2e8f0;
+      color: #334155;
+    }
+  }
+
+  .graph-time-tabs {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 2.5px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    gap: 2px;
+  }
+
+  .graph-time-tab {
+    padding: 4px 10px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 11.5px;
+    font-weight: 700;
     cursor: pointer;
-  }
-
-  .hourly-bar-track {
-    width: 100%;
-    flex: 1;
-    display: flex;
-    align-items: flex-end;
-    background: #f8fafc;
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .hourly-bar-fill {
-    width: 100%;
-    background: #cbd5e1;
-    border-radius: 3px 3px 0 0;
     transition: all 0.2s ease;
+    white-space: nowrap;
 
-    &:hover {
-      background: var(--color-primary, #a68966);
+    &:hover:not(.graph-time-tab--active) {
+      background: rgba(255, 255, 255, 0.7);
+      color: #0f172a;
     }
 
-    &--peak {
-      background: var(--color-primary, #a68966) !important;
-      box-shadow: 0 -2px 6px rgba(166, 137, 102, 0.4);
+    &--active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
   }
 
-  .hourly-bar-label {
-    font-size: 9px;
-    color: #94a3b8;
-    height: 12px;
-    display: flex;
+  .graph-type-switcher {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 2.5px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    gap: 2px;
+  }
+
+  .graph-type-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
 
-    &--visible {
-      color: #475569;
-      font-weight: 700;
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover:not(.graph-type-btn--active) {
+      background: rgba(255, 255, 255, 0.7);
+      color: #0f172a;
+    }
+
+    &--active {
+      background: #ffffff;
+      color: var(--color-primary, #a68966);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  /* Dynamic KPI Bar */
+  .graph-kpi-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+
+    @media (max-width: 640px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .graph-kpi-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .graph-kpi-label {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .graph-kpi-val {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+  }
+
+  /* Canvas Container */
+  .graph-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    margin-top: 10px;
+  }
+
+  .graph-svg-wrapper {
+    width: 100%;
+    height: 215px;
+    position: relative;
+
+    .graph-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      cursor: crosshair;
+    }
+
+    .graph-area-path {
+      transition: d 0.3s ease;
+    }
+
+    .graph-line-path {
+      transition: d 0.3s ease;
+    }
+  }
+
+  /* Dynamic SVG Point & Bar Chart Global Rules */
+  :global(.graph-point-circle) {
+    transition: r 0.15s ease, fill 0.15s ease, stroke-width 0.15s ease;
+  }
+
+  :global(.graph-svg-bar-track) {
+    fill: #f8fafc;
+    transition: fill 0.15s ease;
+  }
+
+  :global(.graph-svg-bar) {
+    transition: fill 0.15s ease, y 0.3s ease, height 0.3s ease;
+  }
+
+  :global(.graph-svg-bar--active) {
+    fill: var(--color-primary, #a68966) !important;
+    filter: drop-shadow(0 2px 4px rgba(166, 137, 102, 0.45));
+  }
+
+  :global(.graph-svg-bar-col:hover .graph-svg-bar) {
+    fill: var(--color-primary, #a68966) !important;
+  }
+
+  :global(.graph-svg-bar-col:hover .graph-svg-bar-track) {
+    fill: #f1f5f9;
+  }
+
+  /* X-Axis Labels */
+  .graph-xaxis {
+    position: absolute;
+    bottom: 2px;
+    left: 45px;
+    right: 20px;
+    height: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &__item {
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 500;
+      text-align: center;
+      flex: 1;
+      white-space: nowrap;
+
+      &--visible {
+        color: #475569;
+        font-weight: 700;
+      }
+    }
+  }
+
+  /* Interactive Tooltip (Instant, zero lag) */
+  .graph-tooltip {
+    position: absolute;
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 7px 11px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    z-index: 30;
+    transition: opacity 0.06s ease;
+    white-space: nowrap;
+    will-change: left, top;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 4.5px solid transparent;
+      border-right: 4.5px solid transparent;
+      border-top: 4.5px solid #0f172a;
+    }
+
+    &__header {
+      font-size: 10.5px;
+      color: #94a3b8;
+      margin-bottom: 2px;
+      font-weight: 500;
+    }
+
+    &__body {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    &__badge {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+
+    &__sub {
+      font-size: 10.5px;
+      color: #cbd5e1;
     }
   }
 

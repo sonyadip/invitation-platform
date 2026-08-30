@@ -241,11 +241,11 @@ export function initVideoPlayers(root: Element | Document = document) {
     });
 
     let lastPlayTrackTime = 0;
-    video.addEventListener('play', () => {
-      player.classList.add('is-playing');
+    playBtn.addEventListener('click', () => {
       video.controls = true;
+      video.play().catch(showPosterState);
       const now = Date.now();
-      if (now - lastPlayTrackTime > 2000) {
+      if (now - lastPlayTrackTime > 1500) {
         lastPlayTrackTime = now;
         try {
           sendAnalyticsEvent('play_video', {
@@ -253,6 +253,11 @@ export function initVideoPlayers(root: Element | Document = document) {
           });
         } catch (_) {}
       }
+    });
+
+    video.addEventListener('play', () => {
+      player.classList.add('is-playing');
+      video.controls = true;
     });
     video.addEventListener('pause', showPosterState);
     video.addEventListener('ended', showPosterState);
@@ -300,44 +305,71 @@ export function initBackgroundAudioHandler(
 ) {
   if (!song || typeof document === 'undefined') return;
 
+  const updateUI = () => {
+    if (audioBtn) {
+      if (song.paused) {
+        audioBtn.classList.remove('audio-toggle--playing');
+        audioBtn.setAttribute('aria-pressed', 'false');
+      } else {
+        audioBtn.classList.add('audio-toggle--playing');
+        audioBtn.setAttribute('aria-pressed', 'true');
+      }
+    }
+    if (typeof setIsPlaying === 'function') {
+      setIsPlaying(!song.paused);
+    }
+  };
+
   let wasPlayingBeforeHidden = false;
   let lastAudioPlayTrackTime = 0;
   let lastAudioPauseTrackTime = 0;
 
   song.addEventListener('play', () => {
-    const now = Date.now();
-    if (now - lastAudioPlayTrackTime > 250) {
-      lastAudioPlayTrackTime = now;
-      try {
-        sendAnalyticsEvent('play_music');
-      } catch (_) {}
-    }
+    updateUI();
   });
 
   song.addEventListener('pause', () => {
-    if (!document.hidden) {
-      const now = Date.now();
-      if (now - lastAudioPauseTrackTime > 250) {
-        lastAudioPauseTrackTime = now;
-        try {
-          sendAnalyticsEvent('pause_music');
-        } catch (_) {}
-      }
-    }
+    updateUI();
   });
+
+  // Handle direct click on audio toggle button - only manual clicks are tracked as interaction events
+  if (audioBtn && !(audioBtn as any).__audioHandlerBound) {
+    (audioBtn as any).__audioHandlerBound = true;
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const now = Date.now();
+      if (song.paused) {
+        song.play().catch(() => {});
+        if (now - lastAudioPlayTrackTime > 400) {
+          lastAudioPlayTrackTime = now;
+          try {
+            sendAnalyticsEvent('play_music');
+          } catch (_) {}
+        }
+      } else {
+        song.pause();
+        if (now - lastAudioPauseTrackTime > 400) {
+          lastAudioPauseTrackTime = now;
+          try {
+            sendAnalyticsEvent('pause_music');
+          } catch (_) {}
+        }
+      }
+    });
+  }
 
   const handleVisibilityChange = () => {
     if (document.hidden) {
       if (!song.paused) {
         wasPlayingBeforeHidden = true;
         song.pause();
-        audioBtn?.classList.remove('audio-toggle--playing');
+        updateUI();
       }
     } else {
       if (wasPlayingBeforeHidden) {
         wasPlayingBeforeHidden = false;
         song.play().catch(() => {});
-        audioBtn?.classList.add('audio-toggle--playing');
+        updateUI();
       }
     }
   };
@@ -350,7 +382,4 @@ export function initBackgroundAudioHandler(
 
   document.addEventListener('visibilitychange', handleVisibilityChange);
   window.addEventListener('pagehide', handlePageHide);
-  window.addEventListener('blur', () => {
-    // Optional additional safeguard for iframe/window focus loss if needed
-  });
 }

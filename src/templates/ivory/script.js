@@ -77,22 +77,6 @@ openBtn?.addEventListener('click', () => {
   }
 });
 
-let isPlaying = false;
-
-if (audioBtn && song instanceof HTMLAudioElement) {
-  audioBtn.addEventListener('click', () => {
-    if (isPlaying) {
-      song.pause();
-      audioBtn.classList.remove('audio-toggle--playing');
-    } else {
-      song.play().catch(() => { });
-      audioBtn.classList.add('audio-toggle--playing');
-    }
-
-    isPlaying = !isPlaying;
-  });
-}
-
 initBackgroundAudioHandler(song, audioBtn);
 
 if (root) {
