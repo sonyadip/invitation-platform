@@ -50,9 +50,19 @@ const newWishesCount = wishesWithMessage.filter(r => {
 const analytics = report.analytics || {
   deviceStats: { mobile: 0, desktop: 0, tablet: 0, mobilePercent: 0, desktopPercent: 0, tabletPercent: 0 },
   browserStats: [],
-  interactionStats: { openCover: 0, clickMaps: 0, clickCalendar: 0, copyGift: 0, clickCoupleInstagram: 0, clickVendorWhatsApp: 0, clickVendorInstagram: 0, clickVendorSite: 0, totalInteractions: 0 },
+  interactionStats: { openCover: 0, clickMaps: 0, clickCalendar: 0, copyGift: 0, playMusic: 0, playVideo: 0, viewGallery: 0, clickRsvp: 0, clickCoupleInstagram: 0, clickVendorWhatsApp: 0, clickVendorInstagram: 0, clickVendorSite: 0, totalInteractions: 0 },
   recentVisitors: []
 };
+
+// Layout & Section feature availability flags
+const showMapsStat = Boolean(report.wedding.mapsUrl || report.events?.some((e: any) => e.maps_url)) || (analytics.interactionStats?.clickMaps || 0) > 0;
+const showCalendarStat = Boolean(report.wedding.weddingDate || report.events?.length > 0) || (analytics.interactionStats?.clickCalendar || 0) > 0;
+const showGiftStat = (Boolean(report.settings.giftEnabled) && (report.gifts?.length > 0)) || (analytics.interactionStats?.copyGift || 0) > 0;
+const showMusicStat = (Boolean(report.settings.musicEnabled) && Boolean(report.wedding.musicUrl)) || (analytics.interactionStats?.playMusic || 0) > 0;
+const showVideoStat = (Boolean(report.settings.videoEnabled) && Boolean(report.settings.assets?.heroVideo)) || (analytics.interactionStats?.playVideo || 0) > 0;
+const showGalleryStat = Boolean(report.settings.galleryEnabled) || (analytics.interactionStats?.viewGallery || 0) > 0;
+const showRsvpStat = Boolean(report.settings.rsvpEnabled) || (analytics.interactionStats?.clickRsvp || 0) > 0 || (report.rsvps?.length > 0);
+const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || report.settings.content?.brideInstagramUrl || report.settings.content?.instagramUrl) || (analytics.interactionStats?.clickCoupleInstagram || 0) > 0;
 ---
 
 <ClientLayout title="Dashboard">
@@ -64,7 +74,7 @@ const analytics = report.analytics || {
       <div class="hero-card__bg" style={`background-image: url('${coverImage}')`}></div>
       <div class="hero-card__content">
         <h1 class="hero-card__title">{coupleName}</h1>
-        <a href={link} target="_blank" class="hero-card__link">{link.replace('https://', '')}</a>
+        <a href={link} target="_blank" rel="noopener noreferrer" class="hero-card__link">{link.replace('https://', '')}</a>
       </div>
     </div>
   </section>
@@ -162,7 +172,7 @@ const analytics = report.analytics || {
               <p class="event-item__name">{event.name}</p>
               {event.venueAddress && <p class="event-item__address">{event.venueAddress}</p>}
               {event.mapsUrl && (
-                <a href={event.mapsUrl} target="_blank" class="event-item__btn">Lihat Lokasi</a>
+                <a href={event.mapsUrl} target="_blank" rel="noopener noreferrer" class="event-item__btn">Lihat Lokasi</a>
               )}
             </div>
             {index < report.events.length - 1 && <div class="event-item__divider"></div>}
@@ -210,10 +220,15 @@ const analytics = report.analytics || {
   {session?.role === 'admin' && (
     <section class="fade-in-bottom animate-on-scroll">
       <div class="bento-card">
-        <h3 class="bento-card__title">
-          Analitik Pengunjung & Interaksi
-          <span style="font-size: 11px; font-weight: 500; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 9999px; margin-left: 8px;">Admin Only</span>
-        </h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+          <h3 class="bento-card__title" style="margin: 0;">
+            Analitik Pengunjung & Interaksi
+            <span style="font-size: 11px; font-weight: 500; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 9999px; margin-left: 8px;">Admin Only</span>
+          </h3>
+        <a href={`/dashboard/${slug}/aktivitas`} style="font-size: 12px; font-weight: 700; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: rgba(166, 137, 102, 0.1); padding: 4px 10px; border-radius: 6px;">
+          Lihat Log Lengkap <span class="material-symbols-outlined" style="font-size: 15px;">arrow_forward</span>
+        </a>
+      </div>
         
         <!-- Device Distribution -->
         <div class="analytics-subcard">
@@ -267,28 +282,64 @@ const analytics = report.analytics || {
             <div class="interaction-card">
               <span class="material-symbols-outlined interaction-card__icon">drafts</span>
               <span class="interaction-card__label">Buka Undangan</span>
-              <span class="interaction-card__value">{analytics.interactionStats.openCover}</span>
+              <span class="interaction-card__value">{analytics.interactionStats?.openCover || 0}</span>
             </div>
-            <div class="interaction-card">
-              <span class="material-symbols-outlined interaction-card__icon">location_on</span>
-              <span class="interaction-card__label">Petunjuk Maps</span>
-              <span class="interaction-card__value">{analytics.interactionStats.clickMaps}</span>
-            </div>
-            <div class="interaction-card">
-              <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
-              <span class="interaction-card__label">Simpan Kalender</span>
-              <span class="interaction-card__value">{analytics.interactionStats.clickCalendar}</span>
-            </div>
-            <div class="interaction-card">
-              <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
-              <span class="interaction-card__label">Salin Rekening</span>
-              <span class="interaction-card__value">{analytics.interactionStats.copyGift}</span>
-            </div>
-            <div class="interaction-card">
-              <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
-              <span class="interaction-card__label">Instagram Pengantin</span>
-              <span class="interaction-card__value">{analytics.interactionStats.clickCoupleInstagram || 0}</span>
-            </div>
+            {showMapsStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon">location_on</span>
+                <span class="interaction-card__label">Petunjuk Maps</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.clickMaps || 0}</span>
+              </div>
+            )}
+            {showCalendarStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
+                <span class="interaction-card__label">Simpan Kalender</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.clickCalendar || 0}</span>
+              </div>
+            )}
+            {showGiftStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
+                <span class="interaction-card__label">Salin Rekening</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.copyGift || 0}</span>
+              </div>
+            )}
+            {showMusicStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon" style="color: #0d9488;">music_note</span>
+                <span class="interaction-card__label">Putar Musik</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.playMusic || 0}</span>
+              </div>
+            )}
+            {showVideoStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon" style="color: #7c3aed;">smart_display</span>
+                <span class="interaction-card__label">Putar Video</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.playVideo || 0}</span>
+              </div>
+            )}
+            {showGalleryStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon" style="color: #4f46e5;">photo_library</span>
+                <span class="interaction-card__label">Lihat Galeri</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.viewGallery || 0}</span>
+              </div>
+            )}
+            {showRsvpStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon" style="color: #059669;">how_to_reg</span>
+                <span class="interaction-card__label">Klik Form RSVP</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.clickRsvp || 0}</span>
+              </div>
+            )}
+            {showCoupleIgStat && (
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+                <span class="interaction-card__label">Instagram Pengantin</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.clickCoupleInstagram || 0}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -343,6 +394,11 @@ const analytics = report.analytics || {
                   <span class="recent-visitor-item__time">{timeAgo(v.createdAt)}</span>
                 </div>
               ))}
+            </div>
+            <div style="margin-top: 10px; text-align: center;">
+              <a href={`/dashboard/${slug}/aktivitas`} style="font-size: 12px; font-weight: 600; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                Buka Semua Riwayat Aktivitas & Perangkat <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+              </a>
             </div>
           </div>
         )}

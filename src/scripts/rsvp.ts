@@ -1,3 +1,5 @@
+import { sendAnalyticsEvent } from './analytics';
+
 export function generatePaginationItems(currentPage: number, totalPages: number): (number | string)[] {
   if (totalPages <= 1) return [1];
   if (totalPages <= 5) {
@@ -256,6 +258,13 @@ export function initWishesPagination(root: Element | Document = document) {
 
   async function goToPage(page: number) {
     if (page < 1 || page > totalPages || !weddingId) return;
+
+    try {
+      sendAnalyticsEvent('click_wishes', {
+        weddingId,
+        metadata: { page, action: 'pagination' }
+      });
+    } catch (_) {}
 
     // Visual loading state
     (wishesContainer as HTMLElement).style.opacity = '0.5';

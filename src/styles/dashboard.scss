@@ -278,12 +278,18 @@ button, input, textarea, select {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px;
-  width: 64px;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 2px;
+  flex: 1;
+  min-width: 0;
   color: var(--color-outline);
   text-decoration: none;
   transition: color 0.2s;
+  
+  .material-symbols-outlined {
+    font-size: 22px;
+  }
 }
 
 .bottom-nav-item--active {
@@ -293,6 +299,9 @@ button, input, textarea, select {
 .bottom-nav-item__text {
   font-size: 10px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ----------------------------------
@@ -1850,7 +1859,7 @@ button, input, textarea, select {
 
   /* Stats Grid */
   .stats-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   }
   .stats-grid--dashboard {
     grid-template-columns: repeat(2, 1fr);

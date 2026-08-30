@@ -1,0 +1,3228 @@
+---
+const { slug } = Astro.params;
+const session = Astro.locals.session;
+
+if (session?.role !== 'admin') {
+  return Astro.redirect('/?login=admin');
+}
+
+import ClientLayout from "../../../layouts/ClientLayout.astro";
+import { getSlugReportDetail } from "../../../services/dashboard-report";
+
+const report = await getSlugReportDetail(slug);
+if (!report) {
+  return Astro.redirect('/dashboard');
+}
+
+const analytics = report.analytics || {
+  deviceStats: { mobile: 0, desktop: 0, tablet: 0, mobilePercent: 0, desktopPercent: 0, tabletPercent: 0 },
+  browserStats: [],
+  interactionStats: {
+    openCover: 0,
+    clickMaps: 0,
+    clickCalendar: 0,
+    copyGift: 0,
+    playMusic: 0,
+    clickWishes: 0,
+    clickRsvp: 0,
+    viewGallery: 0,
+    clickCoupleInstagram: 0,
+    clickVendorWhatsApp: 0,
+    clickVendorInstagram: 0,
+    clickVendorSite: 0,
+    totalInteractions: 0
+  },
+  recentVisitors: [],
+  allVisitors: [],
+  allEvents: []
+};
+
+const allVisitors = analytics.allVisitors || [];
+const allEvents = analytics.allEvents || [];
+const rsvps = report.rsvps || [];
+const sentInvitations = report.sentInvitations || [];
+
+// Create quick lookup maps for RSVPs and Sent Invitations
+const rsvpMap = new Map<string, { id: string; attendanceStatus: string; guestCount: number; message: string | null; createdAt: string }>();
+for (const r of rsvps) {
+  if (r.guestName) {
+    const k = r.guestName.trim().toLowerCase();
+    if (!rsvpMap.has(k)) {
+      rsvpMap.set(k, {
+        id: r.id,
+        attendanceStatus: r.attendanceStatus,
+        guestCount: r.guestCount || 1,
+        message: r.message || null,
+        createdAt: r.createdAt
+      });
+    }
+  }
+}
+
+const sentMap = new Map<string, { id: string; phone: string | null; openedAt: string | null; lastOpenedAt: string | null; openCount: number; createdAt: string }>();
+for (const s of sentInvitations) {
+  if (s.guestName) {
+    const k = s.guestName.trim().toLowerCase();
+    if (!sentMap.has(k)) {
+      sentMap.set(k, {
+        id: s.id,
+        phone: s.phone || null,
+        openedAt: s.openedAt || null,
+        lastOpenedAt: s.lastOpenedAt || null,
+        openCount: s.openCount || 0,
+        createdAt: s.createdAt
+      });
+    }
+  }
+}
+
+// Layout & Section feature availability flags
+const showMapsStat = Boolean(report.wedding.mapsUrl || report.events?.some((e: any) => e.maps_url)) || (analytics.interactionStats?.clickMaps || 0) > 0;
+const showCalendarStat = Boolean(report.wedding.weddingDate || report.events?.length > 0) || (analytics.interactionStats?.clickCalendar || 0) > 0;
+const showGiftStat = (Boolean(report.settings.giftEnabled) && (report.gifts?.length > 0)) || (analytics.interactionStats?.copyGift || 0) > 0;
+const showMusicStat = (Boolean(report.settings.musicEnabled) && Boolean(report.wedding.musicUrl)) || (analytics.interactionStats?.playMusic || 0) > 0;
+const showVideoStat = (Boolean(report.settings.videoEnabled) && Boolean(report.settings.assets?.heroVideo)) || (analytics.interactionStats?.playVideo || 0) > 0;
+const showGalleryStat = Boolean(report.settings.galleryEnabled) || (analytics.interactionStats?.viewGallery || 0) > 0;
+const showRsvpStat = Boolean(report.settings.rsvpEnabled) || (analytics.interactionStats?.clickRsvp || 0) > 0 || (report.rsvps?.length > 0);
+const showWishesStat = Boolean(report.settings.wishesEnabled) || (analytics.interactionStats?.clickWishes || 0) > 0 || (report.summary?.wishesCount > 0);
+const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || report.settings.content?.brideInstagramUrl || report.settings.content?.instagramUrl) || (analytics.interactionStats?.clickCoupleInstagram || 0) > 0;
+
+// Event Configuration
+const eventConfig: Record<string, { label: string; desc: string; icon: string; category: 'interaksi' | 'vendor' | 'kunjungan'; categoryLabel: string; badgeClass: string; iconBg: string; iconColor: string }> = {
+  open_cover: {
+    label: 'Buka Undangan',
+    desc: 'Membuka cover / amplop undangan digital',
+    icon: 'drafts',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--primary',
+    iconBg: '#fbf4eb',
+    iconColor: '#a68966'
+  },
+  click_maps: {
+    label: 'Petunjuk Maps',
+    desc: 'Membuka tautan rute peta lokasi / Google Maps',
+    icon: 'location_on',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--info',
+    iconBg: '#eff6ff',
+    iconColor: '#2563eb'
+  },
+  click_calendar: {
+    label: 'Simpan Kalender',
+    desc: 'Menyimpan jadwal resepsi ke Google Calendar',
+    icon: 'calendar_month',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--purple',
+    iconBg: '#faf5ff',
+    iconColor: '#9333ea'
+  },
+  copy_gift: {
+    label: 'Salin Rekening',
+    desc: 'Menyalin nomor rekening / informasi hadiah digital',
+    icon: 'content_copy',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--warning',
+    iconBg: '#fffbeb',
+    iconColor: '#d97706'
+  },
+  play_music: {
+    label: 'Putar Musik',
+    desc: 'Memutar musik latar belakang undangan',
+    icon: 'music_note',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--teal',
+    iconBg: '#f0fdfa',
+    iconColor: '#0d9488'
+  },
+  pause_music: {
+    label: 'Jeda Musik',
+    desc: 'Mematikan / menjeda musik latar belakang',
+    icon: 'music_off',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--neutral',
+    iconBg: '#f8fafc',
+    iconColor: '#64748b'
+  },
+  play_video: {
+    label: 'Putar Video Momen',
+    desc: 'Memutar video momen pernikahan di layout video',
+    icon: 'smart_display',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--purple',
+    iconBg: '#f5f3ff',
+    iconColor: '#7c3aed'
+  },
+  view_gallery: {
+    label: 'Lihat Galeri Foto',
+    desc: 'Membuka atau melihat preview galeri foto mempelai',
+    icon: 'photo_library',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--indigo',
+    iconBg: '#eef2ff',
+    iconColor: '#4f46e5'
+  },
+  click_rsvp: {
+    label: 'Klik Form RSVP',
+    desc: 'Menavigasi atau membuka form konfirmasi kehadiran',
+    icon: 'how_to_reg',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--emerald',
+    iconBg: '#ecfdf5',
+    iconColor: '#059669'
+  },
+  click_wishes: {
+    label: 'Buka Form Ucapan',
+    desc: 'Membuka form doa & ucapan selamat untuk mempelai',
+    icon: 'forum',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--amber',
+    iconBg: '#fffbeb',
+    iconColor: '#b45309'
+  },
+  click_couple_instagram: {
+    label: 'Instagram Pengantin',
+    desc: 'Membuka tautan profil Instagram mempelai',
+    icon: 'photo_camera',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--pink',
+    iconBg: '#fdf2f8',
+    iconColor: '#db2777'
+  },
+  click_vendor_whatsapp: {
+    label: 'WhatsApp Senadda',
+    desc: 'Menghubungi admin WhatsApp Senadda (Pemesanan Undangan)',
+    icon: 'chat',
+    category: 'vendor',
+    categoryLabel: 'Leads Vendor',
+    badgeClass: 'act-badge--success',
+    iconBg: '#f0fdf4',
+    iconColor: '#16a34a'
+  },
+  click_vendor_instagram: {
+    label: 'Instagram Senadda',
+    desc: 'Membuka profil Instagram resmi Senadda',
+    icon: 'photo_camera',
+    category: 'vendor',
+    categoryLabel: 'Branding',
+    badgeClass: 'act-badge--pink',
+    iconBg: '#fdf2f8',
+    iconColor: '#db2777'
+  },
+  click_vendor_site: {
+    label: 'Website Senadda',
+    desc: 'Membuka situs website resmi Senadda',
+    icon: 'language',
+    category: 'vendor',
+    categoryLabel: 'Branding',
+    badgeClass: 'act-badge--info',
+    iconBg: '#eff6ff',
+    iconColor: '#2563eb'
+  },
+  page_view: {
+    label: 'Kunjungan Halaman',
+    desc: 'Membuka dan melihat halaman undangan digital',
+    icon: 'visibility',
+    category: 'kunjungan',
+    categoryLabel: 'Kunjungan',
+    badgeClass: 'act-badge--neutral',
+    iconBg: '#f8fafc',
+    iconColor: '#64748b'
+  }
+};
+
+// Map events
+const eventActivities = allEvents.map((ev, idx) => {
+  const conf = eventConfig[ev.eventType] || {
+    label: ev.eventType,
+    desc: 'Interaksi pada undangan',
+    icon: 'touch_app',
+    category: 'interaksi',
+    categoryLabel: 'Interaksi',
+    badgeClass: 'act-badge--neutral',
+    iconBg: '#f8fafc',
+    iconColor: '#64748b'
+  };
+
+  return {
+    id: `ev-${ev.id || idx}`,
+    type: 'event',
+    eventType: ev.eventType,
+    category: conf.category,
+    categoryLabel: conf.categoryLabel,
+    label: conf.label,
+    desc: conf.desc,
+    icon: conf.icon,
+    badgeClass: conf.badgeClass,
+    iconBg: conf.iconBg,
+    iconColor: conf.iconColor,
+    guestName: ev.guestName || null,
+    metadata: ev.metadata || {},
+    deviceType: 'mobile',
+    deviceModel: 'Smartphone',
+    browser: '',
+    os: '',
+    source: 'Link Undangan',
+    city: null,
+    country: null,
+    createdAt: ev.createdAt
+  };
+});
+
+// Map views
+const viewActivities = allVisitors.map((v, idx) => {
+  const conf = eventConfig['page_view'];
+  return {
+    id: `v-${v.id || idx}`,
+    type: 'view',
+    eventType: 'page_view',
+    category: 'kunjungan',
+    categoryLabel: conf.categoryLabel,
+    label: conf.label,
+    desc: conf.desc,
+    icon: conf.icon,
+    badgeClass: conf.badgeClass,
+    iconBg: conf.iconBg,
+    iconColor: conf.iconColor,
+    guestName: v.guestName || null,
+    metadata: { referrer: v.referrer },
+    deviceType: v.deviceType || 'mobile',
+    deviceModel: v.deviceModel || 'Perangkat Web',
+    browser: v.browser || 'Unknown',
+    os: v.os || 'Unknown',
+    source: v.source || 'Tautan Langsung / WhatsApp',
+    city: v.city || null,
+    country: v.country || null,
+    createdAt: v.createdAt
+  };
+});
+
+// Merge and sort descending
+const activities = [...eventActivities, ...viewActivities].sort((a, b) => {
+  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+});
+
+const totalInteractions = analytics.interactionStats?.totalInteractions || allEvents.length;
+const totalViews = allVisitors.length;
+
+// Count unique active guests
+const uniqueGuests = new Set(
+  activities.map(a => a.guestName?.trim().toLowerCase()).filter(Boolean)
+);
+const totalIdentifiedGuests = uniqueGuests.size;
+
+// Funnel & Engagement Calculations
+const totalSent = sentInvitations.length;
+const totalOpenedSent = sentInvitations.filter(s => (s.openCount || 0) > 0 || s.openedAt).length;
+const openRate = totalSent > 0 ? Math.round((totalOpenedSent / totalSent) * 100) : null;
+const coverOpenRate = totalViews > 0 ? Math.min(100, Math.round(((analytics.interactionStats?.openCover || 0) / totalViews) * 100)) : 0;
+const rsvpRate = totalViews > 0 ? Math.min(100, Math.round(((report.summary.rsvpCount || 0) / totalViews) * 100)) : 0;
+const engagementRate = totalViews > 0 ? Math.min(100, Math.round((totalInteractions / totalViews) * 100)) : 0;
+
+// 24-Hour Activity Distribution (WITA timezone: UTC+8)
+const hourlyBuckets = new Array(24).fill(0);
+for (const act of activities) {
+  if (act.createdAt) {
+    const d = new Date(act.createdAt);
+    // Convert to WITA (UTC+8)
+    const hour = (d.getUTCHours() + 8) % 24;
+    hourlyBuckets[hour]++;
+  }
+}
+const maxHourlyActivity = Math.max(...hourlyBuckets, 1);
+const peakHour = hourlyBuckets.indexOf(Math.max(...hourlyBuckets));
+
+// Group activities by unique Guest
+interface GuestJourney {
+  key: string;
+  guestName: string;
+  isGuest: boolean;
+  totalActivities: number;
+  lastActive: string;
+  devices: string[];
+  browsers: string[];
+  sources: string[];
+  cities: string[];
+  rsvp: {
+    status: string; // 'attending' | 'declined' | 'tentative' | 'none'
+    guestCount: number;
+    message: string | null;
+  } | null;
+  sentInfo: {
+    phone: string | null;
+    openCount: number;
+    lastOpenedAt: string | null;
+  } | null;
+  counts: {
+    cover: number;
+    maps: number;
+    calendar: number;
+    gift: number;
+    coupleIg: number;
+    vendorWa: number;
+    vendorIg: number;
+    vendorSite: number;
+    music: number;
+    gallery: number;
+    rsvpClick: number;
+    wishes: number;
+    views: number;
+  };
+  items: typeof activities;
+}
+
+const guestMap = new Map<string, GuestJourney>();
+
+activities.forEach(act => {
+  const isGuest = !!act.guestName;
+  const key = isGuest ? act.guestName.trim().toLowerCase() : '__anon__';
+  const displayName = isGuest ? act.guestName.trim() : 'Pengunjung Umum (Anonim)';
+
+  if (!guestMap.has(key)) {
+    const rsvpData = isGuest && rsvpMap.has(key) ? {
+      status: rsvpMap.get(key)!.attendanceStatus,
+      guestCount: rsvpMap.get(key)!.guestCount,
+      message: rsvpMap.get(key)!.message
+    } : null;
+
+    const sentData = isGuest && sentMap.has(key) ? {
+      phone: sentMap.get(key)!.phone,
+      openCount: sentMap.get(key)!.openCount,
+      lastOpenedAt: sentMap.get(key)!.lastOpenedAt
+    } : null;
+
+    guestMap.set(key, {
+      key,
+      guestName: displayName,
+      isGuest,
+      totalActivities: 0,
+      lastActive: act.createdAt,
+      devices: [],
+      browsers: [],
+      sources: [],
+      cities: [],
+      rsvp: rsvpData,
+      sentInfo: sentData,
+      counts: {
+        cover: 0,
+        maps: 0,
+        calendar: 0,
+        gift: 0,
+        coupleIg: 0,
+        vendorWa: 0,
+        vendorIg: 0,
+        vendorSite: 0,
+        music: 0,
+        gallery: 0,
+        rsvpClick: 0,
+        wishes: 0,
+        views: 0
+      },
+      items: []
+    });
+  }
+
+  const g = guestMap.get(key)!;
+  g.totalActivities++;
+  g.items.push(act);
+
+  if (act.deviceModel && act.deviceModel !== 'Perangkat Web' && !g.devices.includes(act.deviceModel)) {
+    g.devices.push(act.deviceModel);
+  }
+  if (act.browser && act.browser !== 'Unknown' && !g.browsers.includes(act.browser)) {
+    g.browsers.push(act.browser);
+  }
+  if (act.source && !g.sources.includes(act.source)) {
+    g.sources.push(act.source);
+  }
+  if (act.city && !g.cities.includes(act.city)) {
+    g.cities.push(act.city);
+  }
+
+  if (act.eventType === 'open_cover') g.counts.cover++;
+  else if (act.eventType === 'click_maps') g.counts.maps++;
+  else if (act.eventType === 'click_calendar') g.counts.calendar++;
+  else if (act.eventType === 'copy_gift') g.counts.gift++;
+  else if (act.eventType === 'click_couple_instagram') g.counts.coupleIg++;
+  else if (act.eventType === 'click_vendor_whatsapp') g.counts.vendorWa++;
+  else if (act.eventType === 'click_vendor_instagram') g.counts.vendorIg++;
+  else if (act.eventType === 'click_vendor_site') g.counts.vendorSite++;
+  else if (act.eventType === 'play_music' || act.eventType === 'pause_music') g.counts.music++;
+  else if (act.eventType === 'view_gallery') g.counts.gallery++;
+  else if (act.eventType === 'click_rsvp') g.counts.rsvpClick++;
+  else if (act.eventType === 'click_wishes') g.counts.wishes++;
+  else if (act.eventType === 'page_view') g.counts.views++;
+
+  if (new Date(act.createdAt).getTime() > new Date(g.lastActive).getTime()) {
+    g.lastActive = act.createdAt;
+  }
+});
+
+// Sort identified guests first (by lastActive desc), then anonymous
+const guestJourneys = Array.from(guestMap.values()).sort((a, b) => {
+  if (a.isGuest && !b.isGuest) return -1;
+  if (!a.isGuest && b.isGuest) return 1;
+  return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
+});
+
+function timeAgo(dateStr: string): string {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Baru saja';
+  if (mins < 60) return `${mins} mnt lalu`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} jam lalu`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'Kemarin';
+  if (days < 7) return `${days} hari lalu`;
+  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+}
+
+function formatFullDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('id-ID', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Makassar'
+  }) + ' WITA';
+}
+
+function getDeviceIcon(deviceType: string): string {
+  const dt = (deviceType || '').toLowerCase();
+  if (dt === 'desktop') return 'computer';
+  if (dt === 'tablet') return 'tablet_android';
+  return 'smartphone';
+}
+
+const originUrl = Astro.url.origin;
+---
+
+<ClientLayout title="Aktivitas Tamu">
+  <div class="activity-page-layout">
+    <!-- Header & Summary Cards -->
+    <div class="activity-top fade-in-bottom animate-on-scroll">
+      <div class="bento-card" style="width: 100%;">
+        <div class="activity-card-header">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+              <h3 class="bento-card__title" style="margin: 0;">Log Aktivitas & Interaksi Tamu</h3>
+              <span class="admin-badge">Admin Only</span>
+            </div>
+            <p class="bento-card__subtitle" style="margin: 0; color: var(--color-outline); font-size: 13px;">
+              Analisis mendalam interaksi undangan, konversi RSVP, leads pemilik jasa (Senadda), dan perangkat secara komprehensif.
+            </p>
+          </div>
+
+          <!-- Quick Refresh Button -->
+          <button id="refreshActivityBtn" class="refresh-act-btn" title="Refresh data terbaru">
+            <span class="material-symbols-outlined refresh-icon">refresh</span>
+            <span class="refresh-text">Perbarui</span>
+          </button>
+        </div>
+
+        <!-- 4 Key Summary Stats -->
+        <div class="stats-grid" style="margin-top: 16px;">
+          <div class="stat-card">
+            <div class="stat-card__icon" style="background: rgba(166, 137, 102, 0.12); color: var(--color-primary);">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+            <div class="stat-card__label">TOTAL KUNJUNGAN</div>
+            <div class="stat-card__number">{totalViews}</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card__icon" style="background: rgba(22, 163, 74, 0.12); color: #16a34a;">
+              <span class="material-symbols-outlined">touch_app</span>
+            </div>
+            <div class="stat-card__label">TOTAL INTERAKSI</div>
+            <div class="stat-card__number">{totalInteractions}</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card__icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+              <span class="material-symbols-outlined">person_pin</span>
+            </div>
+            <div class="stat-card__label">TAMU TERIDENTIFIKASI</div>
+            <div class="stat-card__number">{totalIdentifiedGuests}</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card__icon" style="background: rgba(217, 119, 6, 0.12); color: #d97706;">
+              <span class="material-symbols-outlined">storefront</span>
+            </div>
+            <div class="stat-card__label">LEADS VENDOR</div>
+            <div class="stat-card__number">
+              {(analytics.interactionStats?.clickVendorWhatsApp || 0) + (analytics.interactionStats?.clickVendorInstagram || 0) + (analytics.interactionStats?.clickVendorSite || 0)}
+            </div>
+          </div>
+        </div>
+
+        <!-- Conversion Funnel & Engagement Bar -->
+        <div class="conversion-funnel-card">
+          <div class="funnel-header">
+            <span class="funnel-title">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: var(--color-primary);">monitoring</span>
+              Conversion Funnel & Engagement Rate
+            </span>
+            <span class="funnel-caption">Efektivitas interaksi tamu</span>
+          </div>
+
+          <div class="funnel-grid">
+            <div class="funnel-item">
+              <div class="funnel-item__top">
+                <span class="funnel-item__label">Cover Open Rate</span>
+                <span class="funnel-item__val">{coverOpenRate}%</span>
+              </div>
+              <div class="funnel-progress">
+                <div class="funnel-progress__bar" style={`width: ${coverOpenRate}%; background: var(--color-primary);`}></div>
+              </div>
+              <span class="funnel-item__desc">{analytics.interactionStats?.openCover || 0} dari {totalViews} pengunjung buka amplop</span>
+            </div>
+
+            <div class="funnel-item">
+              <div class="funnel-item__top">
+                <span class="funnel-item__label">RSVP Conversion</span>
+                <span class="funnel-item__val">{rsvpRate}%</span>
+              </div>
+              <div class="funnel-progress">
+                <div class="funnel-progress__bar" style={`width: ${rsvpRate}%; background: #059669;`}></div>
+              </div>
+              <span class="funnel-item__desc">{report.summary.rsvpCount || 0} tamu telah mengisi RSVP</span>
+            </div>
+
+            <div class="funnel-item">
+              <div class="funnel-item__top">
+                <span class="funnel-item__label">Interaction Rate</span>
+                <span class="funnel-item__val">{engagementRate}%</span>
+              </div>
+              <div class="funnel-progress">
+                <div class="funnel-progress__bar" style={`width: Math.min(100, ${engagementRate})%; background: #2563eb;`}></div>
+              </div>
+              <span class="funnel-item__desc">Rata-rata {totalViews > 0 ? (totalInteractions / totalViews).toFixed(1) : 0} aksi per pengunjung</span>
+            </div>
+
+            {totalSent > 0 && openRate !== null && (
+              <div class="funnel-item">
+                <div class="funnel-item__top">
+                  <span class="funnel-item__label">WA Sent Open Rate</span>
+                  <span class="funnel-item__val">{openRate}%</span>
+                </div>
+                <div class="funnel-progress">
+                  <div class="funnel-progress__bar" style={`width: ${openRate}%; background: #9333ea;`}></div>
+                </div>
+                <span class="funnel-item__desc">{totalOpenedSent} dari {totalSent} tamu WA telah membuka</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Hourly Peak Activity Heatmap -->
+        <div class="hourly-trend-card">
+          <div class="hourly-header">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #d97706;">query_builder</span>
+              <span class="hourly-title">Distribusi Waktu Kunjungan (24 Jam WITA)</span>
+            </div>
+            <span class="hourly-badge">
+              Jam Paling Aktif: <strong>{peakHour.toString().padStart(2, '0')}:00 - {((peakHour + 1) % 24).toString().padStart(2, '0')}:00</strong>
+            </span>
+          </div>
+
+          <div class="hourly-bars">
+            {hourlyBuckets.map((count, hour) => {
+              const heightPercent = maxHourlyActivity > 0 ? Math.round((count / maxHourlyActivity) * 100) : 0;
+              const isPeak = hour === peakHour && count > 0;
+              return (
+                <div class="hourly-bar-col" title={`Jam ${hour.toString().padStart(2, '0')}:00 WITA: ${count} aktivitas`}>
+                  <div class="hourly-bar-track">
+                    <div
+                      class={`hourly-bar-fill ${isPeak ? 'hourly-bar-fill--peak' : ''}`}
+                      style={`height: ${Math.max(6, heightPercent)}%;`}
+                    ></div>
+                  </div>
+                  <span class={`hourly-bar-label ${hour % 4 === 0 ? 'hourly-bar-label--visible' : ''}`}>
+                    {hour % 4 === 0 ? hour.toString().padStart(2, '0') : ''}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <!-- 3 Detailed Breakdown Cards -->
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
+          <!-- 1. Interaksi Tamu pada Undangan -->
+          <div class="analytics-subcard" style="margin-bottom: 0;">
+            <h4 class="analytics-section-title" style="margin-bottom: 12px;">
+              <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">touch_app</span>
+              Interaksi Tamu pada Undangan
+            </h4>
+            <div class="interaction-grid">
+              <div class="interaction-card">
+                <span class="material-symbols-outlined interaction-card__icon">drafts</span>
+                <span class="interaction-card__label">Buka Undangan</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.openCover || 0}</span>
+              </div>
+              {showMapsStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #2563eb;">location_on</span>
+                  <span class="interaction-card__label">Petunjuk Maps</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickMaps || 0}</span>
+                </div>
+              )}
+              {showCalendarStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #9333ea;">calendar_month</span>
+                  <span class="interaction-card__label">Simpan Kalender</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickCalendar || 0}</span>
+                </div>
+              )}
+              {showGiftStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #d97706;">content_copy</span>
+                  <span class="interaction-card__label">Salin Rekening</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.copyGift || 0}</span>
+                </div>
+              )}
+              {showMusicStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #0d9488;">music_note</span>
+                  <span class="interaction-card__label">Putar Musik</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.playMusic || 0}</span>
+                </div>
+              )}
+              {showVideoStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #7c3aed;">smart_display</span>
+                  <span class="interaction-card__label">Putar Video</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.playVideo || 0}</span>
+                </div>
+              )}
+              {showGalleryStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #4f46e5;">photo_library</span>
+                  <span class="interaction-card__label">Lihat Galeri</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.viewGallery || 0}</span>
+                </div>
+              )}
+              {showRsvpStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #059669;">how_to_reg</span>
+                  <span class="interaction-card__label">Klik Form RSVP</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickRsvp || 0}</span>
+                </div>
+              )}
+              {showCoupleIgStat && (
+                <div class="interaction-card">
+                  <span class="material-symbols-outlined interaction-card__icon" style="color: #db2777;">photo_camera</span>
+                  <span class="interaction-card__label">Instagram Mempelai</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickCoupleInstagram || 0}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <!-- 2. Leads & Branding Pemilik Jasa (Senadda) -->
+          <div class="analytics-subcard" style="margin-bottom: 0;">
+            <h4 class="analytics-section-title" style="margin-bottom: 12px;">
+              <span class="material-symbols-outlined" style="font-size: 18px; color: #16a34a;">storefront</span>
+              Leads & Branding Pemilik Jasa (Senadda)
+            </h4>
+            <div class="interaction-grid">
+              <div class="interaction-card" style="border-left: 3px solid #16a34a;">
+                <span class="material-symbols-outlined interaction-card__icon" style="color: #16a34a;">chat</span>
+                <span class="interaction-card__label">Pesan WhatsApp Senadda</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.clickVendorWhatsApp || 0}</span>
+              </div>
+              <div class="interaction-card" style="border-left: 3px solid #db2777;">
+                <span class="material-symbols-outlined interaction-card__icon" style="color: #db2777;">photo_camera</span>
+                <span class="interaction-card__label">Instagram Senadda</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.clickVendorInstagram || 0}</span>
+              </div>
+              <div class="interaction-card" style="border-left: 3px solid #2563eb;">
+                <span class="material-symbols-outlined interaction-card__icon" style="color: #2563eb;">language</span>
+                <span class="interaction-card__label">Website Senadda</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.clickVendorSite || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Perangkat Pengunjung & Browser -->
+          <div class="analytics-subcard" style="margin-bottom: 0;">
+            <h4 class="analytics-section-title" style="margin-bottom: 10px;">
+              <span class="material-symbols-outlined" style="font-size: 18px; color: #3b82f6;">devices</span>
+              Perangkat Pengunjung & Browser Terpopuler
+            </h4>
+            
+            <div class="analytics-bar-wrapper">
+              <div class="analytics-bar-segment analytics-bar-segment--mobile" style={`width: ${analytics.deviceStats?.mobilePercent || 0}%`} title={`Mobile: ${analytics.deviceStats?.mobilePercent || 0}%`}></div>
+              <div class="analytics-bar-segment analytics-bar-segment--desktop" style={`width: ${analytics.deviceStats?.desktopPercent || 0}%`} title={`Desktop: ${analytics.deviceStats?.desktopPercent || 0}%`}></div>
+              <div class="analytics-bar-segment analytics-bar-segment--tablet" style={`width: ${analytics.deviceStats?.tabletPercent || 0}%`} title={`Tablet: ${analytics.deviceStats?.tabletPercent || 0}%`}></div>
+            </div>
+
+            <div class="analytics-legend" style="margin-top: 8px;">
+              <div class="analytics-legend-item">
+                <span class="analytics-legend-dot" style="background-color: var(--color-primary, #6366f1);"></span>
+                <span>Smartphone: <strong>{analytics.deviceStats?.mobilePercent || 0}%</strong> ({analytics.deviceStats?.mobile || 0})</span>
+              </div>
+              <div class="analytics-legend-item">
+                <span class="analytics-legend-dot" style="background-color: #06b6d4;"></span>
+                <span>Desktop: <strong>{analytics.deviceStats?.desktopPercent || 0}%</strong> ({analytics.deviceStats?.desktop || 0})</span>
+              </div>
+              <div class="analytics-legend-item">
+                <span class="analytics-legend-dot" style="background-color: #f59e0b;"></span>
+                <span>Tablet: <strong>{analytics.deviceStats?.tabletPercent || 0}%</strong> ({analytics.deviceStats?.tablet || 0})</span>
+              </div>
+            </div>
+
+            {analytics.browserStats && analytics.browserStats.length > 0 && (
+              <div style="margin-top: 14px; border-top: 1px dashed var(--color-outline-variant); padding-top: 10px;">
+                <span style="font-size: 11px; color: var(--color-outline); font-weight: 600; display: block; margin-bottom: 6px;">Browser / In-App WebView Terpopuler:</span>
+                <div class="browser-tag-list">
+                  {analytics.browserStats.slice(0, 8).map(b => (
+                    <span class="browser-tag">
+                      {b.browser} <span class="browser-tag__count">{b.count}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main List Container -->
+    <div class="bento-card fade-in-bottom animate-on-scroll" style="width: 100%;" id="activityListCard">
+      <!-- Top Bar: Title & Export Button -->
+      <div class="activity-top-bar">
+        <div>
+          <h4 class="activity-top-bar__title">Daftar Aktivitas & Riwayat</h4>
+          <p class="activity-top-bar__subtitle">Eksplorasi interaksi real-time dan perjalanan tamu secara terpadu</p>
+        </div>
+        <button id="activityExport" class="filter-btn filter-btn--outline activity-export-btn" title="Download data aktivitas (.xlsx)">
+          <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+          Export Excel
+        </button>
+      </div>
+
+      <!-- Search & Filters Container -->
+      <div class="activity-controls">
+        <!-- Row 1: View Switcher (Kiri) sejajar dengan Rentang Waktu (Kanan) -->
+        <div class="activity-controls__row">
+          <div class="activity-view-switcher">
+            <button type="button" class="view-switch-btn view-switch-btn--active" id="viewModeTimeline" data-mode="timeline" title="Lihat semua log waktu nyata">
+              <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
+              <span>Semua Log</span>
+              <span class="view-switch-badge" id="badgeTotalTimeline">{activities.length}</span>
+            </button>
+            <button type="button" class="view-switch-btn" id="viewModeGuests" data-mode="guests" title="Lihat rangkuman per tamu">
+              <span class="material-symbols-outlined" style="font-size: 16px;">group</span>
+              <span>Per Tamu</span>
+              <span class="view-switch-badge" id="badgeTotalGuests">{guestJourneys.filter(g => g.isGuest).length}</span>
+            </button>
+          </div>
+
+          <!-- Date Range Filter -->
+          <div class="activity-filter-wrapper">
+            <select id="timeRangeFilter" class="form-input activity-select">
+              <option value="all">Semua Waktu</option>
+              <option value="today">Hari Ini (WITA)</option>
+              <option value="24h">24 Jam Terakhir</option>
+              <option value="7d">7 Hari Terakhir</option>
+              <option value="30d">30 Hari Terakhir</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 2: Search (Kiri) sejajar dengan Filter Aksi/Kategori (Kanan) -->
+        <div class="activity-controls__row">
+          <div class="search-wrapper activity-search-wrapper">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" id="activitySearch" placeholder="Cari nama tamu, aksi, pesan doa, browser, HP..." class="search-input">
+            <button type="button" id="clearSearchBtn" class="clear-btn" style="display: none;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+
+          <div class="activity-filter-wrapper">
+            <select id="eventFilter" class="form-input activity-select">
+              <option value="all">Semua Jenis Aksi</option>
+              <option value="open_cover">Buka Undangan (Cover)</option>
+              {showMapsStat && <option value="click_maps">Klik Google Maps</option>}
+              {showCalendarStat && <option value="click_calendar">Simpan ke Kalender</option>}
+              {showGiftStat && <option value="copy_gift">Salin No. Rekening</option>}
+              {showMusicStat && <option value="play_music">Putar Musik Latar</option>}
+              {showVideoStat && <option value="play_video">Putar Video Momen</option>}
+              {showGalleryStat && <option value="view_gallery">Lihat Galeri Foto</option>}
+              {showRsvpStat && <option value="click_rsvp">Klik Form RSVP</option>}
+              {showWishesStat && <option value="click_wishes">Buka Doa / Ucapan</option>}
+              {showCoupleIgStat && <option value="click_couple_instagram">Instagram Pengantin</option>}
+              <option value="click_vendor_whatsapp">WhatsApp Senadda</option>
+              <option value="click_vendor_instagram">Instagram Senadda</option>
+              <option value="click_vendor_site">Website Senadda</option>
+              <option value="page_view">Kunjungan Halaman</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Filter Tags -->
+      <div class="activity-tags-row">
+        <button class="activity-tag activity-tag--active" data-tag="all" id="tagAll">
+          Semua <span class="tag-count">({activities.length})</span>
+        </button>
+        <button class="activity-tag" data-tag="identified" id="tagIdentified">
+          Tamu Terdaftar <span class="tag-count">({activities.filter(a => a.guestName).length})</span>
+        </button>
+        <button class="activity-tag" data-tag="interaksi" id="tagInteraksi">
+          Interaksi Undangan <span class="tag-count">({eventActivities.length})</span>
+        </button>
+        <button class="activity-tag" data-tag="rsvp" id="tagRsvp">
+          Sudah RSVP <span class="tag-count">({activities.filter(a => a.guestName && rsvpMap.has(a.guestName.trim().toLowerCase())).length})</span>
+        </button>
+        <button class="activity-tag" data-tag="vendor" id="tagVendor">
+          Leads Vendor <span class="tag-count">({activities.filter(a => a.category === 'vendor').length})</span>
+        </button>
+        <button class="activity-tag" data-tag="kunjungan" id="tagKunjungan">
+          Kunjungan Halaman <span class="tag-count">({viewActivities.length})</span>
+        </button>
+      </div>
+
+      <!-- Active Filter Indicator Banner -->
+      <div id="filterIndicator" class="filter-indicator" style="display: none;">
+        <span id="filterIndicatorText">Menampilkan hasil filter</span>
+        <button type="button" id="resetFiltersBtn" class="reset-btn">
+          Reset Filter <span class="material-symbols-outlined" style="font-size: 14px;">restart_alt</span>
+        </button>
+      </div>
+
+      <!-- Activity Items Feed (Timeline) -->
+      <div class="activity-list" id="activityList">
+        {activities.length === 0 ? (
+          <div class="activity-empty">
+            <span class="material-symbols-outlined activity-empty__icon">inbox</span>
+            <p class="activity-empty__title">Belum Ada Aktivitas</p>
+            <p class="activity-empty__text">Log interaksi dan kunjungan tamu akan otomatis dicatat di sini secara real-time.</p>
+          </div>
+        ) : (
+          activities.map((item, index) => {
+            const isGuest = !!item.guestName;
+            const guestDisplay = isGuest ? item.guestName : 'Pengunjung Umum (Anonim)';
+            const guestRsvp = isGuest && item.guestName ? rsvpMap.get(item.guestName.trim().toLowerCase()) : null;
+            const searchIndex = `${item.guestName || ''} ${guestRsvp?.message || ''} ${item.label} ${item.desc} ${item.browser} ${item.deviceModel} ${item.os} ${item.source} ${item.city || ''} ${item.metadata?.target || ''} ${item.metadata?.href || ''}`.toLowerCase();
+
+            return (
+              <div
+                class="act-row-wrapper"
+                data-id={item.id}
+                data-name={(item.guestName || '').toLowerCase()}
+                data-is-guest={isGuest ? 'true' : 'false'}
+                data-has-rsvp={guestRsvp ? 'true' : 'false'}
+                data-category={item.category}
+                data-event={item.eventType}
+                data-time={item.createdAt}
+                data-search={searchIndex}
+              >
+                <div class="act-row">
+                  <!-- Left: Icon -->
+                  <div class="act-row__icon-box" style={`background: ${item.iconBg}; color: ${item.iconColor};`}>
+                    <span class="material-symbols-outlined">{item.icon}</span>
+                  </div>
+
+                  <!-- Middle: Main Content -->
+                  <div class="act-row__content">
+                    <!-- Top Line: Actor Name on Left, Relative Time on Right -->
+                    <div class="act-row__header">
+                      <div class="act-row__actor">
+                        <span class={`act-row__name ${!isGuest ? 'act-row__name--anon' : ''}`}>
+                          {guestDisplay}
+                        </span>
+                        {isGuest ? (
+                          <span class="act-tag-guest">Tamu</span>
+                        ) : (
+                          <span class="act-tag-anon">Anonim</span>
+                        )}
+
+                        {guestRsvp && (
+                          <span class={`rsvp-micro-badge rsvp-micro-badge--${guestRsvp.attendanceStatus}`}>
+                            {guestRsvp.attendanceStatus === 'attending' ? `Hadir (${guestRsvp.guestCount}pax)` : guestRsvp.attendanceStatus === 'declined' ? 'Tidak Hadir' : 'Ragu'}
+                          </span>
+                        )}
+                      </div>
+                      <span class="act-time-rel">{timeAgo(item.createdAt)}</span>
+                    </div>
+
+                    <!-- Action Badge Line -->
+                    <div class="act-row__action-row">
+                      <span class={`act-badge ${item.badgeClass}`}>{item.label}</span>
+                    </div>
+
+                    <!-- Description Line -->
+                    <p class="act-row__desc">{item.desc}</p>
+
+                    <!-- Target Metadata Highlight (if any) -->
+                    {item.eventType === 'copy_gift' && item.metadata?.target && (
+                      <div class="act-meta-box act-meta-box--warning">
+                        <span class="material-symbols-outlined meta-icon">content_copy</span>
+                        <span>Nomor Rekening: <strong>{item.metadata.target}</strong></span>
+                      </div>
+                    )}
+                    {item.eventType === 'click_maps' && item.metadata?.href && (
+                      <div class="act-meta-box act-meta-box--info">
+                        <span class="material-symbols-outlined meta-icon">location_on</span>
+                        <span>Tautan Maps: <a href={item.metadata.href} target="_blank" rel="noopener noreferrer" class="meta-link">{item.metadata.href}</a></span>
+                      </div>
+                    )}
+                    {item.eventType === 'click_couple_instagram' && (
+                      <div class="act-meta-box act-meta-box--pink">
+                        <span class="material-symbols-outlined meta-icon">photo_camera</span>
+                        <span>Instagram Mempelai: {item.metadata?.href ? <a href={item.metadata.href} target="_blank" rel="noopener noreferrer" class="meta-link">{item.metadata.href}</a> : item.metadata?.role || 'Pengantin'}</span>
+                      </div>
+                    )}
+
+                    <!-- Footer Details Chips -->
+                    <div class="act-row__footer">
+                      <div class="act-row__chips">
+                        {item.deviceModel && item.deviceModel !== 'Perangkat Web' && (
+                          <span class="act-chip act-chip--device">
+                            <span class="material-symbols-outlined chip-icon">{getDeviceIcon(item.deviceType)}</span>
+                            {item.deviceModel} {item.os ? `(${item.os})` : ''}
+                          </span>
+                        )}
+                        {item.browser && item.browser !== 'Unknown' && (
+                          <span class="act-chip act-chip--browser">
+                            <span class="material-symbols-outlined chip-icon">language</span>
+                            {item.browser}
+                          </span>
+                        )}
+                        {item.source && (
+                          <span class="act-chip act-chip--source">
+                            <span class="material-symbols-outlined chip-icon">link</span>
+                            {item.source}
+                          </span>
+                        )}
+                        {item.city && (
+                          <span class="act-chip act-chip--location">
+                            <span class="material-symbols-outlined chip-icon">place</span>
+                            {item.city}{item.country ? `, ${item.country}` : ''}
+                          </span>
+                        )}
+                      </div>
+                      <div class="act-date-full">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">schedule</span>
+                        {formatFullDate(item.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {index < activities.length - 1 && (
+                  <div class="act-row__divider"></div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <!-- Guest Journeys Feed (Per Tamu) -->
+      <div class="guest-journey-list" id="guestJourneyList" style="display: none;">
+        {guestJourneys.length === 0 ? (
+          <div class="activity-empty">
+            <span class="material-symbols-outlined activity-empty__icon">group_off</span>
+            <p class="activity-empty__title">Belum Ada Tamu Terdeteksi</p>
+            <p class="activity-empty__text">Aktivitas per tamu akan muncul otomatis saat ada tamu membuka tautan undangan.</p>
+          </div>
+        ) : (
+          guestJourneys.map(guest => {
+            const searchIndex = `${guest.guestName} ${guest.rsvp?.message || ''} ${guest.sentInfo?.phone || ''} ${guest.devices.join(' ')} ${guest.browsers.join(' ')} ${guest.sources.join(' ')} ${guest.cities.join(' ')}`.toLowerCase();
+            const initials = guest.isGuest ? guest.guestName.slice(0, 2).toUpperCase() : '?';
+            const guestDirectLink = `${originUrl}/${slug}?to=${encodeURIComponent(guest.guestName)}`;
+
+            return (
+              <div
+                class="guest-card"
+                data-guest-name={guest.guestName.toLowerCase()}
+                data-search={searchIndex}
+                data-is-guest={guest.isGuest ? 'true' : 'false'}
+                data-has-rsvp={guest.rsvp ? 'true' : 'false'}
+                data-has-cover={guest.counts.cover > 0 ? 'true' : 'false'}
+                data-has-maps={guest.counts.maps > 0 ? 'true' : 'false'}
+                data-has-gift={guest.counts.gift > 0 ? 'true' : 'false'}
+                data-time={guest.lastActive}
+              >
+                <!-- Guest Header -->
+                <div class="guest-card__header">
+                  <div class="guest-card__avatar" style={guest.isGuest ? 'background: #e0e7ff; color: #3730a3;' : 'background: #f1f5f9; color: #64748b;'}>
+                    {initials}
+                  </div>
+                  <div class="guest-card__info">
+                    <div class="guest-card__name-row">
+                      <h4 class="guest-card__name">{guest.guestName}</h4>
+                      {guest.isGuest ? (
+                        <span class="act-tag-guest">Tamu</span>
+                      ) : (
+                        <span class="act-tag-anon">Anonim</span>
+                      )}
+
+                      <!-- RSVP Status Badge -->
+                      {guest.rsvp ? (
+                        <span class={`rsvp-status-badge rsvp-status-badge--${guest.rsvp.status}`}>
+                          <span class="material-symbols-outlined" style="font-size: 13px;">
+                            {guest.rsvp.status === 'attending' ? 'check_circle' : guest.rsvp.status === 'declined' ? 'cancel' : 'help'}
+                          </span>
+                          {guest.rsvp.status === 'attending' ? `Konfirmasi Hadir (${guest.rsvp.guestCount} Pax)` : guest.rsvp.status === 'declined' ? 'Berhalangan Hadir' : 'Ragu-ragu'}
+                        </span>
+                      ) : guest.isGuest ? (
+                        <span class="rsvp-status-badge rsvp-status-badge--none">
+                          <span class="material-symbols-outlined" style="font-size: 13px;">pending</span>
+                          Belum Konfirmasi RSVP
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <p class="guest-card__meta">
+                      <span>Terakhir aktif: <strong>{timeAgo(guest.lastActive)}</strong></span>
+                      <span class="meta-dot">•</span>
+                      <span>Total: <strong>{guest.totalActivities} aktivitas</strong></span>
+                      {guest.sentInfo?.phone && (
+                        <>
+                          <span class="meta-dot">•</span>
+                          <span>WA: <strong>{guest.sentInfo.phone}</strong></span>
+                        </>
+                      )}
+                    </p>
+                  </div>
+
+                  <!-- Quick Action Buttons -->
+                  <div class="guest-card__quick-actions">
+                    {guest.isGuest && (
+                      <>
+                        <button
+                          type="button"
+                          class="action-icon-btn copy-guest-link-btn"
+                          data-link={guestDirectLink}
+                          data-name={guest.guestName}
+                          title="Salin tautan undangan personal untuk tamu ini"
+                        >
+                          <span class="material-symbols-outlined">link</span>
+                        </button>
+
+                        {guest.sentInfo?.phone && (
+                          <a
+                            href={`https://wa.me/${guest.sentInfo.phone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="action-icon-btn action-icon-btn--wa"
+                            title="Buka chat WhatsApp tamu"
+                            onclick="event.stopPropagation();"
+                          >
+                            <span class="material-symbols-outlined">chat</span>
+                          </a>
+                        )}
+                      </>
+                    )}
+
+                    <button type="button" class="guest-card__toggle-btn" aria-expanded="false" title="Buka detail riwayat">
+                      <span class="toggle-text">Detail</span>
+                      <span class="material-symbols-outlined toggle-icon">expand_more</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- RSVP Wish / Doa Quote Box (if submitted) -->
+                {guest.rsvp?.message && (
+                  <div class="guest-wish-quote">
+                    <span class="material-symbols-outlined quote-icon">format_quote</span>
+                    <p class="quote-text">"{guest.rsvp.message}"</p>
+                  </div>
+                )}
+
+                <!-- Guest Milestones Pills -->
+                <div class="guest-card__milestones">
+                  {guest.counts.cover > 0 ? (
+                    <span class="milestone-badge milestone-badge--done" title="Sudah membuka amplop cover">
+                      <span class="material-symbols-outlined">mark_email_read</span> Buka Cover ({guest.counts.cover}x)
+                    </span>
+                  ) : (
+                    <span class="milestone-badge milestone-badge--pending" title="Belum membuka cover">
+                      <span class="material-symbols-outlined">drafts</span> Buka Cover
+                    </span>
+                  )}
+
+                  {guest.counts.maps > 0 && (
+                    <span class="milestone-badge milestone-badge--info" title="Melihat rute Google Maps">
+                      <span class="material-symbols-outlined">location_on</span> Cek Maps ({guest.counts.maps}x)
+                    </span>
+                  )}
+
+                  {guest.counts.calendar > 0 && (
+                    <span class="milestone-badge milestone-badge--purple" title="Menyimpan acara ke kalender">
+                      <span class="material-symbols-outlined">event_available</span> Simpan Kalender ({guest.counts.calendar}x)
+                    </span>
+                  )}
+
+                  {guest.counts.gift > 0 && (
+                    <span class="milestone-badge milestone-badge--warning" title="Menyalin nomor rekening amplop">
+                      <span class="material-symbols-outlined">content_copy</span> Salin Rekening ({guest.counts.gift}x)
+                    </span>
+                  )}
+
+                  {guest.counts.gallery > 0 && (
+                    <span class="milestone-badge milestone-badge--indigo" title="Melihat galeri foto">
+                      <span class="material-symbols-outlined">photo_library</span> Galeri ({guest.counts.gallery}x)
+                    </span>
+                  )}
+
+                  {guest.counts.music > 0 && (
+                    <span class="milestone-badge milestone-badge--teal" title="Memutar musik latar">
+                      <span class="material-symbols-outlined">music_note</span> Musik ({guest.counts.music}x)
+                    </span>
+                  )}
+
+                  {guest.counts.coupleIg > 0 && (
+                    <span class="milestone-badge milestone-badge--pink" title="Melihat Instagram Mempelai">
+                      <span class="material-symbols-outlined">photo_camera</span> Profil IG ({guest.counts.coupleIg}x)
+                    </span>
+                  )}
+
+                  {guest.counts.vendorWa > 0 && (
+                    <span class="milestone-badge milestone-badge--success" title="Menghubungi WhatsApp Senadda">
+                      <span class="material-symbols-outlined">chat</span> WA Senadda ({guest.counts.vendorWa}x)
+                    </span>
+                  )}
+
+                  {guest.counts.views > 0 && (
+                    <span class="milestone-badge milestone-badge--neutral" title="Total kunjungan halaman">
+                      <span class="material-symbols-outlined">visibility</span> Kunjungan ({guest.counts.views}x)
+                    </span>
+                  )}
+                </div>
+
+                <!-- Devices & Origin Used by this Guest -->
+                <div class="guest-card__tech">
+                  {guest.devices.length > 0 && (
+                    <span class="act-chip act-chip--device">
+                      <span class="material-symbols-outlined chip-icon">devices</span>
+                      {guest.devices.join(', ')}
+                    </span>
+                  )}
+                  {guest.browsers.length > 0 && (
+                    <span class="act-chip act-chip--browser">
+                      <span class="material-symbols-outlined chip-icon">language</span>
+                      {guest.browsers.join(', ')}
+                    </span>
+                  )}
+                  {guest.sources.length > 0 && (
+                    <span class="act-chip act-chip--source">
+                      <span class="material-symbols-outlined chip-icon">link</span>
+                      {guest.sources.join(', ')}
+                    </span>
+                  )}
+                  {guest.cities.length > 0 && (
+                    <span class="act-chip act-chip--location">
+                      <span class="material-symbols-outlined chip-icon">place</span>
+                      {guest.cities.join(', ')}
+                    </span>
+                  )}
+                </div>
+
+                <!-- Expandable Timeline per Guest -->
+                <div class="guest-card__timeline" style="display: none;">
+                  <div class="guest-timeline-header">
+                    <span class="timeline-title">Riwayat Lengkap Interaksi:</span>
+                    {guest.isGuest && (
+                      <button type="button" class="filter-guest-btn" data-name={guest.guestName}>
+                        <span class="material-symbols-outlined" style="font-size: 14px;">filter_alt</span>
+                        Filter di Semua Log
+                      </button>
+                    )}
+                  </div>
+                  <div class="guest-timeline-items">
+                    {guest.items.map(item => (
+                      <div class="guest-timeline-item">
+                        <div class="guest-timeline-item__icon" style={`color: ${item.iconColor};`}>
+                          <span class="material-symbols-outlined">{item.icon}</span>
+                        </div>
+                        <div class="guest-timeline-item__content">
+                          <div class="guest-timeline-item__top">
+                            <span class={`act-badge ${item.badgeClass}`}>{item.label}</span>
+                            <span class="guest-timeline-item__time">{formatFullDate(item.createdAt)}</span>
+                          </div>
+                          <p class="guest-timeline-item__desc">{item.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-wrapper" style="border-top: 1px solid var(--color-surface-container); padding: 16px 0 0 0; margin-top: 16px;">
+        <button class="pagination-btn" id="actPrev" disabled>Prev</button>
+        <div class="pagination-numbers" id="actPageNumbers"></div>
+        <button class="pagination-btn" id="actNext" disabled>Next</button>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('activitySearch');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      const timeRangeSelect = document.getElementById('timeRangeFilter');
+      const eventSelect = document.getElementById('eventFilter');
+      const exportBtn = document.getElementById('activityExport');
+      const refreshBtn = document.getElementById('refreshActivityBtn');
+      const tagButtons = document.querySelectorAll('.activity-tag');
+      const tagRow = document.querySelector('.activity-tags-row');
+      const filterIndicator = document.getElementById('filterIndicator');
+      const filterIndicatorText = document.getElementById('filterIndicatorText');
+      const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+      const viewModeTimelineBtn = document.getElementById('viewModeTimeline');
+      const viewModeGuestsBtn = document.getElementById('viewModeGuests');
+      const activityList = document.getElementById('activityList');
+      const guestJourneyList = document.getElementById('guestJourneyList');
+
+      const allRows = Array.from(document.querySelectorAll('.act-row-wrapper'));
+      const allGuestCards = Array.from(document.querySelectorAll('.guest-card'));
+
+      const prevBtn = document.getElementById('actPrev');
+      const nextBtn = document.getElementById('actNext');
+      const pageNumbers = document.getElementById('actPageNumbers');
+
+      let viewMode = 'timeline'; // 'timeline' | 'guests'
+      let currentPage = 1;
+      const itemsPerPageTimeline = 15;
+      const itemsPerPageGuests = 10;
+      let activeTag = 'all';
+      let filteredRows = [...allRows];
+      let filteredGuests = [...allGuestCards];
+
+      function scrollToTopSection() {
+        const cardEl = document.getElementById('activityListCard') || document.getElementById('activityList');
+        if (cardEl) {
+          const navbarHeight = 85;
+          const targetY = cardEl.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+          window.scrollTo({
+            top: Math.max(0, targetY),
+            behavior: 'smooth'
+          });
+        }
+      }
+
+      // Refresh Button Handler
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+          const icon = refreshBtn.querySelector('.refresh-icon');
+          if (icon) icon.classList.add('refresh-icon--spin');
+          if (window.showToast) {
+            window.showToast({ type: 'info', message: 'Memperbarui data aktivitas...' });
+          }
+          setTimeout(() => {
+            window.location.reload();
+          }, 400);
+        });
+      }
+
+      // 1-Click Copy Personal Guest Link Handler
+      document.querySelectorAll('.copy-guest-link-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const link = btn.getAttribute('data-link') || '';
+          const name = btn.getAttribute('data-name') || 'Tamu';
+          if (!link) return;
+
+          try {
+            if (navigator.clipboard && window.isSecureContext) {
+              await navigator.clipboard.writeText(link);
+            } else {
+              const textArea = document.createElement("textarea");
+              textArea.value = link;
+              textArea.style.position = "fixed";
+              textArea.style.opacity = "0";
+              document.body.appendChild(textArea);
+              textArea.focus();
+              textArea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textArea);
+            }
+
+            if (window.showToast) {
+              window.showToast({
+                type: 'success',
+                message: `Tautan personal untuk ${name} berhasil disalin ke clipboard!`
+              });
+            } else {
+              alert(`Tautan untuk ${name} berhasil disalin!`);
+            }
+          } catch (err) {
+            if (window.showToast) {
+              window.showToast({ type: 'error', message: 'Gagal menyalin link' });
+            }
+          }
+        });
+      });
+
+      function switchViewMode(mode) {
+        viewMode = mode;
+        currentPage = 1;
+
+        if (viewMode === 'timeline') {
+          viewModeTimelineBtn?.classList.add('view-switch-btn--active');
+          viewModeGuestsBtn?.classList.remove('view-switch-btn--active');
+          if (activityList) activityList.style.display = 'flex';
+          if (guestJourneyList) guestJourneyList.style.display = 'none';
+          if (tagRow) tagRow.style.display = 'flex';
+        } else {
+          viewModeGuestsBtn?.classList.add('view-switch-btn--active');
+          viewModeTimelineBtn?.classList.remove('view-switch-btn--active');
+          if (activityList) activityList.style.display = 'none';
+          if (guestJourneyList) guestJourneyList.style.display = 'flex';
+          if (tagRow) tagRow.style.display = 'flex';
+        }
+
+        applyFilters();
+      }
+
+      viewModeTimelineBtn?.addEventListener('click', () => switchViewMode('timeline'));
+      viewModeGuestsBtn?.addEventListener('click', () => switchViewMode('guests'));
+
+      // Toggle accordion on guest cards
+      allGuestCards.forEach(card => {
+        const toggleBtn = card.querySelector('.guest-card__toggle-btn');
+        const timeline = card.querySelector('.guest-card__timeline');
+        const toggleText = card.querySelector('.toggle-text');
+
+        function toggleCard() {
+          if (!timeline) return;
+          const isExpanded = timeline.style.display !== 'none';
+          if (isExpanded) {
+            timeline.style.display = 'none';
+            toggleBtn?.setAttribute('aria-expanded', 'false');
+            if (toggleText) toggleText.textContent = 'Detail';
+            card.classList.remove('guest-card--expanded');
+          } else {
+            timeline.style.display = 'block';
+            toggleBtn?.setAttribute('aria-expanded', 'true');
+            if (toggleText) toggleText.textContent = 'Tutup';
+            card.classList.add('guest-card--expanded');
+          }
+        }
+
+        card.addEventListener('click', (e) => {
+          if (
+            e.target.closest('.guest-card__timeline') ||
+            e.target.closest('.filter-guest-btn') ||
+            e.target.closest('.action-icon-btn')
+          ) {
+            return;
+          }
+          toggleCard();
+        });
+
+        const filterGuestBtn = card.querySelector('.filter-guest-btn');
+        filterGuestBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const name = filterGuestBtn.getAttribute('data-name') || '';
+          if (searchInput) searchInput.value = name;
+          switchViewMode('timeline');
+          applyFilters();
+          scrollToTopSection();
+        });
+      });
+
+      // Time Filter Evaluation Helper
+      function isWithinTimeRange(timeStr, rangeVal) {
+        if (rangeVal === 'all' || !timeStr) return true;
+        const itemTime = new Date(timeStr).getTime();
+        const now = Date.now();
+
+        if (rangeVal === '24h') {
+          return now - itemTime <= 24 * 60 * 60 * 1000;
+        }
+        if (rangeVal === '7d') {
+          return now - itemTime <= 7 * 24 * 60 * 60 * 1000;
+        }
+        if (rangeVal === '30d') {
+          return now - itemTime <= 30 * 24 * 60 * 60 * 1000;
+        }
+        if (rangeVal === 'today') {
+          // Compare day in WITA (UTC+8)
+          const itemWita = new Date(itemTime + 8 * 3600000).toISOString().slice(0, 10);
+          const nowWita = new Date(now + 8 * 3600000).toISOString().slice(0, 10);
+          return itemWita === nowWita;
+        }
+        return true;
+      }
+
+      function applyFilters() {
+        const query = (searchInput?.value || '').trim().toLowerCase();
+        const timeVal = timeRangeSelect?.value || 'all';
+        const eventVal = eventSelect?.value || 'all';
+
+        if (clearSearchBtn) {
+          clearSearchBtn.style.display = query ? 'flex' : 'none';
+        }
+
+        if (viewMode === 'timeline') {
+          // 1. Base filter for timeline
+          const baseRows = allRows.filter(row => {
+            const rowEvent = row.getAttribute('data-event') || '';
+            const rowTime = row.getAttribute('data-time') || '';
+            const searchData = row.getAttribute('data-search') || '';
+
+            if (eventVal !== 'all' && rowEvent !== eventVal) return false;
+            if (!isWithinTimeRange(rowTime, timeVal)) return false;
+            if (query && !searchData.includes(query)) return false;
+
+            return true;
+          });
+
+          // 2. Update dynamic tag counts
+          const countAll = baseRows.length;
+          const countIdentified = baseRows.filter(r => r.getAttribute('data-is-guest') === 'true').length;
+          const countInteraksi = baseRows.filter(r => r.getAttribute('data-category') === 'interaksi').length;
+          const countRsvp = baseRows.filter(r => r.getAttribute('data-has-rsvp') === 'true').length;
+          const countVendor = baseRows.filter(r => r.getAttribute('data-category') === 'vendor').length;
+          const countKunjungan = baseRows.filter(r => r.getAttribute('data-category') === 'kunjungan').length;
+
+          const tagAll = document.getElementById('tagAll');
+          const tagIdentified = document.getElementById('tagIdentified');
+          const tagInteraksi = document.getElementById('tagInteraksi');
+          const tagRsvp = document.getElementById('tagRsvp');
+          const tagVendor = document.getElementById('tagVendor');
+          const tagKunjungan = document.getElementById('tagKunjungan');
+
+          if (tagAll?.querySelector('.tag-count')) tagAll.querySelector('.tag-count').textContent = `(${countAll})`;
+          if (tagIdentified?.querySelector('.tag-count')) tagIdentified.querySelector('.tag-count').textContent = `(${countIdentified})`;
+          if (tagInteraksi?.querySelector('.tag-count')) tagInteraksi.querySelector('.tag-count').textContent = `(${countInteraksi})`;
+          if (tagRsvp?.querySelector('.tag-count')) tagRsvp.querySelector('.tag-count').textContent = `(${countRsvp})`;
+          if (tagVendor?.querySelector('.tag-count')) tagVendor.querySelector('.tag-count').textContent = `(${countVendor})`;
+          if (tagKunjungan?.querySelector('.tag-count')) tagKunjungan.querySelector('.tag-count').textContent = `(${countKunjungan})`;
+
+          // 3. Apply active tag filter
+          filteredRows = baseRows.filter(row => {
+            const isGuest = row.getAttribute('data-is-guest') === 'true';
+            const cat = row.getAttribute('data-category') || '';
+            const hasRsvp = row.getAttribute('data-has-rsvp') === 'true';
+
+            if (activeTag === 'identified' && !isGuest) return false;
+            if (activeTag === 'interaksi' && cat !== 'interaksi') return false;
+            if (activeTag === 'rsvp' && !hasRsvp) return false;
+            if (activeTag === 'vendor' && cat !== 'vendor') return false;
+            if (activeTag === 'kunjungan' && cat !== 'kunjungan') return false;
+
+            return true;
+          });
+
+          // Filter Indicator
+          const hasFilters = query || timeVal !== 'all' || eventVal !== 'all' || activeTag !== 'all';
+          if (filterIndicator) {
+            filterIndicator.style.display = hasFilters ? 'flex' : 'none';
+            if (filterIndicatorText) {
+              filterIndicatorText.textContent = `Menampilkan ${filteredRows.length} dari ${allRows.length} total aktivitas.`;
+            }
+          }
+        } else {
+          // Guest mode filtering
+          const baseGuests = allGuestCards.filter(card => {
+            const searchData = card.getAttribute('data-search') || '';
+            const lastTime = card.getAttribute('data-time') || '';
+            const isGuest = card.getAttribute('data-is-guest') === 'true';
+            const hasRsvp = card.getAttribute('data-has-rsvp') === 'true';
+            const hasCover = card.getAttribute('data-has-cover') === 'true';
+            const hasMaps = card.getAttribute('data-has-maps') === 'true';
+            const hasGift = card.getAttribute('data-has-gift') === 'true';
+
+            if (!isWithinTimeRange(lastTime, timeVal)) return false;
+            if (query && !searchData.includes(query)) return false;
+
+            if (eventVal === 'open_cover' && !hasCover) return false;
+            if (eventVal === 'click_maps' && !hasMaps) return false;
+            if (eventVal === 'copy_gift' && !hasGift) return false;
+            if (eventVal === 'click_rsvp' && !hasRsvp) return false;
+
+            return true;
+          });
+
+          // Tag filter on guests
+          filteredGuests = baseGuests.filter(card => {
+            const isGuest = card.getAttribute('data-is-guest') === 'true';
+            const hasRsvp = card.getAttribute('data-has-rsvp') === 'true';
+
+            if (activeTag === 'identified' && !isGuest) return false;
+            if (activeTag === 'rsvp' && !hasRsvp) return false;
+            return true;
+          });
+
+          const hasFilters = query || timeVal !== 'all' || eventVal !== 'all' || activeTag !== 'all';
+          if (filterIndicator) {
+            filterIndicator.style.display = hasFilters ? 'flex' : 'none';
+            if (filterIndicatorText) {
+              filterIndicatorText.textContent = `Menampilkan ${filteredGuests.length} dari ${allGuestCards.length} profil tamu.`;
+            }
+          }
+        }
+
+        updatePagination();
+      }
+
+      function updatePagination() {
+        const activeItems = viewMode === 'timeline' ? filteredRows : filteredGuests;
+        const currentItemsPerPage = viewMode === 'timeline' ? itemsPerPageTimeline : itemsPerPageGuests;
+
+        const totalPages = Math.ceil(activeItems.length / currentItemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        // Hide all items first
+        if (viewMode === 'timeline') {
+          allRows.forEach(row => { row.style.display = 'none'; });
+          const start = (currentPage - 1) * currentItemsPerPage;
+          const end = start + currentItemsPerPage;
+          activeItems.slice(start, end).forEach(row => { row.style.display = 'block'; });
+        } else {
+          allGuestCards.forEach(card => { card.style.display = 'none'; });
+          const start = (currentPage - 1) * currentItemsPerPage;
+          const end = start + currentItemsPerPage;
+          activeItems.slice(start, end).forEach(card => { card.style.display = 'block'; });
+        }
+
+        // Update Prev / Next buttons
+        if (prevBtn) prevBtn.disabled = currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+
+        // Render Page Number Buttons
+        if (pageNumbers) {
+          pageNumbers.innerHTML = '';
+
+          function createBtn(i) {
+            const btn = document.createElement('button');
+            btn.className = `pagination-num ${i === currentPage ? 'pagination-num--active' : ''}`;
+            btn.innerText = String(i);
+            btn.onclick = () => {
+              currentPage = i;
+              updatePagination();
+              scrollToTopSection();
+            };
+            return btn;
+          }
+
+          function createEllipsis() {
+            const span = document.createElement('span');
+            span.className = 'pagination-ellipsis';
+            span.innerText = '...';
+            return span;
+          }
+
+          if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pageNumbers.appendChild(createBtn(i));
+          } else {
+            if (currentPage <= 3) {
+              for (let i = 1; i <= 4; i++) pageNumbers.appendChild(createBtn(i));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(totalPages));
+            } else if (currentPage >= totalPages - 2) {
+              pageNumbers.appendChild(createBtn(1));
+              pageNumbers.appendChild(createEllipsis());
+              for (let i = totalPages - 3; i <= totalPages; i++) pageNumbers.appendChild(createBtn(i));
+            } else {
+              pageNumbers.appendChild(createBtn(1));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(currentPage - 1));
+              pageNumbers.appendChild(createBtn(currentPage));
+              pageNumbers.appendChild(createBtn(currentPage + 1));
+              pageNumbers.appendChild(createEllipsis());
+              pageNumbers.appendChild(createBtn(totalPages));
+            }
+          }
+        }
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (currentPage > 1) {
+            currentPage--;
+            updatePagination();
+            scrollToTopSection();
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          const activeItems = viewMode === 'timeline' ? filteredRows : filteredGuests;
+          const currentItemsPerPage = viewMode === 'timeline' ? itemsPerPageTimeline : itemsPerPageGuests;
+          const totalPages = Math.ceil(activeItems.length / currentItemsPerPage) || 1;
+          if (currentPage < totalPages) {
+            currentPage++;
+            updatePagination();
+            scrollToTopSection();
+          }
+        });
+      }
+
+      if (searchInput) searchInput.addEventListener('input', () => { currentPage = 1; applyFilters(); });
+      if (timeRangeSelect) timeRangeSelect.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+      if (eventSelect) eventSelect.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+
+      if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', () => {
+          if (searchInput) {
+            searchInput.value = '';
+            currentPage = 1;
+            applyFilters();
+            searchInput.focus();
+          }
+        });
+      }
+
+      if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+          if (searchInput) searchInput.value = '';
+          if (timeRangeSelect) timeRangeSelect.value = 'all';
+          if (eventSelect) eventSelect.value = 'all';
+          activeTag = 'all';
+          tagButtons.forEach(b => b.classList.remove('activity-tag--active'));
+          document.getElementById('tagAll')?.classList.add('activity-tag--active');
+          currentPage = 1;
+          applyFilters();
+        });
+      }
+
+      tagButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          tagButtons.forEach(b => b.classList.remove('activity-tag--active'));
+          btn.classList.add('activity-tag--active');
+          activeTag = btn.getAttribute('data-tag') || 'all';
+          currentPage = 1;
+          applyFilters();
+        });
+      });
+
+      // Export to Excel / CSV with Enhanced Fields
+      if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+          if (typeof XLSX === 'undefined') {
+            window.showToast({ type: 'info', message: 'Modul export sedang dimuat, silakan coba sesaat lagi.' });
+            return;
+          }
+
+          if (viewMode === 'timeline') {
+            if (filteredRows.length === 0) {
+              window.showToast({ type: 'warning', message: 'Tidak ada data aktivitas untuk diekspor.' });
+              return;
+            }
+
+            const ws_data = [
+              ["No", "Nama Tamu", "Status RSVP", "Aktivitas", "Keterangan", "Waktu", "Perangkat / Browser"]
+            ];
+
+            let count = 1;
+            filteredRows.forEach(row => {
+              const nameEl = row.querySelector('.act-row__name');
+              const rsvpEl = row.querySelector('.rsvp-micro-badge');
+              const badgeEl = row.querySelector('.act-badge');
+              const descEl = row.querySelector('.act-row__desc');
+              const dateEl = row.querySelector('.act-date-full');
+              const chipsEl = Array.from(row.querySelectorAll('.act-chip')).map(c => c.innerText.trim()).join(' | ');
+
+              ws_data.push([
+                count,
+                nameEl ? nameEl.innerText.trim() : 'Anonim',
+                rsvpEl ? rsvpEl.innerText.trim() : 'Belum RSVP',
+                badgeEl ? badgeEl.innerText.trim() : '',
+                descEl ? descEl.innerText.trim() : '',
+                dateEl ? dateEl.innerText.trim() : '',
+                chipsEl
+              ]);
+              count++;
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Log Aktivitas");
+            XLSX.writeFile(wb, `Log_Aktivitas_${slug}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            window.showToast({ type: 'success', message: 'Data log aktivitas berhasil diekspor.' });
+          } else {
+            if (filteredGuests.length === 0) {
+              window.showToast({ type: 'warning', message: 'Tidak ada data tamu untuk diekspor.' });
+              return;
+            }
+
+            const ws_data = [
+              ["No", "Nama Tamu", "Tipe", "Status RSVP", "Kutipan Doa", "Aktivitas Terakhir", "Milestone Aksi", "Perangkat"]
+            ];
+
+            let count = 1;
+            filteredGuests.forEach(card => {
+              const nameEl = card.querySelector('.guest-card__name');
+              const isGuest = card.getAttribute('data-is-guest') === 'true';
+              const rsvpEl = card.querySelector('.rsvp-status-badge');
+              const wishEl = card.querySelector('.quote-text');
+              const metaEl = card.querySelector('.guest-card__meta');
+              const milestones = Array.from(card.querySelectorAll('.milestone-badge')).map(m => m.innerText.trim()).join(', ');
+              const techEl = Array.from(card.querySelectorAll('.guest-card__tech .act-chip')).map(c => c.innerText.trim()).join(' | ');
+
+              ws_data.push([
+                count,
+                nameEl ? nameEl.innerText.trim() : 'Anonim',
+                isGuest ? 'Tamu Terdaftar' : 'Anonim',
+                rsvpEl ? rsvpEl.innerText.trim() : 'Belum Konfirmasi',
+                wishEl ? wishEl.innerText.trim() : '-',
+                metaEl ? metaEl.innerText.trim() : '',
+                milestones,
+                techEl
+              ]);
+              count++;
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Aktivitas Per Tamu");
+            XLSX.writeFile(wb, `Aktivitas_Per_Tamu_${slug}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            window.showToast({ type: 'success', message: 'Data aktivitas per tamu berhasil diekspor.' });
+          }
+        });
+      }
+
+      // Resize listener for responsive pagination button count
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          updatePagination();
+        }, 150);
+      });
+
+      // Initial filter & pagination render
+      applyFilters();
+    });
+  </script>
+</ClientLayout>
+
+<style lang="scss">
+  .activity-page-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 90px;
+  }
+
+  .admin-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: #e0e7ff;
+    color: #4338ca;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .activity-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .refresh-act-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--color-outline-variant, #e2e8f0);
+    background: #ffffff;
+    color: var(--color-on-surface);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--color-surface-container-low, #f8fafc);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .refresh-icon {
+      font-size: 18px;
+      transition: transform 0.3s ease;
+
+      &--spin {
+        animation: spin 0.8s linear infinite;
+      }
+    }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Conversion Funnel & Engagement Card */
+  .conversion-funnel-card {
+    background: linear-gradient(135deg, rgba(251, 244, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 100%);
+    border: 1px solid var(--color-outline-variant, #e2e8f0);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 18px;
+  }
+
+  .funnel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .funnel-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-on-surface);
+    }
+
+    .funnel-caption {
+      font-size: 11.5px;
+      color: var(--color-outline);
+    }
+  }
+
+  .funnel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .funnel-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    &__label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    &__val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    &__desc {
+      font-size: 10.5px;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.3;
+    }
+  }
+
+  .funnel-progress {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 9999px;
+    overflow: hidden;
+
+    &__bar {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+  }
+
+  /* Hourly Activity Trend */
+  .hourly-trend-card {
+    background: #ffffff;
+    border: 1px solid var(--color-outline-variant, #e2e8f0);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 14px;
+  }
+
+  .hourly-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .hourly-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-on-surface);
+    }
+
+    .hourly-badge {
+      font-size: 11px;
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fef3c7;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+  }
+
+  .hourly-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 65px;
+    padding-top: 5px;
+  }
+
+  .hourly-bar-col {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .hourly-bar-track {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    background: #f8fafc;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .hourly-bar-fill {
+    width: 100%;
+    background: #cbd5e1;
+    border-radius: 3px 3px 0 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--color-primary, #a68966);
+    }
+
+    &--peak {
+      background: var(--color-primary, #a68966) !important;
+      box-shadow: 0 -2px 6px rgba(166, 137, 102, 0.4);
+    }
+  }
+
+  .hourly-bar-label {
+    font-size: 9px;
+    color: #94a3b8;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--visible {
+      color: #475569;
+      font-weight: 700;
+    }
+  }
+
+  /* Top Action Bar */
+  .activity-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--color-surface-container-low);
+
+    &__title {
+      margin: 0 0 2px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-on-surface);
+    }
+
+    &__subtitle {
+      margin: 0;
+      font-size: 13px;
+      color: var(--color-outline);
+    }
+  }
+
+  /* Controls & Search */
+  .activity-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .activity-controls__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+  }
+
+  /* Left Side: View Switcher */
+  .activity-view-switcher {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    gap: 3px;
+    flex-shrink: 0;
+
+    @media (max-width: 640px) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .view-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    height: 38px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover:not(.view-switch-btn--active) {
+      background: rgba(255, 255, 255, 0.7);
+      color: #0f172a;
+    }
+
+    &--active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+      .view-switch-badge {
+        background: var(--color-primary, #a68966);
+        color: #ffffff;
+      }
+    }
+
+    @media (max-width: 480px) {
+      padding: 5px 10px;
+      font-size: 12px;
+      gap: 5px;
+      height: 34px;
+      flex: 1;
+      justify-content: center;
+    }
+  }
+
+  .view-switch-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 1.5px 6.5px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: #475569;
+    transition: all 0.2s ease;
+  }
+
+  /* Search Input */
+  .search-wrapper.activity-search-wrapper,
+  .activity-search-wrapper {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0 !important;
+
+    @media (max-width: 640px) {
+      order: 2;
+    }
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-outline);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: var(--color-on-surface);
+    }
+  }
+
+  /* Filters */
+  .activity-filter-wrapper {
+    width: 220px;
+    flex-shrink: 0;
+
+    @media (max-width: 640px) {
+      width: 100%;
+      order: 1;
+    }
+
+    .activity-select {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+  }
+
+  .activity-select {
+    min-width: 140px;
+    height: 40px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+
+  .activity-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--color-surface-container-high);
+    border-radius: 8px;
+    color: var(--color-on-surface);
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--color-surface-container-low);
+      border-color: var(--color-outline);
+    }
+  }
+
+  /* Tags Row */
+  .activity-tags-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--color-surface-container-low);
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .activity-tag {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid var(--color-surface-container-high);
+    background: var(--color-surface-container-lowest);
+    color: var(--color-on-surface-variant);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--color-surface-container-low);
+    }
+
+    &--active {
+      background: var(--color-primary);
+      color: #ffffff;
+      border-color: var(--color-primary);
+
+      &:hover {
+        background: var(--color-primary);
+      }
+    }
+  }
+
+  /* Filter Indicator */
+  .filter-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(166, 137, 102, 0.08);
+    border: 1px dashed var(--color-primary-container);
+    border-radius: 8px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: var(--color-on-surface);
+  }
+
+  .reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* Activity List Rows */
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .act-row-wrapper {
+    display: block;
+  }
+
+  .act-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 8px;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: var(--color-surface-container-low);
+      border-radius: 8px;
+    }
+
+    @media (max-width: 480px) {
+      gap: 10px;
+      padding: 12px 2px;
+    }
+  }
+
+  .act-row__icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    .material-symbols-outlined {
+      font-size: 22px;
+    }
+
+    @media (max-width: 480px) {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+
+      .material-symbols-outlined {
+        font-size: 19px;
+      }
+    }
+  }
+
+  .act-row__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .act-row__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .act-row__actor {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .act-row__name {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+
+    &--anon {
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 13.5px;
+    }
+  }
+
+  .act-tag-guest {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 1.5px 6px;
+    border-radius: 4px;
+    background: #e0e7ff;
+    color: #3730a3;
+    border: 1px solid #c7d2fe;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .act-tag-anon {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1.5px 6px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+  }
+
+  .rsvp-micro-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1.5px 6px;
+    border-radius: 4px;
+
+    &--attending {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    &--declined {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    &--tentative {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+  }
+
+  .act-row__action-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1px;
+  }
+
+  .act-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2.5px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+    display: inline-block;
+
+    &--primary {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    &--info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    &--purple {
+      background: #f3e8ff;
+      color: #6b21a8;
+      border: 1px solid #e9d5ff;
+    }
+
+    &--warning {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fef08a;
+    }
+
+    &--pink {
+      background: #fce7f3;
+      color: #9d174d;
+      border: 1px solid #fbcfe8;
+    }
+
+    &--teal {
+      background: #ccfbf1;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+
+    &--indigo {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    &--emerald {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    &--amber {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    &--success {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    &--neutral {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+  }
+
+  .act-time-rel {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #b45309;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .act-row__desc {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    line-height: 1.4;
+
+    @media (max-width: 480px) {
+      font-size: 12.5px;
+    }
+  }
+
+  .act-meta-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    width: fit-content;
+    max-width: 100%;
+
+    .meta-icon {
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .meta-link {
+      color: inherit;
+      text-decoration: underline;
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    &--warning {
+      background: #fffbeb;
+      color: #78350f;
+      border: 1px solid #fcd34d;
+    }
+
+    &--info {
+      background: #eff6ff;
+      color: #1e3a8a;
+      border: 1px solid #93c5fd;
+    }
+
+    &--pink {
+      background: #fdf2f8;
+      color: #831843;
+      border: 1px solid #f472b6;
+    }
+  }
+
+  .act-row__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  .act-row__chips {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .act-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2.5px 7px;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+
+    .chip-icon {
+      font-size: 13.5px;
+      color: #64748b;
+    }
+
+    &--device {
+      background: #eff6ff;
+      color: #1e40af;
+      border-color: #dbeafe;
+      .chip-icon { color: #2563eb; }
+    }
+
+    &--browser {
+      background: #f0fdf4;
+      color: #166534;
+      border-color: #dcfce7;
+      .chip-icon { color: #16a34a; }
+    }
+
+    &--source {
+      background: #fffbeb;
+      color: #92400e;
+      border-color: #fef3c7;
+      .chip-icon { color: #d97706; }
+    }
+
+    &--location {
+      background: #faf5ff;
+      color: #6b21a8;
+      border-color: #f3e8ff;
+      .chip-icon { color: #9333ea; }
+    }
+  }
+
+  .act-date-full {
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+
+    @media (min-width: 640px) {
+      margin-top: 0;
+      margin-left: auto;
+    }
+  }
+
+  .act-row__divider {
+    height: 1px;
+    background: var(--color-surface-container-low);
+    margin: 0;
+  }
+
+  .activity-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--color-outline);
+
+    &__icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+      opacity: 0.4;
+    }
+
+    &__title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-on-surface);
+      margin: 0 0 4px;
+    }
+
+    &__text {
+      font-size: 13px;
+      margin: 0;
+    }
+  }
+
+  /* Guest Journey (Per Tamu) Cards */
+  .guest-journey-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .guest-card {
+    background: #ffffff;
+    border: 1px solid var(--color-outline-variant, #e2e8f0);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+
+    &:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    }
+
+    &--expanded {
+      border-color: var(--color-primary, #a68966);
+      box-shadow: 0 4px 16px rgba(166, 137, 102, 0.12);
+    }
+
+    @media (max-width: 480px) {
+      padding: 12px;
+    }
+  }
+
+  .guest-card__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .guest-card__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .guest-card__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .guest-card__name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .guest-card__name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .rsvp-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+
+    &--attending {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    &--declined {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    &--tentative {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+    &--none {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+  }
+
+  .guest-card__meta {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    .meta-dot {
+      color: #cbd5e1;
+    }
+  }
+
+  .guest-card__quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: #ffffff;
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    &--wa {
+      &:hover {
+        background: #f0fdf4;
+        border-color: #22c55e;
+        color: #16a34a;
+      }
+    }
+  }
+
+  .guest-wish-quote {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+
+    .quote-icon {
+      font-size: 16px;
+      color: #d97706;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .quote-text {
+      margin: 0;
+      font-size: 12px;
+      font-style: italic;
+      color: #78350f;
+      line-height: 1.4;
+    }
+  }
+
+  .guest-card__toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .toggle-icon {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+    }
+
+    &[aria-expanded="true"] .toggle-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  .guest-card__milestones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--color-outline-variant, #e2e8f0);
+  }
+
+  .milestone-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+
+    .material-symbols-outlined {
+      font-size: 13.5px;
+    }
+
+    &--done {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    &--pending {
+      background: #f8fafc;
+      color: #94a3b8;
+      border: 1px dashed #cbd5e1;
+    }
+
+    &--info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    &--purple {
+      background: #f3e8ff;
+      color: #6b21a8;
+      border: 1px solid #e9d5ff;
+    }
+
+    &--warning {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fef08a;
+    }
+
+    &--pink {
+      background: #fce7f3;
+      color: #9d174d;
+      border: 1px solid #fbcfe8;
+    }
+
+    &--teal {
+      background: #ccfbf1;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+
+    &--indigo {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    &--success {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    &--neutral {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+  }
+
+  .guest-card__tech {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .guest-card__timeline {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    cursor: default;
+  }
+
+  .guest-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    .timeline-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .filter-guest-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--color-primary, #a68966);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .guest-timeline-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 8px;
+    border-left: 2px solid #e2e8f0;
+    margin-left: 6px;
+  }
+
+  .guest-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+
+    &__icon {
+      font-size: 16px;
+      margin-top: 1px;
+      flex-shrink: 0;
+      .material-symbols-outlined { font-size: 16px; }
+    }
+
+    &__content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    &__time {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    &__desc {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #334155;
+    }
+  }
+
+  .pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 0 0 0;
+    margin-top: 16px;
+    border-top: 1px solid var(--color-surface-container);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    @media (max-width: 480px) {
+      gap: 8px;
+    }
+  }
+
+  .pagination-btn {
+    padding: 6px 12px;
+    height: 34px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #1e293b;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+      padding: 3px 6px;
+      height: 28px;
+      font-size: 11px;
+      border-radius: 6px;
+    }
+  }
+
+  :global(.pagination-numbers) {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+
+    @media (max-width: 480px) {
+      gap: 2.5px;
+    }
+  }
+
+  :global(.pagination-num) {
+    width: 32px;
+    height: 34px;
+    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+
+    &:hover:not(.pagination-num--active) {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    @media (max-width: 480px) {
+      width: 25px;
+      height: 28px;
+      min-width: 25px;
+      font-size: 11px;
+      border-radius: 6px;
+    }
+  }
+
+  :global(.pagination-num--active) {
+    background-color: var(--color-primary, #a68966) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    border-color: var(--color-primary, #a68966) !important;
+    box-shadow: 0 2px 6px rgba(166, 137, 102, 0.35);
+  }
+
+  :global(.pagination-ellipsis) {
+    padding: 0 2px;
+    color: #94a3b8;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    @media (max-width: 480px) {
+      padding: 0 1px;
+      font-size: 10px;
+    }
+  }
+</style>

@@ -2,6 +2,8 @@
 const { title = "Dashboard" } = Astro.props;
 const slug = Astro.params.slug || "wayan-ayu"; // default fallback for safety
 const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/${slug}`, '')}`;
+const session = Astro.locals.session;
+const isAdmin = session?.role === 'admin';
 import "../styles/dashboard.scss";
 import PopupDialog from "../components/common/PopupDialog.astro";
 ---
@@ -61,6 +63,12 @@ import PopupDialog from "../components/common/PopupDialog.astro";
           <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/rsvp` ? "font-variation-settings: 'FILL' 1" : ""}>mail</span>
           RSVP
         </a>
+        {isAdmin && (
+          <a href={`/dashboard/${slug}/aktivitas`} class={`nav-link ${currentPath === `/dashboard/${slug}/aktivitas` ? 'nav-link--active' : ''}`}>
+            <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/aktivitas` ? "font-variation-settings: 'FILL' 1" : ""}>insights</span>
+            Aktivitas Tamu
+          </a>
+        )}
         <a href={`/dashboard/${slug}/profile`} class={`nav-link ${currentPath === `/dashboard/${slug}/profile` ? 'nav-link--active' : ''}`}>
           <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/profile` ? "font-variation-settings: 'FILL' 1" : ""}>person</span>
           Profil
@@ -90,6 +98,12 @@ import PopupDialog from "../components/common/PopupDialog.astro";
         <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/rsvp` ? "font-variation-settings: 'FILL' 1" : ""}>mail</span>
         <span class="bottom-nav-item__text">RSVP</span>
       </a>
+      {isAdmin && (
+        <a href={`/dashboard/${slug}/aktivitas`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/aktivitas` ? 'bottom-nav-item--active' : ''}`}>
+          <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/aktivitas` ? "font-variation-settings: 'FILL' 1" : ""}>insights</span>
+          <span class="bottom-nav-item__text">Aktivitas</span>
+        </a>
+      )}
       <a href={`/dashboard/${slug}/profile`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}/profile` ? 'bottom-nav-item--active' : ''}`}>
         <span class="material-symbols-outlined" style={currentPath === `/dashboard/${slug}/profile` ? "font-variation-settings: 'FILL' 1" : ""}>person</span>
         <span class="bottom-nav-item__text">Profil</span>

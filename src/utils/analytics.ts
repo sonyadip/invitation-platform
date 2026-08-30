@@ -93,6 +93,61 @@ export function parseUserAgent(uaString: string | null | undefined): ParsedUserA
   };
 }
 
+export function detectDeviceModel(uaString: string | null | undefined): string {
+  if (!uaString) return 'Perangkat Tidak Diketahui';
+  const ua = uaString.toLowerCase();
+
+  if (/iphone/i.test(ua)) return 'Apple iPhone';
+  if (/ipad/i.test(ua)) return 'Apple iPad';
+  if (/macintosh|mac os x/i.test(ua)) return 'Mac / MacBook';
+  if (/samsung|sm-[a-z0-9]+/i.test(ua)) return 'Samsung Galaxy';
+  if (/redmi|xiaomi|poco/i.test(ua)) return 'Xiaomi / Redmi';
+  if (/oppo|cph[0-9]+/i.test(ua)) return 'Oppo';
+  if (/vivo|v[0-9]{4}/i.test(ua)) return 'Vivo';
+  if (/realme|rmx[0-9]+/i.test(ua)) return 'Realme';
+  if (/huawei|honor/i.test(ua)) return 'Huawei / Honor';
+  if (/windows nt/i.test(ua)) return 'Windows PC / Laptop';
+  if (/linux/i.test(ua)) return 'Linux';
+  if (/android/i.test(ua)) return 'Android Smartphone';
+  return 'Perangkat Web';
+}
+
+export function parseTrafficSource(referrer: string | null | undefined, userAgent: string | null | undefined): string {
+  const ref = (referrer || '').toLowerCase();
+  const ua = (userAgent || '').toLowerCase();
+
+  if (/instagram/i.test(ua) || /l\.instagram\.com/i.test(ref) || /instagram\.com/i.test(ref)) {
+    return 'Instagram (Story / DM)';
+  }
+  if (/whatsapp/i.test(ua) || /wa\.me/i.test(ref) || /whatsapp\.com/i.test(ref)) {
+    return 'WhatsApp (Pesan Chat)';
+  }
+  if (/tiktok/i.test(ua) || /tiktok\.com/i.test(ref)) {
+    return 'TikTok';
+  }
+  if (/facebook|fbav|fban/i.test(ua) || /facebook\.com|fb\.com|l\.facebook\.com/i.test(ref)) {
+    return 'Facebook';
+  }
+  if (/twitter|x-agent/i.test(ua) || /t\.co|twitter\.com|x\.com/i.test(ref)) {
+    return 'Twitter (X)';
+  }
+  if (/google\./i.test(ref)) {
+    return 'Google Search';
+  }
+  if (/telegram/i.test(ua)) {
+    return 'Telegram';
+  }
+  if (!referrer || ref === '' || /localhost|senadda\.id/i.test(ref)) {
+    return 'Tautan Langsung / WhatsApp';
+  }
+  try {
+    const url = new URL(referrer);
+    return url.hostname.replace(/^www\./, '');
+  } catch {
+    return 'Tautan Eksternal';
+  }
+}
+
 export function extractClientContext(request: Request) {
   const headers = request.headers;
   const userAgent = headers.get('user-agent') || '';

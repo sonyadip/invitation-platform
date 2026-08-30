@@ -174,3 +174,97 @@ body:has(#cinematic-preloader:not([style*="display: none"])) .audio-toggle {
   transform: scale(0.8) !important;
 }
 
+// --- 8. Gift Button & Copy Micro-interactions ---
+.gift-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease,
+    opacity 0.22s ease !important;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.is-copied {
+    animation: giftBtnPop 0.36s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    .gift-btn__icon--copy {
+      opacity: 0 !important;
+      transform: scale(0.4) rotate(20deg) !important;
+    }
+
+    .gift-btn__icon--check {
+      opacity: 1 !important;
+      transform: scale(1) rotate(0deg) !important;
+    }
+  }
+}
+
+.gift-btn__icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-bottom: 2.5px;
+}
+
+.gift-btn__icon {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  stroke: currentColor;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.gift-btn__icon--copy {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.gift-btn__icon--check {
+  opacity: 0;
+  transform: scale(0.4) rotate(-20deg);
+  stroke-width: 2.5;
+}
+
+.gift-btn__text {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+}
+
+@keyframes giftBtnPop {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+

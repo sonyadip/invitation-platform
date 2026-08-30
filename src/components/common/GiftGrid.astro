@@ -35,12 +35,16 @@ const { gifts, hidden = false } = Astro.props;
       </div>
       <div class="gift-card__actions">
         <button class="gift-btn gift-btn--copy" data-copy-btn data-value={gift.account_number} type="button">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-          </svg>
-          <span>Salin</span>
+          <span class="gift-btn__icon-wrapper">
+            <svg class="gift-btn__icon gift-btn__icon--copy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            <svg class="gift-btn__icon gift-btn__icon--check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </span>
+          <span class="gift-btn__text">Salin</span>
         </button>
-        
       </div>
     </article>
     );
@@ -48,32 +52,7 @@ const { gifts, hidden = false } = Astro.props;
 </div>
 
 <script>
-  function initGiftInteractions() {
-    const copyBtns = document.querySelectorAll('[data-copy-btn]');
-    copyBtns.forEach((btn) => {
-      if ((btn as HTMLElement).dataset.initialized === 'true') return;
-      (btn as HTMLElement).dataset.initialized = 'true';
-      
-      btn.addEventListener('click', async () => {
-        const value = btn.getAttribute('data-value') || '';
-        const textSpan = btn.querySelector('span');
-        const originalText = textSpan?.textContent || 'Salin';
-
-        try {
-          await navigator.clipboard.writeText(value);
-          btn.classList.add('is-copied');
-          if (textSpan) textSpan.textContent = 'Tersalin';
-          setTimeout(() => {
-            btn.classList.remove('is-copied');
-            if (textSpan) textSpan.textContent = originalText;
-          }, 1800);
-        } catch (error) {
-          console.error('Failed to copy:', error);
-        }
-      });
-    });
-  }
-  
-  document.addEventListener('astro:page-load', initGiftInteractions);
+  import { initGiftInteractions } from '../../scripts/template-modules';
+  document.addEventListener('astro:page-load', () => initGiftInteractions());
   initGiftInteractions();
 </script>

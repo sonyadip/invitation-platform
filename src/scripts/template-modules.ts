@@ -1,3 +1,5 @@
+import { sendAnalyticsEvent } from './analytics';
+
 export function initCountdown(root: Element | Document = document) {
   const timer = root.querySelector('[data-countdown-timer]');
   if (!(timer instanceof HTMLElement)) return;
@@ -39,11 +41,41 @@ export function initCountdown(root: Element | Document = document) {
   update();
 }
 
+function copyTextToClipboard(text: string): boolean {
+  if (navigator.clipboard && window.isSecureContext && document.hasFocus()) {
+    navigator.clipboard.writeText(text).catch(() => {
+      fallbackCopy(text);
+    });
+    return true;
+  }
+  return fallbackCopy(text);
+}
+
+function fallbackCopy(text: string): boolean {
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    textArea.style.opacity = '0';
+    textArea.setAttribute('readonly', '');
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return successful;
+  } catch (err) {
+    console.error('Fallback copy failed:', err);
+    return false;
+  }
+}
+
 export function initGiftInteractions(root: Element | Document = document) {
   const giftToggle = root.querySelector('[data-gift-toggle]');
   const giftGrid = root.querySelector('[data-gift-grid]');
   const copyBtns = root.querySelectorAll('[data-copy-btn]') || [];
-
 
   if (giftToggle instanceof HTMLButtonElement && giftGrid instanceof HTMLElement) {
     if (giftToggle.dataset.bound !== 'true') {
@@ -71,19 +103,35 @@ export function initGiftInteractions(root: Element | Document = document) {
   }
 
   copyBtns.forEach((btn) => {
-    if ((btn as HTMLElement).dataset.bound === 'true') return;
-    (btn as HTMLElement).dataset.bound = 'true';
+    if (!(btn instanceof HTMLElement)) return;
+    if (btn.dataset.bound === 'true') return;
+    btn.dataset.bound = 'true';
 
-    btn.addEventListener('click', async () => {
+    let timeoutId: number | undefined;
+
+    btn.addEventListener('click', () => {
       const value = btn.getAttribute('data-value') || '';
-      const textSpan = btn.querySelector('span');
-      const originalText = textSpan?.textContent || 'Salin';
+      const textSpan = btn.querySelector('.gift-btn__text') || btn.querySelector('span:last-of-type') || btn.querySelector('span');
+      
+      if (!btn.dataset.originalText && textSpan?.textContent) {
+        btn.dataset.originalText = textSpan.textContent.trim();
+      }
+      const originalText = btn.dataset.originalText || 'Salin';
 
       try {
-        await navigator.clipboard.writeText(value);
+        copyTextToClipboard(value);
+
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+
+        btn.classList.remove('is-copied');
+        void btn.offsetWidth; // force reflow for smooth animation replay
         btn.classList.add('is-copied');
+
         if (textSpan) textSpan.textContent = 'Tersalin';
-        setTimeout(() => {
+
+        timeoutId = window.setTimeout(() => {
           btn.classList.remove('is-copied');
           if (textSpan) textSpan.textContent = originalText;
         }, 1800);
@@ -92,8 +140,6 @@ export function initGiftInteractions(root: Element | Document = document) {
       }
     });
   });
-
-
 }
 
 export async function initGalleryLightbox(root: Element | Document = document, groupName: string = 'gallery-section') {
@@ -108,6 +154,25 @@ export async function initGalleryLightbox(root: Element | Document = document, g
     try {
       Fancybox.unbind(container, selector);
     } catch (_) {}
+
+    let lastTrackedSlideIndex = -1;
+    let lastSlideTrackTime = 0;
+
+    const trackSlideView = (slide: any, index: number, action: string) => {
+      const now = Date.now();
+      if (lastTrackedSlideIndex === index && now - lastSlideTrackTime < 800) return;
+      lastTrackedSlideIndex = index;
+      lastSlideTrackTime = now;
+      try {
+        sendAnalyticsEvent('view_gallery', {
+          metadata: {
+            action,
+            slideIndex: index,
+            src: String(slide?.src || slide?.thumb || '').slice(0, 150)
+          }
+        });
+      } catch (_) {}
+    };
 
     Fancybox.bind(container, selector, {
       groupAll: false,
@@ -133,6 +198,20 @@ export async function initGalleryLightbox(root: Element | Document = document, g
       Images: {
         zoom: true,
       },
+      on: {
+        'ready': (fancybox: any) => {
+          const slide = fancybox.getSlide ? fancybox.getSlide() : null;
+          const index = (fancybox.pageIndex ?? fancybox.page ?? 0) + 1;
+          trackSlideView(slide, index, 'open_lightbox');
+        },
+        'Carousel.change': (_fancybox: any, carousel: any, to: number) => {
+          const slide = carousel?.slides ? carousel.slides[to] : null;
+          trackSlideView(slide, to + 1, 'slide_change');
+        },
+        'close': () => {
+          lastTrackedSlideIndex = -1;
+        }
+      }
     });
   } catch (error) {
     console.error('Failed to initialize gallery lightbox:', error);
@@ -161,9 +240,19 @@ export function initVideoPlayers(root: Element | Document = document) {
       video.play().catch(showPosterState);
     });
 
+    let lastPlayTrackTime = 0;
     video.addEventListener('play', () => {
       player.classList.add('is-playing');
       video.controls = true;
+      const now = Date.now();
+      if (now - lastPlayTrackTime > 2000) {
+        lastPlayTrackTime = now;
+        try {
+          sendAnalyticsEvent('play_video', {
+            metadata: { src: video.currentSrc || video.src || '' }
+          });
+        } catch (_) {}
+      }
     });
     video.addEventListener('pause', showPosterState);
     video.addEventListener('ended', showPosterState);
@@ -212,6 +301,30 @@ export function initBackgroundAudioHandler(
   if (!song || typeof document === 'undefined') return;
 
   let wasPlayingBeforeHidden = false;
+  let lastAudioPlayTrackTime = 0;
+  let lastAudioPauseTrackTime = 0;
+
+  song.addEventListener('play', () => {
+    const now = Date.now();
+    if (now - lastAudioPlayTrackTime > 250) {
+      lastAudioPlayTrackTime = now;
+      try {
+        sendAnalyticsEvent('play_music');
+      } catch (_) {}
+    }
+  });
+
+  song.addEventListener('pause', () => {
+    if (!document.hidden) {
+      const now = Date.now();
+      if (now - lastAudioPauseTrackTime > 250) {
+        lastAudioPauseTrackTime = now;
+        try {
+          sendAnalyticsEvent('pause_music');
+        } catch (_) {}
+      }
+    }
+  });
 
   const handleVisibilityChange = () => {
     if (document.hidden) {

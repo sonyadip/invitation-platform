@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem } from '../types';
 import { decodeHtmlEntities } from '../utils/template-helpers';
-import { parseUserAgent } from '../utils/analytics';
+import { parseUserAgent, detectDeviceModel, parseTrafficSource } from '../utils/analytics';
 
 export interface SlugReport {
   weddingId: string;
@@ -174,6 +174,11 @@ export interface SlugReportDetail {
       clickMaps: number;
       clickCalendar: number;
       copyGift: number;
+      playMusic?: number;
+      playVideo?: number;
+      clickWishes?: number;
+      clickRsvp?: number;
+      viewGallery?: number;
       clickCoupleInstagram: number;
       clickVendorWhatsApp: number;
       clickVendorInstagram: number;
@@ -187,6 +192,26 @@ export interface SlugReportDetail {
       browser: string;
       city: string | null;
       country: string | null;
+      createdAt: string;
+    }>;
+    allVisitors?: Array<{
+      id: string;
+      guestName: string | null;
+      deviceType: string;
+      deviceModel: string;
+      os: string;
+      browser: string;
+      source: string;
+      city: string | null;
+      country: string | null;
+      referrer: string | null;
+      createdAt: string;
+    }>;
+    allEvents?: Array<{
+      id: string;
+      eventType: string;
+      guestName: string | null;
+      metadata: Record<string, any>;
       createdAt: string;
     }>;
   };
@@ -532,6 +557,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   let clickMapsCount = 0;
   let clickCalendarCount = 0;
   let copyGiftCount = 0;
+  let playMusicCount = 0;
+  let playVideoCount = 0;
+  let clickWishesCount = 0;
+  let clickRsvpCount = 0;
+  let viewGalleryCount = 0;
   let clickCoupleInstagramCount = 0;
   let clickVendorWhatsAppCount = 0;
   let clickVendorInstagramCount = 0;
@@ -542,6 +572,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     else if (ev.event_type === 'click_maps') clickMapsCount++;
     else if (ev.event_type === 'click_calendar') clickCalendarCount++;
     else if (ev.event_type === 'copy_gift') copyGiftCount++;
+    else if (ev.event_type === 'play_music') playMusicCount++;
+    else if (ev.event_type === 'play_video') playVideoCount++;
+    else if (ev.event_type === 'click_wishes') clickWishesCount++;
+    else if (ev.event_type === 'click_rsvp') clickRsvpCount++;
+    else if (ev.event_type === 'view_gallery') viewGalleryCount++;
     else if (ev.event_type === 'click_couple_instagram') clickCoupleInstagramCount++;
     else if (ev.event_type === 'click_vendor_whatsapp') clickVendorWhatsAppCount++;
     else if (ev.event_type === 'click_vendor_instagram') clickVendorInstagramCount++;
@@ -553,6 +588,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     clickMaps: clickMapsCount,
     clickCalendar: clickCalendarCount,
     copyGift: copyGiftCount,
+    playMusic: playMusicCount,
+    playVideo: playVideoCount,
+    clickWishes: clickWishesCount,
+    clickRsvp: clickRsvpCount,
+    viewGallery: viewGalleryCount,
     clickCoupleInstagram: clickCoupleInstagramCount,
     clickVendorWhatsApp: clickVendorWhatsAppCount,
     clickVendorInstagram: clickVendorInstagramCount,
@@ -560,24 +600,50 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     totalInteractions: trackedEvents.length
   };
 
-  const recentVisitors = views.slice(0, 10).map((v) => {
+  const allVisitors = views.map((v) => {
     const parsed = parseUserAgent(v.user_agent || '');
+    const deviceModel = detectDeviceModel(v.user_agent || '');
+    const source = parseTrafficSource(v.referrer, v.user_agent);
     return {
-      guestName: v.guest_name || null,
+      id: v.id || '',
+      guestName: v.guest_name ? decodeHtmlEntities(v.guest_name) : null,
       deviceType: v.device_type || parsed.deviceType || 'mobile',
+      deviceModel,
       os: v.os || parsed.os || 'Unknown',
       browser: (v.browser && v.browser !== 'Other' ? v.browser : null) || parsed.browser || 'Unknown',
+      source,
       city: v.city || null,
       country: v.country || null,
+      referrer: v.referrer || null,
       createdAt: v.created_at
     };
   });
+
+  const recentVisitors = allVisitors.slice(0, 10).map(v => ({
+    guestName: v.guestName,
+    deviceType: v.deviceType,
+    os: v.os,
+    browser: v.browser,
+    city: v.city,
+    country: v.country,
+    createdAt: v.createdAt
+  }));
+
+  const allEvents = trackedEvents.map((ev) => ({
+    id: ev.id || '',
+    eventType: ev.event_type,
+    guestName: ev.guest_name ? decodeHtmlEntities(ev.guest_name) : null,
+    metadata: ev.metadata || {},
+    createdAt: ev.created_at
+  }));
 
   const analytics = {
     deviceStats,
     browserStats,
     interactionStats,
-    recentVisitors
+    recentVisitors,
+    allVisitors,
+    allEvents
   };
 
   const dailyViews = Array.from(dailyViewMap.entries())
