@@ -455,7 +455,7 @@ async function uploadImageFile(
     .storage
     .from(storageBucket)
     .upload(path, file, {
-      cacheControl: '3600',
+      cacheControl: '31536000, immutable',
       upsert: true,
       contentType: file.type
     });
@@ -487,7 +487,7 @@ async function uploadAudioFile(
     .storage
     .from(storageBucket)
     .upload(path, file, {
-      cacheControl: '3600',
+      cacheControl: '31536000, immutable',
       upsert: true,
       contentType: file.type || 'audio/mpeg'
     });

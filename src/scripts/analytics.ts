@@ -20,6 +20,8 @@ interface TrackEventOptions {
   metadata?: Record<string, any>;
 }
 
+const recentEventCache = new Map<string, number>();
+
 export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOptions = {}) {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
@@ -27,6 +29,15 @@ export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOpti
   if (!weddingId || weddingId.startsWith('preview-')) return;
 
   const guestName = options.guestName ?? document.body.dataset.guestName ?? null;
+
+  // Prevent duplicate rapid-fire event submissions within 1.5 seconds
+  const dedupeKey = `${weddingId}:${eventType}:${guestName || ''}`;
+  const now = Date.now();
+  const lastTime = recentEventCache.get(dedupeKey) || 0;
+  if (now - lastTime < 1500) {
+    return; // Debounce duplicate event
+  }
+  recentEventCache.set(dedupeKey, now);
 
   const payload = {
     weddingId,
@@ -41,18 +52,17 @@ export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOpti
 
   try {
     const payloadStr = JSON.stringify(payload);
-    // Use immediate fetch with keepalive for instantaneous tracking
-    fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payloadStr,
-      keepalive: true
-    }).catch(() => {
-      if (navigator.sendBeacon) {
-        const blob = new Blob([payloadStr], { type: 'application/json' });
-        navigator.sendBeacon('/api/analytics/track', blob);
-      }
-    });
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payloadStr], { type: 'application/json' });
+      navigator.sendBeacon('/api/analytics/track', blob);
+    } else {
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payloadStr,
+        keepalive: true
+      }).catch(() => {});
+    }
   } catch (err) {
     // Fail silently so user experience is never interrupted
   }

@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import { toCdnUrl } from '../../utils/cdn';
 
 interface Props {
   src: string | ImageMetadata | undefined | null;
@@ -18,12 +19,13 @@ const { src, alt, class: className, loading = 'lazy', fetchpriority, width, heig
 if (!src) return null;
 
 const isString = typeof src === 'string';
-const isVideo = isString && (src.endsWith('.mp4') || src.endsWith('.webm'));
+const resolvedSrc = isString ? toCdnUrl(src as string) : src;
+const isVideo = isString && (String(resolvedSrc).endsWith('.mp4') || String(resolvedSrc).endsWith('.webm'));
 ---
 
 {isVideo ? (
   <video
-    src={src as string}
+    src={resolvedSrc as string}
     class={className}
     autoplay
     loop
@@ -33,7 +35,7 @@ const isVideo = isString && (src.endsWith('.mp4') || src.endsWith('.webm'));
   ></video>
 ) : isString ? (
   <img 
-    src={src as string} 
+    src={resolvedSrc as string} 
     alt={alt} 
     class={className} 
     loading={loading} 

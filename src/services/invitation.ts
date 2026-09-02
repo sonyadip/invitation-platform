@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { FullInvitationData, LoveStoryItem } from '../types';
 import { decodeHtmlEntities } from '../utils/template-helpers';
+import { transformMediaUrls } from '../utils/cdn';
 
 function parseLoveStory(story: unknown): LoveStoryItem[] {
   if (!story) return [];
@@ -98,14 +99,14 @@ export async function getInvitationByDomainOrSlug(
     }
 
     return {
-      wedding: {
+      wedding: transformMediaUrls({
         ...wedding,
         story: parseLoveStory(wedding.story)
-      },
-      settings: settingsRes.data,
+      }),
+      settings: transformMediaUrls(settingsRes.data),
       events: eventsRes.data || [],
-      gallery: galleryRes.data || [],
-      gifts: giftsRes.data || [],
+      gallery: transformMediaUrls(galleryRes.data || []),
+      gifts: transformMediaUrls(giftsRes.data || []),
       wishes: (wishesRes.data || []).map((w: any) => ({
         ...w,
         guest_name: decodeHtmlEntities(w.guest_name),

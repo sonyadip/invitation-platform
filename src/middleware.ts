@@ -13,11 +13,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
 Selamat datang di Senadda, platform pembuatan undangan digital yang premium, elegan, dan eksklusif.
 
 ## Koleksi Template
-- Lumiere (Rp 200.000)
-- Deauville (Rp 175.000)
-- Editorial (Rp 175.000)
-- Air (Rp 125.000)
-- Noir (Rp 125.000)
+- Lumiere (Rp 300.000)
+- Editorial (Rp 250.000)
+- Deauville (Rp 200.000)
+- Air (Rp 150.000)
+- Noir (Rp 150.000)
 
 ## Konsultasi & Pemesanan
 Silakan hubungi kami melalui WhatsApp untuk pemesanan.

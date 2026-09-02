@@ -52,12 +52,34 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonResponse({ error: 'Invalid or unsupported eventType' }, 400);
     }
 
-    // Insert into invitation_events using admin supabase
+    // Server-side deduplication safeguard within 2 seconds
     const adminSupabase = await getSupabaseAdmin();
+    const twoSecondsAgo = new Date(Date.now() - 2000).toISOString();
+    const sanitizedGuest = guestName ? String(guestName).trim().slice(0, 255) : null;
+
+    let checkQuery = adminSupabase
+      .from('invitation_events')
+      .select('id')
+      .eq('wedding_id', weddingId)
+      .eq('event_type', eventType)
+      .gte('created_at', twoSecondsAgo);
+
+    if (sanitizedGuest) {
+      checkQuery = checkQuery.eq('guest_name', sanitizedGuest);
+    } else {
+      checkQuery = checkQuery.is('guest_name', null);
+    }
+
+    const { data: recentEvents } = await checkQuery.limit(1);
+    if (recentEvents && recentEvents.length > 0) {
+      return jsonResponse({ success: true, deduped: true });
+    }
+
+    // Insert into invitation_events using admin supabase
     const { error } = await adminSupabase.from('invitation_events').insert({
       wedding_id: weddingId,
       event_type: eventType,
-      guest_name: guestName ? String(guestName).trim().slice(0, 255) : null,
+      guest_name: sanitizedGuest,
       metadata: metadata && typeof metadata === 'object' ? metadata : {}
     });
 
