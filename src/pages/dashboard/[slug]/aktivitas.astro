@@ -484,6 +484,10 @@ const guestJourneys = Array.from(guestMap.values()).sort((a, b) => {
   return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
 });
 
+// Limit SSR DOM nodes to prevent Cloudflare Worker CPU & Memory limit (Error 1102)
+const displayActivities = activities.slice(0, 150);
+const displayGuestJourneys = guestJourneys.slice(0, 80);
+
 function timeAgo(dateStr: string): string {
   if (!dateStr) return '';
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -1010,14 +1014,14 @@ const originUrl = Astro.url.origin;
 
       <!-- Activity Items Feed (Timeline) -->
       <div class="activity-list" id="activityList">
-        {activities.length === 0 ? (
+        {displayActivities.length === 0 ? (
           <div class="activity-empty">
             <span class="material-symbols-outlined activity-empty__icon">inbox</span>
             <p class="activity-empty__title">Belum Ada Aktivitas</p>
             <p class="activity-empty__text">Log interaksi dan kunjungan tamu akan otomatis dicatat di sini secara real-time.</p>
           </div>
         ) : (
-          activities.map((item, index) => {
+          displayActivities.map((item, index) => {
             const isGuest = !!item.guestName;
             const guestDisplay = isGuest ? item.guestName : 'Pengunjung Umum (Anonim)';
             const guestRsvp = isGuest && item.guestName ? rsvpMap.get(item.guestName.trim().toLowerCase()) : null;
@@ -1139,14 +1143,14 @@ const originUrl = Astro.url.origin;
 
       <!-- Guest Journeys Feed (Per Tamu) -->
       <div class="guest-journey-list" id="guestJourneyList" style="display: none;">
-        {guestJourneys.length === 0 ? (
+        {displayGuestJourneys.length === 0 ? (
           <div class="activity-empty">
             <span class="material-symbols-outlined activity-empty__icon">group_off</span>
             <p class="activity-empty__title">Belum Ada Tamu Terdeteksi</p>
             <p class="activity-empty__text">Aktivitas per tamu akan muncul otomatis saat ada tamu membuka tautan undangan.</p>
           </div>
         ) : (
-          guestJourneys.map(guest => {
+          displayGuestJourneys.map(guest => {
             const searchIndex = `${guest.guestName} ${guest.rsvp?.message || ''} ${guest.sentInfo?.phone || ''} ${guest.devices.join(' ')} ${guest.browsers.join(' ')} ${guest.sources.join(' ')} ${guest.cities.join(' ')}`.toLowerCase();
             const initials = guest.isGuest ? guest.guestName.slice(0, 2).toUpperCase() : '?';
             const guestDirectLink = `${originUrl}/${slug}?to=${encodeURIComponent(guest.guestName)}`;
