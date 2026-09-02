@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { fetchAllRows } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { jsonResponse } from '../../utils/http';
 import { getSessionFromCookies } from '../../utils/session';
@@ -48,12 +49,15 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       }
 
       // Check past views for all guests in batch
-      const { data: allPastViews } = await adminSupabase
-        .from('invitation_views')
-        .select('guest_name, created_at')
-        .eq('wedding_id', weddingId)
-        .not('guest_name', 'is', null)
-        .order('created_at', { ascending: true });
+      const allPastViews = await fetchAllRows((from, to) =>
+        adminSupabase
+          .from('invitation_views')
+          .select('guest_name, created_at')
+          .eq('wedding_id', weddingId)
+          .not('guest_name', 'is', null)
+          .order('created_at', { ascending: true })
+          .range(from, to)
+      );
 
       const pastViewsMap = new Map<string, { first: string; last: string; count: number }>();
       if (allPastViews) {
@@ -105,12 +109,15 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const cleanName = String(name).trim();
 
     // Check if there are existing views for this guest in invitation_views
-    const { data: pastViews } = await adminSupabase
-      .from('invitation_views')
-      .select('created_at')
-      .eq('wedding_id', weddingId)
-      .ilike('guest_name', cleanName)
-      .order('created_at', { ascending: true });
+    const pastViews = await fetchAllRows((from, to) =>
+      adminSupabase
+        .from('invitation_views')
+        .select('created_at')
+        .eq('wedding_id', weddingId)
+        .ilike('guest_name', cleanName)
+        .order('created_at', { ascending: true })
+        .range(from, to)
+    );
 
     let openedAt: string | null = null;
     let lastOpenedAt: string | null = null;

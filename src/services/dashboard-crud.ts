@@ -384,9 +384,9 @@ function validateAudioFile(file: File) {
     throw new Error(`Unsupported audio type for ${file.name}. Use MP3, WAV, OGG, AAC, M4A, or WebM.`);
   }
 
-  const maxAudioBytes = 20 * 1024 * 1024; // 20MB limit for audio
+  const maxAudioBytes = 5 * 1024 * 1024; // 5MB limit for audio
   if (file.size > maxAudioBytes) {
-    throw new Error(`${file.name} is too large. Maximum audio upload is 20 MB.`);
+    throw new Error(`${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum audio upload is 5 MB.`);
   }
 }
 

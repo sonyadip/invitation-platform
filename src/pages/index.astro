@@ -1774,41 +1774,32 @@ const schemaData = {
     top: 82px;
     left: 20px;
     z-index: 0;
-    width: min(36vw, 520px);
-    min-width: 320px;
-    aspect-ratio: 4 / 5;
+    width: fit-content;
+    height: fit-content;
     transform: translate3d(0, 0, 0) scale(1);
     transition:
       top 1.25s cubic-bezier(0.76, 0, 0.24, 1),
       left 1.25s cubic-bezier(0.76, 0, 0.24, 1),
-      width 1.25s cubic-bezier(0.76, 0, 0.24, 1),
-      min-width 1.25s cubic-bezier(0.76, 0, 0.24, 1),
       transform 1.25s cubic-bezier(0.76, 0, 0.24, 1);
-    will-change: top, left, width, transform;
+    will-change: top, left, transform;
   }
 
   body.intro-enter .hero-motion-wrap {
     top: 50%;
     left: 50%;
     z-index: 140;
-    width: min(42vw, 540px);
-    min-width: 340px;
     transform: translate3d(-50%, -50%, 0) scale(0.96);
   }
   body.intro-hold .hero-motion-wrap {
     top: 50%;
     left: 50%;
     z-index: 140;
-    width: min(42vw, 540px);
-    min-width: 340px;
     transform: translate3d(-50%, -50%, 0) scale(0.96);
   }
   body.intro-ring-shrink .hero-motion-wrap {
     top: 50%;
     left: 50%;
     z-index: 140;
-    width: min(42vw, 540px);
-    min-width: 340px;
     transform: translate3d(-50%, -50%, 0) scale(0.96);
   }
   body.intro-exit .hero-motion-wrap {
@@ -1824,10 +1815,23 @@ const schemaData = {
   }
 
   .hero-motion {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    width: min(36vw, 520px);
+    min-width: 320px;
+    aspect-ratio: 4 / 5;
     overflow: hidden;
     box-shadow: 0 30px 90px rgba(44, 18, 85, 0.16);
+    transition:
+      width 1.25s cubic-bezier(0.76, 0, 0.24, 1),
+      height 1.25s cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: width, height;
+  }
+
+  body.intro-enter .hero-motion,
+  body.intro-hold .hero-motion,
+  body.intro-ring-shrink .hero-motion {
+    width: min(42vw, 540px);
+    min-width: 340px;
   }
 
   .hero-motion__card {
@@ -1913,6 +1917,7 @@ const schemaData = {
     display: block;
     width: 100%;
     height: 100%;
+    overflow: visible;
     animation: sealRotate 12s linear infinite;
   }
 
@@ -2621,8 +2626,21 @@ const schemaData = {
     }
     .hero-motion-wrap {
       top: 102px;
-      left: 48px;
-      width: min(40vw, 560px);
+      left: 56px;
+    }
+    .hero-motion {
+      height: clamp(320px, calc(100svh - 260px), 75vh);
+      width: auto;
+      min-width: 0;
+      aspect-ratio: 4 / 5;
+    }
+    body.intro-enter .hero-motion,
+    body.intro-hold .hero-motion,
+    body.intro-ring-shrink .hero-motion {
+      height: clamp(420px, calc(100svh - 160px), 620px);
+      width: auto;
+      min-width: 0;
+      aspect-ratio: 4 / 5;
     }
     .hero-motion-seal {
       --seal-size: 112px;
@@ -2750,13 +2768,14 @@ const schemaData = {
     .hero-motion-wrap {
       top: 135px;
       left: 16px;
+    }
+    .hero-motion {
       width: min(75vw, 350px);
       min-width: 172px;
 
       @media (max-height: 900px) {
         width: min(75vw, 320px);
       }
-
       @media (max-height: 800px) {
         width: min(75vw, 290px);
       }
@@ -2764,42 +2783,16 @@ const schemaData = {
         width: min(75vw, 260px);
       }
     }
-    body.intro-enter .hero-motion-wrap {
-      top: 50%;
-      left: 50%;
+    body.intro-enter .hero-motion,
+    body.intro-hold .hero-motion,
+    body.intro-ring-shrink .hero-motion {
       width: min(76vw, 290px);
       min-width: 0;
-      transform: translate3d(-50%, -50%, 0) scale(1);
-    }
-    body.intro-hold .hero-motion-wrap {
-      top: 50%;
-      left: 50%;
-      width: min(76vw, 290px);
-      min-width: 0;
-      transform: translate3d(-50%, -50%, 0) scale(1);
-    }
-    body.intro-ring-shrink .hero-motion-wrap {
-      top: 50%;
-      left: 50%;
-      width: min(76vw, 290px);
-      min-width: 0;
-      transform: translate3d(-50%, -50%, 0) scale(1);
-    }
-
-    .hero-motion__card img {
-      --hero-image-parallax: calc(var(--hero-scroll) * -28px);
     }
     .hero-motion-seal {
       --seal-size: 82px;
       top: -24px;
       left: -18px;
-    }
-    body.intro-enter .hero-motion-seal,
-    body.intro-hold .hero-motion-seal {
-      --seal-size: min(140vw, 560px);
-    }
-    body.intro-ring-shrink .hero-motion-seal {
-      --seal-size: 150px;
     }
     .hero-motion-seal text {
       font-size: 9px;

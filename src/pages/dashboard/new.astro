@@ -615,6 +615,11 @@ if (Astro.request.method === 'POST') {
         }
       });
 
+      // Auto Media Compression (WebP image resize + LAME MP3 128kbps)
+      import('../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
+        if (newForm) bindAutoMediaCompression(newForm);
+      }).catch(console.warn);
+
       newForm?.addEventListener('submit', async (e) => {
         const sourceFile = heroFileInput?.files?.[0];
         const sourceUrl = heroUrlInput?.value.trim();

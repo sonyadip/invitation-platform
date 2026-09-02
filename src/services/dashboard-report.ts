@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, fetchAllRows } from '../lib/supabase';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem } from '../types';
 import { decodeHtmlEntities } from '../utils/template-helpers';
@@ -240,38 +240,47 @@ const emptyBucket = (): CountBucket => ({
 });
 
 export async function getDashboardReport(now = new Date()): Promise<DashboardReport> {
-  const [weddingsRes, settingsRes, domainsRes, viewsRes, rsvpsRes] = await Promise.all([
-    supabase
-      .from('weddings')
-      .select('id, slug, bride_name, groom_name, wedding_date, template, status, deleted_at, deleted_by, created_at')
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('invitation_settings')
-      .select('wedding_id, maintenance_mode, expiration_date, password_protection_enabled'),
-    supabase
-      .from('custom_domains')
-      .select('wedding_id, domain, status')
-      .eq('status', 'active'),
-    supabase
-      .from('invitation_views')
-      .select('wedding_id'),
-    supabase
-      .from('rsvps')
-      .select('wedding_id, attendance_status, guest_count, message, created_at')
-      .order('created_at', { ascending: false })
+  const [weddings, settingsData, domainsData, viewsData, rsvpsData] = await Promise.all([
+    fetchAllRows((from, to) =>
+      supabase
+        .from('weddings')
+        .select('id, slug, bride_name, groom_name, wedding_date, template, status, deleted_at, deleted_by, created_at')
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    ),
+    fetchAllRows((from, to) =>
+      supabase
+        .from('invitation_settings')
+        .select('wedding_id, maintenance_mode, expiration_date, password_protection_enabled')
+        .range(from, to)
+    ),
+    fetchAllRows((from, to) =>
+      supabase
+        .from('custom_domains')
+        .select('wedding_id, domain, status')
+        .eq('status', 'active')
+        .range(from, to)
+    ),
+    fetchAllRows((from, to) =>
+      supabase
+        .from('invitation_views')
+        .select('wedding_id')
+        .range(from, to)
+    ),
+    fetchAllRows((from, to) =>
+      supabase
+        .from('rsvps')
+        .select('wedding_id, attendance_status, guest_count, message, created_at')
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    )
   ]);
 
-  if (weddingsRes.error) throw weddingsRes.error;
-  if (settingsRes.error) throw settingsRes.error;
-  if (domainsRes.error) throw domainsRes.error;
-  if (viewsRes.error) throw viewsRes.error;
-  if (rsvpsRes.error) throw rsvpsRes.error;
-
   const settingsByWedding = new Map(
-    (settingsRes.data || []).map((settings: any) => [settings.wedding_id, settings])
+    settingsData.map((settings: any) => [settings.wedding_id, settings])
   );
   const domainByWedding = new Map(
-    (domainsRes.data || []).map((domain: any) => [domain.wedding_id, domain.domain])
+    domainsData.map((domain: any) => [domain.wedding_id, domain.domain])
   );
   const bucketByWedding = new Map<string, CountBucket>();
 
@@ -284,11 +293,11 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
     return next;
   };
 
-  for (const view of viewsRes.data || []) {
+  for (const view of viewsData) {
     bucketFor((view as any).wedding_id).views += 1;
   }
 
-  for (const rsvp of rsvpsRes.data || []) {
+  for (const rsvp of rsvpsData) {
     const row = rsvp as any;
     const bucket = bucketFor(row.wedding_id);
     const guestCount = Number(row.guest_count || 0);
@@ -304,7 +313,7 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
     }
   }
 
-  const reports = (weddingsRes.data || []).map((wedding: any) => {
+  const reports = weddings.map((wedding: any) => {
     const settings = settingsByWedding.get(wedding.id) as any;
     const bucket = bucketByWedding.get(wedding.id) || emptyBucket();
     const isExpired = Boolean(settings?.expiration_date && new Date(settings.expiration_date) < now);
@@ -389,7 +398,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
 
   const adminSupabase = await getSupabaseAdmin();
 
-  const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvpsRes] = await Promise.all([
+  const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvps] = await Promise.all([
     supabase
       .from('invitation_settings')
       .select('rsvp_enabled, music_enabled, countdown_enabled, gallery_enabled, wishes_enabled, gift_enabled, view_counter_enabled, maintenance_mode, expiration_date, password_protection_enabled, access_password, sections, theme_config, wa_templates')
@@ -416,68 +425,77 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .select('bank_name, account_number, account_name, qris_url')
       .eq('wedding_id', wedding.id)
       .order('sort_order', { ascending: true }),
-    supabase
-      .from('rsvps')
-      .select('id, guest_name, attendance_status, guest_count, message, created_at')
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false })
+    fetchAllRows((from, to) =>
+      supabase
+        .from('rsvps')
+        .select('id, guest_name, attendance_status, guest_count, message, created_at')
+        .eq('wedding_id', wedding.id)
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    )
   ]);
 
   // Resilient queries with graceful fallback for database schema safety
   let views: any[] = [];
   try {
-    const enrichedViews = await adminSupabase
-      .from('invitation_views')
-      .select('id, guest_name, device_type, os, browser, city, country, referrer, user_agent, created_at')
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false });
-
-    if (enrichedViews.error) {
-      const basicViews = await adminSupabase
+    views = await fetchAllRows((from, to) =>
+      adminSupabase
         .from('invitation_views')
-        .select('created_at, user_agent')
+        .select('id, guest_name, device_type, os, browser, city, country, referrer, user_agent, created_at')
         .eq('wedding_id', wedding.id)
-        .order('created_at', { ascending: false });
-      views = basicViews.data || [];
-    } else {
-      views = enrichedViews.data || [];
-    }
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    );
   } catch (e) {
-    views = [];
+    try {
+      views = await fetchAllRows((from, to) =>
+        adminSupabase
+          .from('invitation_views')
+          .select('created_at, user_agent')
+          .eq('wedding_id', wedding.id)
+          .order('created_at', { ascending: false })
+          .range(from, to)
+      );
+    } catch {
+      views = [];
+    }
   }
 
   let rawGuests: any[] = [];
   try {
-    const enrichedGuests = await adminSupabase
-      .from('sent_invitations')
-      .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false });
-
-    if (enrichedGuests.error) {
-      const basicGuests = await adminSupabase
+    rawGuests = await fetchAllRows((from, to) =>
+      adminSupabase
         .from('sent_invitations')
-        .select('id, guest_name, phone, created_at')
+        .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
         .eq('wedding_id', wedding.id)
-        .order('created_at', { ascending: false });
-      rawGuests = basicGuests.data || [];
-    } else {
-      rawGuests = enrichedGuests.data || [];
-    }
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    );
   } catch (e) {
-    rawGuests = [];
+    try {
+      rawGuests = await fetchAllRows((from, to) =>
+        adminSupabase
+          .from('sent_invitations')
+          .select('id, guest_name, phone, created_at')
+          .eq('wedding_id', wedding.id)
+          .order('created_at', { ascending: false })
+          .range(from, to)
+      );
+    } catch {
+      rawGuests = [];
+    }
   }
 
   let trackedEvents: any[] = [];
   try {
-    const { data: eventsData, error: eventsError } = await adminSupabase
-      .from('invitation_events')
-      .select('id, event_type, guest_name, metadata, created_at')
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false });
-    if (!eventsError && eventsData) {
-      trackedEvents = eventsData;
-    }
+    trackedEvents = await fetchAllRows((from, to) =>
+      adminSupabase
+        .from('invitation_events')
+        .select('id, event_type, guest_name, metadata, created_at')
+        .eq('wedding_id', wedding.id)
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    );
   } catch (e) {
     trackedEvents = [];
   }
@@ -487,13 +505,11 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   if (eventsRes.error) throw eventsRes.error;
   if (galleryRes.error) throw galleryRes.error;
   if (giftsRes.error) throw giftsRes.error;
-  if (rsvpsRes.error) throw rsvpsRes.error;
 
   const settings = settingsRes.data as any;
   const assets = settings?.theme_config?.assets || {};
   const content = settings?.theme_config?.content || {};
   const waTemplates = settings?.wa_templates || { "Formal": "", "Teman": "", "Keluarga": "" };
-  const rsvps = (rsvpsRes.data || []) as any[];
   const sentInvitations = rawGuests.map((g) => ({
     id: g.id,
     guestName: decodeHtmlEntities(g.guest_name),

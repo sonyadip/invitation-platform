@@ -1070,6 +1070,11 @@ if (!isClaimed) {
       // 6. Sidebar Save Button & Shortcut (Ctrl+S)
       const editForm = document.getElementById('edit-form') as HTMLFormElement;
 
+      // Auto Media Compression (WebP image resize + LAME MP3 128kbps)
+      import('../../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
+        if (editForm) bindAutoMediaCompression(editForm);
+      }).catch(console.warn);
+
       async function handleSaveSubmit() {
         if (!editForm) return;
         await ensureOgImageGenerated();

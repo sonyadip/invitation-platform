@@ -23,3 +23,28 @@ export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
     return typeof value === 'function' ? value.bind(client) : value;
   }
 });
+
+/**
+ * Automatically pages through Supabase queries in chunks of 1000 to overcome PostgREST default max-rows limit.
+ */
+export async function fetchAllRows<T = any>(
+  fetchPage: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>
+): Promise<T[]> {
+  const PAGE_SIZE = 1000;
+  const results: T[] = [];
+  let page = 0;
+
+  while (true) {
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await fetchPage(from, to);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    results.push(...data);
+    if (data.length < PAGE_SIZE) break;
+    page++;
+  }
+
+  return results;
+}
+

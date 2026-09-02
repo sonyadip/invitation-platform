@@ -16,6 +16,7 @@
     "@astrojs/cloudflare": "^9.1.0",
     "@astrojs/node": "^8.3.4",
     "@astrojs/sitemap": "^3.1.6",
+    "@breezystack/lamejs": "^1.2.7",
     "@fancyapps/ui": "^6.1.14",
     "@supabase/supabase-js": "^2.43.4",
     "astro": "^4.15.0",

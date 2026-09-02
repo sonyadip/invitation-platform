@@ -221,7 +221,7 @@ const brideParentLines = buildCoupleLines(
         <aside class="sidebar-section cover-section">
           <div class="cover-section__slides" data-hero-section-slider>
             {heroSlides.map((slide, index) => (
-              <img class={`cover-section__slide ${index === 0 ? 'is-active' : ''}`} src={typeof slide === 'string' ? slide : slide.src} alt="" aria-hidden="true" />
+              <img class={`cover-section__slide ${index === 0 ? 'is-active' : ''}`} src={typeof slide === 'string' ? slide : slide.src} alt="" aria-hidden="true" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
             ))}
           </div>
           <div class="cover-section__top">
@@ -246,7 +246,7 @@ const brideParentLines = buildCoupleLines(
         <section class="hero-section" id="hero-section">
           <div class="hero-section__media" data-hero-section-slider>
             {heroSlides.map((slide, index) => (
-              <img class={`hero-section__slide ${index === 0 ? 'is-active' : ''}`} src={typeof slide === 'string' ? slide : slide.src} alt="" aria-hidden="true" />
+              <img class={`hero-section__slide ${index === 0 ? 'is-active' : ''}`} src={typeof slide === 'string' ? slide : slide.src} alt="" aria-hidden="true" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
             ))}
           </div>
           <div class="hero-section__top">
@@ -570,7 +570,7 @@ const brideParentLines = buildCoupleLines(
 
         {/* THANK YOU SECTION */}
         <section class="thankyou-section snap-section">
-          <img class="thankyou-section__bg" src={typeof gallerySeven === 'string' ? gallerySeven : gallerySeven.src} alt="" aria-hidden="true" />
+          <img class="thankyou-section__bg" src={typeof gallerySeven === 'string' ? gallerySeven : gallerySeven.src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
           <div class="thankyou-section__inner" data-animate="fade-up">
             <h2 class="thankyou-section__title">Terima Kasih</h2>
             <div class="thankyou-section__socials">
