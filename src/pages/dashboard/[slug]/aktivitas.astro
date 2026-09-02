@@ -312,14 +312,14 @@ const activities = [...eventActivities, ...viewActivities].sort((a, b) => {
   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 });
 
-const totalInteractions = analytics.interactionStats?.totalInteractions || allEvents.length;
-const totalViews = allVisitors.length;
+const totalInteractions = analytics.interactionStats?.totalInteractions ?? (analytics as any).totalEvents ?? allEvents.length;
+const totalViews = report.summary.viewCount ?? (analytics as any).totalViews ?? allVisitors.length;
 
 // Count unique active guests
 const uniqueGuests = new Set(
   activities.map(a => a.guestName?.trim().toLowerCase()).filter(Boolean)
 );
-const totalIdentifiedGuests = uniqueGuests.size;
+const totalIdentifiedGuests = (analytics as any).totalIdentifiedGuests || uniqueGuests.size;
 
 // Funnel & Engagement Calculations
 const totalSent = sentInvitations.length;
@@ -484,9 +484,8 @@ const guestJourneys = Array.from(guestMap.values()).sort((a, b) => {
   return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
 });
 
-// Limit SSR DOM nodes to prevent Cloudflare Worker CPU & Memory limit (Error 1102)
-const displayActivities = activities.slice(0, 150);
-const displayGuestJourneys = guestJourneys.slice(0, 80);
+const displayActivities = activities;
+const displayGuestJourneys = guestJourneys;
 
 function timeAgo(dateStr: string): string {
   if (!dateStr) return '';
@@ -985,22 +984,22 @@ const originUrl = Astro.url.origin;
       <!-- Quick Filter Tags -->
       <div class="activity-tags-row">
         <button class="activity-tag activity-tag--active" data-tag="all" id="tagAll">
-          Semua <span class="tag-count">({activities.length})</span>
+          Semua <span class="tag-count">({totalViews + totalInteractions})</span>
         </button>
         <button class="activity-tag" data-tag="identified" id="tagIdentified">
-          Tamu Terdaftar <span class="tag-count">({activities.filter(a => a.guestName).length})</span>
+          Tamu Terdaftar <span class="tag-count">({totalIdentifiedGuests})</span>
         </button>
         <button class="activity-tag" data-tag="interaksi" id="tagInteraksi">
-          Interaksi Undangan <span class="tag-count">({eventActivities.length})</span>
+          Interaksi Undangan <span class="tag-count">({totalInteractions})</span>
         </button>
         <button class="activity-tag" data-tag="rsvp" id="tagRsvp">
-          Sudah RSVP <span class="tag-count">({activities.filter(a => a.guestName && rsvpMap.has(a.guestName.trim().toLowerCase())).length})</span>
+          Sudah RSVP <span class="tag-count">({report.summary.rsvpCount || 0})</span>
         </button>
         <button class="activity-tag" data-tag="vendor" id="tagVendor">
-          Leads Vendor <span class="tag-count">({activities.filter(a => a.category === 'vendor').length})</span>
+          Leads Vendor <span class="tag-count">({(analytics.interactionStats?.clickVendorWhatsApp || 0) + (analytics.interactionStats?.clickVendorInstagram || 0) + (analytics.interactionStats?.clickVendorSite || 0)})</span>
         </button>
         <button class="activity-tag" data-tag="kunjungan" id="tagKunjungan">
-          Kunjungan Halaman <span class="tag-count">({viewActivities.length})</span>
+          Kunjungan Halaman <span class="tag-count">({totalViews})</span>
         </button>
       </div>
 
@@ -1376,6 +1375,8 @@ const originUrl = Astro.url.origin;
           })
         )}
       </div>
+
+
 
       <!-- Pagination -->
       <div class="pagination-wrapper" style="border-top: 1px solid var(--color-surface-container); padding: 16px 0 0 0; margin-top: 16px;">
@@ -1908,6 +1909,8 @@ const originUrl = Astro.url.origin;
           }
         });
       }
+
+
 
       // ==========================================
       // --- INTERACTIVE ANALYTICS GRAPH ENGINE ---

@@ -87,10 +87,11 @@ export async function getInvitationByDomainOrSlug(
         .order('sort_order', { ascending: true }),
       supabase
         .from('rsvps')
-        .select('*')
+        .select('id, guest_name, attendance_status, guest_count, message, created_at')
         .eq('wedding_id', wedding.id)
         .not('message', 'is', null)
         .order('created_at', { ascending: false })
+        .limit(100)
     ]);
 
     if (settingsRes.error || !settingsRes.data) {

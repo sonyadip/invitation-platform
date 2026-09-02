@@ -48,16 +48,14 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         return jsonResponse({ error: 'Tidak ada data tamu valid untuk diimpor.' }, 400);
       }
 
-      // Check past views for all guests in batch
-      const allPastViews = await fetchAllRows((from, to) =>
-        adminSupabase
-          .from('invitation_views')
-          .select('guest_name, created_at')
-          .eq('wedding_id', weddingId)
-          .not('guest_name', 'is', null)
-          .order('created_at', { ascending: true })
-          .range(from, to)
-      );
+      // Check past views for all guests in batch (fast single query up to 500)
+      const { data: allPastViews } = await adminSupabase
+        .from('invitation_views')
+        .select('guest_name, created_at')
+        .eq('wedding_id', weddingId)
+        .not('guest_name', 'is', null)
+        .order('created_at', { ascending: true })
+        .limit(500);
 
       const pastViewsMap = new Map<string, { first: string; last: string; count: number }>();
       if (allPastViews) {
@@ -109,15 +107,13 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const cleanName = String(name).trim();
 
     // Check if there are existing views for this guest in invitation_views
-    const pastViews = await fetchAllRows((from, to) =>
-      adminSupabase
-        .from('invitation_views')
-        .select('created_at')
-        .eq('wedding_id', weddingId)
-        .ilike('guest_name', cleanName)
-        .order('created_at', { ascending: true })
-        .range(from, to)
-    );
+    const { data: pastViews } = await adminSupabase
+      .from('invitation_views')
+      .select('created_at')
+      .eq('wedding_id', weddingId)
+      .ilike('guest_name', cleanName)
+      .order('created_at', { ascending: true })
+      .limit(100);
 
     let openedAt: string | null = null;
     let lastOpenedAt: string | null = null;

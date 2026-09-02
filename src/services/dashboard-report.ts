@@ -425,64 +425,53 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .select('bank_name, account_number, account_name, qris_url')
       .eq('wedding_id', wedding.id)
       .order('sort_order', { ascending: true }),
+    supabase
+      .from('rsvps')
+      .select('id, guest_name, attendance_status, guest_count, message, created_at')
+      .eq('wedding_id', wedding.id)
+      .order('created_at', { ascending: false })
+      .limit(500)
+      .then(res => res.data || [])
+  ]);
+
+  // Fetch all lightweight records for 100% complete dataset
+  const [
+    viewsData,
+    eventsData,
+    rawGuestsRes
+  ] = await Promise.all([
     fetchAllRows((from, to) =>
-      supabase
-        .from('rsvps')
-        .select('id, guest_name, attendance_status, guest_count, message, created_at')
+      adminSupabase
+        .from('invitation_views')
+        .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at')
         .eq('wedding_id', wedding.id)
         .order('created_at', { ascending: false })
         .range(from, to)
-    )
-  ]);
-
-  // Fast single-roundtrip queries with count & limit to prevent Cloudflare Worker CPU / Memory limits (Error 1102)
-  let views: any[] = [];
-  let totalViewsCount = 0;
-  try {
-    const { data, count, error } = await adminSupabase
-      .from('invitation_views')
-      .select('id, guest_name, device_type, os, browser, city, country, referrer, user_agent, created_at', { count: 'exact' })
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false })
-      .limit(300);
-
-    if (!error && data) {
-      views = data;
-      totalViewsCount = count ?? data.length;
-    }
-  } catch {
-    views = [];
-  }
-
-  let rawGuests: any[] = [];
-  try {
-    const { data } = await adminSupabase
+    ),
+    fetchAllRows((from, to) =>
+      adminSupabase
+        .from('invitation_events')
+        .select('id, event_type, guest_name, metadata, created_at')
+        .eq('wedding_id', wedding.id)
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    ),
+    adminSupabase
       .from('sent_invitations')
       .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
       .eq('wedding_id', wedding.id)
       .order('created_at', { ascending: false })
-      .limit(500);
-    if (data) rawGuests = data;
-  } catch {
-    rawGuests = [];
-  }
+      .limit(1000)
+  ]);
 
-  let trackedEvents: any[] = [];
-  let totalEventsCount = 0;
-  try {
-    const { data, count, error } = await adminSupabase
-      .from('invitation_events')
-      .select('id, event_type, guest_name, metadata, created_at', { count: 'exact' })
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false })
-      .limit(300);
-    if (!error && data) {
-      trackedEvents = data;
-      totalEventsCount = count ?? data.length;
-    }
-  } catch {
-    trackedEvents = [];
-  }
+  const viewsMeta = viewsData;
+  const eventsMeta = eventsData;
+  const detailedViews = viewsData;
+  const detailedEvents = eventsData;
+  const rawGuests = rawGuestsRes.data || [];
+
+  const totalViewsCount = viewsData.length;
+  const totalEventsCount = eventsData.length;
 
   if (settingsRes.error) throw settingsRes.error;
   if (domainsRes.error) throw domainsRes.error;
@@ -516,10 +505,18 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   let desktopCount = 0;
   let tabletCount = 0;
   const browserMap = new Map<string, number>();
+  const allIdentifiedGuestsSet = new Set<string>();
 
-  for (const view of views) {
-    const date = new Date(view.created_at).toISOString().slice(0, 10);
-    dailyViewMap.set(date, (dailyViewMap.get(date) || 0) + 1);
+  // Compute 100% REAL device, browser, and daily view stats across ALL view records
+  for (const view of viewsMeta) {
+    if (view.created_at) {
+      const date = new Date(view.created_at).toISOString().slice(0, 10);
+      dailyViewMap.set(date, (dailyViewMap.get(date) || 0) + 1);
+    }
+
+    if (view.guest_name) {
+      allIdentifiedGuestsSet.add(view.guest_name.trim().toLowerCase());
+    }
 
     const dt = (view.device_type || 'mobile').toLowerCase();
     if (dt === 'desktop') desktopCount++;
@@ -530,21 +527,21 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     browserMap.set(b, (browserMap.get(b) || 0) + 1);
   }
 
-  const sampleViews = views.length;
+  const totalMetaViews = viewsMeta.length || totalViewsCount;
   const deviceStats = {
     mobile: mobileCount,
     desktop: desktopCount,
     tablet: tabletCount,
-    mobilePercent: sampleViews > 0 ? Math.round((mobileCount / sampleViews) * 100) : 0,
-    desktopPercent: sampleViews > 0 ? Math.round((desktopCount / sampleViews) * 100) : 0,
-    tabletPercent: sampleViews > 0 ? Math.round((tabletCount / sampleViews) * 100) : 0
+    mobilePercent: totalMetaViews > 0 ? Math.round((mobileCount / totalMetaViews) * 100) : 0,
+    desktopPercent: totalMetaViews > 0 ? Math.round((desktopCount / totalMetaViews) * 100) : 0,
+    tabletPercent: totalMetaViews > 0 ? Math.round((tabletCount / totalMetaViews) * 100) : 0
   };
 
   const browserStats = Array.from(browserMap.entries())
     .map(([browser, count]) => ({
       browser,
       count,
-      percent: sampleViews > 0 ? Math.round((count / sampleViews) * 100) : 0
+      percent: totalMetaViews > 0 ? Math.round((count / totalMetaViews) * 100) : 0
     }))
     .sort((a, b) => {
       if (a.browser === 'Other' && b.browser !== 'Other') return 1;
@@ -566,7 +563,12 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   let clickVendorInstagramCount = 0;
   let clickVendorSiteCount = 0;
 
-  for (const ev of trackedEvents) {
+  // Compute 100% REAL interaction counts across ALL event records
+  for (const ev of eventsMeta) {
+    if (ev.guest_name) {
+      allIdentifiedGuestsSet.add(ev.guest_name.trim().toLowerCase());
+    }
+
     if (ev.event_type === 'open_cover') openCoverCount++;
     else if (ev.event_type === 'click_maps') clickMapsCount++;
     else if (ev.event_type === 'click_calendar') clickCalendarCount++;
@@ -596,10 +598,10 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     clickVendorWhatsApp: clickVendorWhatsAppCount,
     clickVendorInstagram: clickVendorInstagramCount,
     clickVendorSite: clickVendorSiteCount,
-    totalInteractions: totalEventsCount > 0 ? totalEventsCount : trackedEvents.length
+    totalInteractions: totalEventsCount > 0 ? totalEventsCount : eventsMeta.length
   };
 
-  const allVisitors = views.map((v) => {
+  const allVisitors = detailedViews.map((v) => {
     const dt = v.device_type || 'mobile';
     const deviceModel = dt === 'desktop' ? 'Komputer Desktop' : dt === 'tablet' ? 'Tablet' : 'Smartphone';
     const source = v.referrer ? (v.referrer.includes('whatsapp') ? 'WhatsApp' : v.referrer.includes('instagram') ? 'Instagram' : 'Tautan Langsung') : 'Tautan Langsung / WhatsApp';
@@ -629,7 +631,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     createdAt: v.createdAt
   }));
 
-  const allEvents = trackedEvents.map((ev) => ({
+  const allEvents = detailedEvents.map((ev) => ({
     id: ev.id || '',
     eventType: ev.event_type,
     guestName: ev.guest_name ? decodeHtmlEntities(ev.guest_name) : null,
@@ -638,6 +640,9 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   }));
 
   const analytics = {
+    totalViews: totalViewsCount,
+    totalEvents: totalEventsCount,
+    totalIdentifiedGuests: allIdentifiedGuestsSet.size,
     deviceStats,
     browserStats,
     interactionStats,
