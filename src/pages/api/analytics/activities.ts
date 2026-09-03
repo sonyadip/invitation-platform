@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase';
 import { getSupabaseAdmin } from '../../../lib/supabase-admin';
 import { jsonResponse, parseBoundedInt } from '../../../utils/http';
 import { decodeHtmlEntities } from '../../../utils/template-helpers';
+import { getSessionFromCookies } from '../../../utils/session';
 
 export const prerender = false;
 
@@ -24,52 +25,107 @@ const eventConfig: Record<string, { label: string; desc: string; icon: string; c
   page_view: { label: 'Kunjungan Halaman', desc: 'Membuka dan memuat halaman undangan digital', icon: 'visibility', category: 'kunjungan', categoryLabel: 'Kunjungan', badgeClass: 'act-badge--neutral', iconBg: '#f8fafc', iconColor: '#64748b' }
 };
 
-export const GET: APIRoute = async ({ url, locals }) => {
+export const GET: APIRoute = async ({ url, locals, cookies }) => {
   try {
-    const session = locals.session;
-    if (session?.role !== 'admin') {
-      return jsonResponse({ error: 'Unauthorized' }, 401);
-    }
-
+    const session = locals.session || await getSessionFromCookies(cookies);
     const slug = url.searchParams.get('slug');
     const weddingIdParam = url.searchParams.get('weddingId');
-    const offset = parseBoundedInt(url.searchParams.get('offset'), 0, 0, Number.MAX_SAFE_INTEGER);
-    const limit = parseBoundedInt(url.searchParams.get('limit'), 50, 1, 100);
+
+    const adminSupabase = await getSupabaseAdmin();
 
     let weddingId = weddingIdParam;
+    let weddingSlug = slug;
     if (!weddingId && slug) {
-      const { data: w } = await supabase.from('weddings').select('id').eq('slug', slug).single();
-      if (w) weddingId = w.id;
+      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('slug', slug).single();
+      if (w) {
+        weddingId = w.id;
+        weddingSlug = w.slug;
+      }
+    } else if (weddingId && !weddingSlug) {
+      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('id', weddingId).single();
+      if (w) weddingSlug = w.slug;
     }
 
     if (!weddingId) {
       return jsonResponse({ error: 'weddingId or slug is required' }, 400);
     }
 
-    const adminSupabase = await getSupabaseAdmin();
+    const isAdmin = session?.role === 'admin';
+    const isClient = session?.role === 'client' && (session?.slug === weddingSlug || session?.weddingId === weddingId);
 
-    // Fetch batch of views and events around the offset/limit
-    const halfLimit = Math.ceil(limit / 2);
-    const halfOffset = Math.floor(offset / 2);
+    if (!isAdmin && !isClient) {
+      return jsonResponse({ error: 'Unauthorized' }, 401);
+    }
 
-    const [viewsRes, eventsRes] = await Promise.all([
+    const page = parseBoundedInt(url.searchParams.get('page'), 1, 1, 10000);
+    const limit = parseBoundedInt(url.searchParams.get('limit'), 25, 1, 100);
+    const category = (url.searchParams.get('category') || url.searchParams.get('tag') || 'all').trim();
+    const eventType = (url.searchParams.get('eventType') || url.searchParams.get('event') || 'all').trim();
+    const search = (url.searchParams.get('search') || '').trim().toLowerCase();
+    const timeRange = url.searchParams.get('timeRange') || 'all';
+
+    async function fetchAllRows<T>(
+      queryFn: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>,
+      pageSize = 1000,
+      maxBatches = 5
+    ): Promise<T[]> {
+      const rows: T[] = [];
+      let from = 0;
+      let batch = 0;
+      while (batch < maxBatches) {
+        batch++;
+        const to = from + pageSize - 1;
+        const { data, error } = await queryFn(from, to);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        rows.push(...data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return rows;
+    }
+
+    // Fetch lightweight columns from views and events
+    const [viewsData, eventsData, rsvpsRes] = await Promise.all([
+      fetchAllRows<any>((from, to) =>
+        adminSupabase
+          .from('invitation_views')
+          .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at')
+          .eq('wedding_id', weddingId)
+          .order('created_at', { ascending: false })
+          .range(from, to)
+      ),
+      fetchAllRows<any>((from, to) =>
+        adminSupabase
+          .from('invitation_events')
+          .select('id, event_type, guest_name, metadata, created_at')
+          .eq('wedding_id', weddingId)
+          .order('created_at', { ascending: false })
+          .range(from, to)
+      ),
       adminSupabase
-        .from('invitation_views')
-        .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at')
+        .from('rsvps')
+        .select('guest_name, attendance_status, guest_count')
         .eq('wedding_id', weddingId)
-        .order('created_at', { ascending: false })
-        .range(halfOffset, halfOffset + halfLimit - 1),
-      adminSupabase
-        .from('invitation_events')
-        .select('id, event_type, guest_name, metadata, created_at')
-        .eq('wedding_id', weddingId)
-        .order('created_at', { ascending: false })
-        .range(halfOffset, halfOffset + halfLimit - 1)
     ]);
+
+    const viewsRes = { data: viewsData };
+    const eventsRes = { data: eventsData };
+
+    const rsvpMap = new Map<string, any>();
+    for (const r of rsvpsRes.data || []) {
+      if (r.guest_name) {
+        rsvpMap.set(r.guest_name.trim().toLowerCase(), r);
+      }
+    }
 
     const viewItems = (viewsRes.data || []).map((v) => {
       const conf = eventConfig['page_view'];
       const dt = v.device_type || 'mobile';
+      const isGuest = !!v.guest_name;
+      const gName = v.guest_name ? decodeHtmlEntities(v.guest_name) : null;
+      const rsvp = gName ? rsvpMap.get(gName.trim().toLowerCase()) : null;
+
       return {
         id: `v-${v.id}`,
         type: 'view',
@@ -82,13 +138,17 @@ export const GET: APIRoute = async ({ url, locals }) => {
         badgeClass: conf.badgeClass,
         iconBg: conf.iconBg,
         iconColor: conf.iconColor,
-        guestName: v.guest_name ? decodeHtmlEntities(v.guest_name) : null,
+        guestName: gName,
+        isGuest,
+        hasRsvp: !!rsvp,
+        rsvpStatus: rsvp?.attendance_status || null,
+        rsvpPax: rsvp?.guest_count || null,
         metadata: { referrer: v.referrer },
         deviceType: dt,
         deviceModel: dt === 'desktop' ? 'Komputer Desktop' : dt === 'tablet' ? 'Tablet' : 'Smartphone',
-        browser: v.browser || 'Unknown',
+        browser: (v.browser && v.browser !== 'Other' ? v.browser : null) || 'Unknown',
         os: v.os || 'Unknown',
-        source: v.referrer ? (v.referrer.includes('whatsapp') ? 'WhatsApp' : 'Tautan Langsung') : 'Tautan Langsung / WhatsApp',
+        source: v.referrer ? (v.referrer.includes('whatsapp') ? 'WhatsApp' : v.referrer.includes('instagram') ? 'Instagram' : 'Tautan Langsung') : 'Tautan Langsung / WhatsApp',
         city: v.city || null,
         country: v.country || null,
         createdAt: v.created_at
@@ -97,6 +157,10 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     const eventItems = (eventsRes.data || []).map((ev) => {
       const conf = eventConfig[ev.event_type] || eventConfig['page_view'];
+      const isGuest = !!ev.guest_name;
+      const gName = ev.guest_name ? decodeHtmlEntities(ev.guest_name) : null;
+      const rsvp = gName ? rsvpMap.get(gName.trim().toLowerCase()) : null;
+
       return {
         id: `ev-${ev.id}`,
         type: 'event',
@@ -109,7 +173,11 @@ export const GET: APIRoute = async ({ url, locals }) => {
         badgeClass: conf.badgeClass,
         iconBg: conf.iconBg,
         iconColor: conf.iconColor,
-        guestName: ev.guest_name ? decodeHtmlEntities(ev.guest_name) : null,
+        guestName: gName,
+        isGuest,
+        hasRsvp: !!rsvp,
+        rsvpStatus: rsvp?.attendance_status || null,
+        rsvpPax: rsvp?.guest_count || null,
         metadata: ev.metadata || {},
         deviceType: 'mobile',
         deviceModel: 'Smartphone',
@@ -122,17 +190,74 @@ export const GET: APIRoute = async ({ url, locals }) => {
       };
     });
 
-    const merged = [...viewItems, ...eventItems].sort((a, b) => {
+    // Merge and sort
+    const allActivities = [...viewItems, ...eventItems].sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
+    // Helper: isWithinTimeRange
+    const now = Date.now();
+    function isWithinTime(createdAtStr: string): boolean {
+      if (timeRange === 'all' || !createdAtStr) return true;
+      const itemTime = new Date(createdAtStr).getTime();
+      if (timeRange === '24h') return now - itemTime <= 24 * 3600 * 1000;
+      if (timeRange === '7d') return now - itemTime <= 7 * 24 * 3600 * 1000;
+      if (timeRange === '30d') return now - itemTime <= 30 * 24 * 3600 * 1000;
+      if (timeRange === 'today') {
+        const itemWita = new Date(itemTime + 8 * 3600000).toISOString().slice(0, 10);
+        const nowWita = new Date(now + 8 * 3600000).toISOString().slice(0, 10);
+        return itemWita === nowWita;
+      }
+      return true;
+    }
+
+    // Filter by time & search first for base counts
+    const timeAndSearchFiltered = allActivities.filter((item) => {
+      if (!isWithinTime(item.createdAt)) return false;
+      if (search) {
+        const searchBlob = `${item.guestName || ''} ${item.label} ${item.desc} ${item.browser} ${item.deviceModel} ${item.source} ${item.city || ''} ${item.metadata?.target || ''} ${item.metadata?.href || ''}`.toLowerCase();
+        if (!searchBlob.includes(search)) return false;
+      }
+      if (eventType !== 'all' && item.eventType !== eventType) return false;
+      return true;
+    });
+
+    // Compute dynamic tag counts
+    const tagCounts = {
+      all: timeAndSearchFiltered.length,
+      identified: timeAndSearchFiltered.filter(i => i.isGuest).length,
+      interaksi: timeAndSearchFiltered.filter(i => i.category === 'interaksi').length,
+      rsvp: timeAndSearchFiltered.filter(i => i.hasRsvp).length,
+      vendor: timeAndSearchFiltered.filter(i => i.category === 'vendor').length,
+      kunjungan: timeAndSearchFiltered.filter(i => i.category === 'kunjungan').length
+    };
+
+    // Apply active category filter
+    const finalFiltered = timeAndSearchFiltered.filter((item) => {
+      if (category === 'identified' && !item.isGuest) return false;
+      if (category === 'interaksi' && item.category !== 'interaksi') return false;
+      if (category === 'rsvp' && !item.hasRsvp) return false;
+      if (category === 'vendor' && item.category !== 'vendor') return false;
+      if (category === 'kunjungan' && item.category !== 'kunjungan') return false;
+      return true;
+    });
+
+    const totalCount = finalFiltered.length;
+    const totalPages = Math.ceil(totalCount / limit) || 1;
+    const currentPage = Math.min(Math.max(1, page), totalPages);
+    const start = (currentPage - 1) * limit;
+    const paginatedItems = finalFiltered.slice(start, start + limit);
+
     return jsonResponse({
-      items: merged,
-      offset,
+      items: paginatedItems,
+      totalCount,
+      totalPages,
+      currentPage,
       limit,
-      hasMore: (viewsRes.data?.length || 0) >= halfLimit || (eventsRes.data?.length || 0) >= halfLimit
+      tagCounts
     });
   } catch (error: any) {
+    console.error('Activities API error:', error);
     return jsonResponse({ error: error?.message || 'Failed to fetch activities' }, 500);
   }
 };
