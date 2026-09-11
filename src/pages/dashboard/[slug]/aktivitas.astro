@@ -167,6 +167,7 @@ const originUrl = Astro.url.origin;
             <!-- Granularity & Metric Filter Controls -->
             <div class="graph-controls-panel">
               <!-- Metric Filter -->
+              <!-- Metric Filter & Type Switcher Wrapper -->
               <div class="graph-filter-select-wrapper">
                 <select id="graphMetricFilter" class="form-input graph-select" title="Filter jenis aktivitas">
                   <option value="all">📊 Semua Aktivitas</option>
@@ -176,6 +177,16 @@ const originUrl = Astro.url.origin;
                   <option value="guests">👤 Tamu Teridentifikasi</option>
                   <option value="vendor">💼 Leads Vendor (Senadda)</option>
                 </select>
+
+                <!-- Chart Type Switcher (Area vs Bar) -->
+                <div class="graph-type-switcher">
+                  <button type="button" class="graph-type-btn graph-type-btn--active" data-type="area" title="Tampilan Grafik Garis & Area">
+                    <span class="material-symbols-outlined">show_chart</span>
+                  </button>
+                  <button type="button" class="graph-type-btn" data-type="bar" title="Tampilan Grafik Batang">
+                    <span class="material-symbols-outlined">bar_chart</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Time Range Tabs -->
@@ -191,16 +202,6 @@ const originUrl = Astro.url.origin;
                 </button>
                 <button type="button" class="graph-time-tab" data-range="all" title="Lihat seluruh riwayat waktu">
                   Semua
-                </button>
-              </div>
-
-              <!-- Chart Type Switcher (Area vs Bar) -->
-              <div class="graph-type-switcher">
-                <button type="button" class="graph-type-btn graph-type-btn--active" data-type="area" title="Tampilan Grafik Garis & Area">
-                  <span class="material-symbols-outlined">show_chart</span>
-                </button>
-                <button type="button" class="graph-type-btn" data-type="bar" title="Tampilan Grafik Batang">
-                  <span class="material-symbols-outlined">bar_chart</span>
                 </button>
               </div>
             </div>
@@ -1027,18 +1028,28 @@ const originUrl = Astro.url.origin;
             }
           }
 
-          // X-Axis Labels
+          // X-Axis Labels (Responsive count based on container/viewport width)
           if (xAxisLabels) {
-            const step = Math.max(1, Math.ceil(n / 6));
+            const containerWidth = xAxisLabels.clientWidth || svg.clientWidth || window.innerWidth;
+            const targetCount = containerWidth < 420 ? 4 : (containerWidth < 640 ? 5 : 7);
+
+            let labelIndices = [];
+            if (n <= targetCount) {
+              labelIndices = Array.from({ length: n }, (_, i) => i);
+            } else {
+              const step = (n - 1) / (targetCount - 1);
+              for (let k = 0; k < targetCount; k++) {
+                labelIndices.push(Math.round(k * step));
+              }
+            }
+
             let labelsHtml = '';
-            for (let i = 0; i < n; i += step) {
-              const b = buckets[i];
-              labelsHtml += `<span>${escapeHtml(b.label)}</span>`;
-            }
-            if ((n - 1) % step !== 0 && n > 1) {
-              const bLast = buckets[n - 1];
-              labelsHtml += `<span>${escapeHtml(bLast.label)}</span>`;
-            }
+            labelIndices.forEach(idx => {
+              const b = buckets[idx];
+              if (b) {
+                labelsHtml += `<span>${escapeHtml(b.label)}</span>`;
+              }
+            });
             xAxisLabels.innerHTML = labelsHtml;
           }
 
@@ -1079,17 +1090,40 @@ const originUrl = Astro.url.origin;
                   tooltipSub.textContent = gCount > 0 ? gCount + ' tamu teridentifikasi' : 'Tidak ada tamu bernama';
                 }
 
-                const clientX = e.clientX;
-                const clientY = e.clientY;
-                tooltip.style.left = Math.min(window.innerWidth - 180, Math.max(10, clientX - 80)) + 'px';
-                tooltip.style.top = (clientY - 85) + 'px';
+                // Calculate point coordinates relative to canvas container
+                const svgW = svg.clientWidth || 800;
+                const svgH = svg.clientHeight || 215;
+                const pointX = (closest.x / W) * svgW;
+                const pointY = (closest.y / H) * svgH;
+
+                const tooltipWidth = tooltip.offsetWidth || 160;
+                const halfTooltip = tooltipWidth / 2;
+                const containerWidth = svgW;
+                const clampedX = Math.max(halfTooltip + 8, Math.min(containerWidth - halfTooltip - 8, pointX));
+
+                // Position arrow directly at pointX even if tooltip box is clamped at edges
+                const arrowOffset = Math.max(12, Math.min(tooltipWidth - 12, halfTooltip + (pointX - clampedX)));
+                tooltip.style.setProperty('--arrow-left', arrowOffset + 'px');
+
+                if (pointY < 50) {
+                  tooltip.classList.add('graph-tooltip--below');
+                  tooltip.style.left = clampedX + 'px';
+                  tooltip.style.top = (pointY + 12) + 'px';
+                } else {
+                  tooltip.classList.remove('graph-tooltip--below');
+                  tooltip.style.left = clampedX + 'px';
+                  tooltip.style.top = (pointY - 10) + 'px';
+                }
               }
             }
           };
 
           svg.onmouseleave = () => {
             if (trackerGroup) trackerGroup.style.display = 'none';
-            if (tooltip) tooltip.style.display = 'none';
+            if (tooltip) {
+              tooltip.style.display = 'none';
+              tooltip.classList.remove('graph-tooltip--below');
+            }
           };
         }
 
@@ -1122,6 +1156,14 @@ const originUrl = Astro.url.origin;
         });
 
         renderChart();
+
+        let chartResizeTimer;
+        window.addEventListener('resize', () => {
+          clearTimeout(chartResizeTimer);
+          chartResizeTimer = setTimeout(() => {
+            renderChart();
+          }, 150);
+        });
       }
 
       // 3. Render Timeline Row HTML (Exact markup matching original SSR)
@@ -1479,24 +1521,28 @@ const originUrl = Astro.url.origin;
               <div class="guest-card__avatar" style="${avatarStyle}">
                 ${escapeHtml(initials)}
               </div>
-              <div class="guest-card__info">
-                <div class="guest-card__name-row">
-                  <h4 class="guest-card__name">${escapeHtml(guest.guestName)}</h4>
-                  ${isGuest ? '<span class="act-tag-guest">Tamu</span>' : '<span class="act-tag-anon">Anonim</span>'}
-                  ${rsvpBadgeHtml}
+              <div class="guest-card__body">
+                <div class="guest-card__top-bar">
+                  <div class="guest-card__name-row">
+                    <h4 class="guest-card__name">${escapeHtml(guest.guestName)}</h4>
+                    ${isGuest ? '<span class="act-tag-guest">Tamu</span>' : '<span class="act-tag-anon">Anonim</span>'}
+                  </div>
+
+                  <!-- Quick Action Buttons -->
+                  <div class="guest-card__quick-actions">
+                    ${quickActionsHtml}
+                  </div>
                 </div>
 
-                <p class="guest-card__meta">
-                  <span>Terakhir aktif: <strong>${timeAgo(guest.lastActive)}</strong></span>
-                  <span class="meta-dot">•</span>
-                  <span>Total: <strong>${guest.totalActivities} aktivitas</strong></span>
-                  ${guest.sentInfo?.phone ? `<span class="meta-dot">•</span><span>WA: <strong>${escapeHtml(guest.sentInfo.phone)}</strong></span>` : ''}
-                </p>
-              </div>
-
-              <!-- Quick Action Buttons -->
-              <div class="guest-card__quick-actions">
-                ${quickActionsHtml}
+                <div class="guest-card__sub-row">
+                  ${rsvpBadgeHtml ? `<div class="guest-card__rsvp-wrap">${rsvpBadgeHtml}</div>` : ''}
+                  <p class="guest-card__meta">
+                    <span class="guest-card__meta-item">Terakhir aktif: <strong>${timeAgo(guest.lastActive)}</strong></span>
+                    <span class="meta-dot">•</span>
+                    <span class="guest-card__meta-item">Total: <strong>${guest.totalActivities} aktivitas</strong></span>
+                    ${guest.sentInfo?.phone ? `<span class="meta-dot">•</span><span class="guest-card__meta-item">WA: <strong>${escapeHtml(guest.sentInfo.phone)}</strong></span>` : ''}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -2023,6 +2069,7 @@ const originUrl = Astro.url.origin;
     flex-direction: column;
     gap: 20px;
     padding-bottom: 90px;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .admin-badge {
@@ -2078,6 +2125,16 @@ const originUrl = Astro.url.origin;
   @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+  }
+
+  .stat-card__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
   }
 
   /* Conversion Funnel & Engagement Card */
@@ -2212,16 +2269,22 @@ const originUrl = Astro.url.origin;
 
     @media (max-width: 640px) {
       width: 100%;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
     }
   }
 
   .graph-filter-select-wrapper {
-    min-width: 165px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 
     @media (max-width: 640px) {
-      flex: 1;
-      min-width: 130px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .graph-select {
@@ -2233,6 +2296,17 @@ const originUrl = Astro.url.origin;
       background-color: #f8fafc;
       border-color: #e2e8f0;
       color: #334155;
+      min-width: 165px;
+
+      @media (max-width: 640px) {
+        flex: 1;
+        min-width: 0;
+        width: 100%;
+      }
+    }
+
+    .graph-type-switcher {
+      flex-shrink: 0;
     }
   }
 
@@ -2244,6 +2318,18 @@ const originUrl = Astro.url.origin;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
     gap: 2px;
+
+    @media (max-width: 640px) {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 480px) {
+      padding: 2px;
+      gap: 1.5px;
+    }
   }
 
   .graph-time-tab {
@@ -2258,6 +2344,17 @@ const originUrl = Astro.url.origin;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+
+    @media (max-width: 640px) {
+      flex: 1;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      padding: 4px 7px;
+      font-size: 11px;
+      height: 26px;
+    }
 
     &:hover:not(.graph-time-tab--active) {
       background: rgba(255, 255, 255, 0.7);
@@ -2405,13 +2502,23 @@ const originUrl = Astro.url.origin;
   /* X-Axis Labels */
   .graph-xaxis {
     position: absolute;
-    bottom: 2px;
-    left: 45px;
-    right: 20px;
-    height: 22px;
+    bottom: 0px;
+    left: 3.75%;
+    right: 3.75%;
+    height: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    pointer-events: none;
+
+    span {
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748b;
+      white-space: nowrap;
+      line-height: 1;
+      text-align: center;
+    }
 
     &__item {
       font-size: 10px;
@@ -2447,13 +2554,24 @@ const originUrl = Astro.url.origin;
       content: '';
       position: absolute;
       bottom: -4px;
-      left: 50%;
+      left: var(--arrow-left, 50%);
       transform: translateX(-50%);
       width: 0;
       height: 0;
       border-left: 4.5px solid transparent;
       border-right: 4.5px solid transparent;
       border-top: 4.5px solid #0f172a;
+    }
+
+    &--below {
+      transform: translate(-50%, 0);
+
+      &::after {
+        bottom: auto;
+        top: -4px;
+        border-top: none;
+        border-bottom: 4.5px solid #0f172a;
+      }
     }
 
     &__header {
@@ -2490,6 +2608,12 @@ const originUrl = Astro.url.origin;
     margin-bottom: 16px;
     padding-bottom: 14px;
     border-bottom: 1px solid var(--color-surface-container-low);
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
 
     &__title {
       margin: 0 0 2px;
@@ -2673,6 +2797,11 @@ const originUrl = Astro.url.origin;
     &:hover {
       background: var(--color-surface-container-low);
       border-color: var(--color-outline);
+    }
+
+    @media (max-width: 640px) {
+      width: 100%;
+      justify-content: center;
     }
   }
 
@@ -3154,6 +3283,22 @@ const originUrl = Astro.url.origin;
     padding: 16px;
     cursor: pointer;
     transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+    outline: none;
+
+    &, & * {
+      -webkit-tap-highlight-color: transparent !important;
+    }
+
+    &:focus,
+    &:active,
+    &:focus-visible {
+      outline: none;
+      -webkit-tap-highlight-color: transparent !important;
+    }
 
     &:hover {
       border-color: #cbd5e1;
@@ -3165,15 +3310,19 @@ const originUrl = Astro.url.origin;
       box-shadow: 0 4px 16px rgba(166, 137, 102, 0.12);
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 640px) {
       padding: 12px;
     }
   }
 
   .guest-card__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
+
+    @media (max-width: 640px) {
+      gap: 10px;
+    }
   }
 
   .guest-card__avatar {
@@ -3186,11 +3335,30 @@ const originUrl = Astro.url.origin;
     font-size: 14px;
     font-weight: 800;
     flex-shrink: 0;
+    margin-top: 1px;
+
+    @media (max-width: 640px) {
+      width: 36px;
+      height: 36px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
   }
 
+  .guest-card__body,
   .guest-card__info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .guest-card__top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
   }
 
   .guest-card__name-row {
@@ -3198,6 +3366,7 @@ const originUrl = Astro.url.origin;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
+    min-width: 0;
   }
 
   .guest-card__name {
@@ -3205,6 +3374,32 @@ const originUrl = Astro.url.origin;
     font-size: 15px;
     font-weight: 800;
     color: #0f172a;
+    word-break: break-word;
+  }
+
+  .guest-card__quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .guest-card__sub-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+  }
+
+  .guest-card__rsvp-wrap {
+    display: inline-flex;
+    flex-shrink: 0;
   }
 
   .rsvp-status-badge {
@@ -3213,8 +3408,9 @@ const originUrl = Astro.url.origin;
     gap: 4px;
     font-size: 11px;
     font-weight: 700;
-    padding: 2px 7px;
+    padding: 3px 8px;
     border-radius: 6px;
+    white-space: nowrap;
 
     &--attending {
       background: #dcfce7;
@@ -3239,24 +3435,27 @@ const originUrl = Astro.url.origin;
   }
 
   .guest-card__meta {
-    margin: 3px 0 0;
+    margin: 0;
     font-size: 12px;
     color: #64748b;
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
+    line-height: 1.4;
 
     .meta-dot {
       color: #cbd5e1;
     }
+
+    @media (max-width: 640px) {
+      font-size: 11.5px;
+      gap: 5px;
+    }
   }
 
-  .guest-card__quick-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
+  .guest-card__meta-item {
+    white-space: nowrap;
   }
 
   .action-icon-btn {
@@ -3290,6 +3489,12 @@ const originUrl = Astro.url.origin;
         border-color: #22c55e;
         color: #16a34a;
       }
+    }
+
+    @media (max-width: 640px) {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
     }
   }
 
@@ -3348,6 +3553,13 @@ const originUrl = Astro.url.origin;
     &[aria-expanded="true"] .toggle-icon {
       transform: rotate(180deg);
     }
+
+    @media (max-width: 640px) {
+      height: 30px;
+      padding: 4px 8px;
+      font-size: 11.5px;
+      border-radius: 6px;
+    }
   }
 
   .guest-card__milestones {
@@ -3358,6 +3570,12 @@ const originUrl = Astro.url.origin;
     margin-top: 12px;
     padding-top: 10px;
     border-top: 1px dashed var(--color-outline-variant, #e2e8f0);
+
+    @media (max-width: 640px) {
+      margin-top: 10px;
+      padding-top: 8px;
+      gap: 5px;
+    }
   }
 
   .milestone-badge {
