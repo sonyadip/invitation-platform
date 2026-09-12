@@ -16,6 +16,7 @@ import './style.scss';
 
 import {
   buildParentText,
+  buildCoupleLines,
   formatDate,
   formatEventDate,
   buildGoogleCalendarUrl,
@@ -117,31 +118,6 @@ const bridePrefix = text.brideChildNumber
 const groomAddressText = text.groomAddress || text.groomCity || text.groomOrigin || (isPreview ? 'Denpasar, Bali' : '');
 const brideAddressText = text.brideAddress || text.brideCity || text.brideOrigin || (isPreview ? 'Gianyar, Bali' : '');
 
-const buildCoupleLines = (
-  prefix: string,
-  fatherName: string | undefined | null,
-  motherName: string | undefined | null,
-  fallbackParents: string | undefined | null,
-  address: string | undefined | null
-) => {
-  const lines: string[] = [];
-  if (prefix) lines.push(prefix);
-
-  const parents = [
-    fatherName?.trim() || '',
-    motherName?.trim() || ''
-  ].filter(Boolean).join(' & ');
-
-  if (parents) {
-    lines.push(parents);
-  } else if (fallbackParents) {
-    const cleaned = fallbackParents.replace(/^(Putra dari|Putri dari|Putra|Putri)\s+/i, '');
-    lines.push(cleaned || fallbackParents);
-  }
-
-  if (address) lines.push(address);
-  return lines;
-};
 
 const groomParentLines = buildCoupleLines(
   groomPrefix,

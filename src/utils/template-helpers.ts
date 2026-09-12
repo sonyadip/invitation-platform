@@ -43,18 +43,24 @@ export const buildCoupleLines = (
   const lines: string[] = [];
   if (prefix) lines.push(prefix);
 
-  const parents = [
-    fatherName?.trim() || '',
-    motherName?.trim() || ''
-  ].filter(Boolean).join(' & ');
+  const cleanParent = (val?: string | null) => val ? val.trim().replace(/^(?:Bapak|Ibu)\s+/i, '') : '';
 
-  if (parents) {
-    lines.push(parents);
+  const father = cleanParent(fatherName);
+  const mother = cleanParent(motherName);
+
+  if (father || mother) {
+    if (father) lines.push(father);
+    if (mother) lines.push(mother);
   } else if (fallbackParents) {
     const cleaned = fallbackParents
       .replace(/^(Putra dari|Putri dari|Putra|Putri)\s+/i, '')
       .replace(/^dari\s+/i, '');
-    lines.push(cleaned || fallbackParents);
+    const parts = cleaned.split(/\s+(?:&|dan)\s+/i).map(cleanParent).filter(Boolean);
+    if (parts.length > 0) {
+      parts.forEach((p) => lines.push(p));
+    } else {
+      lines.push(cleanParent(cleaned) || fallbackParents);
+    }
   }
 
   if (address) lines.push(address);
