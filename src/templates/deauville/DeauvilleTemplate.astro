@@ -509,9 +509,12 @@ const activeGifts =
                       {formatEventDate(event.event_date).weekday},{" "}
                       {formatEventDate(event.event_date).date}
                     </time>
-                    <p class="event-card__time">
-                      {event.start_time} - {event.end_time}
-                    </p>
+                    {event.start_time && event.start_time.trim() !== "" && (
+                      <p class="event-card__time">
+                        {event.start_time}
+                        {event.end_time && event.end_time.trim() !== "" ? ` - ${event.end_time}` : ""}
+                      </p>
+                    )}
                     {event.venue_name && event.venue_name.trim() !== "" && (
                       <strong class="event-card__venue">
                         {event.venue_name}
