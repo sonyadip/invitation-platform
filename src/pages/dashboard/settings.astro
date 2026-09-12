@@ -46,6 +46,8 @@ if (Astro.request.method === 'POST') {
       home_template_cards: JSON.parse(val('home_template_cards') || '[]'),
       meta_title: val('meta_title'),
       meta_description: val('meta_description'),
+      google_analytics_id: val('google_analytics_id'),
+      google_tag_manager_id: val('google_tag_manager_id'),
     });
     successMessage = 'Settings saved successfully.';
   } catch (error) {
@@ -281,6 +283,29 @@ const settings = await getPlatformSettings();
             <label class="wide">
               Meta Description
               <textarea name="meta_description" rows="3">{settings.meta_description}</textarea>
+            </label>
+          </div>
+        </section>
+
+        <!-- ANALYTICS & TRACKING -->
+        <section>
+          <div class="section-label">
+            <span class="section-icon">📊</span>
+            <div>
+              <h2>Analytics & Tracking</h2>
+              <p>ID pelacakan untuk Google Analytics 4 (GA4) dan Google Tag Manager (GTM).</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label class="wide">
+              Google Analytics 4 Measurement ID
+              <input name="google_analytics_id" value={settings.google_analytics_id || ''} placeholder="G-PS8CJGKXWG" />
+              <span class="hint" style="display:block; margin-top: 6px; font-size: 0.8rem; color: #718096;">Contoh: G-PS8CJGKXWG. Otomatis terpasang di seluruh homepage dan template undangan.</span>
+            </label>
+            <label class="wide">
+              Google Tag Manager Container ID (Opsional)
+              <input name="google_tag_manager_id" value={settings.google_tag_manager_id || ''} placeholder="GTM-XXXXXXX" />
+              <span class="hint" style="display:block; margin-top: 6px; font-size: 0.8rem; color: #718096;">Kosongkan jika hanya menggunakan Google Analytics 4 biasa.</span>
             </label>
           </div>
         </section>

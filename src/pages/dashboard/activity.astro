@@ -50,8 +50,9 @@ function getActionBadge(action: string): { label: string; bg: string; color: str
       return { label: 'Restore Invitation', bg: '#f3e8ff', color: '#7e22ce', icon: '♻️' };
     case 'invitation.permanent_delete':
       return { label: 'Permanent Delete', bg: '#fecaca', color: '#991b1b', icon: '🔥' };
+    case 'invitation.reset_activities':
     case 'invitation.reset_views':
-      return { label: 'Reset Views', bg: '#f1f5f9', color: '#475569', icon: '👁️' };
+      return { label: 'Reset Aktivitas', bg: '#f1f5f9', color: '#475569', icon: '🔄' };
     case 'invitation.reset_rsvps':
       return { label: 'Reset RSVPs', bg: '#fee2e2', color: '#991b1b', icon: '🧹' };
     case 'rsvp.submit':

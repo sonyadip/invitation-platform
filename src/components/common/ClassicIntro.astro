@@ -37,12 +37,11 @@ const monogram = `${getInitial(groomName)}${getInitial(brideName)}`;
     const elements = document.querySelectorAll(".intro-element");
     const minDisplayTime = 3000; // 3 seconds counting time
 
-    // Hide layout initially
-    if (layout) {
-      layout.style.opacity = "0";
-    }
-
     if (intro && progresbar && elements.length > 0) {
+      // Hide layout initially while intro plays
+      if (layout) {
+        layout.style.opacity = "0";
+      }
       // 1. Staggered fade in for all elements
       animate(
         elements,

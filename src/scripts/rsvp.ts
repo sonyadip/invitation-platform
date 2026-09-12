@@ -131,11 +131,44 @@ export async function syncWishesFromServer({ weddingId, wishesContainer, emptySt
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || 'Gagal menyinkronkan ucapan.');
 
-  const items = result.items || [];
+  let items = result.items || [];
+  if (submittedItem) {
+    const exists = items.some((i: any) => String(i.id) === String(submittedItem.id));
+    if (!exists) {
+      items = [submittedItem, ...items].slice(0, limit);
+    }
+  }
+
   const renderedCount = renderWishItems(wishesContainer, items, emptyState);
 
-  const paginationContainer = wishesContainer.parentElement?.querySelector('[data-wishes-pagination]');
+  let paginationContainer = wishesContainer.parentElement?.querySelector('[data-wishes-pagination]') as HTMLElement | null;
+  if (!paginationContainer && result.totalPages > 1) {
+    paginationContainer = document.createElement('div');
+    paginationContainer.className = 'wishes-pagination';
+    paginationContainer.setAttribute('data-wishes-pagination', '');
+    paginationContainer.setAttribute('data-wedding-id', weddingId);
+    paginationContainer.setAttribute('data-current-page', '1');
+    paginationContainer.setAttribute('data-total-pages', String(result.totalPages || 1));
+    paginationContainer.setAttribute('data-per-page', String(limit));
+
+    paginationContainer.innerHTML = `
+      <button type="button" class="wishes-pagination__btn" data-wishes-prev disabled aria-label="Halaman sebelumnya">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="wishes-pagination__numbers" data-wishes-numbers></div>
+      <button type="button" class="wishes-pagination__btn" data-wishes-next aria-label="Halaman berikutnya">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    `;
+    wishesContainer.after(paginationContainer);
+  }
+
   if (paginationContainer instanceof HTMLElement) {
+    paginationContainer.dataset.weddingId = weddingId;
     paginationContainer.dataset.currentPage = '1';
     paginationContainer.dataset.totalPages = String(result.totalPages || 1);
     delete paginationContainer.dataset.paginationBound;
@@ -219,15 +252,46 @@ export function initRSVPForm(root: Element | Document = document) {
         successState.style.display = isGrid ? 'grid' : 'flex';
       }
 
-      if (wishesContainer && result.item?.message) {
+      if (wishesContainer) {
+        if (emptyState instanceof HTMLElement) {
+          emptyState.style.display = 'none';
+        }
+
+        const item = result.item || {
+          id: `wish-${Date.now()}`,
+          guest_name: payload.name,
+          attendance_status: payload.attendance,
+          message: payload.message || '',
+          created_at: new Date().toISOString()
+        };
+
+        const newCard = createWishCard({
+          id: item.id,
+          name: item.guest_name,
+          attendance: item.attendance_status,
+          message: item.message || '',
+          createdAt: item.created_at
+        });
+
+        const newKey = getWishKey({
+          id: item.id,
+          name: item.guest_name,
+          message: item.message || '',
+          createdAt: item.created_at
+        });
+        const renderedKeys = getRenderedWishKeys(wishesContainer);
+        if (!renderedKeys.has(newKey)) {
+          wishesContainer.prepend(newCard);
+          newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         await syncWishesFromServer({
           weddingId: String(payload.weddingId),
           wishesContainer,
           emptyState,
           limit: 4,
-          submittedItem: result.item
+          submittedItem: item
         });
-        wishesContainer.querySelector('.wish-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       form.dataset.submitting = 'false';
     } catch (error) {

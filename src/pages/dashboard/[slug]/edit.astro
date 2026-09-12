@@ -5,6 +5,7 @@ import {
   permanentlyDeleteInvitation,
   softDeleteInvitation,
   updateInvitation,
+  resetInvitationActivities,
   resetInvitationViews,
   resetInvitationRsvps
 } from '../../../services/dashboard-crud';
@@ -58,9 +59,9 @@ if (Astro.request.method === 'POST') {
       return Astro.redirect('/dashboard?permanentlyDeleted=1');
     }
 
-    if (action === 'reset-views') {
-      await resetInvitationViews(detail.wedding.id);
-      return Astro.redirect(`/dashboard/${detail.summary.slug}/edit?resetViews=1`);
+    if (action === 'reset-activities' || action === 'reset-views') {
+      await resetInvitationActivities(detail.wedding.id);
+      return Astro.redirect(`/dashboard/${detail.summary.slug}/edit?resetActivities=1`);
     }
 
     if (action === 'reset-rsvps') {
@@ -93,8 +94,8 @@ if (Astro.url.searchParams.get('saved')) {
   successMessage = 'Invitation saved.';
 }
 
-if (Astro.url.searchParams.get('resetViews')) {
-  successMessage = 'Page views have been reset to zero.';
+if (Astro.url.searchParams.get('resetActivities') || Astro.url.searchParams.get('resetViews')) {
+  successMessage = 'Semua kunjungan dan aktivitas interaksi tamu telah berhasil di-reset ke nol.';
 }
 
 if (Astro.url.searchParams.get('resetRsvps')) {
@@ -778,18 +779,18 @@ if (!isClaimed) {
               </summary>
               <div class="danger-btn-list">
                 <form method="POST">
-                  <input type="hidden" name="action" value="reset-views" />
+                  <input type="hidden" name="action" value="reset-activities" />
                   <button
                     type="submit"
                     class="sidebar-danger-btn"
-                    data-confirm="Reset page views for this invitation to zero?"
-                    data-confirm-title="Reset Page Views"
-                    data-confirm-text="Reset Views"
-                    data-cancel-text="Cancel"
+                    data-confirm="Reset semua kunjungan, interaksi, dan aktivitas tamu untuk undangan ini ke nol? Tindakan ini tidak dapat dibatalkan."
+                    data-confirm-title="Reset Aktivitas Tamu"
+                    data-confirm-text="Reset Aktivitas"
+                    data-cancel-text="Batal"
                     data-confirm-variant="warning"
                   >
                     <span class="material-symbols-outlined">restart_alt</span>
-                    <span>Reset Views</span>
+                    <span>Reset Aktivitas Tamu</span>
                   </button>
                 </form>
 

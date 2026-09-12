@@ -38,6 +38,8 @@ export interface PlatformSettings {
   home_template_cards: TemplateCard[];
   meta_title: string;
   meta_description: string;
+  google_analytics_id?: string;
+  google_tag_manager_id?: string;
   updated_at?: string;
 }
 
@@ -76,6 +78,8 @@ const defaults: PlatformSettings = {
   ],
   meta_title: 'Senadda - Undangan Pernikahan Digital',
   meta_description: 'Undangan pernikahan digital dengan desain yang elegan, personal, dan mudah dibagikan.',
+  google_analytics_id: 'G-PS8CJGKXWG',
+  google_tag_manager_id: '',
 };
 
 /**
@@ -133,7 +137,16 @@ export async function savePlatformSettings(input: Partial<PlatformSettings>): Pr
       .from(TABLE)
       .update(payload)
       .eq('id', existing.id);
-    if (error) throw new Error(`Failed to update platform settings: ${error.message}`);
+    if (error) {
+      if (error.message?.includes('google_analytics_id') || error.message?.includes('google_tag_manager_id')) {
+        const fallback = { ...payload };
+        delete fallback.google_analytics_id;
+        delete fallback.google_tag_manager_id;
+        await supabaseAdmin.from(TABLE).update(fallback).eq('id', existing.id);
+        throw new Error('Kolom google_analytics_id belum dibuat di database Supabase. Silakan jalankan file SQL migration di db/migrations.');
+      }
+      throw new Error(`Failed to update platform settings: ${error.message}`);
+    }
   } else {
     const { error } = await supabaseAdmin
       .from(TABLE)

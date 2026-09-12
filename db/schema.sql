@@ -258,6 +258,8 @@ CREATE TABLE IF NOT EXISTS platform_settings (
     home_template_cards JSONB NULL,
     meta_title VARCHAR(255) NULL,
     meta_description TEXT NULL,
+    google_analytics_id VARCHAR(255) NULL,
+    google_tag_manager_id VARCHAR(255) NULL,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

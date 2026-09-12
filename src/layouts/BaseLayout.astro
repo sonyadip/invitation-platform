@@ -1,5 +1,6 @@
 ---
 import FontLoader from "../components/common/FontLoader.astro";
+import GoogleAnalytics from "../components/common/GoogleAnalytics.astro";
 import "../styles/global.scss";
 import type { Wedding, InvitationSettings } from "../types";
 
@@ -42,6 +43,7 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
 <!doctype html>
 <html lang="id" class="scroll-smooth">
   <head>
+    <GoogleAnalytics />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />

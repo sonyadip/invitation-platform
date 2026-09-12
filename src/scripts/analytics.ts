@@ -51,6 +51,14 @@ export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOpti
   };
 
   try {
+    if (typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', eventType, {
+        wedding_id: weddingId,
+        guest_name: guestName,
+        ...options.metadata
+      });
+    }
+
     const payloadStr = JSON.stringify(payload);
     if (navigator.sendBeacon) {
       const blob = new Blob([payloadStr], { type: 'application/json' });

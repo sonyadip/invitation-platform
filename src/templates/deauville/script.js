@@ -10,6 +10,7 @@ import {
 
 const root = document.querySelector('body.template-deauville [data-template-root]');
 const cover = root?.querySelector('[data-template-cover]');
+const layout = root?.querySelector('[data-template-layout]');
 const openBtn = root?.querySelector('[data-template-open]');
 const song = root?.querySelector('[data-template-audio]');
 const audioBtn = root?.querySelector('[data-template-audio-toggle]');
@@ -96,6 +97,10 @@ openBtn?.addEventListener('click', () => {
     cover.classList.add('is-opening');
   }
 
+  if (layout instanceof HTMLElement) {
+    layout.style.opacity = '1';
+  }
+
   playAutoplayVideos();
 
   window.setTimeout(() => {
@@ -107,6 +112,7 @@ openBtn?.addEventListener('click', () => {
     document.body.classList.remove('template-no-scroll', 'template-cover-active');
     document.body.style.height = '';
     triggerOpeningAnimations();
+    initGalleryLightbox(root);
   }, 2000);
 
   if (song instanceof HTMLAudioElement) {
@@ -174,6 +180,113 @@ function initSliders() {
       activeIndex = (activeIndex + 1) % slides.length;
       slides[activeIndex]?.classList.add('is-active');
     }, 4000);
+  });
+}
+
+function initGallerySliders() {
+  const sliders = Array.from(root?.querySelectorAll('[data-gallery-slider]') || []);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  sliders.forEach((slider) => {
+    const track = slider.querySelector('.gallery-slider__track');
+    const slides = Array.from(slider.querySelectorAll('.gallery-slider__slide'));
+    const dots = Array.from(slider.querySelectorAll('.gallery-slider__dot'));
+    const prevBtn = slider.querySelector('[data-slider-prev]');
+    const nextBtn = slider.querySelector('[data-slider-next]');
+
+    if (!track || slides.length <= 1) return;
+
+    let currentIndex = 0;
+    let timer = null;
+
+    const update = () => {
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('is-active', idx === currentIndex);
+      });
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('is-active', idx === currentIndex);
+      });
+    };
+
+    const next = () => {
+      currentIndex = (currentIndex + 1) % slides.length;
+      update();
+    };
+
+    const prev = () => {
+      currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+      update();
+    };
+
+    const startTimer = () => {
+      if (reduceMotion) return;
+      stopTimer();
+      timer = setInterval(next, 5000);
+    };
+
+    const stopTimer = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    prevBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      prev();
+      startTimer();
+    });
+
+    nextBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      next();
+      startTimer();
+    });
+
+    dots.forEach((dot, idx) => {
+      dot.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        currentIndex = idx;
+        update();
+        startTimer();
+      });
+    });
+
+    slider.addEventListener('mouseenter', stopTimer);
+    slider.addEventListener('mouseleave', startTimer);
+
+    // Passive touch swipe detection without hijacking scrolling
+    let startX = 0;
+    let startY = 0;
+    slider.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        startX = e.touches[0].screenX;
+        startY = e.touches[0].screenY;
+        stopTimer();
+      }
+    }, { passive: true });
+
+    slider.addEventListener('touchend', (e) => {
+      if (e.changedTouches.length === 1) {
+        const diffX = e.changedTouches[0].screenX - startX;
+        const diffY = e.changedTouches[0].screenY - startY;
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX < 0) {
+            next();
+          } else {
+            prev();
+          }
+        }
+        startTimer();
+      }
+    }, { passive: true });
+
+    update();
+    startTimer();
   });
 }
 
@@ -371,6 +484,7 @@ function initFullpageScroll() {
 
 if (root) {
   initSliders();
+  initGallerySliders();
   initRevealAnimations(root);
   initCountdown(root);
   initGalleryLightbox(root);

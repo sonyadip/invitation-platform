@@ -194,6 +194,7 @@ export type ActivityActionType =
   | 'invitation.restore'
   | 'invitation.permanent_delete'
   | 'invitation.reset_views'
+  | 'invitation.reset_activities'
   | 'invitation.reset_rsvps'
   | 'invitation.reset_client_password'
   | 'rsvp.submit'

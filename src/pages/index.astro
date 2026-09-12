@@ -10,6 +10,7 @@ import ochreMotionCover from "../templates/ochre/assets/gallery-8.webp";
 import sageCover from "../templates/sage/assets/bg-hero.webp";
 import editorialCover from "../templates/editorial/assets/cover.webp";
 import lumiereCover from "../templates/lumiere/assets/cover.webp";
+import GoogleAnalytics from "../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../services/platform-settings";
 
 const siteSettings = await getPlatformSettings();
@@ -135,6 +136,7 @@ const schemaData = {
 <!doctype html>
 <html lang="id" class="intro-scroll-lock">
   <head>
+    <GoogleAnalytics />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     

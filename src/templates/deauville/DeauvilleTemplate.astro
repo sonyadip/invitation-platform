@@ -59,33 +59,60 @@ const overrideSettings = {
 
 const themeAssets = themeConfig.assets || {};
 const themeContent = themeConfig.content || {};
-const heroSlides = [
-  themeAssets.heroImage || deauvilleGroom,
-  themeAssets.heroImageTwo || deauvilleBride,
-  themeAssets.heroImageThree || deauvilleEvent,
-  themeAssets.eventImage || deauvilleEvent,
-  themeAssets.rsvpImage || deauvilleRsvp,
-  themeAssets.countdownImage || deauvilleSaveDate,
-  themeAssets.closingImage || deauvilleClosing,
-].filter(
-  (slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index,
-);
-const featureSlides = [
-  themeAssets.eventImage || deauvilleEvent,
-  themeAssets.rsvpImage || deauvilleRsvp,
-  themeAssets.countdownImage || deauvilleSaveDate,
-  themeAssets.closingImage || deauvilleClosing,
-].filter(
-  (slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index,
-);
 const coverImage = themeAssets.coverImage || deauvilleCover.src;
 const groomImage = themeAssets.groomImage || deauvilleGroom.src;
 const brideImage = themeAssets.brideImage || deauvilleBride.src;
 const closingImage = themeAssets.closingImage || deauvilleClosing.src;
 const countdownImage = themeAssets.countdownImage || deauvilleSaveDate.src;
+const eventImage = themeAssets.eventImage || countdownImage || deauvilleEvent.src;
+const galleryBgImage = themeAssets.galleryBgImage || eventImage || deauvilleClosing.src;
+const giftImage = themeAssets.giftImage || countdownImage || deauvilleSaveDate.src;
+const rsvpImage = themeAssets.rsvpImage || closingImage || deauvilleRsvp.src;
+
+const customHeroSlides = [
+  themeAssets.heroImage,
+  themeAssets.heroImageTwo,
+  themeAssets.heroImageThree,
+  themeAssets.heroImageFour,
+  themeAssets.eventImage,
+  themeAssets.countdownImage,
+  themeAssets.closingImage,
+].filter(Boolean);
+
+const defaultHeroSlides = [
+  deauvilleGroom,
+  deauvilleBride,
+  deauvilleEvent,
+  deauvilleRsvp,
+  deauvilleSaveDate,
+  deauvilleClosing,
+];
+
+const heroSlides = (customHeroSlides.length > 0 ? customHeroSlides : defaultHeroSlides).filter(
+  (slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index,
+);
+
+const customFeatureSlides = [
+  themeAssets.eventImage,
+  themeAssets.rsvpImage,
+  themeAssets.countdownImage,
+  themeAssets.closingImage,
+].filter(Boolean);
+
+const defaultFeatureSlides = [
+  deauvilleEvent,
+  deauvilleRsvp,
+  deauvilleSaveDate,
+  deauvilleClosing,
+];
+
+const featureSlides = (customFeatureSlides.length > 0 ? customFeatureSlides : defaultFeatureSlides).filter(
+  (slide, index, slides) => Boolean(slide) && slides.indexOf(slide) === index,
+);
+const isPreview = wedding.id.startsWith('preview-');
 const videoUrl =
   themeAssets.videoUrl ||
-  "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm";
+  (isPreview ? "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm" : undefined);
 const youtubeId = getYouTubeId(themeAssets.heroVideo);
 const videoPoster =
   themeAssets.videoPoster || themeAssets.posterImage || countdownImage;
@@ -117,7 +144,6 @@ const _themeName = (wedding.template || 'Template').charAt(0).toUpperCase() + (w
 const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : "";
 const groomInstagramUrl = text.groomInstagramUrl || instagramUrl;
 const brideInstagramUrl = text.brideInstagramUrl || instagramUrl;
-const isPreview = wedding.id.startsWith('preview-');
 
 const groomPrefix = formatChildPrefix(text.groomChildNumber, 'Putra', text.groomPrefix, isPreview ? 'Putra pertama dari' : 'Putra dari');
 const bridePrefix = formatChildPrefix(text.brideChildNumber, 'Putri', text.bridePrefix, isPreview ? 'Putri pertama dari' : 'Putri dari');
@@ -178,17 +204,60 @@ const fallbackGallery = [
 ].map((image, index) => ({
   id: String(index + 1),
   image_url: image,
-  variant: index === 0 || index === 5 ? "wide" : "square",
 }));
 
-const activeGallery =
+const rawGallery =
   gallery && gallery.length > 0
-    ? gallery.map((image, index) => ({
+    ? gallery.map((image) => ({
         id: image.id,
         image_url: image.image_url,
-        variant: index % 5 === 0 ? "wide" : "square",
       }))
     : fallbackGallery;
+
+const hasVideo = Boolean(videoUrl && videoUrl.trim() !== "");
+
+let topFeaturedSlides: { id: string; image_url: any }[] = [];
+let topFeaturedSingle: { id: string; image_url: any } | null = null;
+let gridItems: { id: string; image_url: any; variant: string; slides?: { id: string; image_url: any }[] }[] = [];
+
+if (hasVideo) {
+  if (rawGallery.length <= 7) {
+    gridItems = rawGallery.map((img, idx) => ({
+      ...img,
+      variant: (idx === 0 || idx === 6) ? "wide" : "square",
+    }));
+  } else {
+    const slot0Slides = [rawGallery[0], ...rawGallery.slice(7)];
+    const remaining6 = rawGallery.slice(1, 7);
+    gridItems = [
+      {
+        ...rawGallery[0],
+        variant: "wide",
+        slides: slot0Slides,
+      },
+      ...remaining6.map((img, idx) => ({
+        ...img,
+        variant: (idx === 5) ? "wide" : "square",
+      })),
+    ];
+  }
+} else {
+  if (rawGallery.length === 0) {
+    // empty
+  } else if (rawGallery.length <= 8) {
+    topFeaturedSingle = rawGallery[0];
+    gridItems = rawGallery.slice(1).map((img, idx) => ({
+      ...img,
+      variant: (idx === 0 || idx === 6) ? "wide" : "square",
+    }));
+  } else {
+    topFeaturedSlides = [rawGallery[0], ...rawGallery.slice(8)];
+    gridItems = rawGallery.slice(1, 8).map((img, idx) => ({
+      ...img,
+      variant: (idx === 0 || idx === 6) ? "wide" : "square",
+    }));
+  }
+}
 
 const displayedWishes = wishes ? wishes.slice(0, 4) : [];
 const isWishesEmpty = !wishes || wishes.length === 0;
@@ -218,7 +287,7 @@ const activeGifts =
   wedding={wedding}
   settings={overrideSettings}
   to={guestName}
-  templateClass="template-deauville"
+  templateClass={`template-deauville${sections.introAnimation !== false ? " has-intro" : ""}`}
   image={coverImage}
 >
   <style>
@@ -421,7 +490,11 @@ const activeGifts =
 
         {
           sections.eventDetails && (
-            <section class="event-section snap-section" id="event">
+            <section
+              class="event-section snap-section"
+              id="event"
+              style={eventImage ? `background-image: linear-gradient(rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.48)), url('${typeof eventImage === 'string' ? eventImage : eventImage.src}'); background-size: cover; background-position: center;` : undefined}
+            >
               <header data-animate>
                 <div class="event-section__title">
                   <span class="event-section__title-main">Save</span>
@@ -439,9 +512,11 @@ const activeGifts =
                     <p class="event-card__time">
                       {event.start_time} - {event.end_time}
                     </p>
-                    <strong class="event-card__venue">
-                      {event.venue_name}
-                    </strong>
+                    {event.venue_name && event.venue_name.trim() !== "" && (
+                      <strong class="event-card__venue">
+                        {event.venue_name}
+                      </strong>
+                    )}
                     <p class="event-card__address">{event.venue_address}</p>
                     <a
                       class="event-card__map-btn"
@@ -489,11 +564,15 @@ const activeGifts =
 
         {
           sections.gallery && settings.gallery_enabled && (
-            <section class="gallery-section snap-section" id="gallery">
+            <section
+              class="gallery-section snap-section"
+              id="gallery"
+              style={galleryBgImage ? `background-image: linear-gradient(rgba(49, 49, 49, 0.62), rgba(49, 49, 49, 0.62)), url('${typeof galleryBgImage === 'string' ? galleryBgImage : galleryBgImage.src}'); background-size: cover; background-position: center;` : undefined}
+            >
               <h3 class="gallery-section__title" data-animate>
                 Our Gallery
               </h3>
-              {videoUrl && videoUrl.trim() !== "" && (
+              {hasVideo ? (
                 <a
                   class="gallery-video-full"
                   href={videoUrl}
@@ -507,30 +586,116 @@ const activeGifts =
                     </svg>
                   </div>
                 </a>
+              ) : topFeaturedSlides.length > 1 ? (
+                <div class="gallery-featured-full gallery-featured-full--slider" data-gallery-slider data-animate>
+                  <div class="gallery-slider__track">
+                    {topFeaturedSlides.map((slide, idx) => (
+                      <a
+                        class={`gallery-slider__slide ${idx === 0 ? "is-active" : ""}`}
+                        href={typeof slide.image_url === 'string' ? slide.image_url : slide.image_url.src}
+                        data-fancybox="gallery-section"
+                        aria-label="Lihat foto galeri"
+                      >
+                        <SmartImage src={slide.image_url} alt="Wedding gallery" loading="lazy" />
+                      </a>
+                    ))}
+                  </div>
+                  <button type="button" class="gallery-slider__arrow gallery-slider__arrow--prev" data-slider-prev aria-label="Foto sebelumnya">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <button type="button" class="gallery-slider__arrow gallery-slider__arrow--next" data-slider-next aria-label="Foto berikutnya">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                  <div class="gallery-slider__dots">
+                    {topFeaturedSlides.map((_, idx) => (
+                      <span class={`gallery-slider__dot ${idx === 0 ? "is-active" : ""}`}></span>
+                    ))}
+                  </div>
+                </div>
+              ) : topFeaturedSingle ? (
+                <a
+                  class="gallery-featured-full"
+                  href={typeof topFeaturedSingle.image_url === 'string' ? topFeaturedSingle.image_url : topFeaturedSingle.image_url.src}
+                  data-fancybox="gallery-section"
+                  data-animate
+                >
+                  <SmartImage src={topFeaturedSingle.image_url} alt="Wedding gallery" loading="lazy" />
+                </a>
+              ) : null}
+
+              {gridItems.length > 0 && (
+                <div class="gallery-grid" data-animate>
+                  {gridItems.map((item) => (
+                    item.slides && item.slides.length > 1 ? (
+                      <div
+                        class={`gallery-item gallery-item--${item.variant} gallery-item--slider`}
+                        data-gallery-slider
+                        data-animate
+                      >
+                        <div class="gallery-slider__track">
+                          {item.slides.map((slide, idx) => (
+                            <a
+                              class={`gallery-slider__slide ${idx === 0 ? "is-active" : ""}`}
+                              href={typeof slide.image_url === 'string' ? slide.image_url : slide.image_url.src}
+                              data-fancybox="gallery-section"
+                              aria-label="Lihat foto galeri"
+                            >
+                              <SmartImage
+                                src={slide.image_url}
+                                alt="Wedding gallery"
+                                loading="lazy"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                        <button type="button" class="gallery-slider__arrow gallery-slider__arrow--prev" data-slider-prev aria-label="Foto sebelumnya">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+                        </button>
+                        <button type="button" class="gallery-slider__arrow gallery-slider__arrow--next" data-slider-next aria-label="Foto berikutnya">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </button>
+                        <div class="gallery-slider__dots">
+                          {item.slides.map((_, idx) => (
+                            <span class={`gallery-slider__dot ${idx === 0 ? "is-active" : ""}`}></span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <a
+                        class={`gallery-item gallery-item--${item.variant}`}
+                        href={typeof item.image_url === 'string' ? item.image_url : item.image_url.src}
+                        data-fancybox="gallery-section"
+                        data-animate
+                      >
+                        <SmartImage
+                          src={item.image_url}
+                          alt="Wedding gallery"
+                          loading="lazy"
+                        />
+                      </a>
+                    )
+                  ))}
+                </div>
               )}
-              <div class="gallery-grid" data-animate>
-                {activeGallery.map((image) => (
-                  <a
-                    class={`gallery-item gallery-item--${image.variant}`}
-                    href={typeof image.image_url === 'string' ? image.image_url : image.image_url.src}
-                    data-fancybox="gallery-section"
-                    data-animate
-                  >
-                    <SmartImage
-                      src={image.image_url}
-                      alt="Wedding gallery"
-                      loading="lazy"
-                    />
-                  </a>
-                ))}
-              </div>
             </section>
           )
         }
 
         {
           sections.gift && settings.gift_enabled && (
-            <section class="gift-section snap-section" data-gift-section>
+            <section
+              class="gift-section snap-section"
+              data-gift-section
+              style={giftImage ? `background-image: linear-gradient(rgba(21, 21, 21, 0.68), rgba(21, 21, 21, 0.72)), url('${typeof giftImage === 'string' ? giftImage : giftImage.src}'); background-size: cover; background-position: center;` : undefined}
+            >
               <div class="gift-container">
                 <div class="gift-header" data-animate>
                   <h3 class="gift-section__title">Wedding Gift</h3>
@@ -549,6 +714,7 @@ const activeGifts =
               class="rsvp-section snap-section"
               id="ucapan"
               data-rsvp-section
+              style={rsvpImage ? `background-image: linear-gradient(rgba(49, 49, 49, 0.72), rgba(49, 49, 49, 0.72)), url('${typeof rsvpImage === 'string' ? rsvpImage : rsvpImage.src}'); background-size: cover; background-position: center;` : undefined}
             >
               <h3 data-animate>RSVP &amp; Wishes</h3>
               <p data-animate>{text.rsvpDescription}</p>
@@ -591,8 +757,13 @@ const activeGifts =
                 </button>
               </form>
               <div class="rsvp-success" data-rsvp-success style="display:none;">
-                <h4>Terima kasih</h4>
-                <p>Konfirmasi dan ucapan Anda sudah tersimpan.</p>
+                <div class="rsvp-success__icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <h4 class="rsvp-success__title">Terima Kasih!</h4>
+                <p class="rsvp-success__desc">Konfirmasi kehadiran dan ucapan Anda telah berhasil kami simpan.</p>
               </div>
               <div class="wishes-list" data-animate data-wishes-list>
                 <div
@@ -633,36 +804,42 @@ const activeGifts =
                   </article>
                 ))}
               </div>
-              {totalWishPages > 1 && (
-                <div class="wishes-pagination" data-wishes-pagination data-wedding-id={wedding.id} data-current-page="1" data-total-pages={totalWishPages} data-per-page="4">
-                  <button type="button" class="wishes-pagination__btn" data-wishes-prev disabled aria-label="Halaman sebelumnya">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-                      <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                  </button>
-                  <div class="wishes-pagination__numbers" data-wishes-numbers>
-                    {generatePaginationItems(1, totalWishPages).map((item) => (
-                      typeof item === 'number' ? (
-                        <button
-                          type="button"
-                          class={`wishes-pagination__num ${item === 1 ? 'wishes-pagination__num--active' : ''}`}
-                          data-wishes-page={item}
-                          aria-label={`Halaman ${item}`}
-                        >
-                          {item}
-                        </button>
-                      ) : (
-                        <span class="wishes-pagination__ellipsis">...</span>
-                      )
-                    ))}
-                  </div>
-                  <button type="button" class="wishes-pagination__btn" data-wishes-next aria-label="Halaman berikutnya">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </button>
+              <div
+                class="wishes-pagination"
+                data-wishes-pagination
+                data-wedding-id={wedding.id}
+                data-current-page="1"
+                data-total-pages={totalWishPages || 1}
+                data-per-page="4"
+                style={totalWishPages > 1 ? "" : "display:none;"}
+              >
+                <button type="button" class="wishes-pagination__btn" data-wishes-prev disabled aria-label="Halaman sebelumnya">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <div class="wishes-pagination__numbers" data-wishes-numbers>
+                  {generatePaginationItems(1, totalWishPages || 1).map((item) => (
+                    typeof item === 'number' ? (
+                      <button
+                        type="button"
+                        class={`wishes-pagination__num ${item === 1 ? 'wishes-pagination__num--active' : ''}`}
+                        data-wishes-page={item}
+                        aria-label={`Halaman ${item}`}
+                      >
+                        {item}
+                      </button>
+                    ) : (
+                      <span class="wishes-pagination__ellipsis">...</span>
+                    )
+                  ))}
                 </div>
-              )}
+                <button type="button" class="wishes-pagination__btn" data-wishes-next aria-label="Halaman berikutnya">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
             </section>
           )
         }

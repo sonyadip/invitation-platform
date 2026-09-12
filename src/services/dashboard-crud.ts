@@ -95,11 +95,11 @@ export interface InvitationGiftInput {
 
 const storageBucket =
   (typeof process !== 'undefined' ? process.env.SUPABASE_STORAGE_BUCKET : '') ||
-  import.meta.env.SUPABASE_STORAGE_BUCKET ||
+  (import.meta as any).env?.SUPABASE_STORAGE_BUCKET ||
   'invitation-images';
 const maxUploadBytes = Number(
   (typeof process !== 'undefined' ? process.env.MAX_IMAGE_UPLOAD_MB : '') ||
-  import.meta.env.MAX_IMAGE_UPLOAD_MB ||
+  (import.meta as any).env?.MAX_IMAGE_UPLOAD_MB ||
   5
 ) * 1024 * 1024;
 const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
@@ -1282,22 +1282,50 @@ export async function duplicateInvitation(weddingId: string) {
   return duplicatedWedding.slug as string;
 }
 
-export async function resetInvitationViews(weddingId: string): Promise<void> {
+export async function resetInvitationActivities(weddingId: string): Promise<void> {
   const supabase = await getSupabaseAdmin();
   const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
-  const { error } = await supabase.from('invitation_views').delete().eq('wedding_id', weddingId);
-  if (error) {
-    throw toDashboardError(error, 'Failed to reset page views.');
+
+  // 1. Delete all page views
+  const { error: viewsError } = await supabase.from('invitation_views').delete().eq('wedding_id', weddingId);
+  if (viewsError) {
+    throw toDashboardError(viewsError, 'Failed to reset page views.');
+  }
+
+  // 2. Delete all guest interaction events (clicks, music, cover, etc.)
+  const { error: eventsError } = await supabase.from('invitation_events').delete().eq('wedding_id', weddingId);
+  if (eventsError) {
+    // If the table does not exist or has an issue, gracefully warn instead of blocking
+    if ((eventsError as any).code === '42P01' || eventsError.message?.includes('relation "invitation_events" does not exist')) {
+      console.warn('invitation_events table not found. Skipping event reset.');
+    } else {
+      throw toDashboardError(eventsError, 'Failed to reset guest interaction events.');
+    }
+  }
+
+  // 3. Reset read-receipt status on sent invitations (opened_at, last_opened_at, open_count)
+  const { error: sentError } = await supabase
+    .from('sent_invitations')
+    .update({
+      opened_at: null,
+      last_opened_at: null,
+      open_count: 0
+    })
+    .eq('wedding_id', weddingId);
+  if (sentError) {
+    console.warn('Notice: Reset sent invitations read receipts skipped:', sentError.message);
   }
 
   await logActivity({
     wedding_id: weddingId,
     slug: wedding?.slug || null,
     actor_type: 'admin',
-    action: 'invitation.reset_views',
-    description: `Page views statistics for '${wedding?.slug || weddingId}' reset to zero.`
+    action: 'invitation.reset_activities',
+    description: `All visitor views and guest activities for '${wedding?.slug || weddingId}' reset to zero.`
   });
 }
+
+export const resetInvitationViews = resetInvitationActivities;
 
 export async function resetInvitationRsvps(weddingId: string): Promise<void> {
   const supabase = await getSupabaseAdmin();
