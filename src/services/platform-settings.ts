@@ -67,10 +67,11 @@ const defaults: PlatformSettings = {
   home_booking_heading: 'Ceritakan undangan Anda.',
   home_booking_cta: 'Hubungi via WhatsApp',
   home_hero_seal_text: 'SENADDA • DIGITAL STUDIO • UNDANGAN •',
-  home_stat_number: '5+',
+  home_stat_number: '6+',
   home_stat_label: 'Koleksi\nEksklusif',
   home_template_cards: [
     { key: "lumiere", name: "Lumiere", price: "Rp 450.000", promoPrice: "Rp 300.000" },
+    { key: "atelier", name: "Atelier", price: "Rp 450.000", promoPrice: "Rp 300.000" },
     { key: "editorial", name: "Editorial", price: "Rp 350.000", promoPrice: "Rp 250.000" },
     { key: "deauville", name: "Deauville", price: "Rp 300.000", promoPrice: "Rp 200.000" },
     { key: "air", name: "Air", price: "Rp 200.000", promoPrice: "Rp 150.000" },

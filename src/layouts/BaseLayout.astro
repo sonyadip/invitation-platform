@@ -53,6 +53,12 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
     <!-- Dynamic Fonts Injection -->
     <FontLoader fontHeading={theme.fontHeading} fontBody={theme.fontBody} />
 
+    <style is:global>
+      astro-dev-toolbar, #dev-toolbar-root {
+        display: none !important;
+      }
+    </style>
+
     <!-- LCP Image Preload -->
     {imageUrl && <link rel="preload" as="image" href={imageUrl} fetchpriority="high" />}
 

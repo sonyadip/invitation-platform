@@ -43,10 +43,19 @@ export const buildCoupleLines = (
   const lines: string[] = [];
   if (prefix) lines.push(prefix);
 
-  const cleanParent = (val?: string | null) => val ? val.trim().replace(/^(?:Bapak|Ibu)\s+/i, '') : '';
+  const cleanParent = (val?: string | null, defaultHonorific?: 'Bapak' | 'Ibu') => {
+    if (!val) return '';
+    const trimmed = val.trim();
+    if (/^Bapak\s+Mempelai$/i.test(trimmed)) return 'Bapak Mempelai';
+    if (/^Ibu\s+Mempelai$/i.test(trimmed)) return 'Ibu Mempelai';
+    if (/^Mempelai$/i.test(trimmed)) {
+      return defaultHonorific ? `${defaultHonorific} Mempelai` : trimmed;
+    }
+    return trimmed.replace(/^(?:Bapak|Ibu)\s+/i, '');
+  };
 
-  const father = cleanParent(fatherName);
-  const mother = cleanParent(motherName);
+  const father = cleanParent(fatherName, 'Bapak');
+  const mother = cleanParent(motherName, 'Ibu');
 
   if (father || mother) {
     if (father) lines.push(father);
@@ -55,11 +64,11 @@ export const buildCoupleLines = (
     const cleaned = fallbackParents
       .replace(/^(Putra dari|Putri dari|Putra|Putri)\s+/i, '')
       .replace(/^dari\s+/i, '');
-    const parts = cleaned.split(/\s+(?:&|dan)\s+/i).map(cleanParent).filter(Boolean);
+    const parts = cleaned.split(/\s+(?:&|dan)\s+/i).map((p, idx) => cleanParent(p, idx === 0 ? 'Bapak' : 'Ibu')).filter(Boolean);
     if (parts.length > 0) {
       parts.forEach((p) => lines.push(p));
     } else {
-      lines.push(cleanParent(cleaned) || fallbackParents);
+      lines.push(cleanParent(cleaned, 'Bapak') || fallbackParents);
     }
   }
 

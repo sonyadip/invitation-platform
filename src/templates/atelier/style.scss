@@ -365,7 +365,7 @@ body.template-atelier {
       &:last-child {
         .couple-section__role-label {
           left: auto;
-          right: 3px;
+          right: 14px;
         }
         .couple-section__info {
           align-items: flex-end;
@@ -390,30 +390,35 @@ body.template-atelier {
 
     &__role-label {
       position: absolute;
-      left: 3px;
+      left: 14px;
       top: 20px;
       bottom: 20px;
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
+      z-index: 2;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       color: var(--lm-white);
-      text-shadow: 0 1px 6px rgba(0,0,0,0.6);
-      
-      font-family: 'Poppins', sans-serif;
-      font-size: 1rem;
-      font-weight: 500;
-      letter-spacing: 0.5px;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+      pointer-events: none;
 
-      &::before {
-        content: "";
+      .role-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        line-height: 1;
+        text-align: center;
+      }
+
+      .role-line {
         display: block;
         width: 1px;
-        flex-grow: 1;
+        flex: 1;
         background: var(--lm-white);
-        box-shadow: 0 1px 6px rgba(0,0,0,0.6);
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
       }
     }
 

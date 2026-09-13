@@ -608,6 +608,66 @@ body.template-air {
     font-size: 15px;
   }
 
+  /* STORY SECTION */
+  .story-section {
+    background: var(--air-white, #ffffff);
+    color: var(--air-dark, #111111);
+    padding: 64px 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .story-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    margin: 36px auto 0;
+    max-width: 480px;
+    position: relative;
+    padding-left: 24px;
+    border-left: 1px solid rgba(0, 0, 0, 0.15);
+  }
+
+  .story-item {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -29px;
+      top: 5px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--air-dark, #111111);
+      box-shadow: 0 0 0 4px var(--air-white, #ffffff);
+    }
+
+    &__year {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--air-muted, #777777);
+      margin-bottom: 4px;
+    }
+
+    &__title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--air-dark, #111111);
+      margin: 0 0 8px;
+      line-height: 1.25;
+    }
+
+    &__text {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #555555;
+      margin: 0;
+    }
+  }
+
   /* EVENTS SECTION */
   .events-section {
     background: var(--air-dark);

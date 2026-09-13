@@ -1,17 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import SmartImage from '../../components/common/SmartImage.astro';
 import type { FullInvitationData } from '../../types';
-import bgHero from '../noir/assets/bg-hero.webp';
-import coupleBride from '../noir/assets/couple-bride.jpg';
-import coupleGroom from '../noir/assets/couple-groom.jpg';
-import galleryOne from '../noir/assets/gallery-1.jpg';
-import galleryTwo from '../noir/assets/gallery-2.jpg';
-import galleryThree from '../noir/assets/gallery-3.jpg';
-import galleryFour from '../noir/assets/gallery-4.jpg';
-import galleryFive from '../noir/assets/gallery-5.jpg';
-import gallerySix from '../noir/assets/gallery-6.jpg';
-import gallerySeven from '../noir/assets/gallery-7.jpg';
-import galleryEight from '../noir/assets/gallery-8.webp';
+import airCover from './assets/cover.webp';
+import airHero1 from './assets/air-hero-1.webp';
+import airHero2 from './assets/air-hero-2.webp';
+import airHero3 from './assets/air-hero-3.webp';
+import airDetail1 from './assets/air-detail-1.webp';
+import airDetail2 from './assets/air-detail-2.webp';
+import coupleBride from './assets/couple-bride.webp';
+import coupleGroom from './assets/couple-groom.webp';
+import galleryOne from './assets/gallery-1.webp';
+import galleryTwo from './assets/gallery-2.webp';
+import galleryThree from './assets/gallery-3.webp';
+import galleryFour from './assets/gallery-4.webp';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import './style.scss';
 
@@ -28,6 +30,7 @@ import { getPlatformSettings } from '../../services/platform-settings';
 import ClassicIntro from '../../components/common/ClassicIntro.astro';
 import CountdownTimer from '../../components/common/CountdownTimer.astro';
 import GiftGrid from '../../components/common/GiftGrid.astro';
+
 interface Props {
   data: FullInvitationData;
   guestName: string | null;
@@ -59,21 +62,26 @@ const overrideSettings = {
 };
 
 const themeAssets = themeConfig.assets || {};
-const heroImage = themeAssets.heroImage || bgHero.src;
-const coverImage = themeAssets.coverImage || heroImage;
-const heroSlides = [
-  themeAssets.heroImage || bgHero.src,
-  themeAssets.heroImageTwo || galleryEight.src,
-  themeAssets.heroImageThree || gallerySix.src
-].filter(Boolean);
+const heroImage = themeAssets.heroImage || airHero1.src;
+const coverImage = themeAssets.coverImage || airCover.src;
 const brideImage = themeAssets.brideImage || coupleBride.src;
 const groomImage = themeAssets.groomImage || coupleGroom.src;
+const closingImage = themeAssets.closingImage || airDetail2.src;
+const eventImage = themeAssets.eventImage || airDetail1.src;
+const countdownImage = themeAssets.countdownImage || airHero2.src;
+
+const heroSlides = [
+  themeAssets.heroImage || airHero1.src,
+  themeAssets.heroImageTwo || airHero2.src,
+  themeAssets.heroImageThree || airHero3.src
+].filter(Boolean);
+
 const videoUrl =
   themeAssets.videoUrl ||
   themeAssets.heroVideo ||
-  "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm";
+  "";
 const videoPoster =
-  themeAssets.videoPoster || themeAssets.posterImage || gallerySeven.src;
+  themeAssets.videoPoster || themeAssets.posterImage || airDetail1.src;
 
 const formattedDate = formatDate(wedding.wedding_date);
 
@@ -95,25 +103,34 @@ const activeEvents = events && events.length > 0
 
 const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, activeEvents[0] as any);
 
+const fallbackGallery = [
+  { id: '1', image_url: galleryOne.src, variant: 'wide' },
+  { id: '2', image_url: galleryTwo.src, variant: 'square' },
+  { id: '3', image_url: galleryThree.src, variant: 'square' },
+  { id: '4', image_url: galleryFour.src, variant: 'wide' },
+  { id: '5', image_url: airDetail1.src, variant: 'square' },
+  { id: '6', image_url: airDetail2.src, variant: 'square' },
+  { id: '7', image_url: airHero3.src, variant: 'wide' }
+];
+
 const activeGallery = gallery && gallery.length > 0
   ? gallery.map((image, index) => {
       let variant = 'square';
-      if (index % 6 === 0) variant = 'wide';
-      else if (index % 6 === 5) variant = 'wide';
+      if (index % 6 === 0 || index % 6 === 5) variant = 'wide';
       return {
         id: image.id,
         image_url: image.image_url,
         variant
       };
     })
+  : fallbackGallery;
+
+const activeStory = wedding.story && wedding.story.length > 0
+  ? wedding.story
   : [
-      { id: '1', image_url: galleryOne.src, variant: 'wide' },
-      { id: '2', image_url: galleryTwo.src, variant: 'square' },
-      { id: '3', image_url: galleryThree.src, variant: 'square' },
-      { id: '4', image_url: galleryFour.src, variant: 'square' },
-      { id: '5', image_url: galleryFive.src, variant: 'square' },
-      { id: '6', image_url: gallerySix.src, variant: 'square' },
-      { id: '7', image_url: gallerySeven.src, variant: 'wide' }
+      { year: '2020', title: 'Pertama Bertemu', description: 'Semua berawal dari pertemuan sederhana yang tak pernah direncanakan. Dari sapaan singkat yang terasa biasa, perlahan tumbuh rasa nyaman yang sulit dijelaskan.' },
+      { year: '2023', title: 'Menjalin Hubungan', description: 'Hari demi hari, kami belajar mengenal satu sama lain, tentang mimpi, kebiasaan kecil, dan cara kami saling melengkapi.' },
+      { year: '2026', title: 'Hari Pernikahan', description: 'Kini, perjalanan itu membawa kami pada langkah baru yang lebih berarti. Dengan hati yang penuh syukur, kami siap menapaki babak berikutnya.' }
     ];
 
 const displayedWishes = wishes ? wishes.slice(0, 4) : [];
@@ -127,15 +144,32 @@ const activeGifts = gifts && gifts.length > 0
       { id: '2', bank_name: 'Mandiri', account_number: '0987654321', account_name: wedding.bride_name, qris_url: null }
     ];
 
+const defaultText = {
+  verse: 'Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu.',
+  verseSource: '(Rgveda : X.85.42)',
+  groomParents: 'Putra dari Bapak Mempelai & Ibu Mempelai',
+  brideParents: 'Putri dari Bapak Mempelai & Ibu Mempelai',
+  giftDescription: 'Tanpa mengurangi rasa hormat, bagi tamu yang ingin mengirimkan hadiah kasih dapat melalui rekening berikut.',
+  rsvpDescription: 'Mohon konfirmasi kehadiran Anda dan berikan doa restu untuk kami.',
+  closingMessage: 'Merupakan suatu kebahagiaan dan kehormatan bagi kami sekeluarga, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu di hari bahagia kami.',
+  instagramUrl: '#',
+  groomInstagramUrl: '',
+  brideInstagramUrl: ''
+};
+
 const themeContent = themeConfig.content || {};
+const text = { ...defaultText, ...themeContent };
+const closingTitle = text.thankYouTitle || 'Terima Kasih';
+const closingMessage = text.thankYouMessage || text.closingMessage || defaultText.closingMessage;
+
 const platformSettings = await getPlatformSettings();
-const instagramUrl = themeContent.instagramUrl || platformSettings.instagram_url || 'https://instagram.com';
+const instagramUrl = text.instagramUrl && text.instagramUrl !== '#' ? text.instagramUrl : (platformSettings.instagram_url || '#');
 const _baseWa = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
 const _themeName = (wedding.template || 'Template').charAt(0).toUpperCase() + (wedding.template || 'Template').slice(1);
 const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : '';
 
-const groomInstagramUrl = themeContent.groomInstagramUrl || themeContent.instagramUrl || settings.social_instagram || "#";
-const brideInstagramUrl = themeContent.brideInstagramUrl || themeContent.instagramUrl || settings.social_instagram || "#";
+const groomInstagramUrl = text.groomInstagramUrl || themeContent.groomInstagramUrl || instagramUrl;
+const brideInstagramUrl = text.brideInstagramUrl || themeContent.brideInstagramUrl || instagramUrl;
 
 const isPreview = wedding.id.startsWith('preview-');
 
@@ -148,14 +182,14 @@ const groomParentLines = buildCoupleLines(
   groomPrefix,
   themeContent.groomFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
   themeContent.groomMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
-  themeContent.groomParents || 'Keluarga Mempelai Pria',
+  themeContent.groomParents || text.groomParents,
   groomAddressText
 );
 const brideParentLines = buildCoupleLines(
   bridePrefix,
   themeContent.brideFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
   themeContent.brideMotherName || (isPreview ? 'Ibu Mempelai' : undefined),
-  themeContent.brideParents || 'Keluarga Mempelai Wanita',
+  themeContent.brideParents || text.brideParents,
   brideAddressText
 );
 ---
@@ -287,7 +321,7 @@ const brideParentLines = buildCoupleLines(
               <div class="couple-swiss__wrapper couple-swiss__wrapper--bride">
                 <span class="vertical-role vertical-role--left">The Bride</span>
                 <div class="couple-swiss__item couple-swiss__item--bride-img" data-animate="fade-up">
-                  <img src={brideImage} alt={wedding.bride_name} loading="lazy" />
+                  <SmartImage src={brideImage} alt={wedding.bride_name} loading="lazy" />
                 </div>
                 <div class="couple-swiss__item couple-swiss__item--bride-text" data-animate="fade-left">
                   <h4>{wedding.bride_full_name}</h4>
@@ -324,7 +358,7 @@ const brideParentLines = buildCoupleLines(
               <div class="couple-swiss__wrapper couple-swiss__wrapper--groom">
                 <span class="vertical-role vertical-role--right">The Groom</span>
                 <div class="couple-swiss__item couple-swiss__item--groom-img" data-animate="fade-up">
-                  <img src={groomImage} alt={wedding.groom_name} loading="lazy" />
+                  <SmartImage src={groomImage} alt={wedding.groom_name} loading="lazy" />
                 </div>
                 <div class="couple-swiss__item couple-swiss__item--groom-text" data-animate="fade-right">
                   <h4>{wedding.groom_full_name}</h4>
@@ -356,6 +390,24 @@ const brideParentLines = buildCoupleLines(
                   </a>
                 </div>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* OUR STORY SECTION */}
+        {sections.story && (
+          <section class="template-section story-section" id="story-section">
+            <div class="template-section__head" data-animate="fade-up">
+              <h3>Our Story</h3>
+            </div>
+            <div class="story-timeline">
+              {activeStory.map((item) => (
+                <article class="story-item" data-animate="fade-up">
+                  {item.year && <span class="story-item__year">{item.year}</span>}
+                  <h4 class="story-item__title">{item.title}</h4>
+                  <p class="story-item__text">{item.description}</p>
+                </article>
+              ))}
             </div>
           </section>
         )}
@@ -424,7 +476,7 @@ const brideParentLines = buildCoupleLines(
                 data-animate="fade-up"
                 aria-label="Putar Video Pernikahan"
               >
-                <img src={typeof videoPoster === 'string' ? videoPoster : videoPoster.src} alt="Wedding film poster" loading="lazy" />
+                <SmartImage src={typeof videoPoster === 'string' ? videoPoster : videoPoster.src} alt="Wedding film poster" loading="lazy" />
                 <div class="gallery-section__play" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z" />
@@ -435,7 +487,7 @@ const brideParentLines = buildCoupleLines(
             <div class="gallery-section__grid">
               {activeGallery.map((image) => (
                 <a class={`gallery-section__item gallery-section__item--${image.variant}`} href={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} data-fancybox="gallery-section" data-animate="fade-up" aria-label="Lihat foto galeri">
-                  <img src={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} alt="Wedding gallery photo" loading="lazy" />
+                  <SmartImage src={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} alt="Wedding gallery photo" loading="lazy" />
                   <div class="gallery-section__overlay" aria-hidden="true">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
@@ -570,9 +622,15 @@ const brideParentLines = buildCoupleLines(
 
         {/* THANK YOU SECTION */}
         <section class="thankyou-section snap-section">
-          <img class="thankyou-section__bg" src={typeof gallerySeven === 'string' ? gallerySeven : gallerySeven.src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
+          <SmartImage class="thankyou-section__bg" src={closingImage} alt="" aria-hidden="true" loading="lazy" />
           <div class="thankyou-section__inner" data-animate="fade-up">
-            <h2 class="thankyou-section__title">Terima Kasih</h2>
+            <h2 class="thankyou-section__title">{closingTitle}</h2>
+            <p class="thankyou-section__message" style="margin: 16px auto 24px; max-width: 440px; font-size: 0.95rem; line-height: 1.7; opacity: 0.9;">
+              {closingMessage}
+            </p>
+            <h3 class="thankyou-section__names" style="font-size: 1.25rem; font-weight: 500; margin-bottom: 24px;">
+              {wedding.groom_name} &amp; {wedding.bride_name}
+            </h3>
             <div class="thankyou-section__socials">
               <a
                 href={instagramUrl}
@@ -589,9 +647,9 @@ const brideParentLines = buildCoupleLines(
                   stroke-width="1.7"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d="M17.5 4H6.5C5.11929 4 4 5.11929 4 6.5V17.5C4 18.8807 5.11929 20 6.5 20H17.5C18.8807 20 20 18.8807 20 17.5V6.5C20 5.11929 18.8807 4 17.5 4Z" />
-                  <path d="M16 11.3701C16.1234 12.2023 15.9813 13.0523 15.5938 13.7991C15.2063 14.5459 14.5932 15.1515 13.8416 15.5297C13.0901 15.9079 12.2385 16.0397 11.4078 15.906C10.5771 15.7723 9.80977 15.3801 9.21485 14.7852C8.61993 14.1902 8.22774 13.4229 8.09407 12.5922C7.9604 11.7615 8.09215 10.91 8.47033 10.1584C8.84851 9.40685 9.45412 8.79374 10.2009 8.40624C10.9477 8.01874 11.7977 7.87659 12.63 8.00004C13.4789 8.12588 14.2649 8.52146 14.8717 9.1283C15.4785 9.73515 15.8741 10.5211 16 11.3701V11.3701Z" />
-                  <path d="M17.5 6.5H17.51" />
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="1" />
                 </svg>
               </a>
               {whatsappUrl && (
@@ -603,14 +661,8 @@ const brideParentLines = buildCoupleLines(
                   class="social-link"
                   data-track-vendor-whatsapp
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Zm4.23-5.78c-.23-.12-1.37-.68-1.58-.75-.21-.08-.37-.12-.52.12-.16.23-.6.75-.74.9-.14.16-.27.18-.5.06-.23-.12-.98-.36-1.86-1.15-.69-.61-1.15-1.36-1.28-1.59-.14-.23-.02-.36.1-.48.11-.11.23-.27.35-.41.12-.14.16-.23.23-.39.08-.16.04-.29-.02-.41-.06-.12-.52-1.25-.71-1.71-.19-.45-.38-.39-.52-.4h-.45c-.16 0-.41.06-.62.29-.21.23-.81.79-.81 1.93 0 1.14.83 2.24.95 2.4.12.16 1.64 2.5 3.98 3.51.56.24.99.38 1.33.49.56.18 1.07.15 1.47.09.45-.07 1.37-.56 1.57-1.1.19-.54.19-1 .14-1.1-.06-.1-.21-.16-.44-.28Z"
-                    ></path>
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
                   </svg>
                 </a>
               )}
@@ -618,9 +670,10 @@ const brideParentLines = buildCoupleLines(
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path></svg>
               </a>
             </div>
-            <p class="thankyou-section__brand-text">
+            <p class="thankyou-section__brand-text" style="margin-top: 20px;">
               wedding invitation by <span>Senadda</span>
             </p>
+            <p class="thankyou-section__copyright" style="font-size: 0.75rem; opacity: 0.6; margin-top: 8px;">&copy; Copyright {new Date().getFullYear()}</p>
           </div>
         </section>
       </main>

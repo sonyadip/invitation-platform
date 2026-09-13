@@ -1,5 +1,6 @@
 ---
 import { loadTemplate } from '../../templates/registry';
+import { getInvitationByDomainOrSlug } from '../../services/invitation';
 import type { FullInvitationData } from '../../types';
 
 export const prerender = false;
@@ -9,7 +10,13 @@ const templateKey = (template || 'noir').toLowerCase();
 const now = new Date().toISOString();
 const weddingDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 45).toISOString();
 
-const data: FullInvitationData = {
+const CLIENT_PREVIEW_MAP: Record<string, string> = {
+  deauville: 'andi-ayu',
+  editorial: 'yudis-ami',
+  noir: 'yudi-meita'
+};
+
+const defaultData: FullInvitationData = {
   wedding: {
     id: `preview-${templateKey}`,
     slug: `preview-${templateKey}`,
@@ -80,6 +87,14 @@ const data: FullInvitationData = {
       assets: {
         heroVideo: ['lumiere', 'editorial', 'atelier'].includes(templateKey) ? '/images/preview-video.mp4' : undefined,
         videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm'
+      },
+      content: {
+        groomFatherName: 'Bapak Mempelai',
+        groomMotherName: 'Ibu Mempelai',
+        groomParents: 'Putra dari Bapak Mempelai & Ibu Mempelai',
+        brideFatherName: 'Bapak Mempelai',
+        brideMotherName: 'Ibu Mempelai',
+        brideParents: 'Putri dari Bapak Mempelai & Ibu Mempelai'
       }
     },
     created_at: now,
@@ -143,6 +158,140 @@ const data: FullInvitationData = {
     created_at: new Date(Date.now() - i * 3600000).toISOString()
   }))
 };
+
+let data: FullInvitationData = defaultData;
+
+const clientSlug = CLIENT_PREVIEW_MAP[templateKey];
+if (clientSlug) {
+  try {
+    const clientData = await getInvitationByDomainOrSlug(clientSlug, false);
+    if (clientData) {
+      // Merge wedding details
+      const wedding = {
+        ...defaultData.wedding,
+        ...clientData.wedding,
+        id: `preview-${templateKey}`,
+        slug: `preview-${templateKey}`,
+        venue_name: (clientData.wedding.venue_name && clientData.wedding.venue_name.trim() !== '')
+          ? clientData.wedding.venue_name
+          : defaultData.wedding.venue_name,
+        venue_address: (clientData.wedding.venue_address && clientData.wedding.venue_address.trim() !== '')
+          ? clientData.wedding.venue_address
+          : defaultData.wedding.venue_address,
+        story: (clientData.wedding.story && clientData.wedding.story.length > 0)
+          ? clientData.wedding.story
+          : defaultData.wedding.story,
+        music_url: defaultData.wedding.music_url, // Lagu dipertahankan sesuai permintaan pengguna
+        template: templateKey,
+        status: 'published' as const
+      };
+
+      // Ensure all layouts are enabled and complete
+      const settings = {
+        ...defaultData.settings,
+        ...clientData.settings,
+        id: `settings-${templateKey}`,
+        wedding_id: `preview-${templateKey}`,
+        maintenance_mode: false,
+        password_protection_enabled: false,
+        sections: {
+          ...defaultData.settings.sections,
+          ...(clientData.settings.sections || {}),
+          hero: true,
+          countdown: true,
+          coupleInfo: true,
+          eventDetails: true,
+          story: true,
+          gallery: true,
+          rsvp: true,
+          wishes: true,
+          gift: true,
+          music: true,
+          share: true,
+          livestream: false,
+          introAnimation: templateKey !== 'noir'
+        },
+        theme_config: {
+          ...defaultData.settings.theme_config,
+          ...(clientData.settings.theme_config || {}),
+          assets: {
+            ...defaultData.settings.theme_config?.assets,
+            ...(clientData.settings.theme_config?.assets || {})
+          },
+          content: {
+            ...defaultData.settings.theme_config?.content,
+            ...(clientData.settings.theme_config?.content || {}),
+            groomFatherName: clientData.settings.theme_config?.content?.groomFatherName?.trim() || defaultData.settings.theme_config?.content?.groomFatherName,
+            groomMotherName: clientData.settings.theme_config?.content?.groomMotherName?.trim() || defaultData.settings.theme_config?.content?.groomMotherName,
+            brideFatherName: clientData.settings.theme_config?.content?.brideFatherName?.trim() || defaultData.settings.theme_config?.content?.brideFatherName,
+            brideMotherName: clientData.settings.theme_config?.content?.brideMotherName?.trim() || defaultData.settings.theme_config?.content?.brideMotherName,
+          }
+        }
+      };
+
+      // Build complete events
+      let events = (clientData.events && clientData.events.length > 0)
+        ? clientData.events.map((evt, idx) => ({
+            ...evt,
+            start_time: (evt.start_time && evt.start_time.trim() !== '')
+              ? evt.start_time
+              : (idx === 0 && clientData.events.length > 1 ? '09:00' : '18:00'),
+            end_time: (evt.end_time && evt.end_time.trim() !== '')
+              ? evt.end_time
+              : (idx === 0 && clientData.events.length > 1 ? '11:00' : 'Selesai'),
+            venue_name: (evt.venue_name && evt.venue_name.trim() !== '')
+              ? evt.venue_name
+              : (clientData.wedding.venue_name?.trim() || defaultData.wedding.venue_name),
+            venue_address: (evt.venue_address && evt.venue_address.trim() !== '')
+              ? evt.venue_address
+              : clientData.wedding.venue_address
+          }))
+        : defaultData.events;
+
+      if (events.length === 1) {
+        const firstEvt = events[0];
+        const isFirstResepsi = firstEvt.event_name.toLowerCase().includes('resepsi');
+        const complementaryEvent = {
+          id: 'event-complementary',
+          wedding_id: `preview-${templateKey}`,
+          event_name: isFirstResepsi ? 'Akad Nikah' : 'Resepsi',
+          event_date: firstEvt.event_date || clientData.wedding.wedding_date,
+          start_time: isFirstResepsi ? '09:00' : '18:00',
+          end_time: isFirstResepsi ? '11:00' : 'Selesai',
+          venue_name: firstEvt.venue_name || defaultData.wedding.venue_name,
+          venue_address: firstEvt.venue_address || clientData.wedding.venue_address,
+          maps_url: firstEvt.maps_url || clientData.wedding.maps_url,
+          sort_order: isFirstResepsi ? 0 : 2,
+          created_at: now
+        };
+        events = isFirstResepsi ? [complementaryEvent, firstEvt] : [firstEvt, complementaryEvent];
+      }
+
+      const gallery = (clientData.gallery && clientData.gallery.length > 0)
+        ? clientData.gallery
+        : defaultData.gallery;
+
+      const gifts = (clientData.gifts && clientData.gifts.length > 0)
+        ? clientData.gifts
+        : defaultData.gifts;
+
+      const wishes = (clientData.wishes && clientData.wishes.length > 0)
+        ? clientData.wishes
+        : defaultData.wishes;
+
+      data = {
+        wedding,
+        settings,
+        events,
+        gallery,
+        gifts,
+        wishes
+      };
+    }
+  } catch (err) {
+    console.error(`Error loading client preview data for ${clientSlug}:`, err);
+  }
+}
 
 const loadedTemplate = await loadTemplate(templateKey);
 const ActiveTemplate = loadedTemplate.component as any;

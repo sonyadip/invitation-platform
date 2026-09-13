@@ -10,6 +10,7 @@ import ochreMotionCover from "../templates/ochre/assets/gallery-8.webp";
 import sageCover from "../templates/sage/assets/bg-hero.webp";
 import editorialCover from "../templates/editorial/assets/cover.webp";
 import lumiereCover from "../templates/lumiere/assets/cover.webp";
+import atelierCover from "../templates/atelier/assets/cover.webp";
 import GoogleAnalytics from "../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../services/platform-settings";
 
@@ -39,9 +40,10 @@ const headingWords = [
 
 const imageMap: Record<string, string> = {
   lumiere: lumiereCover.src,
+  editorial: editorialCover.src,
+  atelier: atelierCover.src,
   deauville: deauvilleCover.src,
   air: airCover.src,
-  editorial: editorialCover.src,
   noir: noirCover.src,
   sage: sageCover.src,
   ochre: ochreMotionCover.src,
@@ -50,6 +52,7 @@ const imageMap: Record<string, string> = {
 
 const defaultTemplateCards = [
   { key: "lumiere", name: "Lumiere", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereCover.src },
+  { key: "atelier", name: "Atelier", price: "Rp 450.000", promoPrice: "Rp 300.000", image: atelierCover.src },
   { key: "editorial", name: "Editorial", price: "Rp 350.000", promoPrice: "Rp 250.000", image: editorialCover.src },
   { key: "deauville", name: "Deauville", price: "Rp 300.000", promoPrice: "Rp 200.000", image: deauvilleCover.src },
   { key: "air", name: "Air", price: "Rp 200.000", promoPrice: "Rp 150.000", image: airCover.src },
@@ -63,6 +66,9 @@ const templateCards = (siteSettings.home_template_cards && siteSettings.home_tem
       image: c.image || imageMap[c.key] || ''
     }))
   : defaultTemplateCards;
+
+const parsePrice = (p?: string | null) => parseInt((p || '').replace(/\D/g, ''), 10) || 0;
+templateCards.sort((a: any, b: any) => parsePrice(b.price) - parsePrice(a.price) || parsePrice(b.promoPrice) - parsePrice(a.promoPrice));
 
 const stats = [
   [siteSettings.home_stat_number || `${templateCards.length}+`, siteSettings.home_stat_label || "Koleksi\nEksklusif"],
