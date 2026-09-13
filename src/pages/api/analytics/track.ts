@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { supabase } from '../../../lib/supabase';
 import { getSupabaseAdmin } from '../../../lib/supabase-admin';
 import { jsonResponse } from '../../../utils/http';
+import { isLiveTrackingEnvironment } from '../../../utils/analytics';
 
 export const prerender = false;
 
@@ -22,8 +23,11 @@ const ALLOWED_EVENTS = new Set([
   'click_vendor_site'
 ]);
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, url }) => {
   try {
+    if (!isLiveTrackingEnvironment(url.hostname)) {
+      return jsonResponse({ success: true, ignored: 'local_environment' });
+    }
     let payload: any = null;
     try {
       payload = await request.json();

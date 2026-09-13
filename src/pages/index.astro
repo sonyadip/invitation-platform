@@ -1869,7 +1869,7 @@ const schemaData = {
   }
 
   .hero-motion__card img {
-    --hero-image-parallax: calc(var(--hero-scroll) * -42px);
+    --hero-image-parallax: calc(var(--hero-scroll) * -20px);
     display: block;
     width: 100%;
     height: 100%;
@@ -2796,6 +2796,13 @@ const schemaData = {
     body.intro-ring-shrink .hero-motion {
       width: min(76vw, 290px);
       min-width: 0;
+    }
+    body.intro-enter .hero-motion-seal,
+    body.intro-hold .hero-motion-seal {
+      --seal-size: min(130vw, 650px);
+    }
+    body.intro-ring-shrink .hero-motion-seal {
+      --seal-size: min(70vw, 160px);
     }
     .hero-motion-seal {
       --seal-size: 82px;

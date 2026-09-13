@@ -164,3 +164,48 @@ export function extractClientContext(request: Request) {
     referrer: referrer ? referrer.slice(0, 500) : null
   };
 }
+
+/**
+ * Checks if a hostname belongs to a local or development environment.
+ */
+export function isLocalHost(hostname?: string | null): boolean {
+  if (!hostname) return false;
+  const h = hostname.toLowerCase().trim().replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+  return (
+    h === 'localhost' ||
+    h === '127.0.0.1' ||
+    h === '0.0.0.0' ||
+    h === '::1' ||
+    h.endsWith('.test') ||
+    h.endsWith('.local') ||
+    h.endsWith('.internal') ||
+    /^192\.168\./.test(h) ||
+    /^10\./.test(h) ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)
+  );
+}
+
+/**
+ * Determines whether analytics and guest activity tracking should be recorded.
+ * Only records on live production environments (unless forced via PUBLIC_FORCE_ANALYTICS=true).
+ */
+export function isLiveTrackingEnvironment(hostname?: string | null): boolean {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.PUBLIC_FORCE_ANALYTICS === 'true') {
+    return true;
+  }
+  if (typeof import.meta !== 'undefined' && Boolean(import.meta.env?.DEV)) {
+    return false;
+  }
+
+  const host = (
+    hostname ||
+    (typeof window !== 'undefined' ? window.location.hostname : '')
+  ).toLowerCase().trim().replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+
+  if (!host) {
+    return typeof import.meta !== 'undefined' ? Boolean(import.meta.env?.PROD) : false;
+  }
+
+  return !isLocalHost(host);
+}
+

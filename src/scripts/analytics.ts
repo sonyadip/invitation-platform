@@ -1,3 +1,5 @@
+import { isLiveTrackingEnvironment } from '../utils/analytics';
+
 export type EventType =
   | 'open_cover'
   | 'click_maps'
@@ -24,6 +26,7 @@ const recentEventCache = new Map<string, number>();
 
 export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOptions = {}) {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  if (!isLiveTrackingEnvironment(window.location.hostname)) return;
 
   const weddingId = options.weddingId || document.body.dataset.weddingId || '';
   if (!weddingId || weddingId.startsWith('preview-')) return;
@@ -80,6 +83,7 @@ let trackingInitialized = false;
 
 export function initAutomaticInteractionTracking() {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  if (!isLiveTrackingEnvironment(window.location.hostname)) return;
   if (trackingInitialized) return;
   trackingInitialized = true;
 

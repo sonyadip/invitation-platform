@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { InvitationSettings, WeddingStatus } from '../types';
 import { hashPasswordSHA256 } from '../utils/security';
+import { isLiveTrackingEnvironment } from '../utils/analytics';
 
 interface TrackInvitationViewInput {
   weddingId: string;
@@ -21,14 +22,21 @@ export function shouldTrackInvitationView(
   settings: InvitationSettings,
   status: WeddingStatus,
   isMaintenance: boolean,
-  isPasswordLocked: boolean
+  isPasswordLocked: boolean,
+  urlOrHostname?: URL | string
 ): boolean {
-  const isDev = Boolean(typeof import.meta !== 'undefined' && import.meta.env?.DEV);
+  const isLive = isLiveTrackingEnvironment(
+    typeof urlOrHostname === 'string'
+      ? urlOrHostname
+      : urlOrHostname?.hostname
+  );
+
   return (
-    (settings.view_counter_enabled || isDev) &&
+    isLive &&
+    Boolean(settings.view_counter_enabled) &&
     !isMaintenance &&
     !isPasswordLocked &&
-    (status === 'published' || isDev)
+    status === 'published'
   );
 }
 
@@ -46,6 +54,9 @@ export async function trackInvitationView({
   now = new Date()
 }: TrackInvitationViewInput): Promise<void> {
   try {
+    if (!isLiveTrackingEnvironment()) {
+      return;
+    }
     const todayStr = now.toISOString().slice(0, 10);
     const guestKey = (guestName || '').trim().toLowerCase();
     const ipHash = await hashPasswordSHA256(`${clientIp}_${guestKey || 'public'}_${weddingId}_${todayStr}`);

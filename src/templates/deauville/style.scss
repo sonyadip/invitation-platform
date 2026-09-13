@@ -836,7 +836,7 @@ body.template-deauville {
     display: grid;
     justify-items: center;
     gap: 16px;
-    width: min(100%, 370px);
+    width: 100%;
     padding: 26px 22px;
     border: 1px solid var(--dea-line);
     background: rgba(20, 20, 20, 0.48);
@@ -990,7 +990,8 @@ body.template-deauville {
     }
   }
 
-  .gallery-video-full:hover .gallery-item__play {
+  .gallery-video-full:hover .gallery-item__play,
+  .gallery-slider__slide:hover .gallery-item__play {
     background: rgba(0, 0, 0, 0.44);
   }
 
@@ -1015,7 +1016,8 @@ body.template-deauville {
       overflow: hidden;
       display: block;
 
-      img {
+      img,
+      video {
         display: block;
         width: 100%;
         height: 100%;
@@ -1024,7 +1026,8 @@ body.template-deauville {
         transition: transform 0.4s ease;
       }
 
-      &:hover img {
+      &:hover img,
+      &:hover video {
         transform: scale(1.03);
       }
     }
@@ -1333,7 +1336,7 @@ body.template-deauville {
   .rsvp-form {
     display: grid;
     gap: 6px;
-    width: min(100%, 370px);
+    width: 100%;
     margin: 0 auto;
   }
 
@@ -1378,7 +1381,7 @@ body.template-deauville {
     display: grid;
     justify-items: center;
     gap: 8px;
-    width: min(100%, 370px);
+    width: 100%;
     margin: 0 auto 20px;
     padding: 24px 20px;
     border: 1px solid rgba(248, 245, 239, 0.22);
@@ -1426,7 +1429,7 @@ body.template-deauville {
     display: flex;
     flex-direction: column;
     gap: 0;
-    width: min(100%, 370px);
+    width: 100%;
     margin: 0 auto;
     border: 1px solid rgba(248, 245, 239, 0.16);
     background: rgba(0, 0, 0, 0.24);

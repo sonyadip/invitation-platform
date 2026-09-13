@@ -262,11 +262,24 @@ function initGallerySliders() {
     // Passive touch swipe detection without hijacking scrolling
     let startX = 0;
     let startY = 0;
+    let isSwiping = false;
+
     slider.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         startX = e.touches[0].screenX;
         startY = e.touches[0].screenY;
+        isSwiping = false;
         stopTimer();
+      }
+    }, { passive: true });
+
+    slider.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        const diffX = e.touches[0].screenX - startX;
+        const diffY = e.touches[0].screenY - startY;
+        if (Math.abs(diffX) > 15 && Math.abs(diffX) > Math.abs(diffY)) {
+          isSwiping = true;
+        }
       }
     }, { passive: true });
 
@@ -281,12 +294,38 @@ function initGallerySliders() {
             prev();
           }
         }
+        if (isSwiping) {
+          setTimeout(() => {
+            isSwiping = false;
+          }, 350);
+        }
         startTimer();
       }
     }, { passive: true });
 
+    slider.addEventListener('click', (e) => {
+      if (isSwiping) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+
     update();
-    startTimer();
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            startTimer();
+          } else {
+            stopTimer();
+          }
+        });
+      }, { threshold: 0.15 });
+      io.observe(slider);
+    } else {
+      startTimer();
+    }
   });
 }
 

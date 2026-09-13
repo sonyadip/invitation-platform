@@ -216,45 +216,71 @@ const rawGallery =
 
 const hasVideo = Boolean(videoUrl && videoUrl.trim() !== "");
 
-let topFeaturedSlides: { id: string; image_url: any }[] = [];
-let topFeaturedSingle: { id: string; image_url: any } | null = null;
-let gridItems: { id: string; image_url: any; variant: string; slides?: { id: string; image_url: any }[] }[] = [];
+type GallerySlideItem = {
+  id: string;
+  image_url?: any;
+  isVideo?: boolean;
+  videoUrl?: string;
+  videoPoster?: any;
+};
+
+const getGridVariant = (idx: number, total: number): string => {
+  if (total === 7) return (idx === 0 || idx === 6) ? "wide" : "square";
+  if (total % 3 === 0) return "square";
+  if (total === 5) return (idx === 0 || idx === 4) ? "wide" : "square";
+  if (total === 4) return idx === 3 ? "wide" : "square";
+  return (idx === 0 || idx === 6) ? "wide" : "square";
+};
+
+let topFeaturedSlides: GallerySlideItem[] = [];
+let topFeaturedSingle: GallerySlideItem | null = null;
+let gridItems: { id: string; image_url: any; variant: string }[] = [];
 
 if (hasVideo) {
-  if (rawGallery.length <= 7) {
-    gridItems = rawGallery.map((img, idx) => ({
+  const videoSlide: GallerySlideItem = {
+    id: "video",
+    isVideo: true,
+    videoUrl,
+    videoPoster,
+  };
+
+  if (rawGallery.length === 0) {
+    topFeaturedSingle = videoSlide;
+  } else if (rawGallery.length === 1) {
+    topFeaturedSlides = [videoSlide, rawGallery[0]];
+  } else if (rawGallery.length <= 8) {
+    topFeaturedSlides = [videoSlide, rawGallery[0]];
+    const items = rawGallery.slice(1);
+    gridItems = items.map((img, idx) => ({
       ...img,
-      variant: (idx === 0 || idx === 6) ? "wide" : "square",
+      variant: getGridVariant(idx, items.length),
     }));
   } else {
-    const slot0Slides = [rawGallery[0], ...rawGallery.slice(7)];
-    const remaining6 = rawGallery.slice(1, 7);
-    gridItems = [
-      {
-        ...rawGallery[0],
-        variant: "wide",
-        slides: slot0Slides,
-      },
-      ...remaining6.map((img, idx) => ({
-        ...img,
-        variant: (idx === 5) ? "wide" : "square",
-      })),
-    ];
+    topFeaturedSlides = [videoSlide, rawGallery[0], ...rawGallery.slice(8)];
+    const items7 = rawGallery.slice(1, 8);
+    gridItems = items7.map((img, idx) => ({
+      ...img,
+      variant: getGridVariant(idx, items7.length),
+    }));
   }
 } else {
   if (rawGallery.length === 0) {
     // empty
+  } else if (rawGallery.length === 1) {
+    topFeaturedSingle = rawGallery[0];
   } else if (rawGallery.length <= 8) {
     topFeaturedSingle = rawGallery[0];
-    gridItems = rawGallery.slice(1).map((img, idx) => ({
+    const items = rawGallery.slice(1);
+    gridItems = items.map((img, idx) => ({
       ...img,
-      variant: (idx === 0 || idx === 6) ? "wide" : "square",
+      variant: getGridVariant(idx, items.length),
     }));
   } else {
     topFeaturedSlides = [rawGallery[0], ...rawGallery.slice(8)];
-    gridItems = rawGallery.slice(1, 8).map((img, idx) => ({
+    const items7 = rawGallery.slice(1, 8);
+    gridItems = items7.map((img, idx) => ({
       ...img,
-      variant: (idx === 0 || idx === 6) ? "wide" : "square",
+      variant: getGridVariant(idx, items7.length),
     }));
   }
 }
@@ -575,32 +601,34 @@ const activeGifts =
               <h3 class="gallery-section__title" data-animate>
                 Our Gallery
               </h3>
-              {hasVideo ? (
-                <a
-                  class="gallery-video-full"
-                  href={videoUrl}
-                  data-fancybox="gallery-section"
-                  data-animate
-                >
-                  <SmartImage src={videoPoster} alt="Wedding film" loading="lazy" />
-                  <div class="gallery-item__play">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z" />
-                    </svg>
-                  </div>
-                </a>
-              ) : topFeaturedSlides.length > 1 ? (
+              {topFeaturedSlides.length > 1 ? (
                 <div class="gallery-featured-full gallery-featured-full--slider" data-gallery-slider data-animate>
                   <div class="gallery-slider__track">
                     {topFeaturedSlides.map((slide, idx) => (
-                      <a
-                        class={`gallery-slider__slide ${idx === 0 ? "is-active" : ""}`}
-                        href={typeof slide.image_url === 'string' ? slide.image_url : slide.image_url.src}
-                        data-fancybox="gallery-section"
-                        aria-label="Lihat foto galeri"
-                      >
-                        <SmartImage src={slide.image_url} alt="Wedding gallery" loading="lazy" />
-                      </a>
+                      slide.isVideo ? (
+                        <a
+                          class={`gallery-slider__slide gallery-slider__slide--video ${idx === 0 ? "is-active" : ""}`}
+                          href={slide.videoUrl}
+                          data-fancybox="gallery-section"
+                          aria-label="Lihat video pernikahan"
+                        >
+                          <SmartImage src={slide.videoPoster} alt="Wedding film" loading="lazy" />
+                          <div class="gallery-item__play">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z" />
+                            </svg>
+                          </div>
+                        </a>
+                      ) : (
+                        <a
+                          class={`gallery-slider__slide ${idx === 0 ? "is-active" : ""}`}
+                          href={typeof slide.image_url === 'string' ? slide.image_url : slide.image_url.src}
+                          data-fancybox="gallery-section"
+                          aria-label="Lihat foto galeri"
+                        >
+                          <SmartImage src={slide.image_url} alt="Wedding gallery" loading="lazy" />
+                        </a>
+                      )
                     ))}
                   </div>
                   <button type="button" class="gallery-slider__arrow gallery-slider__arrow--prev" data-slider-prev aria-label="Foto sebelumnya">
@@ -620,71 +648,47 @@ const activeGifts =
                   </div>
                 </div>
               ) : topFeaturedSingle ? (
-                <a
-                  class="gallery-featured-full"
-                  href={typeof topFeaturedSingle.image_url === 'string' ? topFeaturedSingle.image_url : topFeaturedSingle.image_url.src}
-                  data-fancybox="gallery-section"
-                  data-animate
-                >
-                  <SmartImage src={topFeaturedSingle.image_url} alt="Wedding gallery" loading="lazy" />
-                </a>
+                topFeaturedSingle.isVideo ? (
+                  <a
+                    class="gallery-video-full"
+                    href={topFeaturedSingle.videoUrl}
+                    data-fancybox="gallery-section"
+                    data-animate
+                  >
+                    <SmartImage src={topFeaturedSingle.videoPoster} alt="Wedding film" loading="lazy" />
+                    <div class="gallery-item__play">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5.14v13.72c0 .78.86 1.26 1.53.84l10.78-6.86a1 1 0 0 0 0-1.68L9.53 4.3A1 1 0 0 0 8 5.14Z" />
+                      </svg>
+                    </div>
+                  </a>
+                ) : (
+                  <a
+                    class="gallery-featured-full"
+                    href={typeof topFeaturedSingle.image_url === 'string' ? topFeaturedSingle.image_url : topFeaturedSingle.image_url.src}
+                    data-fancybox="gallery-section"
+                    data-animate
+                  >
+                    <SmartImage src={topFeaturedSingle.image_url} alt="Wedding gallery" loading="lazy" />
+                  </a>
+                )
               ) : null}
 
               {gridItems.length > 0 && (
                 <div class="gallery-grid" data-animate>
                   {gridItems.map((item) => (
-                    item.slides && item.slides.length > 1 ? (
-                      <div
-                        class={`gallery-item gallery-item--${item.variant} gallery-item--slider`}
-                        data-gallery-slider
-                        data-animate
-                      >
-                        <div class="gallery-slider__track">
-                          {item.slides.map((slide, idx) => (
-                            <a
-                              class={`gallery-slider__slide ${idx === 0 ? "is-active" : ""}`}
-                              href={typeof slide.image_url === 'string' ? slide.image_url : slide.image_url.src}
-                              data-fancybox="gallery-section"
-                              aria-label="Lihat foto galeri"
-                            >
-                              <SmartImage
-                                src={slide.image_url}
-                                alt="Wedding gallery"
-                                loading="lazy"
-                              />
-                            </a>
-                          ))}
-                        </div>
-                        <button type="button" class="gallery-slider__arrow gallery-slider__arrow--prev" data-slider-prev aria-label="Foto sebelumnya">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                          </svg>
-                        </button>
-                        <button type="button" class="gallery-slider__arrow gallery-slider__arrow--next" data-slider-next aria-label="Foto berikutnya">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                          </svg>
-                        </button>
-                        <div class="gallery-slider__dots">
-                          {item.slides.map((_, idx) => (
-                            <span class={`gallery-slider__dot ${idx === 0 ? "is-active" : ""}`}></span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <a
-                        class={`gallery-item gallery-item--${item.variant}`}
-                        href={typeof item.image_url === 'string' ? item.image_url : item.image_url.src}
-                        data-fancybox="gallery-section"
-                        data-animate
-                      >
-                        <SmartImage
-                          src={item.image_url}
-                          alt="Wedding gallery"
-                          loading="lazy"
-                        />
-                      </a>
-                    )
+                    <a
+                      class={`gallery-item gallery-item--${item.variant}`}
+                      href={typeof item.image_url === 'string' ? item.image_url : item.image_url.src}
+                      data-fancybox="gallery-section"
+                      data-animate
+                    >
+                      <SmartImage
+                        src={item.image_url}
+                        alt="Wedding gallery"
+                        loading="lazy"
+                      />
+                    </a>
                   ))}
                 </div>
               )}

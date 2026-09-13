@@ -1,31 +1,13 @@
 ---
 import { getPlatformSettings } from "../../services/platform-settings";
+import { isLiveTrackingEnvironment } from "../../utils/analytics";
 
 interface Props {
   id?: string;
   gtmId?: string;
 }
 
-const isProd = import.meta.env.PROD;
-const hostname = (Astro.url.hostname || "").toLowerCase();
-
-// Cek apakah lingkungan lokal / development
-const isLocal =
-  !isProd ||
-  hostname === "localhost" ||
-  hostname === "127.0.0.1" ||
-  hostname === "0.0.0.0" ||
-  hostname === "::1" ||
-  hostname.endsWith(".test") ||
-  hostname.endsWith(".local") ||
-  hostname.endsWith(".internal") ||
-  /^192\.168\./.test(hostname) ||
-  /^10\./.test(hostname) ||
-  /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname);
-
-// Aktif hanya pada production/live domain (bisa di-override jika dibutuhkan dengan PUBLIC_FORCE_ANALYTICS=true)
-const forceEnable = import.meta.env.PUBLIC_FORCE_ANALYTICS === "true";
-const isLive = forceEnable || (isProd && !isLocal);
+const isLive = isLiveTrackingEnvironment(Astro.url.hostname);
 
 let gaId = "";
 let gtmId = "";

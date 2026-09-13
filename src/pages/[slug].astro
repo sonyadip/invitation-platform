@@ -42,7 +42,7 @@ const isUnlocked = await isInvitationUnlocked(Astro.cookies, wedding.id, setting
 const { isMaintenance, isExpired, isPasswordLocked } = getInvitationAccessState(settings, isUnlocked, now);
 const guestName = Astro.url.searchParams.get('to') || null;
 
-if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked)) {
+if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked, Astro.url)) {
   const clientCtx = extractClientContext(Astro.request);
   trackInvitationView({
     weddingId: wedding.id,
