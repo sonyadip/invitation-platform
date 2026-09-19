@@ -210,7 +210,7 @@ body.template-noir {
 
   .cover-section__amp {
     display: inline;
-    margin: 0 4px;
+    margin: 0 6px 0 3px;
     color: var(--template-accent);
     font-family: 'Great Vibes', cursive;
     font-size: 51.2px;
@@ -1027,6 +1027,10 @@ body.template-noir {
   .gallery-item--full-16x10 {
     grid-column: 1 / -1;
     aspect-ratio: 16 / 10;
+
+    .gallery-item__img {
+      object-position: center 30%;
+    }
   }
 
   .gallery-item--half {
