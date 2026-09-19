@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+@font-face {
+  font-family: 'Great Vibes';
+  src: url('/fonts/GreatVibes-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @font-face {
   font-family: 'CVR';
@@ -554,6 +562,8 @@ body.template-noir {
     color: var(--template-accent);
     font-family: 'Great Vibes', cursive;
     font-size: 80px;
+    font-weight: 400;
+    font-style: normal;
     line-height: 1;
     text-align: center;
   }

@@ -61,6 +61,12 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
 
     <!-- LCP Image Preload -->
     {imageUrl && <link rel="preload" as="image" href={imageUrl} fetchpriority="high" />}
+    {['template-noir', 'template-sage', 'template-ochre', 'template-blush'].includes(templateClass || '') && (
+      <link rel="preload" href="/fonts/GreatVibes-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    )}
+    {templateClass === 'template-noir' && (
+      <link rel="preload" href="/fonts/CVR.ttf" as="font" type="font/ttf" crossorigin />
+    )}
 
     <!-- SEO Meta Tags -->
     <title>{docTitle}</title>
