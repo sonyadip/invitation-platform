@@ -586,6 +586,18 @@ body.template-deauville {
     outline-offset: 4px;
   }
 
+  .couple-section--metatah {
+    .couple-section__names {
+      display: grid;
+      gap: 8px;
+    }
+
+    h3 {
+      font-size: 1.4em;
+      line-height: 1.2;
+    }
+  }
+
   .event-section {
     display: grid;
     align-content: center;
