@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem, SectionToggles, ThemeConfig } from '../types';
 import { logActivity } from './activity-log';
 import { captureRevisionSnapshot } from './revision';
+import { uploadToR2, isR2Configured } from './r2-storage';
 
 export interface InvitationFormInput {
   slug: string;
@@ -441,15 +442,16 @@ async function uploadImageFile(
   file: File
 ) {
   validateImageFile(file);
-  await ensureStorageBucket(supabase);
 
   const cleanName = sanitizeFileName(file.name, fileExtension(file));
+  const path = [slug, scope, cleanName].join('/');
 
-  const path = [
-    slug,
-    scope,
-    cleanName
-  ].join('/');
+  if (isR2Configured) {
+    const arrayBuffer = await file.arrayBuffer();
+    return await uploadToR2(path, arrayBuffer, file.type || 'image/webp');
+  }
+
+  await ensureStorageBucket(supabase);
 
   const { error: uploadError } = await supabase
     .storage
@@ -472,16 +474,17 @@ async function uploadAudioFile(
   file: File
 ) {
   validateAudioFile(file);
-  await ensureStorageBucket(supabase);
 
   const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
   const cleanName = sanitizeFileName(file.name, ext);
+  const path = [slug, 'music', cleanName].join('/');
 
-  const path = [
-    slug,
-    'music',
-    cleanName
-  ].join('/');
+  if (isR2Configured) {
+    const arrayBuffer = await file.arrayBuffer();
+    return await uploadToR2(path, arrayBuffer, file.type || 'audio/mpeg');
+  }
+
+  await ensureStorageBucket(supabase);
 
   const { error: uploadError } = await supabase
     .storage
