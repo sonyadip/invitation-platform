@@ -8,6 +8,7 @@ export interface TemplateCard {
   price: string;
   promoPrice?: string;
   image?: string;
+  category?: 'pernikahan' | 'metatah' | string;
 }
 
 export interface PlatformSettings {
@@ -70,12 +71,13 @@ const defaults: PlatformSettings = {
   home_stat_number: '6+',
   home_stat_label: 'Koleksi\nEksklusif',
   home_template_cards: [
-    { key: "lumiere", name: "Lumiere", price: "Rp 450.000", promoPrice: "Rp 300.000" },
-    { key: "atelier", name: "Atelier", price: "Rp 450.000", promoPrice: "Rp 300.000" },
-    { key: "editorial", name: "Editorial", price: "Rp 350.000", promoPrice: "Rp 250.000" },
-    { key: "deauville", name: "Deauville", price: "Rp 300.000", promoPrice: "Rp 200.000" },
-    { key: "air", name: "Air", price: "Rp 200.000", promoPrice: "Rp 150.000" },
-    { key: "noir", name: "Noir", price: "Rp 200.000", promoPrice: "Rp 150.000" },
+    { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000" },
+    { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000" },
+    { key: "atelier", name: "Atelier", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000" },
+    { key: "editorial", name: "Editorial", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000" },
+    { key: "deauville", name: "Deauville", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000" },
+    { key: "air", name: "Air", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000" },
+    { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000" },
   ],
   meta_title: 'Senadda - Undangan Pernikahan Digital',
   meta_description: 'Undangan pernikahan digital dengan desain yang elegan, personal, dan mudah dibagikan.',

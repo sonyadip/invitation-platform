@@ -1,7 +1,8 @@
 ---
 export interface Props {
   groomName: string;
-  brideName: string;
+  brideName?: string;
+  subtitle?: string;
   coverImage?: string; // Kept for compatibility but not used in pure minimalist version
   fontClass?: string;
   textColor?: string;
@@ -9,20 +10,18 @@ export interface Props {
 
 const {
   groomName,
-  brideName,
+  brideName = "",
+  subtitle = "Wedding Invitation",
   textColor = "#ffffff",
 } = Astro.props;
 
-// Create monogram from first letters
-const getInitial = (name: string) => (name ? name.charAt(0).toUpperCase() : "");
-const monogram = `${getInitial(groomName)}${getInitial(brideName)}`;
+const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
 ---
 
 <div id="intro-awal" style={`color: ${textColor};`}>
   <div class="intro-container">
-    <h2 class="monogram intro-element">{monogram}</h2>
-    <h2 class="subtitle intro-element">Wedding Invitation</h2>
-    <h2 class="names intro-element">{groomName} & {brideName}</h2>
+    <h2 class="subtitle intro-element">{subtitle}</h2>
+    <h2 class="names intro-element">{displayName}</h2>
     <h2 class="progresbar intro-element">0%</h2>
   </div>
 </div>
@@ -30,7 +29,7 @@ const monogram = `${getInitial(groomName)}${getInitial(brideName)}`;
 <script>
   import { animate, stagger } from "framer-motion";
 
-  document.addEventListener("DOMContentLoaded", function () {
+  function initClassicIntro() {
     const intro = document.getElementById("intro-awal");
     const progresbar = document.querySelector(".progresbar");
     const layout = document.querySelector("[data-template-layout]") as HTMLElement;
@@ -104,7 +103,13 @@ const monogram = `${getInitial(groomName)}${getInitial(brideName)}`;
         }, 800); // Start background fade out before text is completely gone
       }, minDisplayTime + 400); // Wait 400ms after reaching 100%
     }
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initClassicIntro);
+  } else {
+    initClassicIntro();
+  }
 </script>
 
 <style is:global>
@@ -147,14 +152,6 @@ const monogram = `${getInitial(groomName)}${getInitial(brideName)}`;
     will-change: opacity, transform;
   }
 
-  .monogram {
-    font-family: 'Baskervville', serif;
-    font-size: clamp(4.5rem, 15vw, 6.5rem);
-    margin: 0 0 2.5rem 0;
-    font-weight: normal;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
 
   .subtitle {
     font-family: 'Baskervville', serif;

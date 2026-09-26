@@ -6,6 +6,7 @@ import type { Wedding, InvitationSettings } from "../types";
 
 interface Props {
   title?: string;
+  description?: string;
   wedding: Wedding;
   settings: InvitationSettings;
   to?: string | null;
@@ -13,7 +14,7 @@ interface Props {
   image?: string;
 }
 
-const { title, wedding, settings, to, templateClass, image } = Astro.props;
+const { title, description: customDescription, wedding, settings, to, templateClass, image } = Astro.props;
 
 const brideName = wedding.bride_name;
 const groomName = wedding.groom_name;
@@ -25,7 +26,7 @@ const formattedDate = new Date(wedding.wedding_date).toLocaleDateString("id-ID",
   month: "long",
   day: "numeric",
 });
-const description = `Undangan pernikahan ${groomName} & ${brideName}.\n${formattedDate}.`;
+const description = customDescription || `Undangan pernikahan ${groomName} & ${brideName}.\n${formattedDate}.`;
 
 const theme = settings.theme_config.theme;
 

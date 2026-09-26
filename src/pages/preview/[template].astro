@@ -159,6 +159,99 @@ const defaultData: FullInvitationData = {
   }))
 };
 
+if (templateKey === 'lumiere-metatah') {
+  defaultData.wedding.groom_name = 'Rama';
+  defaultData.wedding.bride_name = 'Ayu';
+  defaultData.wedding.groom_full_name = 'I Made Rama Pratama';
+  defaultData.wedding.bride_full_name = 'Ni Putu Ayu Lestari';
+  defaultData.wedding.story = [
+    { year: 'Makna', title: 'Upacara Mepandes / Metatah', description: 'Upacara Manusa Yadnya dalam tradisi Hindu Bali untuk menyucikan diri dan mengendalikan Sad Ripu (enam musuh dalam diri manusia).' },
+    { year: 'Doa', title: 'Penyucian Diri Menuju Kedewasaan', description: 'Sebagai simbol peralihan menuju kedewasaan, memohon keselamatan, ketenangan batin, serta keharmonisan lahir dan batin kepada Ida Sang Hyang Widhi Wasa.' }
+  ];
+  defaultData.settings.theme_config.content = {
+    ...defaultData.settings.theme_config?.content,
+    groomFatherName: 'I Wayan Sudarma',
+    groomMotherName: 'Ni Made Sukerti',
+    groomParents: 'I Wayan Sudarma & Ni Made Sukerti',
+    brideFatherName: 'I Wayan Sudarma',
+    brideMotherName: 'Ni Made Sukerti',
+    brideParents: 'I Wayan Sudarma & Ni Made Sukerti',
+    fatherName: 'I Wayan Sudarma',
+    motherName: 'Ni Made Sukerti',
+    participantFatherName: 'I Wayan Sudarma',
+    participantMotherName: 'Ni Made Sukerti',
+    participantParents: 'I Wayan Sudarma & Ni Made Sukerti',
+    brideChildNumber: 2
+  };
+  defaultData.settings.theme_config.assets = {
+    ...defaultData.settings.theme_config?.assets,
+    coverImage: '/images/metatah-bg.jpg',
+    heroImage: '/images/metatah-bg.jpg',
+    sidebarImage: '/images/sidebar-bg.jpg',
+    groomImage: '/images/metatah-bg.jpg',
+    brideImage: '/images/sidebar-bg.jpg',
+    eventImage: '/images/metatah-bg.jpg',
+    rsvpImage: '/images/sidebar-bg.jpg',
+    closingImage: '/images/metatah-bg.jpg',
+    countdownImage: '/images/sidebar-bg.jpg',
+    videoUrl: '',
+    sliderImages: [
+      '/images/metatah-bg.jpg',
+      '/images/sidebar-bg.jpg'
+    ]
+  };
+  defaultData.events = [
+    {
+      id: 'event-1',
+      wedding_id: `preview-${templateKey}`,
+      event_name: 'Metatah',
+      event_date: weddingDate,
+      start_time: '08:00',
+      end_time: '12:00',
+      venue_name: 'Griya Agung Sukawati',
+      venue_address: 'Jl. Raya Sukawati, Gianyar, Bali',
+      maps_url: 'https://maps.google.com',
+      sort_order: 1,
+      created_at: now
+    },
+    {
+      id: 'event-2',
+      wedding_id: `preview-${templateKey}`,
+      event_name: 'Resepsi',
+      event_date: weddingDate,
+      start_time: '13:00',
+      end_time: 'Selesai',
+      venue_name: 'Griya Agung Sukawati',
+      venue_address: 'Jl. Raya Sukawati, Gianyar, Bali',
+      maps_url: 'https://maps.google.com',
+      sort_order: 2,
+      created_at: now
+    }
+  ];
+  defaultData.gallery = [
+    { id: '1', wedding_id: `preview-${templateKey}`, image_url: '/images/metatah-bg.jpg', sort_order: 1, created_at: now },
+    { id: '2', wedding_id: `preview-${templateKey}`, image_url: '/images/sidebar-bg.jpg', sort_order: 2, created_at: now },
+    { id: '3', wedding_id: `preview-${templateKey}`, image_url: '/images/metatah-bg.jpg', sort_order: 3, created_at: now },
+    { id: '4', wedding_id: `preview-${templateKey}`, image_url: '/images/sidebar-bg.jpg', sort_order: 4, created_at: now },
+    { id: '5', wedding_id: `preview-${templateKey}`, image_url: '/images/metatah-bg.jpg', sort_order: 5, created_at: now },
+    { id: '6', wedding_id: `preview-${templateKey}`, image_url: '/images/sidebar-bg.jpg', sort_order: 6, created_at: now }
+  ];
+  defaultData.wishes = Array.from({ length: 40 }, (_, i) => ({
+    id: `wish-${i + 1}`,
+    wedding_id: `preview-${templateKey}`,
+    guest_name: ['Sahabat', 'Budi Santoso', 'Siti Rahma', 'Dimas Anggara', 'Rina Wulandari', 'Andi Pratama', 'Maya Putri', 'Eko Prasetyo', 'Dewi Lestari', 'Fajar Ramadhan'][i % 10] + ` #${i + 1}`,
+    attendance_status: (i % 3 === 0 ? 'attending' : (i % 3 === 1 ? 'tentative' : 'declined')) as any,
+    guest_count: (i % 3) + 1,
+    message: [
+      'Selamat melaksanakan upacara Metatah / Potong Gigi. Semoga senantiasa diberkahi kerahayuan dan kedamaian.',
+      'Rahajeng nyanggra Upacara Metatah. Dumogi rahayu sareng sami lan mamargi antar.',
+      'Selamat dan sukses atas upacara Metatah putra-putri tercinta. Semoga menjadi pribadi yang berbudi luhur.',
+      'Dumogi asung kertha wara nugraha Ida Sang Hyang Widhi Wasa menyertai seluruh rangkaian upacara.'
+    ][i % 4],
+    created_at: new Date(Date.now() - i * 3600000).toISOString()
+  }));
+}
+
 let data: FullInvitationData = defaultData;
 
 const clientSlug = CLIENT_PREVIEW_MAP[templateKey];

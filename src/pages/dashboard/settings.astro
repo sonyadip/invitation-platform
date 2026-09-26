@@ -236,7 +236,7 @@ const settings = await getPlatformSettings();
               <input type="hidden" name="home_template_cards" id="template_cards_input" value={JSON.stringify(settings.home_template_cards)} />
               <div id="template_cards_container" class="repeater-container"></div>
               <button type="button" id="add_template_card_btn" class="secondary-action" style="margin-top: 10px;">+ Add Card</button>
-              <span class="hint" style="display:block; margin-top: 8px;">Default template keys: lumiere, deauville, air, editorial, noir, atelier, sage, ochre, ivory. If image URL is blank, default theme preview will be used.</span>
+              <span class="hint" style="display:block; margin-top: 8px;">Default template keys: lumiere, lumiere-metatah, deauville, air, editorial, noir, atelier, sage, ochre, ivory. If image URL is blank, default theme preview will be used.</span>
             </div>
           </div>
         </section>
@@ -347,6 +347,13 @@ const settings = await getPlatformSettings();
                   <input type="text" placeholder="Lumiere" value="${card.name || ''}" data-idx="${index}" data-field="name" />
                 </label>
                 <label>
+                  Category
+                  <select data-idx="${index}" data-field="category">
+                    <option value="pernikahan" ${card.category !== 'metatah' ? 'selected' : ''}>Pernikahan</option>
+                    <option value="metatah" ${card.category === 'metatah' ? 'selected' : ''}>Metatah</option>
+                  </select>
+                </label>
+                <label>
                   Price
                   <input type="text" placeholder="Rp 450.000" value="${card.price || ''}" data-idx="${index}" data-field="price" />
                 </label>
@@ -365,12 +372,15 @@ const settings = await getPlatformSettings();
           });
         }
 
-        container.addEventListener('input', (e) => {
+        const handleFieldChange = (e) => {
           const target = e.target;
-          if (target.dataset.idx !== undefined) {
+          if (target && target.dataset && target.dataset.idx !== undefined && target.dataset.field) {
             cards[target.dataset.idx][target.dataset.field] = target.value;
           }
-        });
+        };
+
+        container.addEventListener('input', handleFieldChange);
+        container.addEventListener('change', handleFieldChange);
 
         container.addEventListener('click', (e) => {
           if (e.target.classList.contains('remove-btn')) {
@@ -381,7 +391,7 @@ const settings = await getPlatformSettings();
         });
 
         addBtn.addEventListener('click', () => {
-          cards.push({ key: '', name: '', price: '', promoPrice: '', image: '' });
+          cards.push({ key: '', name: '', category: 'pernikahan', price: '', promoPrice: '', image: '' });
           render();
         });
 
@@ -619,7 +629,7 @@ const settings = await getPlatformSettings();
     padding: 18px; background: #fafbfc; border: 1px solid #eef0f4; border-radius: 8px;
   }
   :global(.repeater-grid) {
-    flex: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px;
+    flex: 1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px;
   }
   :global(.repeater-grid label) {
     display: grid;

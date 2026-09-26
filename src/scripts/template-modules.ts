@@ -89,14 +89,16 @@ export function initGiftInteractions(root: Element | Document = document) {
           giftGrid.classList.add('is-open');
           giftGrid.querySelectorAll('[data-animate]').forEach((item) => item.classList.add('is-animated'));
           giftToggle.setAttribute('aria-expanded', 'true');
-          if (span) span.textContent = 'Sembunyikan Hadiah Pernikahan';
-          else giftToggle.textContent = 'Sembunyikan Hadiah Pernikahan';
+          const hideText = giftToggle.getAttribute('data-hide-text') || 'Sembunyikan Hadiah';
+          if (span) span.textContent = hideText;
+          else giftToggle.textContent = hideText;
         } else {
           giftGrid.setAttribute('hidden', '');
           giftGrid.classList.remove('is-open');
           giftToggle.setAttribute('aria-expanded', 'false');
-          if (span) span.textContent = 'Lihat Hadiah Pernikahan';
-          else giftToggle.textContent = 'Lihat Hadiah Pernikahan';
+          const showText = giftToggle.getAttribute('data-show-text') || 'Lihat Hadiah';
+          if (span) span.textContent = showText;
+          else giftToggle.textContent = showText;
         }
       });
     }

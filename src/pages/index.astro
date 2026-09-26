@@ -10,6 +10,7 @@ import ochreMotionCover from "../templates/ochre/assets/gallery-8.webp";
 import sageCover from "../templates/sage/assets/bg-hero.webp";
 import editorialCover from "../templates/editorial/assets/cover.webp";
 import lumiereCover from "../templates/lumiere/assets/cover.webp";
+import lumiereMetatahCover from "../templates/lumiere-metatah/assets/cover.webp";
 import atelierCover from "../templates/atelier/assets/cover.webp";
 import GoogleAnalytics from "../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../services/platform-settings";
@@ -40,6 +41,7 @@ const headingWords = [
 
 const imageMap: Record<string, string> = {
   lumiere: lumiereCover.src,
+  "lumiere-metatah": lumiereMetatahCover.src,
   editorial: editorialCover.src,
   atelier: atelierCover.src,
   deauville: deauvilleCover.src,
@@ -51,24 +53,41 @@ const imageMap: Record<string, string> = {
 };
 
 const defaultTemplateCards = [
-  { key: "lumiere", name: "Lumiere", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereCover.src },
-  { key: "atelier", name: "Atelier", price: "Rp 450.000", promoPrice: "Rp 300.000", image: atelierCover.src },
-  { key: "editorial", name: "Editorial", price: "Rp 350.000", promoPrice: "Rp 250.000", image: editorialCover.src },
-  { key: "deauville", name: "Deauville", price: "Rp 300.000", promoPrice: "Rp 200.000", image: deauvilleCover.src },
-  { key: "air", name: "Air", price: "Rp 200.000", promoPrice: "Rp 150.000", image: airCover.src },
-  { key: "noir", name: "Noir", price: "Rp 200.000", promoPrice: "Rp 150.000", image: noirCover.src },
+  { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereCover.src },
+  { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahCover.src },
+  { key: "atelier", name: "Atelier", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: atelierCover.src },
+  { key: "editorial", name: "Editorial", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000", image: editorialCover.src },
+  { key: "deauville", name: "Deauville", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: deauvilleCover.src },
+  { key: "air", name: "Air", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: airCover.src },
+  { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: noirCover.src },
 ];
 
-const templateCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
+const resolveCategory = (c: any): 'pernikahan' | 'metatah' => {
+  if (c.category && typeof c.category === 'string') {
+    return c.category.toLowerCase().includes('metatah') ? 'metatah' : 'pernikahan';
+  }
+  const id = `${c.key || ''}`.toLowerCase();
+  return id.includes('metatah') ? 'metatah' : 'pernikahan';
+};
+
+let rawCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
   ? siteSettings.home_template_cards.map((c: any) => ({
       ...c,
+      name: c.key === 'lumiere-metatah' ? 'Lumiere' : (c.name || 'Lumiere'),
+      category: resolveCategory(c),
       promoPrice: c.promo_price || c.promoPrice || null,
       image: c.image || imageMap[c.key] || ''
     }))
   : defaultTemplateCards;
 
+if (!rawCards.some((c: any) => resolveCategory(c) === 'metatah')) {
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.category === 'metatah')];
+}
+
 const parsePrice = (p?: string | null) => parseInt((p || '').replace(/\D/g, ''), 10) || 0;
-templateCards.sort((a: any, b: any) => parsePrice(b.price) - parsePrice(a.price) || parsePrice(b.promoPrice) - parsePrice(a.promoPrice));
+rawCards.sort((a: any, b: any) => parsePrice(b.price) - parsePrice(a.price) || parsePrice(b.promoPrice) - parsePrice(a.promoPrice));
+
+const templateCards = rawCards;
 
 const stats = [
   [siteSettings.home_stat_number || `${templateCards.length}+`, siteSettings.home_stat_label || "Koleksi\nEksklusif"],
@@ -338,10 +357,35 @@ const schemaData = {
           <h2>{siteSettings.home_templates_heading || "Pilih Nuansa."}</h2>
         </div>
 
-        <div class="template-grid">
+        <div class="template-filter-bar reveal-blur" role="tablist" aria-label="Filter kategori tema">
+          <button
+            type="button"
+            class="template-filter-btn is-active"
+            role="tab"
+            aria-selected="true"
+            data-filter="pernikahan"
+          >
+            Pernikahan
+          </button>
+          <button
+            type="button"
+            class="template-filter-btn"
+            role="tab"
+            aria-selected="false"
+            data-filter="metatah"
+          >
+            Metatah
+          </button>
+        </div>
+
+        <div class="template-grid" id="template-grid">
           {
             templateCards.map((template, index) => (
-              <article class="template-card" style={`--template-i: ${index}`}>
+              <article
+                class={`template-card${template.category !== 'pernikahan' ? ' is-filtered-out' : ''}`}
+                style={`--template-i: ${index}`}
+                data-category={template.category}
+              >
                 <div class="template-card__media">
                   <img
                     src={template.image}
@@ -377,6 +421,10 @@ const schemaData = {
               </article>
             ))
           }
+        </div>
+
+        <div class="template-empty hidden" id="template-empty">
+          <p>Belum ada template pada kategori ini.</p>
         </div>
       </section>
 
@@ -1191,6 +1239,69 @@ const schemaData = {
 
       const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
       elementsToObserve.forEach((el) => revealObserver.observe(el));
+
+      // Category filter for templates (Pernikahan & Metatah)
+      const filterBtns = document.querySelectorAll(".template-filter-btn");
+      const templateCardEls = document.querySelectorAll(".template-grid .template-card");
+      const emptyStateEl = document.getElementById("template-empty");
+
+      const applyFilter = (filter) => {
+        let visibleCount = 0;
+        templateCardEls.forEach((card) => {
+          const cardCat = card.getAttribute("data-category") || "pernikahan";
+          if (cardCat === filter) {
+            card.classList.remove("is-filtered-out");
+            card.classList.add("is-visible");
+            visibleCount++;
+          } else {
+            card.classList.add("is-filtered-out");
+          }
+        });
+
+        if (emptyStateEl) {
+          if (visibleCount === 0) {
+            emptyStateEl.classList.remove("hidden");
+          } else {
+            emptyStateEl.classList.add("hidden");
+          }
+        }
+      };
+
+      filterBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const filter = btn.getAttribute("data-filter") || "pernikahan";
+          filterBtns.forEach((b) => {
+            b.classList.remove("is-active");
+            b.setAttribute("aria-selected", "false");
+          });
+          btn.classList.add("is-active");
+          btn.setAttribute("aria-selected", "true");
+          applyFilter(filter);
+
+          try {
+            const url = new URL(window.location.href);
+            if (filter === "pernikahan") {
+              url.searchParams.delete("kategori");
+              url.searchParams.delete("category");
+              url.searchParams.delete("filter");
+            } else {
+              url.searchParams.set("kategori", filter);
+            }
+            window.history.replaceState({}, "", url.toString());
+          } catch {}
+        });
+      });
+
+      try {
+        const initialParams = new URLSearchParams(window.location.search);
+        const targetCategory = initialParams.get("kategori") || initialParams.get("category") || initialParams.get("filter");
+        if (targetCategory && targetCategory.toLowerCase() === "metatah") {
+          const matchingBtn = document.querySelector(`.template-filter-btn[data-filter="metatah"]`);
+          if (matchingBtn) {
+            matchingBtn.click();
+          }
+        }
+      } catch {}
 
       const scrollToTarget = (targetId) => {
         document.body.classList.remove("nav-hidden");
@@ -2258,6 +2369,61 @@ const schemaData = {
     line-height: 1.45;
   }
 
+  .template-filter-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: -12px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .template-filter-btn {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 9px 22px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--deep-charcoal);
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .template-filter-btn:hover {
+    border-color: var(--black);
+    color: var(--black);
+    transform: translateY(-1px);
+  }
+
+  .template-filter-btn.is-active {
+    background: var(--black);
+    border-color: var(--black);
+    color: var(--white);
+    box-shadow: 0 4px 14px rgba(23, 22, 15, 0.15);
+  }
+
+  .template-card.is-filtered-out {
+    display: none !important;
+  }
+
+  .template-empty {
+    padding: 50px 20px;
+    text-align: center;
+    color: var(--dark-grey);
+    font-family: var(--font-body);
+    font-size: 15px;
+    grid-column: 1 / -1;
+  }
+
+  .template-empty.hidden {
+    display: none;
+  }
+
   .template-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2865,6 +3031,14 @@ const schemaData = {
       max-width: 94%;
       font-size: clamp(32px, 9vw, 51px);
       line-height: 0.96;
+    }
+    .template-filter-bar {
+      gap: 8px;
+      margin-top: -6px;
+    }
+    .template-filter-btn {
+      font-size: 12px;
+      padding: 8px 16px;
     }
     .template-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));

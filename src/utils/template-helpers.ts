@@ -15,13 +15,13 @@ export const buildParentText = (
 };
 
 export const formatChildPrefix = (
-  childNumber: string | undefined | null,
-  defaultRole: 'Putra' | 'Putri',
+  childNumber: string | number | undefined | null,
+  defaultRole: 'Putra' | 'Putri' | string,
   customPrefix?: string | null,
   fallback?: string
 ): string => {
-  if (childNumber) {
-    let formatted = childNumber.trim();
+  if (childNumber !== undefined && childNumber !== null && String(childNumber).trim() !== '') {
+    let formatted = String(childNumber).trim();
     if (!new RegExp(`^${defaultRole}`, 'i').test(formatted)) {
       formatted = `${defaultRole} ${/^[0-9]+$/.test(formatted) ? 'ke-' + formatted : formatted}`;
     }
