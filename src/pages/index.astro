@@ -2823,12 +2823,13 @@ const schemaData = {
     }
     .nav-links {
       display: flex;
-      position: absolute;
+      position: fixed;
       top: 24px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 1000;
       transition: opacity 0.28s ease, transform 0.28s ease;
+      will-change: transform, opacity;
     }
     .nav-hidden .nav-links {
       opacity: 0;
