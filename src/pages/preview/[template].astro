@@ -159,7 +159,7 @@ const defaultData: FullInvitationData = {
   }))
 };
 
-if (templateKey === 'lumiere-metatah') {
+if (templateKey === 'lumiere-metatah' || templateKey === 'lumiere-metatah-v2') {
   defaultData.wedding.groom_name = 'Rama';
   defaultData.wedding.bride_name = 'Ayu';
   defaultData.wedding.groom_full_name = 'I Made Rama Pratama';
@@ -183,6 +183,33 @@ if (templateKey === 'lumiere-metatah') {
     participantParents: 'I Wayan Sudarma & Ni Made Sukerti',
     brideChildNumber: 2
   };
+
+  if (templateKey === 'lumiere-metatah-v2') {
+    defaultData.settings.theme_config.content = {
+      ...defaultData.settings.theme_config?.content,
+      coverTitle: 'Pande Ceria',
+      introTitle: 'Pande Ceria',
+      introAnimationName: 'Pande Ceria',
+      mediaCaption: 'Kebersamaan Peserta Upacara Metatah',
+      participants: [
+      { name: 'Rama', fullName: 'I Made Rama Pratama', nickname: 'Rama', role: 'Putra Pertama', instagram: 'rama_pratama', photo: '/images/metatah-bg.jpg' },
+      { name: 'Ayu', fullName: 'Ni Putu Ayu Lestari', nickname: 'Ayu', role: 'Putri Pertama', instagram: 'ayu_lestari', photo: '/images/sidebar-bg.jpg' },
+      { name: 'Wayan', fullName: 'I Wayan Gede Aditya', nickname: 'Wayan', role: 'Putra Pertama', instagram: 'wayan_aditya', photo: '/images/metatah-bg.jpg' },
+      { name: 'Kadek', fullName: 'Ni Kadek Dwi Cahyani', nickname: 'Kadek', role: 'Putri Kedua', instagram: 'kadek_cahyani', photo: '/images/sidebar-bg.jpg' },
+      { name: 'Komang', fullName: 'I Komang Tri Wiguna', nickname: 'Komang', role: 'Putra Ketiga', instagram: 'komang_wiguna', photo: '/images/metatah-bg.jpg' },
+      { name: 'Ketut', fullName: 'Ni Ketut Candra Dewi', nickname: 'Ketut', role: 'Putri Keempat', instagram: 'candra_dewi', photo: '/images/sidebar-bg.jpg' },
+      { name: 'Gede', fullName: 'I Gede Bayu Permana', nickname: 'Gede', role: 'Putra Pertama', instagram: 'bayu_permana', photo: '/images/metatah-bg.jpg' },
+      { name: 'Putu', fullName: 'Ni Putu Intan Sari', nickname: 'Putu', role: 'Putri Pertama', instagram: 'intan_sari', photo: '/images/sidebar-bg.jpg' },
+      { name: 'Made', fullName: 'I Made Surya Darma', nickname: 'Made', role: 'Putra Kedua', instagram: 'surya_darma', photo: '/images/metatah-bg.jpg' },
+      { name: 'Nyoman', fullName: 'Ni Nyoman Ayu Manik', nickname: 'Nyoman', role: 'Putri Ketiga', instagram: 'ayu_manik', photo: '/images/sidebar-bg.jpg' },
+      { name: 'Agus', fullName: 'I Ketut Agus Wirawan', nickname: 'Agus', role: 'Putra Keempat', instagram: 'agus_wirawan', photo: '/images/metatah-bg.jpg' },
+      { name: 'Sari', fullName: 'Ni Luh Made Sari Dewi', nickname: 'Sari', role: 'Putri Kedua', instagram: 'sari_dewi', photo: '/images/sidebar-bg.jpg' },
+      { name: 'Bagus', fullName: 'I Wayan Bagus Mahardika', nickname: 'Bagus', role: 'Putra Pertama', instagram: 'bagus_mhr', photo: '/images/metatah-bg.jpg' },
+      { name: 'Ratih', fullName: 'Ni Kadek Ratih Purwani', nickname: 'Ratih', role: 'Putri Kedua', instagram: 'ratih_purwani', photo: '/images/sidebar-bg.jpg' },
+      { name: 'Dharma', fullName: 'I Komang Dharma Putra', nickname: 'Dharma', role: 'Putra Ketiga', instagram: 'dharma_putra', photo: '/images/metatah-bg.jpg' }
+    ]
+  };
+}
   defaultData.settings.theme_config.assets = {
     ...defaultData.settings.theme_config?.assets,
     coverImage: '/images/metatah-bg.jpg',

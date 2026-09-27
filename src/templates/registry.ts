@@ -1,13 +1,17 @@
 const templateModules: Record<string, () => Promise<any>> = {
   ...import.meta.glob('./*/*Template.astro'),
-  './lumiere-metatah/LumiereMetatahTemplate.astro': () => import('./lumiere-metatah/LumiereMetatahTemplate.astro')
+  './lumiere-metatah/LumiereMetatahTemplate.astro': () => import('./lumiere-metatah/LumiereMetatahTemplate.astro'),
+  './lumiere-metatah-v2/LumiereMetatahV2Template.astro': () => import('./lumiere-metatah-v2/LumiereMetatahV2Template.astro')
 };
 
 export function listTemplateKeys(): string[] {
-  return Object.keys(templateModules)
-    .map((path) => path.split('/')[1])
-    .filter(Boolean)
-    .sort();
+  return Array.from(
+    new Set(
+      Object.keys(templateModules)
+        .map((path) => path.split('/')[1])
+        .filter(Boolean)
+    )
+  ).sort();
 }
 
 export function normalizeTemplateKey(template?: string | null): string {

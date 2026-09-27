@@ -7,3 +7,4 @@ Disallow: /preview/
 Disallow: /index-old
 
 Sitemap: https://senadda.id/sitemap-index.xml
+Sitemap: https://senadda.id/sitemap.xml

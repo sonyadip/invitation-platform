@@ -11,6 +11,7 @@ import sageCover from "../templates/sage/assets/bg-hero.webp";
 import editorialCover from "../templates/editorial/assets/cover.webp";
 import lumiereCover from "../templates/lumiere/assets/cover.webp";
 import lumiereMetatahCover from "../templates/lumiere-metatah/assets/cover.webp";
+import lumiereMetatahV2Cover from "../templates/lumiere-metatah-v2/assets/cover.webp";
 import atelierCover from "../templates/atelier/assets/cover.webp";
 import GoogleAnalytics from "../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../services/platform-settings";
@@ -42,6 +43,7 @@ const headingWords = [
 const imageMap: Record<string, string> = {
   lumiere: lumiereCover.src,
   "lumiere-metatah": lumiereMetatahCover.src,
+  "lumiere-metatah-v2": lumiereMetatahV2Cover.src,
   editorial: editorialCover.src,
   atelier: atelierCover.src,
   deauville: deauvilleCover.src,
@@ -55,6 +57,7 @@ const imageMap: Record<string, string> = {
 const defaultTemplateCards = [
   { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereCover.src },
   { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahCover.src },
+  { key: "lumiere-metatah-v2", name: "Lumiere v2", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahV2Cover.src },
   { key: "atelier", name: "Atelier", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: atelierCover.src },
   { key: "editorial", name: "Editorial", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000", image: editorialCover.src },
   { key: "deauville", name: "Deauville", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: deauvilleCover.src },
@@ -73,7 +76,7 @@ const resolveCategory = (c: any): 'pernikahan' | 'metatah' => {
 let rawCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
   ? siteSettings.home_template_cards.map((c: any) => ({
       ...c,
-      name: c.key === 'lumiere-metatah' ? 'Lumiere' : (c.name || 'Lumiere'),
+      name: c.key === 'lumiere-metatah' ? 'Lumiere' : (c.key === 'lumiere-metatah-v2' ? (c.name || 'Lumiere v2') : (c.name || 'Lumiere')),
       category: resolveCategory(c),
       promoPrice: c.promo_price || c.promoPrice || null,
       image: c.image || imageMap[c.key] || ''
@@ -119,15 +122,80 @@ const addons = [
   { name: "Tambah Video", price: "+ 20.000 / video" },
 ];
 
+const faqs = [
+  // {
+  //   q: "Apakah template Senadda mendukung tradisi adat Bali (Pawiwahan & Metatah)?",
+  //   a: "Tentu. Kami menyediakan koleksi khusus berkarakter adat Hindu Bali yang mendukung salam panganjali Om Swastyastu, kutipan Sloka suci Bhagawad Gita, detail prosesi adat (Pawiwahan, Metatah/Mepandes), rute lokasi banjar/pura/griya, hingga amplop digital Bank BPD Bali maupun bank nasional & QRIS."
+  // },
+  {
+    q: "Waktu Pengerjaan Undangan",
+    a: "Proses pembuatan biasanya memakan waktu 1 hingga 3 hari kerja setelah semua data acara dan foto kami terima dengan lengkap. Tersedia juga fasilitas prioritas 24 jam."
+  },
+  {
+    q: "Pengganti Video Background",
+    a: "Jika template memiliki background video tapi Anda tidak punya video, kami bisa menggantinya dengan fitur image slider (slideshow) yang akan memutar foto-foto Anda secara bergantian."
+  },
+  {
+    q: "Fasilitas Revisi Minor",
+    a: "Kami memberikan fasilitas revisi minor sepuasnya. Ini berlaku untuk perbaikan typo nama, ganti lagu, ganti foto, ganti quotes, penyesuaian lokasi, hingga menghapus section tertentu."
+  },
+  {
+    q: "Fasilitas Revisi Mayor",
+    a: "Untuk revisi mayor, kami sediakan jatah satu kali. Perlu dicatat, Anda tidak bisa mengganti tema undangan, tapi Anda diperbolehkan merombak ulang posisi atau susunan section-nya."
+  },
+  {
+    q: "Masa Aktif Tautan Undangan",
+    a: "Link undangan akan tetap aktif sampai satu bulan setelah acara selesai, jadi Anda masih punya banyak waktu untuk membaca ulang ucapan-ucapan dari para tamu."
+  },
+  {
+    q: "Cara Membagikan Undangan",
+    a: "Anda akan mendapat akses dashboard khusus untuk memasukkan daftar nama tamu. Dari situ, sistem bisa langsung men-generate link unik per orang untuk Anda sebar via WhatsApp."
+  },
+  {
+    q: "Cara Menulis Nama Tamu Manual",
+    a: "Selain lewat dashboard, Anda bisa menulis nama tamu manual dengan menambahkan <code>?to=Nama+Tamu</code> di akhir link undangan. Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code> (ganti spasi dengan tanda +)."
+  },
+  {
+    q: "Perubahan Setelah Undangan Dibagikan",
+    a: "Kalau ada perubahan jadwal atau lokasi mendadak, infokan saja ke kami. Nanti link undangan yang sudah disebar akan otomatis ter-update mengikuti info yang baru."
+  },
+  {
+    q: "Konfirmasi Kehadiran & Ucapan",
+    a: "Di undangan ada form khusus agar tamu bisa mengirim ucapan dan mengonfirmasi kehadiran (RSVP). Semua datanya akan terekap otomatis dan bisa Anda pantau dari dashboard."
+  }
+];
+
+const midFaq = Math.ceil(faqs.length / 2);
+const faqCol1 = faqs.slice(0, midFaq);
+const faqCol2 = faqs.slice(midFaq);
+
+const pageTitle = siteSettings.meta_title || "Senadda - Undangan Digital Bali & Undangan Pernikahan Elegan";
+const pageDescription = siteSettings.meta_description || "Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan modern, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.";
+const pageKeywords = "undangan bali, undangan digital bali, undangan digital, undangan pernikahan, undangan pernikahan bali, undangan pernikahan digital, undangan pawiwahan bali, undangan metatah bali, undangan mepandes, jasa undangan bali, website pernikahan bali, platform undangan digital, senadda, senadda id, senadda.id, undangan senadda, senada, senada id, senada.id, undangan senada, undangan senada bali, undangan senadda bali";
+const pageUrl = "https://senadda.id/";
+const rawLogo = siteSettings.logo_url || "/images/senadda-logo.png";
+const pageImage = rawLogo.startsWith('http') ? rawLogo : new URL(rawLogo, pageUrl).toString();
+
 const schemaData = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "WebSite",
       "@id": "https://senadda.id/#website",
-      "url": "https://senadda.id/",
-      "name": siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital",
-      "description": siteSettings.meta_description || "Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu.",
+      "url": pageUrl,
+      "name": pageTitle,
+      "alternateName": [
+        "Senada",
+        "Senada ID",
+        "Senada.id",
+        "Undangan Senada",
+        "Senadda",
+        "Senadda ID",
+        "Senadda.id",
+        "Undangan Senadda"
+      ],
+      "description": pageDescription,
+      "inLanguage": "id-ID",
       "publisher": {
         "@id": "https://senadda.id/#organization"
       }
@@ -136,23 +204,100 @@ const schemaData = {
       "@type": "Organization",
       "@id": "https://senadda.id/#organization",
       "name": "Senadda",
-      "url": "https://senadda.id/",
-      "logo": siteSettings.logo_url || "https://senadda.id/images/senadda-logo.png"
+      "alternateName": [
+        "Senada",
+        "Senada ID",
+        "Senada.id",
+        "Undangan Senada",
+        "Undangan Senadda",
+        "Senadda ID"
+      ],
+      "url": pageUrl,
+      "logo": "https://senadda.id/logo.jpg",
+      "sameAs": [
+        ...new Set([
+          "https://www.instagram.com/senadda.id",
+          siteSettings.instagram_url,
+          siteSettings.tiktok_url,
+          siteSettings.facebook_url
+        ].filter(Boolean))
+      ]
     },
     {
-      "@type": "SoftwareApplication",
-      "name": "Senadda Platform Undangan Digital",
-      "operatingSystem": "Web browser",
-      "applicationCategory": "LifestyleApplication",
-      "description": siteSettings.meta_description || "Platform pembuatan undangan pernikahan digital yang elegan dan mudah digunakan.",
-      "url": "https://senadda.id",
-      "offers": {
-        "@type": "AggregateOffer",
-        "lowPrice": "125000",
-        "highPrice": "200000",
-        "priceCurrency": "IDR",
-        "offerCount": "5"
-      }
+      "@type": ["LocalBusiness", "ProfessionalService"],
+      "@id": "https://senadda.id/#localbusiness",
+      "name": "Senadda - Undangan Digital Bali & Pernikahan",
+      "alternateName": [
+        "Senada",
+        "Senada ID",
+        "Senada.id",
+        "Undangan Senada",
+        "Undangan Senada Bali",
+        "Senadda",
+        "Senadda ID",
+        "Senadda.id",
+        "Undangan Senadda",
+        "Senadda Undangan Bali",
+        "Senadda Digital Invitation",
+        "Undangan Digital Bali Senadda"
+      ],
+      "url": pageUrl,
+      "logo": "https://senadda.id/logo.jpg",
+      "image": pageImage,
+      "description": "Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan modern, pawiwahan adat Bali, serta upacara metatah/mepandes.",
+      "telephone": siteSettings.whatsapp_url ? siteSettings.whatsapp_url.replace(/[^0-9+]/g, '') : "+6288236262247",
+      "priceRange": "Rp 150.000 - Rp 450.000",
+      "currenciesAccepted": "IDR",
+      "paymentAccepted": "Bank Transfer, QRIS, Bank BPD Bali, BCA, Mandiri, BRI, BNI",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Denpasar",
+        "addressRegion": "Bali",
+        "addressCountry": "ID"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -8.670458,
+        "longitude": 115.212629
+      },
+      "areaServed": [
+        { "@type": "AdministrativeArea", "name": "Bali" },
+        { "@type": "AdministrativeArea", "name": "Denpasar" },
+        { "@type": "AdministrativeArea", "name": "Badung" },
+        { "@type": "AdministrativeArea", "name": "Gianyar" },
+        { "@type": "AdministrativeArea", "name": "Tabanan" },
+        { "@type": "Country", "name": "Indonesia" }
+      ],
+      "knowsAbout": [
+        "Senada",
+        "Senada ID",
+        "Undangan Senada",
+        "Senadda",
+        "Senadda ID",
+        "Undangan Senadda",
+        "Undangan Bali",
+        "Undangan Digital Bali",
+        "Undangan Digital",
+        "Undangan Pernikahan",
+        "Undangan Pernikahan Bali",
+        "Undangan Pawiwahan Bali",
+        "Undangan Metatah Bali",
+        "Undangan Mepandes Bali",
+        "RSVP Online",
+        "Website Pernikahan"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://senadda.id/#faq",
+      "mainEntity": faqs.map((item) => ({
+        "@type": "Question",
+        "name": item.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.a.replace(/<[^>]+>/g, '')
+        }
+      }))
     }
   ]
 };
@@ -165,31 +310,43 @@ const schemaData = {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- Primary Meta Tags -->
-    <title>{siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital"}</title>
+    <!-- Primary Meta Tags (SEO: Undangan Bali, Undangan digital Bali, Undangan digital, Undangan Pernikahan) -->
+    <title>{pageTitle}</title>
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
     <link rel="apple-touch-icon" href="/logo.jpg" />
-    <meta name="title" content={siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital"} />
-    <meta name="description" content={siteSettings.meta_description || "Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu."} />
-    <meta name="keywords" content="undangan digital, undangan pernikahan online, senadda, senadda.id, wedding invitation, platform undangan, undangan digital pernikahan, undangan pernikahan digital, buat undangan digital, undangan website" />
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content={pageKeywords} />
     <meta name="author" content="Senadda" />
-    <link rel="canonical" href="https://senadda.id/" />
+    <link rel="canonical" href={pageUrl} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta property="og:locale" content="id_ID" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- Geo Meta Tags for Bali & Local GEO Search -->
+    <meta name="geo.region" content="ID-BA" />
+    <meta name="geo.placename" content="Denpasar, Bali" />
+    <meta name="geo.position" content="-8.670458;115.212629" />
+    <meta name="ICBM" content="-8.670458, 115.212629" />
+
+    <!-- Open Graph / Facebook / WhatsApp (Social Previews) -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://senadda.id/" />
-    <meta property="og:title" content={siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital"} />
-    <meta property="og:description" content={siteSettings.meta_description || "Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu."} />
-    <meta property="og:image" content={siteSettings.logo_url || "https://senadda.id/images/senadda-logo.png"} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:site_name" content="Senadda" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={pageImage} />
+    <meta property="og:image:secure_url" content={pageImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Senadda - Undangan Digital Bali & Pernikahan Elegan" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://senadda.id/" />
-    <meta property="twitter:title" content={siteSettings.meta_title || "Senadda - Undangan Pernikahan Digital"} />
-    <meta property="twitter:description" content={siteSettings.meta_description || "Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan, tanpa batas jarak dan waktu."} />
-    <meta property="twitter:image" content={siteSettings.logo_url || "https://senadda.id/images/senadda-logo.png"} />
+    <meta property="twitter:url" content={pageUrl} />
+    <meta property="twitter:title" content={pageTitle} />
+    <meta property="twitter:description" content={pageDescription} />
+    <meta property="twitter:image" content={pageImage} />
+    <meta name="theme-color" content="#17160f" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -205,7 +362,7 @@ const schemaData = {
       crossorigin
     />
 
-    <!-- Schema.org for Google and AI Search Engines -->
+    <!-- Schema.org Structured Data for Google, Local GEO & AI Answer Engines (AEO) -->
     <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
   </head>
   <body id="top" class="intro-enter">
@@ -275,8 +432,9 @@ const schemaData = {
                   >
                     <img
                       src={template.image}
-                      alt=""
+                      alt={`Desain Undangan Digital Bali - ${template.name}`}
                       loading={index === 0 ? "eager" : "lazy"}
+                      decoding={index === 0 ? "sync" : "async"}
                     />
                   </figure>
                 ))
@@ -355,6 +513,7 @@ const schemaData = {
         <div class="section-heading">
           <p>{siteSettings.home_templates_eyebrow || "Koleksi Desain"}</p>
           <h2>{siteSettings.home_templates_heading || "Pilih Nuansa."}</h2>
+          <p class="section-subheading">Koleksi undangan digital elegan untuk Pernikahan Modern, Pawiwahan adat Bali, hingga Upacara Metatah / Mepandes.</p>
         </div>
 
         <div class="template-filter-bar reveal-blur" role="tablist" aria-label="Filter kategori tema">
@@ -391,6 +550,7 @@ const schemaData = {
                     src={template.image}
                     alt={`Preview template ${template.name}`}
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div class="template-card__body">
@@ -458,7 +618,14 @@ const schemaData = {
           <div class="dashboard-tabs__panels">
             <div class="dashboard-tabs__panel is-active" data-panel="home">
               <div class="dashboard-tabs__screenshot">
-                <img src="/images/dashboard/dashboard-home.png" alt="Dashboard Home" loading="eager" />
+                <img
+                  src="/images/dashboard/dashboard-home.png"
+                  alt="Dashboard Manajemen Undangan Digital Senadda"
+                  loading="lazy"
+                  decoding="async"
+                  width="976"
+                  height="686"
+                />
               </div>
               <div class="dashboard-tabs__info">
                 <h3>Pantau Semuanya</h3>
@@ -468,7 +635,14 @@ const schemaData = {
 
             <div class="dashboard-tabs__panel" data-panel="kirim">
               <div class="dashboard-tabs__screenshot">
-                <img src="/images/dashboard/dashboard-kirim.png" alt="Kirim Undangan" loading="eager" />
+                <img
+                  src="/images/dashboard/dashboard-kirim.png"
+                  alt="Kirim Undangan Digital WhatsApp - Senadda"
+                  loading="lazy"
+                  decoding="async"
+                  width="976"
+                  height="686"
+                />
               </div>
               <div class="dashboard-tabs__info">
                 <h3>Kirim dengan Mudah</h3>
@@ -478,7 +652,14 @@ const schemaData = {
 
             <div class="dashboard-tabs__panel" data-panel="rsvp">
               <div class="dashboard-tabs__screenshot">
-                <img src="/images/dashboard/dashboard-rsvp.png" alt="RSVP" loading="eager" />
+                <img
+                  src="/images/dashboard/dashboard-rsvp.png"
+                  alt="Lacak RSVP & Buku Tamu Undangan Digital - Senadda"
+                  loading="lazy"
+                  decoding="async"
+                  width="976"
+                  height="686"
+                />
               </div>
               <div class="dashboard-tabs__info">
                 <h3>Lacak Kehadiran</h3>
@@ -723,90 +904,31 @@ const schemaData = {
 
         <div class="faq-container">
             <div class="faq-col">
+              {faqCol1.map((item) => (
                 <div class="faq-item reveal-blur">
                     <button class="faq-btn">
-                        <h3 class="faq-question">Waktu Pengerjaan Undangan</h3>
-                        <span class="faq-icon"></span>
-                    </button>
-                    <div class="faq-content" style="">
-                        <p class="faq-answer">Proses pembuatan biasanya memakan waktu 3 hari setelah semua data dan foto kami terima dengan lengkap.</p>
-                    </div>
-                </div>
-                <div class="faq-item reveal-blur">
-                    <button class="faq-btn">
-                        <h3 class="faq-question">Pengganti Video Background</h3>
+                        <h3 class="faq-question">{item.q}</h3>
                         <span class="faq-icon"></span>
                     </button>
                     <div class="faq-content">
-                        <p class="faq-answer">Jika template memiliki background video tapi Anda tidak punya video, kami bisa menggantinya dengan fitur image slider (slideshow) yang akan memutar foto-foto Anda secara bergantian.</p>
+                        <p class="faq-answer" set:html={item.a}></p>
                     </div>
                 </div>
-                <div class="faq-item reveal-blur">
-                    <button class="faq-btn">
-                        <h3 class="faq-question">Fasilitas Revisi Minor</h3>
-                        <span class="faq-icon"></span>
-                    </button>
-                    <div class="faq-content">
-                        <p class="faq-answer">Kami memberikan fasilitas revisi minor sepuasnya. Ini berlaku untuk perbaikan typo nama, ganti lagu, ganti foto, ganti quotes, penyesuaian lokasi, hingga menghapus section tertentu.</p>
-                    </div>
-                </div>
-                <div class="faq-item reveal-blur">
-                    <button class="faq-btn">
-                        <h3 class="faq-question">Fasilitas Revisi Mayor</h3>
-                        <span class="faq-icon"></span>
-                    </button>
-                    <div class="faq-content">
-                        <p class="faq-answer">Untuk revisi mayor, kami sediakan jatah satu kali. Perlu dicatat, Anda tidak bisa mengganti tema undangan, tapi Anda diperbolehkan merombak ulang posisi atau susunan section-nya.</p>
-                    </div>
-                </div>
-                <div class="faq-item reveal-blur">
-                    <button class="faq-btn">
-                        <h3 class="faq-question">Masa Aktif Tautan Undangan</h3>
-                        <span class="faq-icon"></span>
-                    </button>
-                    <div class="faq-content">
-                        <p class="faq-answer">Link undangan akan tetap aktif sampai satu bulan setelah acara selesai, jadi Anda masih punya banyak waktu untuk membaca ulang ucapan-ucapan dari para tamu.</p>
-                    </div>
-                </div>
+              ))}
             </div>
 
             <div class="faq-col">
+              {faqCol2.map((item) => (
                 <div class="faq-item reveal-blur">
                     <button class="faq-btn">
-                        <h3 class="faq-question">Cara Membagikan Undangan</h3>
+                        <h3 class="faq-question">{item.q}</h3>
                         <span class="faq-icon"></span>
                     </button>
                     <div class="faq-content">
-                        <p class="faq-answer">Anda akan mendapat akses dashboard khusus untuk memasukkan daftar nama tamu. Dari situ, sistem bisa langsung men-generate link unik per orang untuk Anda sebar via WhatsApp.</p>
+                        <p class="faq-answer" set:html={item.a}></p>
                     </div>
                 </div>
-                <div class="faq-item reveal-blur">
-                    <button class="faq-btn">
-                        <h3 class="faq-question">Cara Menulis Nama Tamu Manual</h3>
-                        <span class="faq-icon"></span>
-                    </button>
-                    <div class="faq-content">
-                        <p class="faq-answer">Selain lewat dashboard, Anda bisa menulis nama tamu manual dengan menambahkan <code>?to=Nama+Tamu</code> di akhir link undangan. Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code> (ganti spasi dengan tanda +).</p>
-                    </div>
-                </div>
-                <div class="faq-item reveal-blur">
-                    <button class="faq-btn">
-                        <h3 class="faq-question">Perubahan Setelah Undangan Dibagikan</h3>
-                        <span class="faq-icon"></span>
-                    </button>
-                    <div class="faq-content">
-                        <p class="faq-answer">Kalau ada perubahan jadwal atau lokasi mendadak, infokan saja ke kami. Nanti link undangan yang sudah disebar akan otomatis ter-update mengikuti info yang baru.</p>
-                    </div>
-                </div>
-                <div class="faq-item reveal-blur">
-                    <button class="faq-btn">
-                        <h3 class="faq-question">Konfirmasi Kehadiran &amp; Ucapan</h3>
-                        <span class="faq-icon"></span>
-                    </button>
-                    <div class="faq-content">
-                        <p class="faq-answer">Di undangan ada form khusus agar tamu bisa mengirim ucapan dan mengonfirmasi kehadiran (RSVP). Semua datanya akan terekap otomatis dan bisa Anda pantau dari dashboard.</p>
-                    </div>
-                </div>
+              ))}
             </div>
         </div>
 
@@ -2630,6 +2752,87 @@ const schemaData = {
   }
   .start__button:hover {
     background: var(--soft-parchment);
+  }
+
+  .section-subheading {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--dark-grey);
+    margin-top: 8px;
+    max-width: 580px;
+  }
+
+  .start-footer {
+    width: 100%;
+    max-width: 900px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(239, 237, 223, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    color: var(--soft-parchment);
+    text-align: center;
+
+    &__brand {
+      strong {
+        font-family: var(--font-heading);
+        font-size: 22px;
+        letter-spacing: 1px;
+        color: var(--white);
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 400;
+      }
+      p {
+        font-size: 12px;
+        color: var(--warm-taupe);
+        margin-bottom: 2px;
+      }
+      span {
+        font-size: 11px;
+        color: rgba(239, 237, 223, 0.6);
+      }
+    }
+
+    &__links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+
+      a {
+        color: var(--soft-parchment);
+        text-decoration: none;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: var(--white);
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &__copy {
+      font-size: 11px;
+      color: rgba(239, 237, 223, 0.45);
+      margin: 0;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .start-footer {
+      margin-top: 32px;
+      padding-top: 24px;
+      gap: 12px;
+
+      &__links {
+        gap: 14px;
+      }
+    }
   }
 
   .reveal-blur {
