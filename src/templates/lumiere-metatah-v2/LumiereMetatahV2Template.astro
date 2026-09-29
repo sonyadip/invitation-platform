@@ -73,8 +73,11 @@ const defaultText = {
   coverTitle: 'Pande Ceria',
   coverName: '',
   coverEyebrow: '',
-  sidebarTitle: 'Pande Ceria',
+  sidebarTitle: '',
   sidebarName: '',
+  sidebarGroom: '',
+  sidebarBride: '',
+  sidebarDate: '',
   sidebarEyebrow: '',
   introTitle: 'Pande Ceria',
   introName: '',
@@ -290,13 +293,26 @@ const participantsFullNames = participantsList.map(p => p.fullName || p.name).fi
 const coverEyebrow = text.coverEyebrow || text.ceremonyEyebrow || 'Upacara Manusa Yadnya';
 const coverTitle = text.coverTitle || text.coverName || text.title || themeContent.ceremonyTitle || 'Pande Ceria';
 
-// 2. Sidebar Section (Dapat dicustom via sidebarName / sidebarTitle)
-const sidebarEyebrow = text.sidebarEyebrow || text.ceremonyEyebrow || 'Upacara Manusa Yadnya';
-const sidebarName = text.sidebarName || text.sidebarTitle || coverTitle;
-
-// 3. Intro Section (#awal-undangan) - dapat dicustom via introName / introTitle
+// 2. Intro Section (#awal-undangan) - dapat dicustom via introName / introTitle
 const introEyebrow = text.introEyebrow || 'UPACARA MANUSA YADNYA';
 const introName = text.introName || text.introTitle || coverTitle;
+
+// 3. Sidebar Section (Mengikuti cover / intro-section__name, diformat seperti Lumiere biasa)
+const sidebarEyebrow = text.sidebarEyebrow || text.ceremonyEyebrow || coverEyebrow;
+const sidebarTitleSource = text.sidebarName || text.sidebarTitle || introName;
+
+let sidebarGroom = text.sidebarGroom || '';
+let sidebarBride = text.sidebarBride || '';
+
+if (!sidebarGroom && !sidebarBride) {
+  if (sidebarTitleSource.includes('&')) {
+    const parts = sidebarTitleSource.split('&').map((s: string) => s.trim());
+    sidebarGroom = parts[0] || '';
+    sidebarBride = parts[1] || '';
+  } else {
+    sidebarGroom = sidebarTitleSource;
+  }
+}
 
 // 4. ClassicIntro (modal intro animasi)
 const introAnimationName = text.introAnimationName || text.introAnimationTitle || introName;
@@ -467,7 +483,15 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           <SmartImage class="section-bg section-bg--sidebar" src={sidebarImage} alt="" aria-hidden="true" />
           <div class="sidebar-section__inner" data-animate>
             <p class="sidebar-section__eyebrow">{sidebarEyebrow}</p>
-            <h2 class="sidebar-section__name">{sidebarName}</h2>
+            {sidebarBride ? (
+              <>
+                <h2 class="sidebar-section__groom">{sidebarGroom}</h2>
+                <div class="sidebar-section__sep">&amp;</div>
+                <h2 class="sidebar-section__bride">{sidebarBride}</h2>
+              </>
+            ) : (
+              <h2 class="sidebar-section__groom">{sidebarGroom}</h2>
+            )}
             <div class="sidebar-section__divider">
               <span class="sidebar-section__date">{text.sidebarDate || formattedDate}</span>
             </div>
