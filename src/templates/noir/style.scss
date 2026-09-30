@@ -1039,8 +1039,9 @@ body.template-noir {
     grid-column: 1 / -1;
     aspect-ratio: 16 / 10;
 
-    .gallery-item__img {
-      object-position: center 30%;
+    .gallery-item__img,
+    img {
+      object-position: center 35%;
     }
   }
 

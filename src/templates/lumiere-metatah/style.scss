@@ -954,7 +954,15 @@ body.template-lumiere-metatah {
     background: rgba(255, 255, 255, 0.08);
 
     &--half         { aspect-ratio: 4/5; }
-    &--full-16x10   { grid-column: 1 / -1; aspect-ratio: 16/10; }
+    &--full-16x10   {
+      grid-column: 1 / -1;
+      aspect-ratio: 16/10;
+
+      .gallery-item__img,
+      img {
+        object-position: center 35%;
+      }
+    }
 
     &__img {
       width: 100%;
@@ -1039,6 +1047,7 @@ body.template-lumiere-metatah {
     display: none;
     text-align: center;
     padding: 1.5rem;
+    flex-direction: column;
 
     &__icon svg {
       width: 40px;

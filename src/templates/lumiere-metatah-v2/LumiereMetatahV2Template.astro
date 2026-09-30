@@ -168,7 +168,10 @@ const participantParentLines = buildCoupleLines(
   participantAddressText
 );
 
-const participantInstagramUrl = text.participantInstagramUrl || text.groomInstagramUrl || (text.participantIg ? `https://instagram.com/${text.participantIg.replace(/^@/, '')}` : '') || (text.groomIg ? `https://instagram.com/${text.groomIg.replace(/^@/, '')}` : '') || instagramUrl;
+const rawParticipantIg = text.participantInstagramUrl || text.groomInstagramUrl || (text.participantIg ? `https://instagram.com/${text.participantIg.replace(/^@/, '')}` : '') || (text.groomIg ? `https://instagram.com/${text.groomIg.replace(/^@/, '')}` : '');
+const participantInstagramUrl = rawParticipantIg && rawParticipantIg !== '#'
+  ? (rawParticipantIg.startsWith('http') ? rawParticipantIg : `https://instagram.com/${rawParticipantIg.replace(/^@/, '')}`)
+  : (isPreview ? (instagramUrl !== '#' ? instagramUrl : 'https://instagram.com') : '');
 
 // Family who invite
 const rawFamilyFather = filterMempelai(text.fatherName) || filterMempelai(text.groomFatherName) || participantFather;
@@ -265,7 +268,10 @@ if (hasCustomList) {
       brideParentsText,
       brideAddressText
     );
-    const brideIg = text.brideInstagramUrl || (text.brideIg ? `https://instagram.com/${text.brideIg.replace(/^@/, '')}` : '') || '';
+    const rawBrideIg = text.brideInstagramUrl || (text.brideIg ? `https://instagram.com/${text.brideIg.replace(/^@/, '')}` : '');
+    const brideIg = rawBrideIg && rawBrideIg !== '#'
+      ? (rawBrideIg.startsWith('http') ? rawBrideIg : `https://instagram.com/${rawBrideIg.replace(/^@/, '')}`)
+      : (isPreview ? (instagramUrl !== '#' ? instagramUrl : 'https://instagram.com') : '');
 
     participantsList.push({
       name: wedding.bride_name,
@@ -398,7 +404,7 @@ const activeGallery = gallery && gallery.length > 0
       image_url: image.image_url,
       variant: index === 0 || index === 3 ? 'full-16x10' : 'half'
     }))
-  : fallbackGallery;
+  : (isPreview ? fallbackGallery : []);
 
 const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0]?.title !== 'Pertama Bertemu'
   ? wedding.story
@@ -745,7 +751,7 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
         )}
 
         <!-- ── Gallery Section ───────────────────────────────── -->
-        {sections.gallery && settings.gallery_enabled && (
+        {sections.gallery && settings.gallery_enabled && activeGallery.length > 0 && (
           <section class="gallery-section" id="gallery-section">
             <div class="gallery-container">
               <div class="gallery-header" data-animate data-stagger-heading>

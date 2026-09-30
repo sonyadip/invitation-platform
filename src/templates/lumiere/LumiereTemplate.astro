@@ -42,19 +42,19 @@ const themeContent = themeConfig.content || {};
 
 const isPreview = wedding.id.startsWith('preview-');
 
-// ── Asset resolution (prefer CMS override, fall back to local template assets) ──────────
-const coverImage    = themeAssets.coverImage    || coverPhoto.src;
-const groomImage    = themeAssets.groomImage    || groomPhoto.src;
-const brideImage    = themeAssets.brideImage    || bridePhoto.src;
-const eventImage    = themeAssets.eventImage    || eventPhoto.src;
-const rsvpImage     = themeAssets.rsvpImage     || rsvpPhoto.src;
-const closingImage  = themeAssets.closingImage  || closingPhoto.src;
-const saveDateImage = themeAssets.countdownImage || saveDatePhoto.src;
+// ── Asset resolution (prefer CMS override, fall back to local template assets ONLY in preview mode) ──
+const coverImage    = themeAssets.coverImage    || (isPreview ? coverPhoto.src : undefined);
+const groomImage    = themeAssets.groomImage    || (isPreview ? groomPhoto.src : undefined);
+const brideImage    = themeAssets.brideImage    || (isPreview ? bridePhoto.src : undefined);
+const eventImage    = themeAssets.eventImage    || (isPreview ? eventPhoto.src : undefined);
+const rsvpImage     = themeAssets.rsvpImage     || (isPreview ? rsvpPhoto.src : undefined);
+const closingImage  = themeAssets.closingImage  || (isPreview ? closingPhoto.src : undefined);
+const saveDateImage = themeAssets.countdownImage || (isPreview ? saveDatePhoto.src : undefined);
 
 // Slideshow pool — deduplicated, cover goes last (it's the "home" slide)
 const heroImage = themeAssets.heroImage;
 const heroSlides = [
-  heroImage || groomImage,
+  heroImage || coverImage || groomImage,
   brideImage,
   eventImage,
   rsvpImage,
@@ -91,8 +91,16 @@ const instagramUrl      = text.instagramUrl && text.instagramUrl !== '#' ? text.
 const _baseWa = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
 const _themeName = (wedding.template || 'Template').charAt(0).toUpperCase() + (wedding.template || 'Template').slice(1);
 const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : '';
-const groomInstagramUrl = text.groomInstagramUrl || instagramUrl;
-const brideInstagramUrl = text.brideInstagramUrl || instagramUrl;
+const groomRawIg = text.groomInstagramUrl || (text.groomIg ? `https://instagram.com/${text.groomIg.replace(/^@/, '')}` : '');
+const brideRawIg = text.brideInstagramUrl || (text.brideIg ? `https://instagram.com/${text.brideIg.replace(/^@/, '')}` : '');
+
+const groomInstagramUrl = groomRawIg && groomRawIg !== '#' 
+  ? (groomRawIg.startsWith('http') ? groomRawIg : `https://instagram.com/${groomRawIg.replace(/^@/, '')}`)
+  : (isPreview ? (instagramUrl !== '#' ? instagramUrl : 'https://instagram.com') : null);
+
+const brideInstagramUrl = brideRawIg && brideRawIg !== '#' 
+  ? (brideRawIg.startsWith('http') ? brideRawIg : `https://instagram.com/${brideRawIg.replace(/^@/, '')}`)
+  : (isPreview ? (instagramUrl !== '#' ? instagramUrl : 'https://instagram.com') : null);
 
 const groomPrefix = formatChildPrefix(text.groomChildNumber, 'Putra', text.groomPrefix, isPreview ? 'Putra pertama dari' : 'Putra dari');
 const bridePrefix = formatChildPrefix(text.brideChildNumber, 'Putri', text.bridePrefix, isPreview ? 'Putri pertama dari' : 'Putri dari');
@@ -170,7 +178,7 @@ const activeGallery = gallery && gallery.length > 0
       image_url: image.image_url,
       variant: index === 0 || index === 5 ? 'full-16x10' : 'half'
     }))
-  : fallbackGallery;
+  : (isPreview ? fallbackGallery : []);
 
 const activeStory = wedding.story && wedding.story.length > 0
   ? wedding.story
@@ -197,32 +205,13 @@ const activeStory = wedding.story && wedding.story.length > 0
       />
     )}
 
-    <style>
-      .yt-bg-container {
-        overflow: hidden;
-        pointer-events: none;
-        background-color: #000;
-      }
-      .yt-bg-container :global(iframe) {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 100vw;
-        height: 56.25vw; /* 16:9 aspect ratio */
-        min-height: 100vh;
-        min-width: 177.77vh; /* 16:9 */
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-      }
-    </style>
-
     <!-- ── Background slideshow (same pattern as Editorial) ──────────────── -->
     <div class="page-bg" data-template-slider aria-hidden="true">
       {themeAssets.heroVideo ? (
         youtubeId ? (
           <div class="template-slide is-active yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay></div>
         ) : (
-          <video class="template-slide is-active" src={themeAssets.heroVideo} preload="none" loop muted playsinline data-template-autoplay style="object-fit:cover;"></video>
+          <video class="template-slide is-active" src={themeAssets.heroVideo} preload="none" loop muted playsinline data-template-autoplay></video>
         )
       ) : (
         heroSlides.map((slide, index) => {
@@ -295,7 +284,7 @@ const activeStory = wedding.story && wedding.story.length > 0
 
         <!-- ── Intro / Hero Section ──────────────────────────── -->
         <section class="intro-section" id="awal-undangan">
-          <div class="intro-section__inner" data-animate style="--animate-delay: 0ms;">
+          <div class="intro-section__inner" data-animate>
             <span class="intro-section__eyebrow">The Wedding Of</span>
             <h1 class="intro-section__title">
               <span class="intro-section__groom">{wedding.groom_name}</span>
@@ -331,24 +320,26 @@ const activeStory = wedding.story && wedding.story.length > 0
                   loading="lazy"
                 />
               </div>
-              <div class="couple-section__divider" data-animate style="--animate-delay: 200ms;">
+              <div class="couple-section__divider" data-animate>
                 <span class="couple-section__role">The Groom</span>
               </div>
-              <div class="couple-section__info" data-animate style="--animate-delay: 400ms;">
+              <div class="couple-section__info" data-animate>
                 <h2 class="couple-section__name">{wedding.groom_full_name || wedding.groom_name}</h2>
                 <p class="couple-section__parents">
                   {groomParentLines.map((line) => (
                     <span class="couple-section__parent-line">{line}</span>
                   ))}
                 </p>
-                <a class="couple-section__social" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`} data-track-couple-instagram="groom">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                  </svg>
-                  <span>{getInstagramUsername(groomInstagramUrl)}</span>
-                </a>
+                {groomInstagramUrl && (
+                  <a class="couple-section__social" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`} data-track-couple-instagram="groom">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <span>{getInstagramUsername(groomInstagramUrl)}</span>
+                  </a>
+                )}
               </div>
             </article>
 
@@ -361,24 +352,26 @@ const activeStory = wedding.story && wedding.story.length > 0
                   loading="lazy"
                 />
               </div>
-              <div class="couple-section__divider" data-animate style="--animate-delay: 200ms;">
+              <div class="couple-section__divider" data-animate>
                 <span class="couple-section__role">The Bride</span>
               </div>
-              <div class="couple-section__info" data-animate style="--animate-delay: 400ms;">
+              <div class="couple-section__info" data-animate>
                 <h2 class="couple-section__name">{wedding.bride_full_name || wedding.bride_name}</h2>
                 <p class="couple-section__parents">
                   {brideParentLines.map((line) => (
                     <span class="couple-section__parent-line">{line}</span>
                   ))}
                 </p>
-                <a class="couple-section__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`} data-track-couple-instagram="bride">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                  </svg>
-                  <span>{getInstagramUsername(brideInstagramUrl)}</span>
-                </a>
+                {brideInstagramUrl && (
+                  <a class="couple-section__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`} data-track-couple-instagram="bride">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <span>{getInstagramUsername(brideInstagramUrl)}</span>
+                  </a>
+                )}
               </div>
             </article>
           </section>
@@ -399,7 +392,7 @@ const activeStory = wedding.story && wedding.story.length > 0
 
         <!-- ── Save the Date / Countdown ──────────────────────── -->
         {sections.countdown && settings.countdown_enabled && (
-          <section class="countdown-section" data-animate style="padding: 3rem 24px; display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.4);">
+          <section class="countdown-section" data-animate>
             <h2 class="event-section__title" data-animate>Save The Date</h2>
             <div class="event-section__countdown" data-animate>
               <CountdownTimer date={wedding.wedding_date} />
@@ -410,9 +403,8 @@ const activeStory = wedding.story && wedding.story.length > 0
               target="_blank"
               rel="noopener noreferrer"
               data-animate
-              style="margin-top: 24px;"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="margin-right:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
                 <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -426,9 +418,11 @@ const activeStory = wedding.story && wedding.story.length > 0
         <!-- ── Events Section ─────────────────────────────────── -->
         {sections.eventDetails && (
           <section class="event-section" id="event">
-            <div class="event-section__media" data-animate>
-              <SmartImage src={eventImage || saveDateImage} alt="" loading="lazy" />
-            </div>
+            {(eventImage || saveDateImage) && (
+              <div class="event-section__media" data-animate>
+                <SmartImage src={eventImage || saveDateImage} alt="" loading="lazy" />
+              </div>
+            )}
             <div class="event-section__content">
               {activeEvents.map((event) => {
                 const eventDate = formatEventDate(event.event_date);
@@ -483,7 +477,7 @@ const activeStory = wedding.story && wedding.story.length > 0
         </section> -->
 
         <!-- ── Gallery / Our Moment ─────────────────────────── -->
-        {sections.gallery && settings.gallery_enabled && (
+        {sections.gallery && settings.gallery_enabled && activeGallery.length > 0 && (
           <section class="gallery-section" id="gallery-section">
             <div class="gallery-container">
               <div class="gallery-header" data-animate data-stagger-heading>
@@ -509,12 +503,10 @@ const activeStory = wedding.story && wedding.story.length > 0
                         <video 
                           class="gallery-item__img" 
                           src={videoUrl} 
-                          
                           loop 
                           muted 
                           playsinline 
-                          poster={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} 
-                          style="object-fit: cover; width: 100%; height: 100%;"
+                          poster={typeof image.image_url === 'string' ? image.image_url : image.image_url.src}
                         ></video>
                       ) : (
                         <SmartImage src={image.image_url} alt="Wedding gallery" loading="lazy" class="gallery-item__img" />
@@ -557,7 +549,7 @@ const activeStory = wedding.story && wedding.story.length > 0
 
                   <div class="rsvp-panel" data-animate>
                     <div class="rsvp-card">
-                      <div class="rsvp-success" data-rsvp-success style="display:none;">
+                      <div class="rsvp-success" data-rsvp-success>
                         <div class="rsvp-success__icon">
                           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -592,13 +584,13 @@ const activeStory = wedding.story && wedding.story.length > 0
                         <div class="rsvp-form__field">
                           <textarea id="rsvp-lumiere-message" name="message" rows={3} placeholder="Ucapan & Doa" class="rsvp-form__textarea"></textarea>
                         </div>
-                        <div class="rsvp-form__error" data-rsvp-error style="display:none;"></div>
+                        <div class="rsvp-form__error" data-rsvp-error></div>
                         <button type="submit" class="rsvp-form__submit" data-rsvp-submit>Kirim</button>
                       </form>
                     </div>
 
                     <div class="wishes-list" data-wishes-list>
-                      <div class="wishes-empty" data-wishes-empty style={isWishesEmpty ? '' : 'display:none;'}>
+                      <div class:list={['wishes-empty', { 'is-hidden': !isWishesEmpty }]} data-wishes-empty>
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                         </svg>
@@ -681,9 +673,11 @@ const activeStory = wedding.story && wedding.story.length > 0
 
         <!-- ── Closing / Thank You ───────────────────────────── -->
         <section class="closing-row">
-          <div class="closing-row__media" data-animate>
-            <SmartImage src={closingImage} alt="" loading="lazy" />
-          </div>
+          {closingImage && (
+            <div class="closing-row__media" data-animate>
+              <SmartImage src={closingImage} alt="" loading="lazy" />
+            </div>
+          )}
           <div class="closing-row__content" data-animate>
             <h3 class="closing-row__title">{closingTitle}</h3>
             <p class="closing-row__message">{closingMessage}</p>

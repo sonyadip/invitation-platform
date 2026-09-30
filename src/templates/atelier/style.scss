@@ -948,6 +948,7 @@ body.template-atelier {
   .rsvp-success {
     text-align: center;
     padding: 1.5rem;
+    flex-direction: column;
 
     &__icon svg {
       width: 40px;

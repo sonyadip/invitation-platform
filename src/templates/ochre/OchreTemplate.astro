@@ -120,16 +120,17 @@ const brideParentLines = buildCoupleLines(
   brideAddressText
 );
 
-const heroImage = themeAssets.heroImage || bgHero.src;
-const brideImage = themeAssets.brideImage || coupleBride.src;
-const groomImage = themeAssets.groomImage || coupleGroom.src;
+const heroImage = themeAssets.heroImage || (isPreview ? bgHero.src : undefined);
+const coverImage = themeAssets.coverImage || heroImage;
+const brideImage = themeAssets.brideImage || (isPreview ? coupleBride.src : undefined);
+const groomImage = themeAssets.groomImage || (isPreview ? coupleGroom.src : undefined);
 const activeGallery = gallery && gallery.length > 0
   ? gallery.map((image, index) => ({
       id: image.id,
       image_url: image.image_url,
       variant: index === 0 || index === 5 ? 'full-16x10' : 'half'
     }))
-  : customGallery;
+  : (isPreview ? customGallery : []);
 const galleryColumns = themeConfig.layout?.galleryColumns || 3;
 const galleryColClass = galleryColumns === 2
   ? 'gallery-grid--col2'
@@ -367,7 +368,7 @@ const activeGifts = gifts && gifts.length > 0
 
           <!-- ===== GALLERY ===== -->
           {sections.gallery && (
-            settings.gallery_enabled && (
+            settings.gallery_enabled && activeGallery.length > 0 && (
               <>
                 <section class="gallery-section">
                   <div class="gallery-container">
