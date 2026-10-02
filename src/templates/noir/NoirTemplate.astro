@@ -98,13 +98,21 @@ const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, activeEvents[0]
 const isPreview = wedding.id.startsWith('preview-');
 const themeAssets = themeConfig.assets || {};
 const heroImage = themeAssets.heroImage || (isPreview ? bgHero.src : undefined);
-const heroSlides = [
+const rawHeroSlides = [
   themeAssets.coverImage,
   themeAssets.heroImage,
   themeAssets.heroImageTwo,
   themeAssets.heroImageThree,
   ...(isPreview ? [bgHero, galleryOne, gallerySix.src] : [])
 ].filter(Boolean);
+
+const seenSlides = new Set<string>();
+const heroSlides = rawHeroSlides.filter((slide) => {
+  const key = typeof slide === 'string' ? slide : (slide as any)?.src || '';
+  if (!key || seenSlides.has(key)) return false;
+  seenSlides.add(key);
+  return true;
+});
 if (heroSlides.length === 0 && heroImage) heroSlides.push(heroImage);
 
 const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || (isPreview ? 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm' : undefined);
