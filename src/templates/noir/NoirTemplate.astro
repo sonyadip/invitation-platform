@@ -193,7 +193,7 @@ const activeGifts = gifts && gifts.length > 0
   image={heroImage}
 >
   <div class="invitation-root" data-template-root>
-    {sections.introAnimation !== false && (
+    {sections.introAnimation === true && (
       <CinematicIntro
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}

@@ -645,6 +645,7 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
 }
 
 function buildSections(baseSections: any, input: InvitationFormInput): SectionToggles {
+  const isNoir = (input.template || '').toLowerCase() === 'noir';
   const defaults: SectionToggles = {
     hero: true,
     countdown: true,
@@ -659,7 +660,7 @@ function buildSections(baseSections: any, input: InvitationFormInput): SectionTo
     share: true,
     video: true,
     livestream: true,
-    introAnimation: true
+    introAnimation: !isNoir
   };
 
   return {

@@ -44,7 +44,7 @@ const defaultBg2    = sidebarBg.src;
 const coverImage        = themeAssets.coverImage       || defaultBg1;
 const heroBgImage       = themeAssets.heroImage        || defaultBg1;
 const sidebarImage      = themeAssets.sidebarImage     || defaultBg2;
-const participantImage  = themeAssets.participantImage || themeAssets.groomImage || defaultBg1;
+const participantImage  = themeAssets.participantDefaultImage || themeAssets.participantImage || themeAssets.groomImage || defaultBg1;
 const eventImage        = themeAssets.eventImage       || defaultBg1;
 const rsvpImage         = themeAssets.rsvpImage        || defaultBg2;
 const closingImage      = themeAssets.closingImage     || defaultBg1;
@@ -186,6 +186,7 @@ interface MetatahPerson {
   fullName: string;
   role: string;
   photo: any;
+  hasPhoto?: boolean;
   parents: string[];
   instagram: string;
   description?: string | null;
@@ -200,7 +201,9 @@ if (hasCustomList) {
     const name = isObj ? (item.name || item.fullName || nickname) : String(item);
     const fullName = isObj ? (item.fullName || item.name || nickname) : String(item);
     const role = isObj ? (item.role || `Peserta ${index + 1}`) : `Peserta ${index + 1}`;
-    const photo = isObj ? (item.photo || item.image || item.image_url || (index % 2 === 0 ? participantImage : sidebarImage)) : (index % 2 === 0 ? participantImage : sidebarImage);
+    const customPhoto = isObj ? (item.photo || item.image || item.image_url) : null;
+    const photo = customPhoto || null;
+    const hasPhoto = Boolean(customPhoto);
     const itemFather = filterMempelai(item.fatherName) || participantFather;
     const itemMother = filterMempelai(item.motherName) || participantMother;
     const itemParentsText = filterMempelai(item.parentsText) || participantParentsText;
@@ -228,6 +231,7 @@ if (hasCustomList) {
       fullName,
       role,
       photo,
+      hasPhoto,
       parents,
       instagram: ig ? (ig.startsWith('http') ? ig : `https://instagram.com/${ig.replace(/^@/, '')}`) : '',
       description: desc
@@ -242,6 +246,7 @@ if (hasCustomList) {
     fullName: participantFullName,
     role: participantRole,
     photo: participantImage,
+    hasPhoto: Boolean(participantImage),
     parents: participantParentLines,
     instagram: participantInstagramUrl,
     description: null
@@ -279,12 +284,49 @@ if (hasCustomList) {
       fullName: wedding.bride_full_name || wedding.bride_name,
       role: brideRole,
       photo: themeAssets.brideImage || sidebarImage,
+      hasPhoto: Boolean(themeAssets.brideImage || sidebarImage),
       parents: brideParentLines,
       instagram: brideIg,
       description: null
     });
   }
 }
+
+// ── Urutkan peserta dari yang paling tua ke yang paling muda (oldest to youngest) ──
+function getBirthOrderRank(person: MetatahPerson): number {
+  const explicitNum = (person as any).childNumber ?? (person as any).order ?? (person as any).sort_order;
+  if (explicitNum !== undefined && explicitNum !== null && !isNaN(Number(explicitNum))) {
+    return Number(explicitNum);
+  }
+
+  const roleText = (person.role || '').toLowerCase();
+  const descText = ((person.description || '') + ' ' + (person.parents ? person.parents.join(' ') : '')).toLowerCase();
+  const nameText = `${person.fullName || ''} ${person.name || ''} ${person.nickname || ''}`.toLowerCase();
+  const combined = `${roleText} ${descText}`;
+
+  // 1. Cek kata kunci urutan kelahiran dalam bahasa Indonesia / adat
+  if (combined.includes('pertama') || combined.includes('sulung') || combined.includes('ke-1') || combined.includes('ke 1') || combined.includes('1st')) return 1;
+  if (combined.includes('kedua') || combined.includes('ke-2') || combined.includes('ke 2') || combined.includes('2nd')) return 2;
+  if (combined.includes('ketiga') || combined.includes('ke-3') || combined.includes('ke 3') || combined.includes('3rd')) return 3;
+  if (combined.includes('keempat') || combined.includes('ke-4') || combined.includes('ke 4') || combined.includes('4th')) return 4;
+  if (combined.includes('kelima') || combined.includes('ke-5') || combined.includes('ke 5') || combined.includes('5th')) return 5;
+  if (combined.includes('keenam') || combined.includes('ke-6') || combined.includes('ke 6') || combined.includes('6th')) return 6;
+  if (combined.includes('ketujuh') || combined.includes('ke-7') || combined.includes('ke 7') || combined.includes('7th')) return 7;
+  if (combined.includes('kedelapan') || combined.includes('ke-8') || combined.includes('ke 8') || combined.includes('8th')) return 8;
+  if (combined.includes('kesembilan') || combined.includes('ke-9') || combined.includes('ke 9') || combined.includes('9th')) return 9;
+  if (combined.includes('kesepuluh') || combined.includes('ke-10') || combined.includes('ke 10') || combined.includes('10th')) return 10;
+  if (combined.includes('bungsu')) return 99;
+
+  // 2. Cek urutan nama adat Bali (Wayan/Putu/Gede -> Made/Kadek/Nengah -> Nyoman/Komang -> Ketut)
+  if (/\b(wayan|putu|gede)\b/.test(nameText)) return 1.5;
+  if (/\b(made|kadek|nengah)\b/.test(nameText)) return 2.5;
+  if (/\b(nyoman|komang)\b/.test(nameText)) return 3.5;
+  if (/\b(ketut)\b/.test(nameText)) return 4.5;
+
+  return 50;
+}
+
+participantsList.sort((a, b) => getBirthOrderRank(a) - getBirthOrderRank(b));
 
 const isMultipleParticipants = participantsList.length > 1;
 
@@ -533,29 +575,31 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
         </section>
 
         <!-- ── Media Section / Foto Bersama ───────────────────── -->
-        <section class="media-section" data-animate>
-          <div class="media-section__inner">
-            {text.mediaTitle && (
-              <div class="media-section__header">
-                {text.mediaEyebrow && (
-                  <span class="media-section__eyebrow">{text.mediaEyebrow}</span>
-                )}
-                <h2 class="media-section__title">{text.mediaTitle}</h2>
+        {sections.media && (
+          <section class="media-section" data-animate>
+            <div class="media-section__inner">
+              {text.mediaTitle && (
+                <div class="media-section__header">
+                  {text.mediaEyebrow && (
+                    <span class="media-section__eyebrow">{text.mediaEyebrow}</span>
+                  )}
+                  <h2 class="media-section__title">{text.mediaTitle}</h2>
+                </div>
+              )}
+              <div class="media-section__frame">
+                <SmartImage
+                  class="media-section__image"
+                  src={groupPhotoImage}
+                  alt={text.mediaTitle || 'Foto Bersama Peserta Upacara'}
+                  loading="lazy"
+                />
               </div>
-            )}
-            <div class="media-section__frame">
-              <SmartImage
-                class="media-section__image"
-                src={groupPhotoImage}
-                alt={text.mediaTitle || 'Foto Bersama Peserta Upacara'}
-                loading="lazy"
-              />
+              <!-- {text.mediaCaption && (
+                <p class="media-section__caption">{text.mediaCaption}</p>
+              )} -->
             </div>
-            <!-- {text.mediaCaption && (
-              <p class="media-section__caption">{text.mediaCaption}</p>
-            )} -->
-          </div>
-        </section>
+          </section>
+        )}
 
         <!-- ── Peserta Upacara (Dengan Foto - Disembunyikan Sementara) ── -->
         {/*
@@ -625,53 +669,119 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
 
             <div class="couple-section__list">
               {participantsList.map((person, index) => {
-                const isRight = index % 2 === 1;
-                const hasInstagram = person.instagram && person.instagram !== '#';
-                const Tag = hasInstagram ? 'a' : 'div';
-                const linkProps = hasInstagram ? {
-                  href: person.instagram,
-                  target: '_blank',
-                  rel: 'noopener noreferrer',
-                  'aria-label': `${person.name} Instagram`,
-                  'data-track-couple-instagram': 'participant'
-                } : {};
+                const displayName = person.nickname || person.name;
 
                 return (
                   <article
-                    class={`couple-section__item ${isRight ? 'couple-section__item--right' : 'couple-section__item--left'}`}
+                    class="couple-section__item"
                     data-animate
-                    style={`--animate-delay: ${(index % 4) * 50}ms`}
+                    style={`--animate-delay: ${(index % 5) * 50}ms`}
                   >
-                    <Tag class="couple-section__item-link" {...linkProps}>
-                      {!isRight ? (
-                        <>
-                          {hasInstagram && (
-                            <span class="couple-section__item-icon" aria-hidden="true">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                              </svg>
-                            </span>
-                          )}
-                          <span class="couple-section__item-name">{person.fullName || person.name}</span>
-                        </>
-                      ) : (
-                        <>
-                          <span class="couple-section__item-name">{person.fullName || person.name}</span>
-                          {hasInstagram && (
-                            <span class="couple-section__item-icon" aria-hidden="true">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                              </svg>
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </Tag>
+                    <button
+                      type="button"
+                      class="couple-section__item-btn"
+                      data-open-participant-modal={`participant-modal-${index}`}
+                      aria-haspopup="dialog"
+                      aria-controls={`participant-modal-${index}`}
+                      aria-label={`Lihat detail profil ${displayName}`}
+                    >
+                      <span class="couple-section__item-name">{displayName}</span>
+                      <span class="couple-section__item-arrow-box" aria-hidden="true">
+                        <svg class="couple-section__item-arrow couple-section__item-arrow--1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="7" y1="17" x2="17" y2="7"></line>
+                          <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                        <svg class="couple-section__item-arrow couple-section__item-arrow--2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="7" y1="17" x2="17" y2="7"></line>
+                          <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                      </span>
+                    </button>
                   </article>
+                );
+              })}
+            </div>
+
+            <!-- ── Modal Popups Detail Peserta ─────────────────── -->
+            <div class="participant-modals-wrap">
+              {participantsList.map((person, index) => {
+                const hasInstagram = person.instagram && person.instagram !== '#';
+                const displayName = person.nickname || person.name;
+                const fullName = person.fullName || person.name;
+
+                return (
+                  <dialog
+                    id={`participant-modal-${index}`}
+                    class="participant-modal"
+                    aria-labelledby={`participant-modal-title-${index}`}
+                  >
+                    <div class="participant-modal__overlay" data-close-participant-modal={`participant-modal-${index}`}></div>
+                    <div class="participant-modal__dialog" role="document">
+                      <div class="participant-modal__card">
+                        <button
+                          type="button"
+                          class="participant-modal__close-btn"
+                          data-close-participant-modal={`participant-modal-${index}`}
+                          aria-label="Tutup detail"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+
+                        {person.hasPhoto && person.photo && (
+                          <div class="participant-modal__image-wrap">
+                            <SmartImage
+                              class="participant-modal__image"
+                              src={person.photo}
+                              alt={fullName}
+                            />
+                          </div>
+                        )}
+
+                        {person.role && (
+                          <div class="participant-modal__divider">
+                            <span class="participant-modal__role">{person.role}</span>
+                          </div>
+                        )}
+
+                        <h3 class="participant-modal__name" id={`participant-modal-title-${index}`}>
+                          {fullName}
+                        </h3>
+
+                        {person.parents && person.parents.length > 0 && (
+                          <div class="participant-modal__parents">
+                            {person.parents.map((line: string) => (
+                              <span class="participant-modal__parent-line">{line}</span>
+                            ))}
+                          </div>
+                        )}
+
+                        {person.description && (
+                          <p class="participant-modal__desc">{person.description}</p>
+                        )}
+
+                        {hasInstagram && (
+                          <a
+                            class="participant-modal__social"
+                            href={person.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${displayName} Instagram`}
+                            data-track-couple-instagram="participant"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                            <span>{getInstagramUsername(person.instagram)}</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </dialog>
                 );
               })}
             </div>
@@ -719,9 +829,11 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
         <!-- ── Events Section ─────────────────────────────────── -->
         {sections.eventDetails && (
           <section class="event-section" id="event">
-            <div class="event-section__media" data-animate>
-              <SmartImage src={eventImage || saveDateImage} alt="" loading="lazy" />
-            </div>
+            {themeAssets.eventImage && (
+              <div class="event-section__media" data-animate>
+                <SmartImage src={themeAssets.eventImage} alt="" loading="lazy" />
+              </div>
+            )}
             <div class="event-section__content">
               {activeEvents.map((event) => {
                 const eventDate = formatEventDate(event.event_date);
