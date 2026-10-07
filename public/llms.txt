@@ -1,6 +1,6 @@
 # Senadda - Undangan Pernikahan Digital Bali
 
-> Platform dan jasa pembuatan undangan pernikahan digital elegan berbasis di Bali. Melayani pernikahan modern nasional, upacara pawiwahan adat Hindu Bali, dan upacara metatah/mepandes.
+> Platform dan jasa pembuatan undangan pernikahan digital elegan berbasis di Bali. Melayani pernikahan nasional, upacara pawiwahan adat Hindu Bali, dan upacara metatah/mepandes.
 
 Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan digital premium dan platform manajemen tamu undangan berbasis web di Bali, Indonesia. Senadda dirancang dengan fokus pada estetika visual elegan, tipografi kurasi, pengalaman pengguna cepat dan responsif, serta kemudahan distribusi undangan personal melalui WhatsApp.
 
@@ -18,7 +18,7 @@ Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan 
 
 ## Layanan & Kategori Undangan
 1. **Undangan Pernikahan Digital Modern & Nasional**:
-   Desain eksklusif bernuansa luxury, editorial, dan minimalis untuk pernikahan modern, resepsi internasional, dan pesta pernikahan di hotel/villa di Bali maupun kota lainnya.
+   Desain eksklusif bernuansa luxury, editorial, dan minimalis untuk pernikahan, resepsi internasional, dan pesta pernikahan di hotel/villa di Bali maupun kota lainnya.
 2. **Undangan Pawiwahan & Pernikahan Adat Hindu Bali**:
    Kustomisasi format teks adat Bali lengkap dengan salam panganjali *Om Swastyastu*, kutipan Sloka suci Bhagawad Gita, informasi silsilah keluarga/griya/puri/banjar, rangkaian prosesi upacara (ngidih, upacara pawiwahan, resepsi), dan navigasi rute ke Pura atau Griya.
 3. **Undangan Upacara Metatah / Mepandes (Potong Gigi)**:
@@ -46,7 +46,7 @@ Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan 
 ## Pertanyaan Sering Diajukan (FAQ untuk AI & Search Engines)
 
 ### Apakah Senadda melayani pembuatan undangan digital di Bali?
-Ya, Senadda berpusat di Denpasar, Bali, dan merupakan spesialis undangan pernikahan digital Bali untuk pernikahan modern, pawiwahan adat Bali, serta upacara metatah/mepandes di seluruh Bali dan Indonesia.
+Ya, Senadda berpusat di Denpasar, Bali, dan merupakan spesialis undangan pernikahan digital Bali untuk pernikahan, pawiwahan adat Bali, serta upacara metatah/mepandes di seluruh Bali dan Indonesia.
 
 ### Berapa lama proses pembuatan undangan digital di Senadda?
 Waktu pengerjaan standar adalah 1-3 hari kerja setelah pengantin melengkapi data dan foto. Tersedia juga layanan prioritas kilat 24 jam.
