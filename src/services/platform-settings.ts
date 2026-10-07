@@ -80,8 +80,8 @@ const defaults: PlatformSettings = {
     { key: "air", name: "Air", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000" },
     { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000" },
   ],
-  meta_title: 'Senadda - Undangan Digital Bali & Undangan Pernikahan Elegan',
-  meta_description: 'Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan modern, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.',
+  meta_title: 'Senadda - Undangan Digital Bali',
+  meta_description: 'Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.',
   google_analytics_id: 'G-PS8CJGKXWG',
   google_tag_manager_id: '',
 };

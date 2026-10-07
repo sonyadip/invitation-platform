@@ -41,6 +41,7 @@ const errorMessage = unlockResult.errorMessage;
 const isUnlocked = await isInvitationUnlocked(Astro.cookies, wedding.id, settings.access_password);
 const { isMaintenance, isExpired, isPasswordLocked } = getInvitationAccessState(settings, isUnlocked, now);
 const guestName = Astro.url.searchParams.get('to') || null;
+const homeUrl = isDomain ? 'https://senadda.id/' : '/';
 
 if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked, Astro.url)) {
   const clientCtx = extractClientContext(Astro.request);
@@ -97,12 +98,29 @@ if (!ActiveTemplate) {
               </div>
               <h1 class="status-title">Sedang Dalam<br/>Pemeliharaan</h1>
               <p class="status-desc">Undangan pernikahan ini sedang dalam proses pemeliharaan.<br/>Silakan kunjungi kembali beberapa saat lagi.</p>
+              <a href={homeUrl} class="status-btn" aria-label="Kunjungi beranda">
+                <span>Kunjungi Beranda</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5l7 7-7 7"></path>
+                </svg>
+              </a>
             </>
           ) : (
             <>
-              <p class="status-eyebrow">Masa Aktif Berakhir</p>
-              <h1 class="status-title">Undangan Telah<br/>Berakhir</h1>
-              <p class="status-desc">Masa aktif undangan online ini telah berakhir.<br/>Daftar RSVP & Konfirmasi telah dinonaktifkan.</p>
+              {/* <p class="status-eyebrow">Sampai di Sini</p> */}
+              <h1 class="status-title">Undangan Ini<br/>Sudah Tidak Aktif</h1>
+              <p class="status-desc">
+                Terima kasih sudah berkunjung.
+                Lihat pilihan undangan lainnya di beranda.
+              </p>
+              <a href={homeUrl} class="status-btn" aria-label="Lihat beranda">
+                <span>Lihat Beranda</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5l7 7-7 7"></path>
+                </svg>
+              </a>
             </>
           )}
         </section>
@@ -242,7 +260,6 @@ if (!ActiveTemplate) {
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--accent);
     margin: 0 0 16px;
   }
 
@@ -268,7 +285,7 @@ if (!ActiveTemplate) {
     font-size: clamp(0.875rem, 2vw, 1rem);
     color: var(--deep-charcoal);
     line-height: 1.6;
-    max-width: 400px;
+    max-width: 440px;
     margin: 0 0 32px;
   }
 
@@ -276,6 +293,7 @@ if (!ActiveTemplate) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     padding: 14px 36px;
     background: var(--black);
     color: var(--white);
@@ -286,7 +304,21 @@ if (!ActiveTemplate) {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     transition: background-color 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
-    &:hover { background-color: var(--accent); transform: translateY(-2px); }
+
+    svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.2s var(--ease-soft);
+    }
+
+    &:hover {
+      background-color: var(--accent);
+      transform: translateY(-2px);
+
+      svg {
+        transform: translateX(3px);
+      }
+    }
   }
 
   /* ── Gate Form (password) ── */
