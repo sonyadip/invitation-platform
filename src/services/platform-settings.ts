@@ -48,8 +48,8 @@ const TABLE = 'platform_settings';
 
 const defaults: PlatformSettings = {
   site_name: 'Senadda',
-  site_tagline: 'Jasa Pembuatan Undangan Digital Bali & Pernikahan Elegan',
-  logo_url: '/images/senadda-logo.png',
+  site_tagline: 'Jasa Pembuatan Undangan Digital Bali',
+  logo_url: '/logo.jpg',
   logo_dark_url: '',
   whatsapp_url: 'https://wa.me/088236262247',
   instagram_url: 'https://www.instagram.com/senadda.id',
