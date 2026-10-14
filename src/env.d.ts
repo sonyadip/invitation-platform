@@ -3,5 +3,6 @@
 declare namespace App {
   interface Locals {
     session: import('./utils/session').SessionPayload | null;
+    requestId?: string;
   }
 }

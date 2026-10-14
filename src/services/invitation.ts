@@ -39,7 +39,10 @@ export async function getInvitationByDomainOrSlug(
         .eq('status', 'active')
         .maybeSingle();
 
-      if (domainError || !domainRecord) {
+      if (domainError) {
+        throw new Error(`Database error resolving domain "${identifier}": ${domainError.message}`);
+      }
+      if (!domainRecord) {
         return null;
       }
       weddingId = domainRecord.wedding_id;
@@ -59,7 +62,10 @@ export async function getInvitationByDomainOrSlug(
 
     const { data: wedding, error: weddingError } = await weddingQuery.maybeSingle();
 
-    if (weddingError || !wedding) {
+    if (weddingError) {
+      throw new Error(`Database error resolving wedding "${identifier}": ${weddingError.message}`);
+    }
+    if (!wedding) {
       return null;
     }
 
@@ -94,8 +100,10 @@ export async function getInvitationByDomainOrSlug(
         .limit(100)
     ]);
 
-    if (settingsRes.error || !settingsRes.data) {
-      console.error('Error fetching settings or settings not found:', settingsRes.error);
+    if (settingsRes.error) {
+      throw new Error(`Database error fetching settings for "${identifier}": ${settingsRes.error.message}`);
+    }
+    if (!settingsRes.data) {
       return null;
     }
 
@@ -116,6 +124,6 @@ export async function getInvitationByDomainOrSlug(
     };
   } catch (error) {
     console.error('getInvitationByDomainOrSlug critical error:', error);
-    return null;
+    throw error;
   }
 }

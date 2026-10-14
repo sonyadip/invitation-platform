@@ -17,7 +17,20 @@ export const prerender = false;
 const { slug } = Astro.params;
 
 const { identifier, isDomain } = resolveInvitationIdentifier(Astro.url, slug);
-const data = await getInvitationByDomainOrSlug(identifier, isDomain);
+let data: Awaited<ReturnType<typeof getInvitationByDomainOrSlug>> = null;
+
+try {
+  data = await getInvitationByDomainOrSlug(identifier, isDomain);
+} catch (error) {
+  console.error(`[SSR Fatal] Database connection error for invitation "${identifier}":`, error);
+  return new Response('Terjadi gangguan sistem sementara. Silakan coba beberapa saat lagi.', {
+    status: 503,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Retry-After': '30'
+    }
+  });
+}
 
 if (!data) {
   return new Response('Undangan tidak ditemukan atau telah dihapus.', { status: 404 });
