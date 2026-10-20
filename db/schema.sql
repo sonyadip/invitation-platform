@@ -294,10 +294,8 @@ CREATE INDEX IF NOT EXISTS idx_activity_logs_action ON activity_logs(action);
 CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at DESC);
 
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Allow public read activity_logs" ON activity_logs;
-CREATE POLICY "Allow public read activity_logs" ON activity_logs FOR SELECT TO public USING (true);
-DROP POLICY IF EXISTS "Allow public insert activity_logs" ON activity_logs;
-CREATE POLICY "Allow public insert activity_logs" ON activity_logs FOR INSERT TO public WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow service role all on activity_logs" ON activity_logs;
+CREATE POLICY "Allow service role all on activity_logs" ON activity_logs FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- 17. Create INVITATION REVISIONS Table (Snapshot history & rollback)
 CREATE TABLE IF NOT EXISTS invitation_revisions (
@@ -315,7 +313,89 @@ CREATE TABLE IF NOT EXISTS invitation_revisions (
 CREATE INDEX IF NOT EXISTS idx_invitation_revisions_wedding ON invitation_revisions(wedding_id, revision_number DESC);
 
 ALTER TABLE invitation_revisions ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Allow public read invitation_revisions" ON invitation_revisions;
-CREATE POLICY "Allow public read invitation_revisions" ON invitation_revisions FOR SELECT TO public USING (true);
-DROP POLICY IF EXISTS "Allow public insert invitation_revisions" ON invitation_revisions;
-CREATE POLICY "Allow public insert invitation_revisions" ON invitation_revisions FOR INSERT TO public WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow service role all on invitation_revisions" ON invitation_revisions;
+CREATE POLICY "Allow service role all on invitation_revisions" ON invitation_revisions FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- 18. Create SENT INVITATIONS Table (Guest recipient tracking)
+CREATE TABLE IF NOT EXISTS sent_invitations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    wedding_id UUID NOT NULL REFERENCES weddings(id) ON DELETE CASCADE,
+    guest_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NULL,
+    opened_at TIMESTAMPTZ NULL,
+    last_opened_at TIMESTAMPTZ NULL,
+    open_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sent_invitations_wedding_id ON sent_invitations(wedding_id);
+CREATE INDEX IF NOT EXISTS idx_sent_invitations_lookup ON sent_invitations(wedding_id, LOWER(guest_name));
+
+ALTER TABLE sent_invitations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow service role all on sent_invitations" ON sent_invitations;
+CREATE POLICY "Allow service role all on sent_invitations" ON sent_invitations FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- 19. Create INVITATION EVENTS Table (Interaction tracking)
+CREATE TABLE IF NOT EXISTS invitation_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    wedding_id UUID NOT NULL REFERENCES weddings(id) ON DELETE CASCADE,
+    event_type VARCHAR(50) NOT NULL,
+    guest_name VARCHAR(255) NULL,
+    metadata JSONB NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_invitation_events_wedding_type ON invitation_events(wedding_id, event_type);
+CREATE INDEX IF NOT EXISTS idx_invitation_events_created ON invitation_events(wedding_id, created_at DESC);
+
+ALTER TABLE invitation_events ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public insert invitation_events" ON invitation_events;
+CREATE POLICY "Allow public insert invitation_events" ON invitation_events FOR INSERT TO public WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow service role all on invitation_events" ON invitation_events;
+CREATE POLICY "Allow service role all on invitation_events" ON invitation_events FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- =========================================================================
+-- 20. EXPLICIT POSTGRESQL DATA API GRANTS (Supabase PostgREST & supabase-js)
+-- Required starting October 30 for any new tables and fresh deployments
+-- =========================================================================
+
+-- Ensure schema usage
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+-- Grant service_role full privileges (admin backend & SSR)
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO service_role;
+
+-- Grant authenticated role permissions
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO authenticated;
+
+-- Grant anon role read privileges for public invitation display
+GRANT SELECT ON TABLE 
+    weddings,
+    invitation_settings,
+    wedding_events,
+    gallery_images,
+    gift_accounts,
+    rsvps,
+    custom_domains,
+    platform_settings
+TO anon;
+
+-- Grant anon role write privileges for guest RSVP & tracking
+GRANT INSERT ON TABLE 
+    rsvps,
+    invitation_views,
+    invitation_events
+TO anon;
+
+-- Auto-grant future tables to service_role and authenticated
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO authenticated;

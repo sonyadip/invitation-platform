@@ -10,10 +10,11 @@ interface Props {
   fetchpriority?: 'high' | 'low' | 'auto';
   width?: number | string;
   height?: number | string;
+  poster?: string;
   [key: string]: any;
 }
 
-const { src, alt, class: className, loading = 'lazy', fetchpriority, width, height, ...rest } = Astro.props;
+const { src, alt, class: className, loading = 'lazy', fetchpriority, width, height, poster, ...rest } = Astro.props;
 
 // If src is falsy, just render nothing or a placeholder
 if (!src) return null;
@@ -27,6 +28,8 @@ const isVideo = isString && (String(resolvedSrc).endsWith('.mp4') || String(reso
   <video
     src={resolvedSrc as string}
     class={className}
+    poster={poster}
+    preload={rest.preload || 'metadata'}
     autoplay
     loop
     muted

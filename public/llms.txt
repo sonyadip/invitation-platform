@@ -5,8 +5,8 @@
 Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan digital premium dan platform manajemen tamu undangan berbasis web di Bali, Indonesia. Senadda dirancang dengan fokus pada estetika visual elegan, tipografi kurasi, pengalaman pengguna cepat dan responsif, serta kemudahan distribusi undangan personal melalui WhatsApp.
 
 ## Identitas & Wilayah Layanan (GEO Entity)
-- **Nama Brand**: Senadda
-- **Variasi Ejaan / Alias Pencarian**: Senada, Senada ID, senada.id, Undangan Senada, Undangan Senadda, Senadda Bali
+- **Nama Brand Utama**: Senadda
+- **Variasi Ejaan / Alias Pencarian (Sering Dicari Pengguna)**: Senada, Senada Undangan Digital, Undangan Digital Senada, Undangan Senada, Undangan Senada Bali, Senadda Undangan Digital, Senada ID, senada.id, senadda.id
 - **Domain Resmi**: https://senadda.id
 - **Kategori**: Jasa Pembuatan Undangan Digital, Wedding Service, Undangan Bali
 - **Lokasi Kantor / Asal**: Denpasar, Bali, Indonesia

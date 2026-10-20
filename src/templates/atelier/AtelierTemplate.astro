@@ -53,6 +53,7 @@ const saveDateImage = themeAssets.countdownImage || (isPreview ? saveDatePhoto.s
 
 // Slideshow pool — deduplicated, cover goes last (it's the "home" slide)
 const heroImage = themeAssets.heroImage;
+const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || coverImage || heroImage || saveDateImage || (isPreview ? coverPhoto.src : undefined);
 const heroSlides = [
   heroImage || coverImage || groomImage, 
   brideImage, 
@@ -209,7 +210,7 @@ const activeStory = wedding.story && wedding.story.length > 0
       .yt-bg-container {
         overflow: hidden;
         pointer-events: none;
-        background-color: #000;
+        background-color: transparent;
       }
       .yt-bg-container :global(iframe) {
         position: absolute;
@@ -227,11 +228,31 @@ const activeStory = wedding.story && wedding.story.length > 0
     <!-- ── Background slideshow (same pattern as Editorial) ──────────────── -->
     <div class="page-bg" data-template-slider aria-hidden="true">
       {themeAssets.heroVideo ? (
-        youtubeId ? (
-          <div class="template-slide is-active yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay></div>
-        ) : (
-          <video class="template-slide is-active" src={themeAssets.heroVideo} preload="none" loop muted playsinline data-template-autoplay style="object-fit:cover;"></video>
-        )
+        <div class="template-slide is-active" style="overflow: hidden;">
+          {videoPoster && (
+            <SmartImage
+              src={videoPoster}
+              alt=""
+              loading="eager"
+              fetchpriority="high"
+              style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;"
+            />
+          )}
+          {youtubeId ? (
+            <div class="yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay style="position: absolute; inset: 0; width: 100%; height: 100%;"></div>
+          ) : (
+            <video
+              src={themeAssets.heroVideo}
+              poster={typeof videoPoster === 'string' ? videoPoster : (videoPoster as any)?.src}
+              preload="metadata"
+              loop
+              muted
+              playsinline
+              data-template-autoplay
+              style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;"
+            ></video>
+          )}
+        </div>
       ) : (
         heroSlides.map((slide, index) => {
           const isInitial = index === 0;
@@ -697,7 +718,9 @@ const activeStory = wedding.story && wedding.story.length > 0
             <p class="closing-row__message">{closingMessage}</p>
             <h4 class="closing-row__names">{wedding.groom_name} &amp; {wedding.bride_name}</h4>
             <footer class="thankyou-section__footer">
-              <SmartImage src="/images/senadda-logo.png" alt="Senadda" class="thankyou-section__brand" />
+              <a href="https://senadda.id" target="_blank" rel="noopener noreferrer" title="Senadda - Undangan Digital Bali" class="thankyou-section__brand-link" data-track-vendor-site style="display: inline-block; line-height: 0;">
+                <SmartImage src="/images/senadda-logo.png" alt="Senadda - Undangan Digital Bali" class="thankyou-section__brand" />
+              </a>
               <div class="thankyou-section__socials">
                 <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link" data-track-vendor-instagram>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">

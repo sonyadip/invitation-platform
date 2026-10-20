@@ -886,6 +886,7 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
                         <video
                           class="gallery-item__img"
                           src={videoUrl}
+                          preload="metadata"
                           loop
                           muted
                           playsinline
@@ -1070,7 +1071,9 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
               {closingNames}
             </h4>
             <footer class="thankyou-section__footer">
-              <SmartImage src="/images/senadda-logo.png" alt="Senadda" class="thankyou-section__brand" />
+              <a href="https://senadda.id" target="_blank" rel="noopener noreferrer" title="Senadda - Undangan Digital Bali" class="thankyou-section__brand-link" data-track-vendor-site style="display: inline-block; line-height: 0;">
+                <SmartImage src="/images/senadda-logo.png" alt="Senadda - Undangan Digital Bali" class="thankyou-section__brand" />
+              </a>
               <div class="thankyou-section__socials">
                 <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link" data-track-vendor-instagram>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">

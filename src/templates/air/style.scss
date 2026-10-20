@@ -691,7 +691,7 @@ body.template-air {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    min-height: 420px;
+    min-height: 400px;
     padding: 24px;
     background: var(--air-dark);
   }
@@ -1043,7 +1043,7 @@ body.template-air {
     border-radius: 8px;
     background:
       linear-gradient(180deg, rgba(248, 245, 239, 0.055), rgba(248, 245, 239, 0.018)),
-      rgba(0, 0, 0, 0.28);
+      rgba(0, 0, 0, 0.85);
     color: #f8f5ef;
     text-align: left;
     box-shadow: none;
@@ -1151,13 +1151,12 @@ body.template-air {
   .thankyou-section {
     position: relative;
     display: flex;
-    min-height: 100vh;
-    min-height: 100svh;
+    min-height: 680px;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
     overflow: hidden;
-    padding: 0 32px 32px;
+    padding: 0 32px 40px;
     background-color: var(--air-bg);
     text-align: center;
 
@@ -1194,32 +1193,34 @@ body.template-air {
 
   .thankyou-section__title {
     margin: 0;
-    color: var(--air-white);
+    color: var(--air-white, #ffffff);
     font-family: 'Billion Miracles', cursive;
     font-size: 55px;
     font-weight: 400;
-    line-height: 0.5;
+    line-height: 0.9;
     letter-spacing: 1px;
     text-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
   }
 
   .thankyou-section__socials {
     display: flex;
+    align-items: center;
     gap: 12px;
     margin-top: 0;
   }
 
   .social-link {
-    display: grid;
-    place-items: center;
+    display: inline-flex;
     width: 32px;
     height: 32px;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.07);
-    color: var(--air-white);
+    background-color: rgba(255, 255, 255, 0.07);
+    color: var(--air-white, #ffffff);
     cursor: pointer;
-    transition: background 0.25s ease, border-color 0.25s ease;
+    transition: background 0.5s ease, border-color 0.5s ease;
 
     svg {
       width: 16px;
@@ -1227,14 +1228,14 @@ body.template-air {
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.16);
+      background-color: rgba(255, 255, 255, 0.16);
       border-color: rgba(255, 255, 255, 0.55);
     }
   }
 
   .thankyou-section__brand-text {
     margin: 0;
-    color: rgba(248, 245, 239, 0.4);
+    color: rgba(255, 255, 255, 0.4);
     font-family: var(--font-body), 'Josefin Sans', sans-serif;
     font-size: 9px;
     font-weight: 400;
@@ -1244,8 +1245,7 @@ body.template-air {
     width: 150px;
 
     span {
-      color: rgba(248, 245, 239, 0.68);
-      letter-spacing: 3.5px;
+      color: rgba(255, 255, 255, 0.68);
     }
   }
 
@@ -1540,6 +1540,10 @@ body.template-air {
       width: 520px;
       min-height: 100vh;
       flex-shrink: 0;
+
+      .rsvp-section__grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .hero-section {

@@ -15,3 +15,13 @@
 /images/*
   Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
 
+
+
+/audio/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+/audio-preview/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+/templates/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400

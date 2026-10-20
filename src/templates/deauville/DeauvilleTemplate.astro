@@ -116,7 +116,7 @@ const videoUrl =
   (isPreview ? "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm" : undefined);
 const youtubeId = getYouTubeId(themeAssets.heroVideo);
 const videoPoster =
-  themeAssets.videoPoster || themeAssets.posterImage || countdownImage;
+  themeAssets.videoPoster || themeAssets.posterImage || coverImage || countdownImage || (isPreview ? deauvilleCover.src : undefined);
 
 const defaultText = {
   verse:
@@ -333,7 +333,7 @@ const activeGifts =
     .yt-bg-container {
       overflow: hidden;
       pointer-events: none;
-      background-color: #000;
+      background-color: transparent;
     }
     .yt-bg-container :global(iframe) {
       position: absolute;
@@ -412,11 +412,31 @@ const activeGifts =
           <div class="template-slider" data-template-slider>
             {
               themeAssets.heroVideo ? (
-                youtubeId ? (
-                  <div class="template-slide is-active yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay></div>
-                ) : (
-                  <video preload="none" src={themeAssets.heroVideo} loop muted playsinline data-template-autoplay class="template-slide is-active" style="object-fit:cover;"></video>
-                )
+                <div class="template-slide is-active" style="overflow: hidden;">
+                  {videoPoster && (
+                    <SmartImage
+                      src={videoPoster}
+                      alt=""
+                      loading="eager"
+                      fetchpriority="high"
+                      style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;"
+                    />
+                  )}
+                  {youtubeId ? (
+                    <div class="yt-bg-container" data-yt-bg={youtubeId} data-template-autoplay style="position: absolute; inset: 0; width: 100%; height: 100%;"></div>
+                  ) : (
+                    <video
+                      preload="metadata"
+                      src={themeAssets.heroVideo}
+                      poster={typeof videoPoster === 'string' ? videoPoster : (videoPoster as any)?.src}
+                      loop
+                      muted
+                      playsinline
+                      data-template-autoplay
+                      style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;"
+                    ></video>
+                  )}
+                </div>
               ) : (
                 heroSlides.map((slide, index) => (
                   <SmartImage
@@ -952,7 +972,7 @@ const activeGifts =
               </a>
             </div>
             <p class="thankyou-section__brand-text">
-              wedding invitation by <span>Senadda</span>
+              wedding invitation by <a href="https://senadda.id" target="_blank" rel="noopener noreferrer" title="Senadda - Undangan Digital Bali" data-track-vendor-site style="color: inherit; text-decoration: underline; text-underline-offset: 3px;"><span>Senadda</span></a>
             </p>
           </div>
         </section>
