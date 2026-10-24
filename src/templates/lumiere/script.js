@@ -124,7 +124,7 @@ openBtn?.addEventListener('click', () => {
 initBackgroundAudioHandler(song, audioBtn);
 
 function playAutoplayVideos() {
-  const videos = Array.from(root?.querySelectorAll('video') || []);
+  const videos = Array.from(root?.querySelectorAll('video[data-template-autoplay]') || []);
   videos.forEach(video => {
     if (video instanceof HTMLVideoElement) {
       video.play().catch(() => {});

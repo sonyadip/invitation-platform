@@ -13,7 +13,7 @@ import { listTemplateKeys } from '../../../templates/registry';
 import { hashPasswordSHA256 } from '../../../utils/security';
 import { generateSetupToken } from '../../../utils/token';
 import { supabase } from '../../../lib/supabase';
-import PopupDialog from '../../../components/common/PopupDialog.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
 
 export const prerender = false;
 
@@ -153,63 +153,63 @@ if (!isClaimed) {
 }
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit {detail.summary.slug} - Dashboard</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <PopupDialog />
-    <main class="shell">
+<AdminLayout
+  title={`Edit ${detail.summary.slug}`}
+  breadcrumbs={[
+    { label: "Dashboard", href: "/dashboard" },
+    { label: detail.summary.slug, href: `/dashboard/${detail.summary.slug}` },
+    { label: "Edit" }
+  ]}
+>
       <!-- Top Header -->
-      <header class="header">
-        <div>
-          <a class="back-link" href={`/dashboard/${detail.summary.slug}`}>← Back to Report</a>
-          <p class="eyebrow">Invitation Editor</p>
-          <h1>Edit Invitation</h1>
-          <p class="subtitle">
+      <header class="admin-page-header">
+        <div class="admin-page-header__left">
+          <h1 class="admin-page-header__title">Edit Invitation</h1>
+          <p class="admin-page-header__description">
             Slug: <code>{detail.summary.slug}</code> • Couple: <strong>{detail.summary.coupleName}</strong>
           </p>
         </div>
-        <div class="header-actions">
-          <a class="action-btn secondary-action" href={`/dashboard/${detail.summary.slug}`}>
-            <span class="material-symbols-outlined icon">analytics</span> RSVP & Analytics
+        <div class="admin-page-header__actions">
+          <a class="btn-shadcn btn-shadcn--outline btn-shadcn--sm" href={`/dashboard/${detail.summary.slug}`}>
+            <span class="material-symbols-outlined" style="font-size: 16px;">analytics</span> Analytics
           </a>
-          <button type="button" class="action-btn secondary-action" id="global-expand-btn">
-            <span class="material-symbols-outlined icon">unfold_more</span> Expand All
+          <button type="button" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm" id="global-expand-btn">
+            <span class="material-symbols-outlined" style="font-size: 16px;">unfold_more</span> Expand
           </button>
-          <button type="button" class="action-btn secondary-action" id="global-collapse-btn">
-            <span class="material-symbols-outlined icon">unfold_less</span> Collapse All
+          <button type="button" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm" id="global-collapse-btn">
+            <span class="material-symbols-outlined" style="font-size: 16px;">unfold_less</span> Collapse
           </button>
-          <a class="action-btn secondary-action" href={`/dashboard/${detail.summary.slug}/revisions`}>
-            <span class="material-symbols-outlined icon">history</span> Revisions
+          <a class="btn-shadcn btn-shadcn--outline btn-shadcn--sm" href={`/dashboard/${detail.summary.slug}/revisions`}>
+            <span class="material-symbols-outlined" style="font-size: 16px;">history</span> Revisions
           </a>
-          <a class="action-btn primary-action" href={`/${detail.summary.slug}`} target="_blank" rel="noopener noreferrer">
-            <span class="material-symbols-outlined icon">open_in_new</span> Live Preview
+          <a class="btn-shadcn btn-shadcn--primary btn-shadcn--sm" href={`/${detail.summary.slug}`} target="_blank" rel="noopener noreferrer">
+            <span class="material-symbols-outlined" style="font-size: 16px;">open_in_new</span> Live Preview
           </a>
         </div>
       </header>
 
       {successMessage && (
-        <div class="success-panel">
-          <span class="material-symbols-outlined icon">check_circle</span>
+        <div class="shadcn-alert shadcn-alert--success" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; flex-shrink: 0;">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
           <div>
-            <strong>Success:</strong> {successMessage}
+            <strong>Success</strong>
+            <p>{successMessage}</p>
           </div>
         </div>
       )}
       {errorMessage && (
-        <div class="error-panel">
-          <span class="material-symbols-outlined icon">error</span>
+        <div class="shadcn-alert shadcn-alert--error" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; flex-shrink: 0;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
           <div>
-            <strong>Error:</strong> {errorMessage}
+            <strong>Error</strong>
+            <p>{errorMessage}</p>
           </div>
         </div>
       )}
@@ -1123,15 +1123,10 @@ if (!isClaimed) {
     min-height: 100vh;
     background: #f1f5f9;
     color: #1e293b;
-    font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-sans);
   }
 
-  .shell {
-    width: min(1560px, 96vw);
-    margin: 0 auto;
-    padding: 28px 16px 60px;
-    font-family: 'Montserrat', sans-serif;
-  }
+  .shell { width: 100%; margin: 0; padding: 0; }
 
   .header {
     display: flex;
@@ -1167,7 +1162,7 @@ if (!isClaimed) {
     align-items: center;
     gap: 6px;
     padding: 0 14px;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
@@ -1186,9 +1181,9 @@ if (!isClaimed) {
 
   .primary-action {
     border: 1px solid #0f172a;
-    background: #0f172a;
+    background: var(--admin-zinc-900);
     color: #ffffff;
-    &:hover { background: #1e293b; }
+    &:hover { background: var(--admin-zinc-800); }
   }
 
   .eyebrow {
@@ -1205,7 +1200,7 @@ if (!isClaimed) {
     margin: 0;
     color: #64748b;
     font-size: 14px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-sans);
 
     code {
       background: #e2e8f0;
@@ -1213,12 +1208,12 @@ if (!isClaimed) {
       border-radius: 4px;
       color: #0f172a;
       font-size: 13px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: var(--font-sans);
       font-weight: 600;
     }
 
     strong {
-      font-family: 'Montserrat', sans-serif;
+      font-family: var(--font-sans);
       font-weight: 700;
       color: #0f172a;
     }
@@ -1230,7 +1225,7 @@ if (!isClaimed) {
     gap: 10px;
     margin-bottom: 20px;
     padding: 14px 18px;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-md);
     font-size: 14px;
     .icon { font-size: 22px; flex-shrink: 0; }
   }
@@ -1250,8 +1245,8 @@ if (!isClaimed) {
   }
 
   .form-panel {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-lg);
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     overflow: hidden;
@@ -1381,7 +1376,7 @@ if (!isClaimed) {
     display: inline-flex;
     align-items: center;
     padding: 2px 8px;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     font-size: 11px;
     font-weight: 600;
     background: #f1f5f9;
@@ -1391,8 +1386,8 @@ if (!isClaimed) {
   /* Security Components */
   .security-card {
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-md);
     padding: 16px;
     margin-bottom: 16px;
     display: flex;
@@ -1482,7 +1477,7 @@ if (!isClaimed) {
     padding: 0 14px;
     background: #ffffff;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     font-weight: 600;
     font-size: 12px;
     cursor: pointer;
@@ -1502,8 +1497,8 @@ if (!isClaimed) {
   .event-card, .story-card, .couple-card, .gift-card-form {
     margin: 0;
     padding: 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-md);
     background: #ffffff;
   }
   .event-card legend, .story-card legend, .couple-card legend, .gift-card-form legend {
@@ -1536,7 +1531,7 @@ if (!isClaimed) {
     min-height: 40px;
     padding: 9px 12px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     font: inherit;
     font-size: 13px;
     font-weight: 400;
@@ -1564,8 +1559,8 @@ if (!isClaimed) {
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-md);
     background: #f8fafc;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -1613,7 +1608,7 @@ if (!isClaimed) {
     align-items: center;
     padding: 0 16px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #ffffff;
     color: #475569;
     font-size: 13px;
@@ -1628,14 +1623,14 @@ if (!isClaimed) {
     align-items: center;
     padding: 0 20px;
     border: none;
-    border-radius: 6px;
-    background: #0f172a;
+    border-radius: var(--admin-radius-sm);
+    background: var(--admin-zinc-900);
     color: #ffffff;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     transition: background 0.15s ease;
-    &:hover { background: #1e293b; }
+    &:hover { background: var(--admin-zinc-800); }
   }
 
   /* Sticky Right Sidebar */
@@ -1656,8 +1651,8 @@ if (!isClaimed) {
 
   .sticky-box {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-lg);
     padding: 18px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     display: flex;
@@ -1702,8 +1697,8 @@ if (!isClaimed) {
     justify-content: center;
     gap: 8px;
     border: none;
-    border-radius: 8px;
-    background: #0f172a;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-zinc-900);
     color: #ffffff;
     font-size: 14px;
     font-weight: 700;
@@ -1712,7 +1707,7 @@ if (!isClaimed) {
     transition: all 0.15s ease;
 
     &:hover {
-      background: #1e293b;
+      background: var(--admin-zinc-800);
       transform: translateY(-1px);
       box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
     }
@@ -1763,8 +1758,8 @@ if (!isClaimed) {
     justify-content: center;
     gap: 4px;
     padding: 6px 8px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-sm);
     background: #ffffff;
     color: #475569;
     font-size: 11px;
@@ -1840,7 +1835,7 @@ if (!isClaimed) {
     gap: 8px;
     padding: 0 10px;
     border: 1px solid #fecaca;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #fff5f5;
     color: #b91c1c;
     font-size: 12px;

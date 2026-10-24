@@ -1,5 +1,5 @@
 ---
-import CinematicIntro from '../../components/common/CinematicIntro.astro';
+import ClassicIntro from '../../components/common/ClassicIntro.astro';
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SmartImage from "../../components/common/SmartImage.astro";
 import type { FullInvitationData } from '../../types';
@@ -201,10 +201,10 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
-      <CinematicIntro
+      <ClassicIntro
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}
-        coverImage={heroImage}
+        subtitle="The Wedding Of"
       />
     )}
     <!-- ===================== COVER SCREEN ===================== -->

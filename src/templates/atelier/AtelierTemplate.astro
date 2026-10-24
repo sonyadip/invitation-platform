@@ -3,7 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import SmartImage from "../../components/common/SmartImage.astro";
 import CountdownTimer from "../../components/common/CountdownTimer.astro";
 import GiftGrid from "../../components/common/GiftGrid.astro";
-import CinematicIntro from "../../components/common/CinematicIntro.astro";
+import ClassicIntro from "../../components/common/ClassicIntro.astro";
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
 import {
@@ -53,7 +53,7 @@ const saveDateImage = themeAssets.countdownImage || (isPreview ? saveDatePhoto.s
 
 // Slideshow pool — deduplicated, cover goes last (it's the "home" slide)
 const heroImage = themeAssets.heroImage;
-const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || coverImage || heroImage || saveDateImage || (isPreview ? coverPhoto.src : undefined);
+const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || eventImage || coverImage || heroImage || saveDateImage || (isPreview ? eventPhoto.src : undefined);
 const heroSlides = [
   heroImage || coverImage || groomImage, 
   brideImage, 
@@ -166,7 +166,7 @@ const galleryColClass = galleryColumns === 3
     : 'gallery-grid--col2';
 
 const fallbackGallery = [
-  coverPhoto, groomPhoto, bridePhoto, eventPhoto, rsvpPhoto, saveDatePhoto, closingPhoto, coverPhoto
+  eventPhoto, groomPhoto, bridePhoto, coverPhoto, rsvpPhoto, saveDatePhoto, closingPhoto, coverPhoto
 ].map((image, index) => ({
   id: String(index + 1),
   image_url: image,
@@ -199,10 +199,10 @@ const activeStory = wedding.story && wedding.story.length > 0
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
-      <CinematicIntro
+      <ClassicIntro
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}
-        coverImage={coverImage}
+        subtitle="The Wedding Of"
       />
     )}
 
@@ -476,12 +476,10 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── Video Section ─────────────────────────────────── -->
-        {sections.video !== false && videoUrl && videoUrl.trim() !== '' && (
-          <section class="video-section" data-animate style="padding: 24px 20px;">
-            <div class="video-section__frame" data-template-video style="position: relative; max-width: 680px; margin: 0 auto; overflow: hidden; border-radius: 8px;">
-              <video class="video-section__media" src={videoUrl} poster={saveDateImage} playsinline preload="metadata" controls style="width: 100%; display: block; border-radius: 8px;"></video>
-            </div>
+        <!-- ── Full-Width Media Section ──────────────────────── -->
+        {(saveDateImage || eventImage) && (
+          <section class="media-section" data-animate>
+            <SmartImage src={saveDateImage || eventImage} alt="" loading="lazy" />
           </section>
         )}
 
@@ -539,6 +537,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                   const targetVideoIdx = firstVideoIdx !== -1 ? firstVideoIdx : 0;
                   const showVideo = index === targetVideoIdx && Boolean(videoUrl);
                   const itemVariant = image.variant;
+                  const videoThumbnail = themeAssets.videoPoster || themeAssets.posterImage || image.image_url;
                   
                   return (
                     <a
@@ -547,7 +546,12 @@ const activeStory = wedding.story && wedding.story.length > 0
                       data-fancybox="gallery-section"
                       data-animate
                     >
-                      <SmartImage src={image.image_url} alt="Wedding gallery" loading="lazy" class="gallery-item__img" />
+                      <SmartImage
+                        src={showVideo ? videoThumbnail : image.image_url}
+                        alt="Wedding gallery"
+                        loading="lazy"
+                        class="gallery-item__img"
+                      />
                       
                       <div class="gallery-item__overlay">
                         <div class="gallery-item__zoom">
@@ -700,7 +704,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                 <p class="gift-section__desc">{text.giftDescription}</p>
                 <div class="section-rule"></div>
               </div>
-              <button class="gift-toggle-btn" data-gift-toggle type="button" aria-expanded="false">
+              <button class="gift-toggle-btn" data-gift-toggle data-animate style="--animate-delay: 200ms;" type="button" aria-expanded="false">
                 Lihat Hadiah Pernikahan
               </button>
               <GiftGrid gifts={activeGifts} hidden />

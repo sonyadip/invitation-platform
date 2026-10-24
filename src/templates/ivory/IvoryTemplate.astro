@@ -562,7 +562,7 @@ const activeGifts = gifts && gifts.length > 0
                       <div class="section-rule"></div>
                     </div>
 
-                    <button class="gift-toggle-btn" data-gift-toggle type="button" aria-expanded="false">Lihat Hadiah Pernikahan</button>
+                    <button class="gift-toggle-btn" data-gift-toggle data-animate="fade-up" style="--animate-delay: 200ms;" type="button" aria-expanded="false">Lihat Hadiah Pernikahan</button>
 
                     <GiftGrid gifts={activeGifts} hidden={true} />
                   </div>

@@ -2,7 +2,7 @@
 import { createInvitation, parseInvitationForm } from '../../services/dashboard-crud';
 import { listTemplateKeys } from '../../templates/registry';
 import { hashPasswordSHA256 } from '../../utils/security';
-import PopupDialog from '../../components/common/PopupDialog.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
 
 export const prerender = false;
 
@@ -135,571 +135,811 @@ if (Astro.request.method === 'POST') {
 }
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Invitation - Dashboard</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <PopupDialog />
-    <main class="shell">
-      <header class="header">
+<AdminLayout
+  title="Create Invitation"
+  activeNav="new"
+  breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Create Invitation" }]}
+>
+  <header class="admin-page-header">
+    <div class="admin-page-header__left">
+      <h1 class="admin-page-header__title">Create Invitation</h1>
+      <p class="admin-page-header__description">
+        Set up a new wedding invitation, choose template theme, and configure initial couple information.
+      </p>
+    </div>
+
+    <div class="admin-page-header__actions">
+      <a href="/dashboard" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">
+        ← Back to Overview
+      </a>
+    </div>
+  </header>
+
+  {errorMessage && (
+    <div class="shadcn-alert shadcn-alert--error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <strong>Failed to Create</strong>
+        <p>{errorMessage}</p>
+      </div>
+    </div>
+  )}
+
+  <form class="form-panel" id="new-invitation-form" method="POST" enctype="multipart/form-data">
+    <!-- GENERAL SETTINGS -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">⚙️</span>
         <div>
-          <a class="back-link" href="/dashboard">← Back to Dashboard</a>
-          <p class="eyebrow">Invitation Creator</p>
-          <h1>Create Invitation</h1>
-          <p class="subtitle">Set up new wedding details and default configuration.</p>
-        </div>
-      </header>
-
-      {errorMessage && <div class="error-panel">{errorMessage}</div>}
-
-      <form class="form-panel" id="new-invitation-form" method="POST" enctype="multipart/form-data">
-        <section>
           <h2>General Settings</h2>
-          <div class="form-grid" style="margin-bottom: 18px;">
-            <label>Slug<input name="slug" value={values.slug} placeholder="wayan-ayu" required /></label>
-            <label>Status
-              <select name="status">
-                <option value="draft" selected={values.status === 'draft'}>Draft</option>
-                <option value="published" selected={values.status === 'published'}>Published</option>
-                <option value="archived" selected={values.status === 'archived'}>Archived</option>
-              </select>
-            </label>
-            <label>Template
-              <select name="template">
-                {templateOptions.map((template) => (
-                  <option value={template} selected={values.template === template}>{template}</option>
-                ))}
-              </select>
-            </label>
-            <label>Expiration Date<input type="datetime-local" name="expirationDate" value={values.expirationDate} /></label>
-          </div>
-
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 16px;">
-            <div style="font-weight: 700; font-size: 14px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-              <span>🔐</span> Access & Client Security
-            </div>
-
-            <!-- Access Password (Guest Protection Gate) -->
-            <div style="display: flex; flex-direction: column; gap: 8px; background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 6px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 0; cursor: pointer; color: #1e293b;">
-                  <input type="checkbox" name="passwordProtectionEnabled" id="passwordProtectionToggle" checked={values.passwordProtectionEnabled} style="width: 16px; min-height: 16px; margin: 0;" />
-                  <span>Guest Password Protection (Password Gate)</span>
-                </label>
-                <span style="font-size: 12px; color: #64748b;">Lock public invitation page</span>
-              </div>
-              <div style="display: grid; gap: 6px;">
-                <label style="font-size: 12px; color: #475569; margin: 0;">Guest Access Password:</label>
-                <input name="accessPassword" id="accessPasswordInput" value={values.accessPassword} placeholder="e.g. wedding2026" autocomplete="off" />
-                <p style="margin: 0; font-size: 12px; color: #64748b;">
-                  When enabled, visitors must enter this password to view the invitation in public.
-                </p>
-              </div>
-            </div>
-
-            <!-- Client Password (Client Dashboard Authentication) -->
-            <div style="display: flex; flex-direction: column; gap: 8px; background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 6px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                <span style="font-weight: 700; font-size: 13px; color: #334155;">Client Dashboard Password</span>
-                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 10px; border-radius: 9999px;">
-                  Optional (can be set via One-Time Link later)
-                </span>
-              </div>
-              <div style="display: grid; gap: 6px;">
-                <label style="font-size: 12px; color: #475569; margin: 0;">Set Client Password (Initial):</label>
-                <input name="clientPassword" type="password" value={values.clientPassword} placeholder="Set initial password (or leave empty to use setup link later)..." autocomplete="new-password" />
-              </div>
-            </div>
-          </div>
-
-          <div class="toggle-grid">
-            <label><input type="checkbox" name="rsvpEnabled" checked={values.rsvpEnabled} /> RSVP</label>
-            <label><input type="checkbox" name="musicEnabled" checked={values.musicEnabled} /> Music</label>
-            <label><input type="checkbox" name="countdownEnabled" checked={values.countdownEnabled} /> Countdown</label>
-            <label><input type="checkbox" name="galleryEnabled" checked={values.galleryEnabled} /> Gallery</label>
-            <label><input type="checkbox" name="wishesEnabled" checked={values.wishesEnabled} /> Wishes</label>
-            <label><input type="checkbox" name="giftEnabled" checked={values.giftEnabled} /> Gift</label>
-            <label><input type="checkbox" name="storyEnabled" checked={values.storyEnabled} /> Our Story</label>
-            <label><input type="checkbox" name="viewCounterEnabled" checked={values.viewCounterEnabled} /> View Counter</label>
-            <label><input type="checkbox" name="videoEnabled" checked={values.videoEnabled} /> Video</label>
-            <label><input type="checkbox" name="introAnimationEnabled" checked={values.introAnimationEnabled} /> Intro Animation</label>
-            <label><input type="checkbox" name="maintenanceMode" checked={values.maintenanceMode} /> Maintenance</label>
-          </div>
-        </section>
-
-        <section>
-          <h2>Opening</h2>
-          <div class="form-grid">
-            <label class="wide">Logo Image URL<input name="logoImageUrl" value={values.logoImageUrl} placeholder="https://example.com/logo.png" /></label>
-            <label class="wide">Upload Logo Image<input type="file" name="logoImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <label class="wide">Popup / Hero Image URL<input name="heroImageUrl" id="hero-image-url-input" value={values.heroImageUrl} placeholder="https://example.com/hero.jpg" /></label>
-            <label class="wide">Upload Popup / Hero Image<input type="file" name="heroImageFile" id="hero-image-file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <input type="hidden" name="ogImageUrl" id="og-image-url-input" value={values.ogImageUrl || ''} />
-            <input type="file" name="ogImageFile" id="og-image-file-input" style="display: none;" />
-            <label class="wide">Hero Video URL<input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" /></label>
-            <div style="grid-column: 1 / -1; margin-top: 16px; margin-bottom: 4px; padding-top: 16px; border-top: 1px solid var(--border, #e5e7eb);">
-              <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Image Slider / Slideshow Photos</h3>
-              <p class="section-sub" style="margin-bottom: 12px;">Opsional. Masukkan foto khusus untuk banner slider / slideshow. Jika dikosongkan, slider akan otomatis mengambil foto dari Photo Gallery.</p>
-            </div>
-            <div class="wide gallery-list" id="slider_container" style="grid-column: 1 / -1;">
-              {(Array.isArray(values.sliderImageUrls) ? values.sliderImageUrls : []).map((url, index) => (
-                <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-                  <label style="flex: 1; margin: 0;">Slider Image URL <span class="idx">{index + 1}</span><input name="sliderImageUrl" value={url} placeholder="https://example.com/slide.jpg" /></label>
-                  <button type="button" class="remove-btn secondary-action">Delete</button>
-                </div>
-              ))}
-            </div>
-            <button type="button" id="add_slider_btn" class="secondary-action" style="grid-column: 1 / -1; margin-bottom: 16px; width: fit-content;">+ Add Slider Photo URL</button>
-            <label class="wide">
-              Upload Multiple Slider Images
-              <input type="file" name="sliderImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple />
-            </label>
-            <label class="wide">Intro Verse<textarea name="introVerse" rows="4">{values.introVerse}</textarea></label>
-            <label class="wide">Intro Verse Source<input name="introVerseSource" value={values.introVerseSource} placeholder="(e.g. Rgveda : X.85.42 or 1 Corinthians 13:4)" /></label>
-          </div>
-        </section>
-
-        <section>
-          <h2>Couple</h2>
-          <div class="couple-grid">
-            <fieldset class="couple-card">
-              <legend>Groom</legend>
-              <div class="form-grid">
-                <label>Groom Name<input name="groomName" value={values.groomName} required /></label>
-                <label>Groom Full Name<input name="groomFullName" value={values.groomFullName} required /></label>
-                <label>Groom Father Name<input name="groomFatherName" value={values.groomFatherName} placeholder="Groom father name" /></label>
-                <label>Groom Mother Name<input name="groomMotherName" value={values.groomMotherName} placeholder="Groom mother name" /></label>
-                <label>Groom Child Order<input name="groomChildNumber" value={values.groomChildNumber || ''} placeholder="1st son of" /></label>
-                <label>Groom Family Address / Origin<input name="groomAddress" value={values.groomAddress || ''} placeholder="Origin or city" /></label>
-                <label>Groom Image URL<input name="groomImageUrl" value={values.groomImageUrl} placeholder="https://example.com/groom.jpg" /></label>
-                <label>Upload Groom Image<input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-                <label class="wide">Groom Instagram URL<input name="groomInstagramUrl" value={values.groomInstagramUrl} placeholder="https://www.instagram.com/username" /></label>
-              </div>
-            </fieldset>
-            <fieldset class="couple-card">
-              <legend>Bride</legend>
-              <div class="form-grid">
-                <label>Bride Name<input name="brideName" value={values.brideName} required /></label>
-                <label>Bride Full Name<input name="brideFullName" value={values.brideFullName} required /></label>
-                <label>Bride Father Name<input name="brideFatherName" value={values.brideFatherName} placeholder="Bride father name" /></label>
-                <label>Bride Mother Name<input name="brideMotherName" value={values.brideMotherName} placeholder="Bride mother name" /></label>
-                <label>Bride Child Order<input name="brideChildNumber" value={values.brideChildNumber || ''} placeholder="2nd daughter of" /></label>
-                <label>Bride Family Address / Origin<input name="brideAddress" value={values.brideAddress || ''} placeholder="Origin or city" /></label>
-                <label>Bride Image URL<input name="brideImageUrl" value={values.brideImageUrl} placeholder="https://example.com/bride.jpg" /></label>
-                <label>Upload Bride Image<input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-                <label class="wide">Bride Instagram URL<input name="brideInstagramUrl" value={values.brideInstagramUrl} placeholder="https://www.instagram.com/username" /></label>
-              </div>
-            </fieldset>
-          </div>
-        </section>
-
-        <section>
-          <h2>Events</h2>
-          <div class="form-grid" style="margin-bottom: 24px;">
-            <label class="wide">Event Section Image URL<input name="eventImageUrl" value={values.eventImageUrl || ''} placeholder="https://example.com/event.jpg" /></label>
-            <label class="wide">Upload Event Section Image<input type="file" name="eventImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-          </div>
-          <div class="event-list" id="events_container">
-            {values.events.map((event, index) => (
-              <fieldset class="event-card repeater-item">
-                <legend>Event <span class="idx">{index + 1}</span></legend>
-                <div class="form-grid">
-                  <label>Event Name<input name="eventName" value={event.name} required={index === 0} placeholder="Wedding Ceremony" /></label>
-                  <label>Date<input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} /></label>
-                  <label>Start Time<input type="time" name="eventStartTime" value={event.startTime} /></label>
-                  <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Finish" /></label>
-                  <label>Venue Name<input name="eventVenueName" value={event.venueName} /></label>
-                  <label>Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
-                  <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
-                </div>
-                {index > 0 && <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Event</button>}
-              </fieldset>
-            ))}
-          </div>
-          <button type="button" id="add_event_btn" class="secondary-action" style="margin-top: 16px;">+ Add Event</button>
-        </section>
-
-        <section data-setting-target="storyEnabled">
-          <h2>Our Story</h2>
-          <div class="story-list" id="stories_container">
-            {values.story.map((story, index) => (
-              <fieldset class="story-card repeater-item">
-                <legend>Story <span class="idx">{index + 1}</span></legend>
-                <div class="form-grid">
-                  <label>Title<input name="storyTitle" value={story.title} placeholder="HOW WE MET" /></label>
-                  <label class="wide">Description<textarea name="storyDescription" rows="3">{story.description}</textarea></label>
-                </div>
-                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Story</button>
-              </fieldset>
-            ))}
-          </div>
-          <button type="button" id="add_story_btn" class="secondary-action" style="margin-top: 16px;">+ Add Story</button>
-        </section>
-
-        <section data-setting-target="galleryEnabled">
-          <h2>Gallery</h2>
-          <div class="gallery-list" id="gallery_container">
-            {(Array.isArray(values.galleryImageUrls) ? values.galleryImageUrls : []).map((url, index) => (
-              <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-                <label style="flex: 1; margin: 0;">Image URL <span class="idx">{index + 1}</span><input name="galleryImageUrl" value={url} placeholder="https://example.com/gallery.jpg" /></label>
-                <button type="button" class="remove-btn secondary-action">Delete</button>
-              </div>
-            ))}
-          </div>
-          <button type="button" id="add_gallery_btn" class="secondary-action" style="margin-top: 10px; margin-bottom: 16px;">+ Add Image URL</button>
-          <div class="form-grid" style="margin-bottom: 24px;">
-            <label class="wide">Upload Gallery Images<input type="file" name="galleryImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple /></label>
-          </div>
-
-          <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 15px;">Gallery Videos</h3>
-          <div class="gallery-video-list" id="gallery_videos_container">
-            {(Array.isArray(values.galleryVideoUrls) ? values.galleryVideoUrls : []).map((url, index) => (
-              <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-                <label style="flex: 1; margin: 0;">Video URL <span class="idx">{index + 1}</span><input name="galleryVideoUrl" value={url} placeholder="https://www.youtube.com/watch?v=..." /></label>
-                <button type="button" class="remove-btn secondary-action">Delete</button>
-              </div>
-            ))}
-          </div>
-          <button type="button" id="add_gallery_video_btn" class="secondary-action" style="margin-top: 10px;">+ Add Video URL</button>
-        </section>
-
-        <section>
-          <h2>RSVP & Countdown Images</h2>
-          <div class="form-grid">
-            <label class="wide">RSVP Image URL<input name="rsvpImageUrl" value={values.rsvpImageUrl || ''} placeholder="https://example.com/rsvp.jpg" /></label>
-            <label class="wide">Upload RSVP Image<input type="file" name="rsvpImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-            <label class="wide">Countdown Image URL<input name="countdownImageUrl" value={values.countdownImageUrl || ''} placeholder="https://example.com/countdown.jpg" /></label>
-            <label class="wide">Upload Countdown Image<input type="file" name="countdownImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-          </div>
-        </section>
-
-        <section>
-          <h2>Gift & Thank You</h2>
-          <div class="gift-list" id="gifts_container">
-            {values.gifts.map((gift, index) => (
-              <fieldset class="gift-card-form repeater-item">
-                <legend>Gift Card <span class="idx">{index + 1}</span></legend>
-                <div class="form-grid">
-                  <label>Bank Name<input name="giftBankName" value={gift.bankName} placeholder="BCA / Chase" /></label>
-                  <label>Account Number<input name="giftAccountNumber" value={gift.accountNumber} placeholder="1234567890" /></label>
-                  <label>Account Name<input name="giftAccountName" value={gift.accountName} placeholder="Account holder name" /></label>
-                  <label>QRIS URL<input name="giftQrisUrl" value={gift.qrisUrl} placeholder="https://example.com/qris.png" /></label>
-                </div>
-                <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Gift Card</button>
-              </fieldset>
-            ))}
-          </div>
-          <button type="button" id="add_gift_btn" class="secondary-action" style="margin-top: 16px; margin-bottom: 24px;">+ Add Gift Card</button>
-          <div class="form-grid">
-            <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4">{values.giftDescription}</textarea></label>
-            <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4">{values.thankYouMessage}</textarea></label>
-            <label class="wide">Closing Image URL<input name="closingImageUrl" value={values.closingImageUrl || ''} placeholder="https://example.com/closing.jpg" /></label>
-            <label class="wide">Upload Closing Image<input type="file" name="closingImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></label>
-          </div>
-        </section>
-
-
-
-        <section data-setting-target="musicEnabled">
-          <h2>Music</h2>
-          <div class="form-grid">
-            <label class="wide">Music URL<input name="musicUrl" value={values.musicUrl} placeholder="https://example.com/audio.mp3" /></label>
-            <label class="wide">Upload Music File (MP3 / AAC / WAV)<input type="file" name="musicFile" accept="audio/*,.mp3,.wav,.ogg,.aac,.m4a,.webm" /></label>
-          </div>
-        </section>
-
-        <footer class="form-actions">
-          <a href="/dashboard">Cancel</a>
-          <button type="submit">Create Invitation</button>
-        </footer>
-      </form>
-    </main>
-    <template id="event_template">
-      <fieldset class="event-card repeater-item">
-        <legend>Event <span class="idx"></span></legend>
-        <div class="form-grid">
-          <label>Event Name<input name="eventName" placeholder="Wedding Ceremony" /></label>
-          <label>Date<input type="datetime-local" name="eventDate" /></label>
-          <label>Start Time<input type="time" name="eventStartTime" /></label>
-          <label>End Time<input name="eventEndTime" placeholder="Finish" /></label>
-          <label>Venue Name<input name="eventVenueName" /></label>
-          <label>Maps URL<input name="eventMapsUrl" /></label>
-          <label class="wide">Venue Address<textarea name="eventVenueAddress" rows="3"></textarea></label>
+          <p>Slug URL, publication status, and template design.</p>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Event</button>
-      </fieldset>
-    </template>
+      </div>
 
-    <template id="story_template">
-      <fieldset class="story-card repeater-item">
-        <legend>Story <span class="idx"></span></legend>
-        <div class="form-grid">
-          <label>Title<input name="storyTitle" placeholder="HOW WE MET" /></label>
-          <label class="wide">Description<textarea name="storyDescription" rows="3"></textarea></label>
+      <div class="form-grid" style="margin-bottom: 20px;">
+        <div class="field-group">
+          <label>Slug URL <span class="required">*</span></label>
+          <input name="slug" value={values.slug} placeholder="wayan-ayu" required />
+          <span class="hint">Will be accessible at senadda.id/slug</span>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Story</button>
-      </fieldset>
-    </template>
 
-    <template id="slider_template">
-      <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-        <label style="flex: 1; margin: 0;">Slider Image URL <span class="idx"></span><input name="sliderImageUrl" placeholder="https://example.com/slide.jpg" /></label>
-        <button type="button" class="remove-btn secondary-action">Delete</button>
-      </div>
-    </template>
-
-    <template id="gallery_template">
-      <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-        <label style="flex: 1; margin: 0;">Image URL <span class="idx"></span><input name="galleryImageUrl" placeholder="https://example.com/gallery.jpg" /></label>
-        <button type="button" class="remove-btn secondary-action">Delete</button>
-      </div>
-    </template>
-
-    <template id="gallery_video_template">
-      <div class="repeater-item form-grid" style="align-items: flex-end; margin-bottom: 12px;">
-        <label style="flex: 1; margin: 0;">Video URL <span class="idx"></span><input name="galleryVideoUrl" placeholder="https://www.youtube.com/watch?v=..." /></label>
-        <button type="button" class="remove-btn secondary-action">Delete</button>
-      </div>
-    </template>
-
-    <template id="gift_template">
-      <fieldset class="gift-card-form repeater-item">
-        <legend>Gift Card <span class="idx"></span></legend>
-        <div class="form-grid">
-          <label>Bank Name<input name="giftBankName" placeholder="BCA / Chase" /></label>
-          <label>Account Number<input name="giftAccountNumber" placeholder="1234567890" /></label>
-          <label>Account Name<input name="giftAccountName" placeholder="Account holder name" /></label>
-          <label>QRIS URL<input name="giftQrisUrl" placeholder="https://example.com/qris.png" /></label>
+        <div class="field-group">
+          <label>Status</label>
+          <select name="status">
+            <option value="draft" selected={values.status === 'draft'}>Draft</option>
+            <option value="published" selected={values.status === 'published'}>Published</option>
+            <option value="archived" selected={values.status === 'archived'}>Archived</option>
+          </select>
         </div>
-        <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Gift Card</button>
-      </fieldset>
-    </template>
 
-    <script>
-      function setupRepeater(containerId, btnId, templateId) {
-        const container = document.getElementById(containerId);
-        const btn = document.getElementById(btnId);
-        const template = document.getElementById(templateId);
+        <div class="field-group">
+          <label>Template Theme</label>
+          <select name="template">
+            {templateOptions.map((template) => (
+              <option value={template} selected={values.template === template}>{template}</option>
+            ))}
+          </select>
+        </div>
 
-        if (!container || !btn || !template) return;
+        <div class="field-group">
+          <label>Expiration Date</label>
+          <input type="datetime-local" name="expirationDate" value={values.expirationDate} />
+        </div>
+      </div>
 
-        function updateIndexes() {
-          const items = container.querySelectorAll('.repeater-item');
-          items.forEach((item, index) => {
-            const idxSpan = item.querySelector('.idx');
-            if (idxSpan) idxSpan.textContent = index + 1;
-          });
-        }
+      <!-- Access & Client Security -->
+      <div style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="font-weight: 600; font-size: 13px; color: var(--admin-zinc-950); display: flex; align-items: center; gap: 6px;">
+          <span>🔐</span> Access & Client Security
+        </div>
 
-        btn.addEventListener('click', () => {
-          const clone = template.content.cloneNode(true);
-          container.appendChild(clone);
-          updateIndexes();
-        });
+        <!-- Guest Password Gate -->
+        <div style="background: #ffffff; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; color: var(--admin-zinc-900);">
+              <input type="checkbox" name="passwordProtectionEnabled" id="passwordProtectionToggle" checked={values.passwordProtectionEnabled} style="width: 16px; height: 16px; margin: 0;" />
+              <span>Guest Password Protection (Password Gate)</span>
+            </label>
+            <span style="font-size: 11px; color: var(--admin-text-muted);">Lock public invitation page</span>
+          </div>
+          <div class="field-group">
+            <label style="font-size: 12px;">Guest Access Password:</label>
+            <input name="accessPassword" id="accessPasswordInput" value={values.accessPassword} placeholder="e.g. wedding2026" autocomplete="off" />
+          </div>
+        </div>
 
-        container.addEventListener('click', async (e) => {
-          if (e.target.classList.contains('remove-btn')) {
-            const confirmed = await window.showConfirm({
-              title: 'Delete Item',
-              message: 'Are you sure you want to delete this item?',
-              confirmText: 'Delete',
-              cancelText: 'Cancel',
-              variant: 'danger',
-              icon: 'delete'
-            });
-            if (!confirmed) return;
-            const item = e.target.closest('.repeater-item');
-            if (item) {
-              item.remove();
-              updateIndexes();
-            }
-          }
-        });
-      }
+        <!-- Client Password -->
+        <div style="background: #ffffff; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <span style="font-weight: 600; font-size: 13px; color: var(--admin-zinc-900);">Client Dashboard Password</span>
+            <span class="shadcn-badge shadcn-badge--outline">Optional (can use setup link)</span>
+          </div>
+          <div class="field-group">
+            <label style="font-size: 12px;">Initial Client Password:</label>
+            <input name="clientPassword" type="password" value={values.clientPassword} placeholder="Leave empty to use setup link later..." autocomplete="new-password" />
+          </div>
+        </div>
+      </div>
 
-      setupRepeater('slider_container', 'add_slider_btn', 'slider_template');
-      setupRepeater('events_container', 'add_event_btn', 'event_template');
-      setupRepeater('stories_container', 'add_story_btn', 'story_template');
-      setupRepeater('gallery_container', 'add_gallery_btn', 'gallery_template');
-      setupRepeater('gallery_videos_container', 'add_gallery_video_btn', 'gallery_video_template');
-      setupRepeater('gifts_container', 'add_gift_btn', 'gift_template');
+      <!-- Feature Toggles Grid -->
+      <div style="margin-top: 10px;">
+        <label style="margin-bottom: 8px; font-weight: 600;">Active Features</label>
+        <div class="toggle-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px;">
+          <label class="toggle-card"><input type="checkbox" name="rsvpEnabled" checked={values.rsvpEnabled} /> RSVP</label>
+          <label class="toggle-card"><input type="checkbox" name="musicEnabled" checked={values.musicEnabled} /> Music</label>
+          <label class="toggle-card"><input type="checkbox" name="countdownEnabled" checked={values.countdownEnabled} /> Countdown</label>
+          <label class="toggle-card"><input type="checkbox" name="galleryEnabled" checked={values.galleryEnabled} /> Gallery</label>
+          <label class="toggle-card"><input type="checkbox" name="wishesEnabled" checked={values.wishesEnabled} /> Wishes</label>
+          <label class="toggle-card"><input type="checkbox" name="giftEnabled" checked={values.giftEnabled} /> Gift & QRIS</label>
+          <label class="toggle-card"><input type="checkbox" name="storyEnabled" checked={values.storyEnabled} /> Love Story</label>
+          <label class="toggle-card"><input type="checkbox" name="viewCounterEnabled" checked={values.viewCounterEnabled} /> Views Counter</label>
+          <label class="toggle-card"><input type="checkbox" name="videoEnabled" checked={values.videoEnabled} /> Videos</label>
+          <label class="toggle-card"><input type="checkbox" name="introAnimationEnabled" checked={values.introAnimationEnabled} /> Intro Animation</label>
+          <label class="toggle-card"><input type="checkbox" name="maintenanceMode" checked={values.maintenanceMode} /> Maintenance</label>
+        </div>
+      </div>
+    </div>
 
-      const settingTargets = document.querySelectorAll('[data-setting-target]');
+    <!-- OPENING & HERO -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">🖼️</span>
+        <div>
+          <h2>Opening & Hero Media</h2>
+          <p>Logo, popup cover photo, slideshow slider, and intro quote.</p>
+        </div>
+      </div>
 
-      function syncSettingTargets() {
-        settingTargets.forEach((target) => {
-          const toggleName = target.getAttribute('data-setting-target');
-          const toggle = toggleName ? document.querySelector(`input[name="${toggleName}"]`) : null;
-          if (!(toggle instanceof HTMLInputElement)) return;
+      <div class="form-grid">
+        <div class="field-group wide">
+          <label>Logo Image URL</label>
+          <input name="logoImageUrl" value={values.logoImageUrl} placeholder="https://example.com/logo.png" />
+        </div>
+        <div class="field-group wide">
+          <label>Upload Logo File</label>
+          <input type="file" name="logoImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+        </div>
 
-          target.hidden = !toggle.checked;
-        });
-      }
+        <div class="field-group wide">
+          <label>Popup / Cover Hero Image URL</label>
+          <input name="heroImageUrl" id="hero-image-url-input" value={values.heroImageUrl} placeholder="https://example.com/hero.jpg" />
+        </div>
+        <div class="field-group wide">
+          <label>Upload Popup / Hero Image File</label>
+          <input type="file" name="heroImageFile" id="hero-image-file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+        </div>
 
-      document
-        .querySelectorAll('.toggle-grid input[type="checkbox"]')
-        .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
+        <input type="hidden" name="ogImageUrl" id="og-image-url-input" value={values.ogImageUrl || ''} />
+        <input type="file" name="ogImageFile" id="og-image-file-input" style="display: none;" />
 
-      syncSettingTargets();
+        <div class="field-group wide">
+          <label>Hero Video URL (Optional)</label>
+          <input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" />
+        </div>
 
-      const accessPasswordInput = document.getElementById('accessPasswordInput');
-      const passwordProtectionToggle = document.getElementById('passwordProtectionToggle');
-      if (accessPasswordInput && passwordProtectionToggle) {
-        accessPasswordInput.addEventListener('input', () => {
-          if (accessPasswordInput.value.trim().length > 0 && !(passwordProtectionToggle as HTMLInputElement).checked) {
-            (passwordProtectionToggle as HTMLInputElement).checked = true;
-          }
-        });
-      }
+        <!-- Slider Images Repeater -->
+        <div class="field-group wide" style="margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--admin-border-subtle);">
+          <label style="font-weight: 600;">Slider / Slideshow Photos (Optional)</label>
+          <span class="hint">Photos for opening slider. If left empty, gallery photos will be used automatically.</span>
+          <div id="slider_container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+            {(Array.isArray(values.sliderImageUrls) ? values.sliderImageUrls : []).map((url, index) => (
+              <div class="repeater-item" style="display: flex; align-items: center; gap: 8px;">
+                <input style="flex: 1;" name="sliderImageUrl" value={url} placeholder="https://example.com/slide.jpg" />
+                <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete</button>
+              </div>
+            ))}
+          </div>
+          <div style="margin-top: 10px;">
+            <button type="button" id="add_slider_btn" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">+ Add Slider Photo URL</button>
+          </div>
+        </div>
 
-      // Automatic Smart OG Image Generator (1200x630)
-      import { createOgImageBlob } from '../../utils/og-generator';
+        <div class="field-group wide">
+          <label>Upload Multiple Slider Images</label>
+          <input type="file" name="sliderImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple />
+        </div>
 
-      const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
-      const heroFileInput = document.getElementById('hero-image-file-input') as HTMLInputElement | null;
-      const ogFileInput = document.getElementById('og-image-file-input') as HTMLInputElement | null;
-      const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
-      const newForm = document.getElementById('new-invitation-form') as HTMLFormElement | null;
+        <div class="field-group wide">
+          <label>Intro Verse / Quote</label>
+          <textarea name="introVerse" rows="3" placeholder="Enter holy scripture or wedding quote...">{values.introVerse}</textarea>
+        </div>
+        <div class="field-group wide">
+          <label>Intro Verse Source</label>
+          <input name="introVerseSource" value={values.introVerseSource} placeholder="(e.g. Rgveda : X.85.42 or 1 Corinthians 13:4)" />
+        </div>
+      </div>
+    </div>
 
-      async function ensureOgImageGenerated() {
-        const sourceFile = heroFileInput?.files?.[0];
-        const sourceUrl = heroUrlInput?.value.trim();
+    <!-- COUPLE -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">💍</span>
+        <div>
+          <h2>Bride & Groom Profile</h2>
+          <p>Full names, nicknames, parents, and social profiles.</p>
+        </div>
+      </div>
 
-        if (sourceFile) {
-          try {
-            const blob = await createOgImageBlob(sourceFile);
-            if (ogFileInput) {
-              const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-              const dt = new DataTransfer();
-              dt.items.add(file);
-              ogFileInput.files = dt.files;
-            }
-          } catch (err) {
-            console.warn('Auto OG generation from file error:', err);
-          }
-        } else if (sourceUrl && !ogUrlInput?.value) {
-          try {
-            const blob = await createOgImageBlob(sourceUrl);
-            if (ogFileInput) {
-              const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-              const dt = new DataTransfer();
-              dt.items.add(file);
-              ogFileInput.files = dt.files;
-            }
-          } catch (err) {
-            console.warn('Auto OG generation from URL error:', err);
-          }
-        }
-      }
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+        <!-- Groom Card -->
+        <div style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+          <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; color: var(--admin-zinc-950);">🤵 Groom Profile</h3>
+          <div class="form-grid cols-1">
+            <div class="field-group">
+              <label>Nickname / Call Name <span class="required">*</span></label>
+              <input name="groomName" value={values.groomName} required placeholder="Wayan" />
+            </div>
+            <div class="field-group">
+              <label>Full Legal Name <span class="required">*</span></label>
+              <input name="groomFullName" value={values.groomFullName} required placeholder="I Wayan Pratama, S.Kom" />
+            </div>
+            <div class="field-group">
+              <label>Father's Name</label>
+              <input name="groomFatherName" value={values.groomFatherName} placeholder="Father name" />
+            </div>
+            <div class="field-group">
+              <label>Mother's Name</label>
+              <input name="groomMotherName" value={values.groomMotherName} placeholder="Mother name" />
+            </div>
+            <div class="field-group">
+              <label>Child Order</label>
+              <input name="groomChildNumber" value={values.groomChildNumber || ''} placeholder="1st son of" />
+            </div>
+            <div class="field-group">
+              <label>Address / Origin</label>
+              <input name="groomAddress" value={values.groomAddress || ''} placeholder="Origin or city" />
+            </div>
+            <div class="field-group">
+              <label>Groom Image URL</label>
+              <input name="groomImageUrl" value={values.groomImageUrl} placeholder="https://example.com/groom.jpg" />
+            </div>
+            <div class="field-group">
+              <label>Upload Groom Image File</label>
+              <input type="file" name="groomImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+            </div>
+            <div class="field-group">
+              <label>Groom Instagram URL</label>
+              <input name="groomInstagramUrl" value={values.groomInstagramUrl} placeholder="https://instagram.com/username" />
+            </div>
+          </div>
+        </div>
 
-      // Auto generate when hero file is chosen
-      heroFileInput?.addEventListener('change', () => {
-        const file = heroFileInput.files?.[0];
-        if (file) {
-          createOgImageBlob(file).then((blob) => {
-            if (ogFileInput) {
-              const f = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-              const dt = new DataTransfer();
-              dt.items.add(f);
-              ogFileInput.files = dt.files;
-            }
-          }).catch(console.warn);
-        }
-      });
+        <!-- Bride Card -->
+        <div style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+          <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; color: var(--admin-zinc-950);">👰 Bride Profile</h3>
+          <div class="form-grid cols-1">
+            <div class="field-group">
+              <label>Nickname / Call Name <span class="required">*</span></label>
+              <input name="brideName" value={values.brideName} required placeholder="Ayu" />
+            </div>
+            <div class="field-group">
+              <label>Full Legal Name <span class="required">*</span></label>
+              <input name="brideFullName" value={values.brideFullName} required placeholder="Ni Made Ayu Lestari, S.E" />
+            </div>
+            <div class="field-group">
+              <label>Father's Name</label>
+              <input name="brideFatherName" value={values.brideFatherName} placeholder="Father name" />
+            </div>
+            <div class="field-group">
+              <label>Mother's Name</label>
+              <input name="brideMotherName" value={values.brideMotherName} placeholder="Mother name" />
+            </div>
+            <div class="field-group">
+              <label>Child Order</label>
+              <input name="brideChildNumber" value={values.brideChildNumber || ''} placeholder="2nd daughter of" />
+            </div>
+            <div class="field-group">
+              <label>Address / Origin</label>
+              <input name="brideAddress" value={values.brideAddress || ''} placeholder="Origin or city" />
+            </div>
+            <div class="field-group">
+              <label>Bride Image URL</label>
+              <input name="brideImageUrl" value={values.brideImageUrl} placeholder="https://example.com/bride.jpg" />
+            </div>
+            <div class="field-group">
+              <label>Upload Bride Image File</label>
+              <input type="file" name="brideImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+            </div>
+            <div class="field-group">
+              <label>Bride Instagram URL</label>
+              <input name="brideInstagramUrl" value={values.brideInstagramUrl} placeholder="https://instagram.com/username" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      // Auto Media Compression (WebP image resize + LAME MP3 128kbps)
-      import('../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
-        if (newForm) bindAutoMediaCompression(newForm);
-      }).catch(console.warn);
+    <!-- EVENTS -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">📅</span>
+        <div>
+          <h2>Events & Ceremonies</h2>
+          <p>Ceremony schedules, venues, and Google Maps location links.</p>
+        </div>
+      </div>
 
-      newForm?.addEventListener('submit', async (e) => {
-        const sourceFile = heroFileInput?.files?.[0];
-        const sourceUrl = heroUrlInput?.value.trim();
-        if ((sourceFile || sourceUrl) && !ogFileInput?.files?.length) {
-          e.preventDefault();
-          await ensureOgImageGenerated();
-          newForm.submit();
-        }
-      });
-    </script>
-  </body>
-</html>
+      <div class="form-grid" style="margin-bottom: 16px;">
+        <div class="field-group wide">
+          <label>Event Section Background / Photo URL</label>
+          <input name="eventImageUrl" value={values.eventImageUrl || ''} placeholder="https://example.com/event.jpg" />
+        </div>
+        <div class="field-group wide">
+          <label>Upload Event Section Image File</label>
+          <input type="file" name="eventImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+        </div>
+      </div>
+
+      <div id="events_container" style="display: flex; flex-direction: column; gap: 14px;">
+        {values.events.map((event, index) => (
+          <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+            <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Event <span class="idx">{index + 1}</span></div>
+            <div class="form-grid">
+              <div class="field-group">
+                <label>Event Name <span class="required">*</span></label>
+                <input name="eventName" value={event.name} required={index === 0} placeholder="Wedding Ceremony / Pawiwahan" />
+              </div>
+              <div class="field-group">
+                <label>Date & Time <span class="required">*</span></label>
+                <input type="datetime-local" name="eventDate" value={toLocalInput(event.date)} required={index === 0} />
+              </div>
+              <div class="field-group">
+                <label>Start Time</label>
+                <input type="time" name="eventStartTime" value={event.startTime} />
+              </div>
+              <div class="field-group">
+                <label>End Time</label>
+                <input name="eventEndTime" value={event.endTime} placeholder="Finish / Selesai" />
+              </div>
+              <div class="field-group">
+                <label>Venue Name</label>
+                <input name="eventVenueName" value={event.venueName} placeholder="Grand Ballroom" />
+              </div>
+              <div class="field-group">
+                <label>Google Maps URL <span class="required">*</span></label>
+                <input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} placeholder="https://maps.google.com/..." />
+              </div>
+              <div class="field-group wide">
+                <label>Venue Address</label>
+                <textarea name="eventVenueAddress" rows="2" placeholder="Full address of the event venue...">{event.venueAddress}</textarea>
+              </div>
+            </div>
+            {index > 0 && (
+              <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete Event</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div style="margin-top: 14px;">
+        <button type="button" id="add_event_btn" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">+ Add Event</button>
+      </div>
+    </div>
+
+    <!-- LOVE STORY -->
+    <div class="form-card" data-setting-target="storyEnabled">
+      <div class="form-card__header">
+        <span class="section-icon">📖</span>
+        <div>
+          <h2>Love Story Milestones</h2>
+          <p>Chronological story cards for the couple.</p>
+        </div>
+      </div>
+
+      <div id="stories_container" style="display: flex; flex-direction: column; gap: 14px;">
+        {values.story.map((story, index) => (
+          <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+            <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Story Milestone <span class="idx">{index + 1}</span></div>
+            <div class="form-grid">
+              <div class="field-group wide">
+                <label>Title</label>
+                <input name="storyTitle" value={story.title} placeholder="HOW WE MET" />
+              </div>
+              <div class="field-group wide">
+                <label>Description</label>
+                <textarea name="storyDescription" rows="3" placeholder="Tell the milestone story...">{story.description}</textarea>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+              <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete Story</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style="margin-top: 14px;">
+        <button type="button" id="add_story_btn" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">+ Add Story Milestone</button>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="form-card" data-setting-target="galleryEnabled">
+      <div class="form-card__header">
+        <span class="section-icon">📸</span>
+        <div>
+          <h2>Photo & Video Gallery</h2>
+          <p>Photo gallery URLs, multi-image upload, and YouTube video embeds.</p>
+        </div>
+      </div>
+
+      <div id="gallery_container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+        {(Array.isArray(values.galleryImageUrls) ? values.galleryImageUrls : []).map((url, index) => (
+          <div class="repeater-item" style="display: flex; align-items: center; gap: 8px;">
+            <input style="flex: 1;" name="galleryImageUrl" value={url} placeholder="https://example.com/gallery.jpg" />
+            <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete</button>
+          </div>
+        ))}
+      </div>
+      <div style="margin-bottom: 16px;">
+        <button type="button" id="add_gallery_btn" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">+ Add Photo URL</button>
+      </div>
+
+      <div class="field-group wide" style="margin-bottom: 20px;">
+        <label>Upload Multiple Gallery Photos</label>
+        <input type="file" name="galleryImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple />
+      </div>
+
+      <h3 style="font-size: 14px; font-weight: 600; margin: 16px 0 8px 0;">Gallery Video Embeds</h3>
+      <div id="gallery_videos_container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+        {(Array.isArray(values.galleryVideoUrls) ? values.galleryVideoUrls : []).map((url, index) => (
+          <div class="repeater-item" style="display: flex; align-items: center; gap: 8px;">
+            <input style="flex: 1;" name="galleryVideoUrl" value={url} placeholder="https://www.youtube.com/watch?v=..." />
+            <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete</button>
+          </div>
+        ))}
+      </div>
+      <div>
+        <button type="button" id="add_gallery_video_btn" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">+ Add Video URL</button>
+      </div>
+    </div>
+
+    <!-- GIFTS & QRIS -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">🎁</span>
+        <div>
+          <h2>Wedding Gift & Bank Registry</h2>
+          <p>Bank accounts, digital wallets, QRIS barcode, and thank you message.</p>
+        </div>
+      </div>
+
+      <div id="gifts_container" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px;">
+        {values.gifts.map((gift, index) => (
+          <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+            <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Gift Destination <span class="idx">{index + 1}</span></div>
+            <div class="form-grid">
+              <div class="field-group">
+                <label>Bank / Wallet Name</label>
+                <input name="giftBankName" value={gift.bankName} placeholder="BCA / Mandiri / GoPay" />
+              </div>
+              <div class="field-group">
+                <label>Account / Phone Number</label>
+                <input name="giftAccountNumber" value={gift.accountNumber} placeholder="1234567890" />
+              </div>
+              <div class="field-group">
+                <label>Account Holder Name</label>
+                <input name="giftAccountName" value={gift.accountName} placeholder="I Wayan Pratama" />
+              </div>
+              <div class="field-group">
+                <label>QRIS Image URL</label>
+                <input name="giftQrisUrl" value={gift.qrisUrl} placeholder="https://example.com/qris.png" />
+              </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+              <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete Gift Card</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <button type="button" id="add_gift_btn" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">+ Add Gift Card</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="field-group wide">
+          <label>Wedding Gift Description</label>
+          <textarea name="giftDescription" rows="3" placeholder="Doa restu Anda merupakan karunia yang sangat berarti...">{values.giftDescription}</textarea>
+        </div>
+        <div class="field-group wide">
+          <label>Thank You & Closing Message</label>
+          <textarea name="thankYouMessage" rows="3" placeholder="Merupakan suatu kehormatan dan kebahagiaan bagi kami...">{values.thankYouMessage}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- MUSIC -->
+    <div class="form-card" data-setting-target="musicEnabled">
+      <div class="form-card__header">
+        <span class="section-icon">🎵</span>
+        <div>
+          <h2>Background Music</h2>
+          <p>Audio URL or direct MP3/AAC upload.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field-group wide">
+          <label>Music URL</label>
+          <input name="musicUrl" value={values.musicUrl} placeholder="https://example.com/song.mp3" />
+        </div>
+        <div class="field-group wide">
+          <label>Upload Music File (MP3 / AAC / WAV)</label>
+          <input type="file" name="musicFile" accept="audio/*,.mp3,.wav,.ogg,.aac,.m4a,.webm" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom Actions Bar -->
+    <div class="form-actions-bar">
+      <a href="/dashboard" class="btn-shadcn btn-shadcn--outline">Cancel</a>
+      <button type="submit" class="btn-shadcn btn-shadcn--primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        Create Invitation
+      </button>
+    </div>
+  </form>
+
+  <!-- Templates for Dynamic Repeaters -->
+  <template id="event_template">
+    <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+      <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Event <span class="idx"></span></div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Event Name</label>
+          <input name="eventName" placeholder="Wedding Reception" />
+        </div>
+        <div class="field-group">
+          <label>Date & Time</label>
+          <input type="datetime-local" name="eventDate" />
+        </div>
+        <div class="field-group">
+          <label>Start Time</label>
+          <input type="time" name="eventStartTime" />
+        </div>
+        <div class="field-group">
+          <label>End Time</label>
+          <input name="eventEndTime" placeholder="Finish" />
+        </div>
+        <div class="field-group">
+          <label>Venue Name</label>
+          <input name="eventVenueName" />
+        </div>
+        <div class="field-group">
+          <label>Google Maps URL</label>
+          <input name="eventMapsUrl" placeholder="https://maps.google.com/..." />
+        </div>
+        <div class="field-group wide">
+          <label>Venue Address</label>
+          <textarea name="eventVenueAddress" rows="2"></textarea>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+        <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete Event</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="story_template">
+    <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+      <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Story Milestone <span class="idx"></span></div>
+      <div class="form-grid">
+        <div class="field-group wide">
+          <label>Title</label>
+          <input name="storyTitle" placeholder="OUR FIRST DATE" />
+        </div>
+        <div class="field-group wide">
+          <label>Description</label>
+          <textarea name="storyDescription" rows="3"></textarea>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+        <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete Story</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="slider_template">
+    <div class="repeater-item" style="display: flex; align-items: center; gap: 8px;">
+      <input style="flex: 1;" name="sliderImageUrl" placeholder="https://example.com/slide.jpg" />
+      <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete</button>
+    </div>
+  </template>
+
+  <template id="gallery_template">
+    <div class="repeater-item" style="display: flex; align-items: center; gap: 8px;">
+      <input style="flex: 1;" name="galleryImageUrl" placeholder="https://example.com/gallery.jpg" />
+      <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete</button>
+    </div>
+  </template>
+
+  <template id="gallery_video_template">
+    <div class="repeater-item" style="display: flex; align-items: center; gap: 8px;">
+      <input style="flex: 1;" name="galleryVideoUrl" placeholder="https://www.youtube.com/watch?v=..." />
+      <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete</button>
+    </div>
+  </template>
+
+  <template id="gift_template">
+    <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
+      <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Gift Destination <span class="idx"></span></div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Bank Name</label>
+          <input name="giftBankName" placeholder="BCA / Mandiri" />
+        </div>
+        <div class="field-group">
+          <label>Account Number</label>
+          <input name="giftAccountNumber" placeholder="1234567890" />
+        </div>
+        <div class="field-group">
+          <label>Account Holder Name</label>
+          <input name="giftAccountName" placeholder="Account holder name" />
+        </div>
+        <div class="field-group">
+          <label>QRIS Image URL</label>
+          <input name="giftQrisUrl" placeholder="https://example.com/qris.png" />
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+        <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-btn">Delete Gift Card</button>
+      </div>
+    </div>
+  </template>
+</AdminLayout>
 
 <style lang="scss">
-  :global(*) { box-sizing: border-box; }
-  :global(body) {
-    margin: 0;
-    min-height: 100vh;
-    background: #f4f5f7;
-    color: #20242c;
-    font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-  .shell {
-    width: min(1100px, 100%);
-    margin: 0 auto;
-    padding: 28px;
-    font-family: 'Montserrat', sans-serif;
-  }
-  .header { margin-bottom: 22px; }
-  .back-link { display: inline-flex; margin-bottom: 18px; color: #2563eb; font-size: 13px; font-weight: 700; text-decoration: none; font-family: 'Montserrat', sans-serif; }
-  .secondary-action { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d9dde5; border-radius: 6px; background: #ffffff; color: #394150; font-size: 13px; font-weight: 700; text-decoration: none; font-family: 'Montserrat', sans-serif; }
-  .eyebrow { margin: 0 0 8px; color: #687080; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-family: 'Montserrat', sans-serif; }
-  h1 { margin: 0 0 8px; font-size: 32px; font-family: 'Montserrat', sans-serif; }
-  h2 { margin: 0 0 16px; font-size: 18px; font-family: 'Montserrat', sans-serif; }
-  .subtitle { margin: 0; color: #687080; font-size: 14px; font-family: 'Montserrat', sans-serif; }
-  .form-panel, .error-panel {
-    border: 1px solid #d9dde5;
-    border-radius: 8px;
-    background: #ffffff;
-    font-family: 'Montserrat', sans-serif;
-  }
-  .error-panel { margin-bottom: 16px; padding: 14px 16px; color: #991b1b; background: #fff5f5; }
-  section { padding: 20px; border-bottom: 1px solid #eef0f4; }
-  section[hidden] { display: none; }
-  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .couple-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .event-list, .story-list, .gift-list { display: grid; gap: 14px; }
-  .event-card, .story-card, .couple-card, .gift-card-form { margin: 0; padding: 16px; border: 1px solid #eef0f4; border-radius: 8px; }
-  .event-card legend, .story-card legend, .couple-card legend, .gift-card-form legend { padding: 0 6px; color: #687080; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-  label { display: grid; gap: 7px; color: #394150; font-size: 13px; font-weight: 700; }
-  label.wide { grid-column: 1 / -1; }
-  input, select, textarea {
-    width: 100%;
-    min-height: 42px;
-    padding: 9px 11px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font: inherit;
-    font-weight: 400;
-  }
-  textarea { resize: vertical; }
-  .toggle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
-  .toggle-grid label { display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #eef0f4; border-radius: 6px; }
-  .toggle-grid input { width: 16px; min-height: 16px; }
-  .form-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 18px 20px; }
-  .form-actions a, .form-actions button {
-    min-height: 40px;
-    display: inline-flex;
+  .toggle-card {
+    display: flex;
     align-items: center;
-    padding: 0 14px;
-    border-radius: 6px;
-    font: inherit;
-    font-weight: 700;
-    text-decoration: none;
-  }
-  .form-actions a { border: 1px solid #d9dde5; color: #394150; }
-  .form-actions button { border: 0; background: #111827; color: #ffffff; cursor: pointer; }
-  @media (max-width: 720px) {
-    .shell { padding: 18px; }
-    .form-grid, .toggle-grid, .couple-grid { grid-template-columns: 1fr; }
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-sm);
+    background-color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    &:hover {
+      border-color: var(--admin-zinc-400);
+      background-color: var(--admin-zinc-50);
+    }
   }
 </style>
 
+<script>
+  function setupRepeater(containerId: string, btnId: string, templateId: string) {
+    const container = document.getElementById(containerId);
+    const btn = document.getElementById(btnId);
+    const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+
+    if (!container || !btn || !template) return;
+
+    function updateIndexes() {
+      const items = container!.querySelectorAll('.repeater-item');
+      items.forEach((item, index) => {
+        const idxSpan = item.querySelector('.idx');
+        if (idxSpan) idxSpan.textContent = String(index + 1);
+      });
+    }
+
+    btn.addEventListener('click', () => {
+      const clone = template.content.cloneNode(true);
+      container.appendChild(clone);
+      updateIndexes();
+    });
+
+    container.addEventListener('click', async (e: any) => {
+      if (e.target.classList.contains('remove-btn') || e.target.closest('.remove-btn')) {
+        const item = e.target.closest('.repeater-item');
+        if (item) {
+          item.remove();
+          updateIndexes();
+        }
+      }
+    });
+  }
+
+  setupRepeater('slider_container', 'add_slider_btn', 'slider_template');
+  setupRepeater('events_container', 'add_event_btn', 'event_template');
+  setupRepeater('stories_container', 'add_story_btn', 'story_template');
+  setupRepeater('gallery_container', 'add_gallery_btn', 'gallery_template');
+  setupRepeater('gallery_videos_container', 'add_gallery_video_btn', 'gallery_video_template');
+  setupRepeater('gifts_container', 'add_gift_btn', 'gift_template');
+
+  const settingTargets = document.querySelectorAll('[data-setting-target]');
+
+  function syncSettingTargets() {
+    settingTargets.forEach((target: any) => {
+      const toggleName = target.getAttribute('data-setting-target');
+      const toggle = toggleName ? document.querySelector(`input[name="${toggleName}"]`) : null;
+      if (!(toggle instanceof HTMLInputElement)) return;
+
+      target.hidden = !toggle.checked;
+    });
+  }
+
+  document
+    .querySelectorAll('.toggle-grid input[type="checkbox"]')
+    .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
+
+  syncSettingTargets();
+
+  const accessPasswordInput = document.getElementById('accessPasswordInput');
+  const passwordProtectionToggle = document.getElementById('passwordProtectionToggle');
+  if (accessPasswordInput && passwordProtectionToggle) {
+    accessPasswordInput.addEventListener('input', () => {
+      if ((accessPasswordInput as HTMLInputElement).value.trim().length > 0 && !(passwordProtectionToggle as HTMLInputElement).checked) {
+        (passwordProtectionToggle as HTMLInputElement).checked = true;
+      }
+    });
+  }
+
+  // Automatic Smart OG Image Generator (1200x630)
+  import { createOgImageBlob } from '../../utils/og-generator';
+
+  const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
+  const heroFileInput = document.getElementById('hero-image-file-input') as HTMLInputElement | null;
+  const ogFileInput = document.getElementById('og-image-file-input') as HTMLInputElement | null;
+  const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
+  const newForm = document.getElementById('new-invitation-form') as HTMLFormElement | null;
+
+  async function ensureOgImageGenerated() {
+    const sourceFile = heroFileInput?.files?.[0];
+    const sourceUrl = heroUrlInput?.value.trim();
+
+    if (sourceFile) {
+      try {
+        const blob = await createOgImageBlob(sourceFile);
+        if (ogFileInput) {
+          const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          ogFileInput.files = dt.files;
+        }
+      } catch (err) {
+        console.warn('Auto OG generation from file error:', err);
+      }
+    } else if (sourceUrl && !ogUrlInput?.value) {
+      try {
+        const blob = await createOgImageBlob(sourceUrl);
+        if (ogFileInput) {
+          const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          ogFileInput.files = dt.files;
+        }
+      } catch (err) {
+        console.warn('Auto OG generation from URL error:', err);
+      }
+    }
+  }
+
+  heroFileInput?.addEventListener('change', () => {
+    const file = heroFileInput.files?.[0];
+    if (file) {
+      createOgImageBlob(file).then((blob) => {
+        if (ogFileInput) {
+          const f = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
+          const dt = new DataTransfer();
+          dt.items.add(f);
+          ogFileInput.files = dt.files;
+        }
+      }).catch(console.warn);
+    }
+  });
+
+  // Auto Media Compression (WebP image resize + LAME MP3 128kbps)
+  import('../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
+    if (newForm) bindAutoMediaCompression(newForm);
+  }).catch(console.warn);
+
+  newForm?.addEventListener('submit', async (e) => {
+    const sourceFile = heroFileInput?.files?.[0];
+    const sourceUrl = heroUrlInput?.value.trim();
+    if ((sourceFile || sourceUrl) && !ogFileInput?.files?.length) {
+      e.preventDefault();
+      await ensureOgImageGenerated();
+      newForm.submit();
+    }
+  });
+</script>

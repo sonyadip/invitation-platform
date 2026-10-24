@@ -3,7 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import SmartImage from "../../components/common/SmartImage.astro";
 import CountdownTimer from "../../components/common/CountdownTimer.astro";
 import GiftGrid from "../../components/common/GiftGrid.astro";
-import CinematicIntro from "../../components/common/CinematicIntro.astro";
+import ClassicIntro from "../../components/common/ClassicIntro.astro";
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
 import {
@@ -203,10 +203,10 @@ const activeStory = wedding.story && wedding.story.length > 0
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
-      <CinematicIntro
+      <ClassicIntro
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}
-        coverImage={coverImage}
+        subtitle="The Wedding Of"
       />
     )}
 
@@ -717,7 +717,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                 <p class="gift-section__desc">{text.giftDescription}</p>
                 <div class="section-rule"></div>
               </div>
-              <button class="gift-toggle-btn" data-gift-toggle type="button" aria-expanded="false">
+              <button class="gift-toggle-btn" data-gift-toggle data-animate style="--animate-delay: 200ms;" type="button" aria-expanded="false">
                 Lihat Hadiah Pernikahan
               </button>
               <GiftGrid gifts={activeGifts} hidden />

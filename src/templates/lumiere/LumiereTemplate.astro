@@ -3,7 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import SmartImage from "../../components/common/SmartImage.astro";
 import CountdownTimer from "../../components/common/CountdownTimer.astro";
 import GiftGrid from "../../components/common/GiftGrid.astro";
-import CinematicIntro from "../../components/common/CinematicIntro.astro";
+import ClassicIntro from "../../components/common/ClassicIntro.astro";
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
 import {
@@ -199,10 +199,10 @@ const activeStory = wedding.story && wedding.story.length > 0
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
-      <CinematicIntro
+      <ClassicIntro
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}
-        coverImage={coverImage}
+        subtitle="The Wedding Of"
       />
     )}
 
@@ -512,27 +512,21 @@ const activeStory = wedding.story && wedding.story.length > 0
                   const isFirst = index === 0;
                   const showVideo = isFirst && Boolean(videoUrl) && sections.video !== false;
                   const itemVariant = image.variant;
+                  const videoThumbnail = themeAssets.videoPoster || themeAssets.posterImage || image.image_url;
                   
                   return (
                     <a
-                      class={`gallery-item gallery-item--${itemVariant}`}
+                      class={`gallery-item gallery-item--${itemVariant} ${showVideo ? 'is-video' : ''}`}
                       href={showVideo ? videoUrl : (typeof image.image_url === 'string' ? image.image_url : image.image_url.src)}
                       data-fancybox="gallery-section"
                       data-animate
                     >
-                      {showVideo ? (
-                        <video 
-                          class="gallery-item__img" 
-                          src={videoUrl} 
-                          loop 
-                          muted 
-                          playsinline 
-                          preload="metadata"
-                          poster={typeof image.image_url === 'string' ? image.image_url : image.image_url.src}
-                        ></video>
-                      ) : (
-                        <SmartImage src={image.image_url} alt="Wedding gallery" loading="lazy" class="gallery-item__img" />
-                      )}
+                      <SmartImage
+                        src={showVideo ? videoThumbnail : image.image_url}
+                        alt="Wedding gallery"
+                        loading="lazy"
+                        class="gallery-item__img"
+                      />
                       
                       <div class="gallery-item__overlay">
                         <div class="gallery-item__zoom">
@@ -685,7 +679,7 @@ const activeStory = wedding.story && wedding.story.length > 0
                 <p class="gift-section__desc">{text.giftDescription}</p>
                 <div class="section-rule"></div>
               </div>
-              <button class="gift-toggle-btn" data-gift-toggle type="button" aria-expanded="false">
+              <button class="gift-toggle-btn" data-gift-toggle data-animate style="--animate-delay: 200ms;" type="button" aria-expanded="false">
                 Lihat Hadiah Pernikahan
               </button>
               <GiftGrid gifts={activeGifts} hidden />

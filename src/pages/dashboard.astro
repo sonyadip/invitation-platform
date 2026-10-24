@@ -7,26 +7,9 @@ import {
 } from '../services/dashboard-crud';
 import { getDashboardReport } from '../services/dashboard-report';
 import { hashPasswordSHA256 } from '../utils/security';
-import PopupDialog from '../components/common/PopupDialog.astro';
+import AdminLayout from '../layouts/AdminLayout.astro';
 
 export const prerender = false;
-
-const dashboardPassword =
-  import.meta.env.DASHBOARD_PASSWORD ||
-  (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') ||
-  '';
-
-const cookieName = 'dashboard_unlocked';
-let errorMessage = '';
-let duplicateError = '';
-let successMessage = '';
-const postFormData = Astro.request.method === 'POST' ? await Astro.request.formData() : null;
-const postAction = String(postFormData?.get('action') || '');
-const formatUnknownError = (error: unknown, fallback: string) => {
-  if (error instanceof Error) return error.message;
-  if (error && typeof error === 'object') return JSON.stringify(error);
-  return fallback;
-};
 
 const session = Astro.locals.session;
 const isUnlocked = session?.role === 'admin';
@@ -34,6 +17,17 @@ const isUnlocked = session?.role === 'admin';
 if (!isUnlocked) {
   return Astro.redirect('/?login=admin');
 }
+
+let duplicateError = '';
+let successMessage = '';
+const postFormData = Astro.request.method === 'POST' ? await Astro.request.formData() : null;
+const postAction = String(postFormData?.get('action') || '');
+
+const formatUnknownError = (error: unknown, fallback: string) => {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object') return JSON.stringify(error);
+  return fallback;
+};
 
 if (isUnlocked && postAction === 'duplicate') {
   try {
@@ -84,11 +78,11 @@ if (isUnlocked && postAction === 'permanent-delete') {
 }
 
 if (isUnlocked && Astro.url.searchParams.get('deleted')) {
-  successMessage = 'Invitation soft deleted.';
+  successMessage = 'Invitation successfully moved to trash.';
 }
 
 if (isUnlocked && Astro.url.searchParams.get('permanentlyDeleted')) {
-  successMessage = 'Invitation permanently deleted and unshared Supabase images were removed.';
+  successMessage = 'Invitation permanently deleted and unshared assets were removed.';
 }
 
 if (isUnlocked && Astro.url.searchParams.get('restored')) {
@@ -113,7 +107,7 @@ const formatDateTime = (value: string | null) => value
     })
   : '-';
 
-let report = null;
+let report: any = null;
 let loadError = '';
 
 if (isUnlocked) {
@@ -126,810 +120,627 @@ if (isUnlocked) {
 }
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Report - Invitation Platform</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <PopupDialog />
-    {isUnlocked ? (
-      <main class="dashboard-shell">
-        <header class="dashboard-header">
-          <div>
-            <p class="eyebrow">Admin Console</p>
-            <h1>Dashboard Overview</h1>
-            <p class="subtitle">Performance metrics, invitation records, and RSVP analytics across all slugs.</p>
+<AdminLayout title="Dashboard Overview" activeNav="overview">
+  <!-- Page Header -->
+  <header class="admin-page-header">
+    <div class="admin-page-header__left">
+      <h1 class="admin-page-header__title">Dashboard Overview</h1>
+      <p class="admin-page-header__description">
+        Performance metrics, invitation records, and RSVP analytics across all slugs.
+      </p>
+    </div>
+
+    <div class="admin-page-header__actions">
+      {report && (
+        <div class="date-cell" style="background: #ffffff; padding: 6px 12px; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-sm);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Updated {formatDateTime(report.generatedAt)}</span>
+        </div>
+      )}
+
+      <a href="/dashboard/new" class="btn-shadcn btn-shadcn--primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        New Invitation
+      </a>
+    </div>
+  </header>
+
+  <!-- Notification Alerts -->
+  {successMessage && (
+    <div class="shadcn-alert shadcn-alert--success" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <div>
+        <strong>Success</strong>
+        <p>{successMessage}</p>
+      </div>
+    </div>
+  )}
+
+  {duplicateError && (
+    <div class="shadcn-alert shadcn-alert--error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <strong>Operation Failed</strong>
+        <p>{duplicateError}</p>
+      </div>
+    </div>
+  )}
+
+  {loadError && (
+    <div class="shadcn-alert shadcn-alert--error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <strong>Failed to load report</strong>
+        <p>{loadError}</p>
+      </div>
+    </div>
+  )}
+
+  {report && (
+    <>
+      <!-- Primary Metric Cards (shadcn dashboard-01 style) -->
+      <section class="metric-grid" aria-label="Key platform metrics">
+        <!-- Card 1: Total Slugs -->
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Total Slugs</span>
+            <svg class="metric-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 8 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path>
+            </svg>
           </div>
-          <div class="header-actions">
-            <a class="settings-action" href="/dashboard/activity">📋 Activity Log</a>
-            <a class="settings-action" href="/dashboard/settings">⚙ Platform Settings</a>
-            {report && (
-              <div class="generated-at">
-                <span>Last Updated</span>
-                <strong>{formatDateTime(report.generatedAt)}</strong>
-              </div>
-            )}
+          <div class="metric-card__value">{formatNumber(report.totals.invitations)}</div>
+          <p class="metric-card__sub">Registered invitation slugs</p>
+        </div>
+
+        <!-- Card 2: Published -->
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Published</span>
+            <svg class="metric-card__icon" style="color: #10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
           </div>
-        </header>
-
-        {loadError ? (
-          <section class="error-panel">
-            <strong>Failed to load report</strong>
-            <p>{loadError}</p>
-          </section>
-        ) : report && (
-          <>
-            {successMessage && (
-              <section class="success-panel">
-                <strong>Dashboard Updated</strong>
-                <p>{successMessage}</p>
-              </section>
-            )}
-            {duplicateError && (
-              <section class="error-panel">
-                <strong>Duplicate Operation Failed</strong>
-                <p>{duplicateError}</p>
-              </section>
-            )}
-            <section class="metric-grid" aria-label="Dashboard summary">
-              <div class="metric">
-                <span>Total Slugs</span>
-                <strong>{formatNumber(report.totals.invitations)}</strong>
-              </div>
-              <div class="metric">
-                <span>Published</span>
-                <strong>{formatNumber(report.totals.published)}</strong>
-              </div>
-              <div class="metric">
-                <span>Total Views</span>
-                <strong>{formatNumber(report.totals.views)}</strong>
-              </div>
-              <div class="metric">
-                <span>Total RSVPs</span>
-                <strong>{formatNumber(report.totals.rsvps)}</strong>
-              </div>
-              <div class="metric">
-                <span>Total Guests (Pax)</span>
-                <strong>{formatNumber(report.totals.guests)}</strong>
-              </div>
-              <div class="metric">
-                <span>Wishes</span>
-                <strong>{formatNumber(report.totals.wishes)}</strong>
-              </div>
-              <div class="metric">
-                <span>Soft Deleted</span>
-                <strong>{formatNumber(report.totals.deleted)}</strong>
-              </div>
-            </section>
-
-            <section class="report-section">
-              <div class="section-heading">
-                <div>
-                  <h2>Invitations</h2>
-                  <p>{formatNumber(report.reports.length)} active invitation records</p>
-                </div>
-                <a class="primary-action" href="/dashboard/new">+ Create Invitation</a>
-              </div>
-
-              <div class="table-wrap">
-                <table class="report-table report-table--active">
-                  <thead>
-                    <tr>
-                      <th>Slug</th>
-                      <th>Couple</th>
-                      <th>Status</th>
-                      <th>Wedding Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {report.reports.map((item) => (
-                      <tr>
-                        <td>
-                          <span class="slug-text">{item.slug}</span>
-                          {item.customDomain && <span class="domain">{item.customDomain}</span>}
-                        </td>
-                        <td>{item.coupleName}</td>
-                        <td>
-                          <span class={`status status--${item.status}`}>{item.status}</span>
-                        </td>
-                        <td>{formatDate(item.weddingDate)}</td>
-                        <td>
-                          <div class="row-actions">
-                            <a href={`/dashboard/${item.slug}`}>Analytics</a>
-                            <a href={`/dashboard/${item.slug}/edit`}>Edit</a>
-                            <form method="POST">
-                              <input type="hidden" name="action" value="duplicate" />
-                              <input type="hidden" name="weddingId" value={item.weddingId} />
-                              <button type="submit">Duplicate</button>
-                            </form>
-                            <form method="POST">
-                              <input type="hidden" name="action" value="soft-delete" />
-                              <input type="hidden" name="weddingId" value={item.weddingId} />
-                              <button
-                                class="warning-action"
-                                type="submit"
-                                data-confirm="Soft delete this invitation? It will be moved to Deleted Invitations."
-                                data-confirm-title="Confirm Soft Delete"
-                                data-confirm-text="Soft Delete"
-                                data-cancel-text="Cancel"
-                                data-confirm-variant="warning"
-                              >
-                                Soft Delete
-                              </button>
-                            </form>
-                            <a href={`/${item.slug}`} target="_blank" rel="noopener noreferrer">Preview</a>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section class="report-section deleted-section">
-              <div class="section-heading">
-                <div>
-                  <h2>Deleted Invitations</h2>
-                  <p>{formatNumber(report.deletedReports.length)} soft-deleted invitation records</p>
-                </div>
-              </div>
-
-              <div class="table-wrap">
-                <table class="report-table report-table--deleted">
-                  <thead>
-                    <tr>
-                      <th>Slug</th>
-                      <th>Couple</th>
-                      <th>Status</th>
-                      <th>Wedding Date</th>
-                      <th>Deleted At</th>
-                      <th>Deleted By</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {report.deletedReports.map((item) => (
-                      <tr>
-                        <td><span class="slug-text">{item.slug}</span></td>
-                        <td>{item.coupleName}</td>
-                        <td><span class={`status status--${item.status}`}>{item.status}</span></td>
-                        <td>{formatDate(item.weddingDate)}</td>
-                        <td>{formatDateTime(item.deletedAt)}</td>
-                        <td>{item.deletedBy || '-'}</td>
-                        <td>
-                          <div class="row-actions">
-                            <form method="POST">
-                              <input type="hidden" name="action" value="restore" />
-                              <input type="hidden" name="weddingId" value={item.weddingId} />
-                              <button type="submit">Restore</button>
-                            </form>
-                            <form method="POST">
-                              <input type="hidden" name="action" value="permanent-delete" />
-                              <input type="hidden" name="weddingId" value={item.weddingId} />
-                              <button
-                                class="danger-action"
-                                type="submit"
-                                data-confirm="Permanently delete this soft-deleted invitation and unshared images? This action cannot be undone."
-                                data-confirm-title="Delete Permanently"
-                                data-confirm-text="Delete Permanently"
-                                data-cancel-text="Cancel"
-                                data-confirm-variant="danger"
-                              >
-                                Delete Permanently
-                              </button>
-                            </form>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {!report.deletedReports.length && (
-                      <tr>
-                        <td colspan="7" class="empty-row">No soft-deleted invitations.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </>
-        )}
-      </main>
-    ) : (
-      <main class="login-shell">
-        <form class="login-card" method="POST">
-          <input type="hidden" name="action" value="login" />
-          <p class="eyebrow">Admin Console</p>
-          <h1>Dashboard Login</h1>
-          <p class="subtitle">Enter dashboard password to manage invitations and access reports.</p>
-          <label for="password">Password</label>
-          <input id="password" type="password" name="password" required autofocus />
-          {errorMessage && <p class="form-error">{errorMessage}</p>}
-          <button type="submit">Log In</button>
-        </form>
-      </main>
-    )}
-  </body>
-</html>
-
-<style lang="scss">
-  :global(*) {
-    box-sizing: border-box;
-  }
-
-  :global(body) {
-    margin: 0;
-    min-height: 100vh;
-    background: #f4f5f7;
-    color: #20242c;
-    font-family: Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .dashboard-shell {
-    width: min(1440px, 100%);
-    margin: 0 auto;
-    padding: 28px;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 20px;
-    margin-bottom: 22px;
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: flex-end;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-
-  .settings-action {
-    min-height: 38px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 14px;
-    border: 1px solid #d9dde5;
-    border-radius: 6px;
-    background: #ffffff;
-    color: #394150;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    white-space: nowrap;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-
-  .eyebrow {
-    margin: 0 0 8px;
-    color: #687080;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  h1,
-  h2,
-  p {
-    margin-top: 0;
-  }
-
-  h1 {
-    margin-bottom: 8px;
-    font-size: 30px;
-    letter-spacing: 0;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  h2 {
-    margin-bottom: 4px;
-    font-size: 18px;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .subtitle {
-    margin-bottom: 0;
-    color: #687080;
-    font-size: 14px;
-    line-height: 1.6;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .generated-at {
-    min-width: 190px;
-    padding: 12px 14px;
-    border: 1px solid #d9dde5;
-    border-radius: 8px;
-    background: #ffffff;
-    text-align: right;
-  }
-
-  .generated-at span {
-    display: block;
-    color: #687080;
-    font-size: 11px;
-    text-transform: uppercase;
-  }
-
-  .generated-at strong {
-    display: block;
-    margin-top: 4px;
-    font-size: 13px;
-  }
-
-  .metric-grid {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 22px;
-  }
-
-  .metric {
-    padding: 16px;
-    border: 1px solid #d9dde5;
-    border-radius: 8px;
-    background: #ffffff;
-  }
-
-  .metric span {
-    display: block;
-    margin-bottom: 10px;
-    color: #687080;
-    font-size: 12px;
-  }
-
-  .metric strong {
-    display: block;
-    font-size: 26px;
-    line-height: 1;
-  }
-
-  .report-section,
-  .error-panel,
-  .success-panel {
-    border: 1px solid #d9dde5;
-    border-radius: 8px;
-    background: #ffffff;
-  }
-
-  .deleted-section {
-    margin-top: 18px;
-  }
-
-  .section-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 18px;
-    border-bottom: 1px solid #e5e8ef;
-  }
-
-  .section-heading p {
-    margin: 0;
-    color: #687080;
-    font-size: 13px;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-  }
-
-  table {
-    width: 100%;
-    min-width: 0;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
-
-  th,
-  td {
-    padding: 12px;
-    border-bottom: 1px solid #eef0f4;
-    text-align: left;
-    vertical-align: top;
-    font-size: 13px;
-    overflow-wrap: anywhere;
-  }
-
-  th {
-    color: #687080;
-    background: #fafbfc;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  tbody tr:hover {
-    background: #fafafa;
-  }
-
-  .slug-text {
-    display: block;
-    color: #111827;
-    font-weight: 700;
-  }
-
-  .report-table--active th:nth-child(1),
-  .report-table--active td:nth-child(1) {
-    width: 19%;
-  }
-
-  .report-table--active th:nth-child(2),
-  .report-table--active td:nth-child(2) {
-    width: 19%;
-  }
-
-  .report-table--active th:nth-child(3),
-  .report-table--active td:nth-child(3) {
-    width: 14%;
-  }
-
-  .report-table--active th:nth-child(4),
-  .report-table--active td:nth-child(4) {
-    width: 16%;
-  }
-
-  .report-table--active th:nth-child(5),
-  .report-table--active td:nth-child(5) {
-    width: 32%;
-  }
-
-  .report-table--deleted th:nth-child(1),
-  .report-table--deleted td:nth-child(1) {
-    width: 15%;
-  }
-
-  .report-table--deleted th:nth-child(2),
-  .report-table--deleted td:nth-child(2) {
-    width: 16%;
-  }
-
-  .report-table--deleted th:nth-child(3),
-  .report-table--deleted td:nth-child(3) {
-    width: 11%;
-  }
-
-  .report-table--deleted th:nth-child(4),
-  .report-table--deleted td:nth-child(4) {
-    width: 13%;
-  }
-
-  .report-table--deleted th:nth-child(5),
-  .report-table--deleted td:nth-child(5) {
-    width: 16%;
-  }
-
-  .report-table--deleted th:nth-child(6),
-  .report-table--deleted td:nth-child(6) {
-    width: 11%;
-  }
-
-  .report-table--deleted th:nth-child(7),
-  .report-table--deleted td:nth-child(7) {
-    width: 18%;
-  }
-
-  .primary-action {
-    min-height: 38px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 14px;
-    border-radius: 6px;
-    background: #111827;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  .row-actions {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .row-actions form {
-    margin: 0;
-  }
-
-  .row-actions a,
-  .row-actions button {
-    min-height: 30px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 10px;
-    border: 1px solid #d9dde5;
-    border-radius: 6px;
-    color: #394150;
-    background: #ffffff;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: inherit;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .row-actions .danger-action {
-    border-color: #fecdd3;
-    color: #be123c;
-    background: #fff1f2;
-  }
-
-  .row-actions .warning-action {
-    border-color: #fed7aa;
-    color: #c2410c;
-    background: #fff7ed;
-  }
-
-  .empty-row {
-    color: #687080;
-  }
-
-  .domain {
-    display: block;
-    margin-top: 4px;
-    color: #687080;
-    font-size: 12px;
-  }
-
-  .status {
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
-    padding: 0 8px;
-    border-radius: 999px;
-    background: #eef2ff;
-    color: #3730a3;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: capitalize;
-  }
-
-  .status--published {
-    background: #ecfdf5;
-    color: #047857;
-  }
-
-  .status--draft {
-    background: #fff7ed;
-    color: #c2410c;
-  }
-
-  .status--archived {
-    background: #f3f4f6;
-    color: #4b5563;
-  }
-
-  .error-panel {
-    padding: 18px;
-    color: #991b1b;
-    background: #fff5f5;
-  }
-
-  .success-panel {
-    margin-bottom: 18px;
-    padding: 18px;
-    color: #047857;
-    background: #ecfdf5;
-  }
-
-  .error-panel p,
-  .success-panel p {
-    margin: 8px 0 0;
-  }
-
-  .login-shell {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-  }
-
-  .login-card {
-    width: min(420px, 100%);
-    padding: 24px;
-    border: 1px solid #d9dde5;
-    border-radius: 8px;
-    background: #ffffff;
-  }
-
-  .login-card label {
-    display: block;
-    margin: 22px 0 8px;
-    color: #394150;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  .login-card input {
-    width: 100%;
-    height: 44px;
-    padding: 0 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font: inherit;
-  }
-
-  .login-card button {
-    width: 100%;
-    height: 44px;
-    margin-top: 16px;
-    border: 0;
-    border-radius: 6px;
-    background: #111827;
-    color: #ffffff;
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .form-error {
-    margin: 12px 0 0;
-    color: #b91c1c;
-    font-size: 13px;
-  }
-
-  @media (max-width: 1100px) {
-    .metric-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+          <div class="metric-card__value">{formatNumber(report.totals.published)}</div>
+          <p class="metric-card__sub">Live & publicly accessible</p>
+        </div>
+
+        <!-- Card 3: Total Views -->
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Total Views</span>
+            <svg class="metric-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <div class="metric-card__value">{formatNumber(report.totals.views)}</div>
+          <p class="metric-card__sub">Cumulative visitor impressions</p>
+        </div>
+
+        <!-- Card 4: Total RSVPs -->
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Total RSVPs</span>
+            <svg class="metric-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+          </div>
+          <div class="metric-card__value">{formatNumber(report.totals.rsvps)}</div>
+          <p class="metric-card__sub">Guest confirmations submitted</p>
+        </div>
+      </section>
+
+      <!-- Secondary Metric Cards -->
+      <section class="metric-grid metric-grid--secondary" aria-label="Detailed statistics">
+        <!-- Card 5: Total Guests (Pax) -->
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Total Guests (Pax)</span>
+            <svg class="metric-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div class="metric-card__value">{formatNumber(report.totals.guests)}</div>
+          <p class="metric-card__sub">Estimated attendance count</p>
+        </div>
+
+        <!-- Card 6: Wishes -->
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Wishes & Prayers</span>
+            <svg class="metric-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+            </svg>
+          </div>
+          <div class="metric-card__value">{formatNumber(report.totals.wishes)}</div>
+          <p class="metric-card__sub">Blessings submitted by visitors</p>
+        </div>
+
+        <!-- Card 7: Soft Deleted -->
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Archived in Trash</span>
+            <svg class="metric-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            </svg>
+          </div>
+          <div class="metric-card__value">{formatNumber(report.totals.deleted)}</div>
+          <p class="metric-card__sub">Soft-deleted items in archive</p>
+        </div>
+      </section>
+
+      <!-- Active Invitations Card -->
+      <section class="shadcn-card" id="invitations-section">
+        <!-- Card Header -->
+        <div class="shadcn-card__header">
+          <div class="shadcn-card__title-wrap">
+            <h2 class="shadcn-card__title">
+              Active Invitations
+              <span class="shadcn-badge shadcn-badge--outline" id="active-badge-count">
+                {formatNumber(report.reports.length)} records
+              </span>
+            </h2>
+            <p class="shadcn-card__description">
+              Manage invitation details, domains, analytics, and publication status.
+            </p>
+          </div>
+
+          <a href="/dashboard/new" class="btn-shadcn btn-shadcn--primary btn-shadcn--sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Create Invitation
+          </a>
+        </div>
+
+        <!-- Interactive Search & Filter Toolbar -->
+        <div class="table-toolbar">
+          <div class="table-toolbar__left">
+            <div class="search-field">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Filter by slug, couple, or template..."
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div class="table-toolbar__right">
+            <div class="filter-pills" role="tablist" aria-label="Status filters">
+              <button type="button" class="filter-pill active" data-filter="all">All</button>
+              <button type="button" class="filter-pill" data-filter="published">Published</button>
+              <button type="button" class="filter-pill" data-filter="draft">Draft</button>
+              <button type="button" class="filter-pill" data-filter="archived">Archived</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="shadcn-table-wrap">
+          <table class="shadcn-table" id="invitations-table">
+            <thead>
+              <tr>
+                <th style="width: 22%;" class="col-slug">Slug & Domain</th>
+                <th style="width: 20%;" class="col-couple">Couple</th>
+                <th style="width: 15%;" class="col-template">Template</th>
+                <th style="width: 13%;" class="col-status">Status</th>
+                <th style="width: 15%;" class="col-date">Wedding Date</th>
+                <th style="width: 15%; text-align: right;" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="invitations-tbody">
+              {report.reports.map((item: any) => (
+                <tr
+                  class="invitation-row"
+                  data-slug={item.slug.toLowerCase()}
+                  data-couple={item.coupleName.toLowerCase()}
+                  data-status={item.status.toLowerCase()}
+                  data-template={(item.template || '').toLowerCase()}
+                >
+                  <td class="col-slug">
+                    <div class="slug-badge">
+                      <span class="slug-badge__text">{item.slug}</span>
+                      {item.customDomain && (
+                        <span class="slug-badge__domain">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                          </svg>
+                          {item.customDomain}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td class="col-couple">
+                    <div class="couple-cell">{item.coupleName}</div>
+                  </td>
+                  <td class="col-template">
+                    <span class="template-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                        <path d="M3 9h18"></path>
+                        <path d="M9 21V9"></path>
+                      </svg>
+                      <span>{(item.template || 'noir').replace(/-/g, ' ')}</span>
+                    </span>
+                  </td>
+                  <td class="col-status">
+                    <span class={`shadcn-badge shadcn-badge--${item.status}`}>
+                      <span class="shadcn-badge__dot"></span>
+                      {item.status}
+                    </span>
+                  </td>
+                  <td class="col-date">
+                    <span class="date-cell">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      {formatDate(item.weddingDate)}
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <div class="row-actions-group">
+                      <a href={`/dashboard/${item.slug}/edit`} class="btn-shadcn btn-shadcn--outline btn-shadcn--sm" title="Edit Invitation">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                        </svg>
+                        Edit
+                      </a>
+
+                      <div class="dropdown-wrap">
+                        <button
+                          type="button"
+                          class="btn-shadcn btn-shadcn--ghost btn-shadcn--icon dropdown-trigger"
+                          aria-label="More options"
+                          data-dropdown-id={`dropdown-${item.slug}`}
+                          title="More options"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="1"></circle>
+                            <circle cx="19" cy="12" r="1"></circle>
+                            <circle cx="5" cy="12" r="1"></circle>
+                          </svg>
+                        </button>
+
+                        <div id={`dropdown-${item.slug}`} class="dropdown-menu">
+                          <a href={`/dashboard/${item.slug}`} class="dropdown-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M3 3v18h18"></path>
+                              <path d="m19 9-5 5-4-4-3 3"></path>
+                            </svg>
+                            Analytics
+                          </a>
+
+                          <form method="POST" style="margin: 0; width: 100%;">
+                            <input type="hidden" name="action" value="duplicate" />
+                            <input type="hidden" name="weddingId" value={item.weddingId} />
+                            <button type="submit" class="dropdown-item">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                              </svg>
+                              Duplicate
+                            </button>
+                          </form>
+
+                          <a href={`/${item.slug}`} target="_blank" rel="noopener noreferrer" class="dropdown-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M15 3h6v6"></path>
+                              <path d="M10 14 21 3"></path>
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            </svg>
+                            Live Preview
+                          </a>
+
+                          <div class="dropdown-separator"></div>
+
+                          <form method="POST" style="margin: 0; width: 100%;">
+                            <input type="hidden" name="action" value="soft-delete" />
+                            <input type="hidden" name="weddingId" value={item.weddingId} />
+                            <button
+                              type="submit"
+                              class="dropdown-item dropdown-item--destructive"
+                              data-confirm={`Pindahkan undangan "${item.slug}" ke Deleted Invitations?`}
+                              data-confirm-title="Confirm Soft Delete"
+                              data-confirm-text="Soft Delete"
+                              data-cancel-text="Batal"
+                              data-confirm-variant="warning"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                              </svg>
+                              Move to Trash
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <!-- Empty search results state -->
+          <div id="no-search-results" class="empty-state" style="display: none;">
+            <div class="empty-state__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+            <p class="empty-state__title">No invitations found</p>
+            <p class="empty-state__sub">Try adjusting your search keyword or status filter.</p>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="shadcn-card__footer">
+          <span id="showing-count">Showing {report.reports.length} of {report.reports.length} invitations</span>
+          <span style="font-size: 11px; color: var(--admin-zinc-400);">Instant search enabled</span>
+        </div>
+      </section>
+
+      <!-- Deleted Invitations Card -->
+      <section class="shadcn-card" id="deleted-section">
+        <div class="shadcn-card__header">
+          <div class="shadcn-card__title-wrap">
+            <h2 class="shadcn-card__title">
+              Deleted Invitations
+              <span class="shadcn-badge shadcn-badge--destructive">
+                {formatNumber(report.deletedReports.length)} archived
+              </span>
+            </h2>
+            <p class="shadcn-card__description">
+              Soft-deleted invitations. You can restore them back to active status or permanently wipe them.
+            </p>
+          </div>
+        </div>
+
+        <div class="shadcn-table-wrap">
+          <table class="shadcn-table">
+            <thead>
+              <tr>
+                <th style="width: 18%;">Slug</th>
+                <th style="width: 18%;">Couple</th>
+                <th style="width: 12%;">Status</th>
+                <th style="width: 14%;">Wedding Date</th>
+                <th style="width: 16%;">Deleted At</th>
+                <th style="width: 10%;">Deleted By</th>
+                <th style="width: 12%; text-align: right;" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.deletedReports.map((item: any) => (
+                <tr>
+                  <td>
+                    <span class="slug-badge__text">{item.slug}</span>
+                  </td>
+                  <td>{item.coupleName}</td>
+                  <td>
+                    <span class={`shadcn-badge shadcn-badge--${item.status}`}>
+                      <span class="shadcn-badge__dot"></span>
+                      {item.status}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="date-cell">{formatDate(item.weddingDate)}</span>
+                  </td>
+                  <td>
+                    <span class="date-cell">{formatDateTime(item.deletedAt)}</span>
+                  </td>
+                  <td>
+                    <span style="font-size: 12px; color: var(--admin-zinc-600);">{item.deletedBy || '-'}</span>
+                  </td>
+                  <td class="col-actions">
+                    <div class="row-actions" style="justify-content: flex-end;">
+                      <form method="POST">
+                        <input type="hidden" name="action" value="restore" />
+                        <input type="hidden" name="weddingId" value={item.weddingId} />
+                        <button type="submit" class="btn-shadcn btn-shadcn--success-outline btn-shadcn--sm" title="Restore Invitation">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="1 4 1 10 7 10"></polyline>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                          </svg>
+                          Restore
+                        </button>
+                      </form>
+
+                      <form method="POST">
+                        <input type="hidden" name="action" value="permanent-delete" />
+                        <input type="hidden" name="weddingId" value={item.weddingId} />
+                        <button
+                          type="submit"
+                          class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm"
+                          data-confirm={`Hapus permanen undangan "${item.slug}" dan seluruh aset foto unshared? Tindakan ini TIDAK DAPAT DIBATALKAN.`}
+                          data-confirm-title="Delete Permanently"
+                          data-confirm-text="Delete Permanently"
+                          data-cancel-text="Batal"
+                          data-confirm-variant="danger"
+                          title="Delete Permanently"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                          </svg>
+                          Purge
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {!report.deletedReports.length && (
+                <tr>
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <div class="empty-state__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </div>
+                      <p class="empty-state__title">Trash is empty</p>
+                      <p class="empty-state__sub">No soft-deleted invitations in archive.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </>
+  )}
+</AdminLayout>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search-input');
+    const filterPills = document.querySelectorAll('.filter-pill');
+    const rows = document.querySelectorAll('.invitation-row');
+    const emptyState = document.getElementById('no-search-results');
+    const showingCount = document.getElementById('showing-count');
+    const totalCount = rows.length;
+
+    let currentFilter = 'all';
+    let currentSearch = '';
+
+    function applyFilter() {
+      let visible = 0;
+
+      rows.forEach(row => {
+        const slug = row.getAttribute('data-slug') || '';
+        const couple = row.getAttribute('data-couple') || '';
+        const status = row.getAttribute('data-status') || '';
+        const template = row.getAttribute('data-template') || '';
+
+        const matchesSearch = !currentSearch ||
+          slug.includes(currentSearch) ||
+          couple.includes(currentSearch) ||
+          template.includes(currentSearch);
+        const matchesStatus = currentFilter === 'all' || status === currentFilter;
+
+        if (matchesSearch && matchesStatus) {
+          row.style.display = '';
+          visible++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (emptyState) {
+        emptyState.style.display = visible === 0 ? 'flex' : 'none';
+      }
+
+      if (showingCount) {
+        showingCount.textContent = `Showing ${visible} of ${totalCount} invitations`;
+      }
     }
 
-    .row-actions {
-      flex-wrap: wrap;
-    }
-  }
-
-  @media (max-width: 720px) {
-    .dashboard-shell {
-      padding: 18px;
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        currentSearch = e.target.value.trim().toLowerCase();
+        applyFilter();
+      });
     }
 
-    .dashboard-header,
-    .section-heading {
-      align-items: flex-start;
-      flex-direction: column;
-    }
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentFilter = pill.getAttribute('data-filter') || 'all';
+        applyFilter();
+      });
+    });
 
-    .generated-at {
-      width: 100%;
-      text-align: left;
-    }
+    // Dropdown menu toggle & outside click handler
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.dropdown-trigger');
+      const openMenu = e.target.closest('.dropdown-menu');
 
-    .metric-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+      if (trigger) {
+        e.stopPropagation();
+        const menuId = trigger.getAttribute('data-dropdown-id');
+        const menu = document.getElementById(menuId);
+        const isShown = menu?.classList.contains('show');
 
-    .table-wrap {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
+        // Close any other open dropdowns first
+        document.querySelectorAll('.dropdown-menu.show').forEach(m => {
+          if (m !== menu) {
+            m.classList.remove('show');
+            m.closest('tr')?.classList.remove('dropdown-active');
+            m.closest('td')?.classList.remove('dropdown-active');
+          }
+        });
 
-    table,
-    thead,
-    tbody,
-    tr,
-    th,
-    td {
-      display: block;
-      width: 100%;
-    }
+        if (menu) {
+          const willShow = !isShown;
+          menu.classList.toggle('show', willShow);
+          trigger.closest('tr')?.classList.toggle('dropdown-active', willShow);
+          trigger.closest('td')?.classList.toggle('dropdown-active', willShow);
+        }
+        return;
+      }
 
-    thead {
-      display: none;
-    }
+      if (!openMenu) {
+        document.querySelectorAll('.dropdown-menu.show').forEach(m => {
+          m.classList.remove('show');
+          m.closest('tr')?.classList.remove('dropdown-active');
+          m.closest('td')?.classList.remove('dropdown-active');
+        });
+      }
+    });
 
-    tr {
-      padding: 12px;
-      border-bottom: 1px solid #eef0f4;
-    }
-
-    td {
-      display: grid;
-      grid-template-columns: 94px minmax(0, 1fr);
-      gap: 12px;
-      padding: 8px 0;
-      border-bottom: 0;
-    }
-
-    td::before {
-      color: #687080;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    td:nth-child(1)::before {
-      content: "Slug";
-    }
-
-    td:nth-child(2)::before {
-      content: "Couple";
-    }
-
-    td:nth-child(3)::before {
-      content: "Status";
-    }
-
-    td:nth-child(4)::before {
-      content: "Date";
-    }
-
-    td:nth-child(5)::before {
-      content: "Actions";
-    }
-
-    .deleted-section td:nth-child(5)::before {
-      content: "Deleted At";
-    }
-
-    .deleted-section td:nth-child(6)::before {
-      content: "Deleted By";
-    }
-
-    .deleted-section td:nth-child(7)::before {
-      content: "Actions";
-    }
-
-    .row-actions {
-      gap: 6px;
-    }
-
-    .table-wrap table {
-      display: table;
-      min-width: 760px;
-      table-layout: fixed;
-    }
-
-    .table-wrap .report-table--deleted {
-      min-width: 980px;
-    }
-
-    .table-wrap thead {
-      display: table-header-group;
-    }
-
-    .table-wrap tbody {
-      display: table-row-group;
-    }
-
-    .table-wrap tr {
-      display: table-row;
-      width: auto;
-      padding: 0;
-      border-bottom: 0;
-    }
-
-    .table-wrap th,
-    .table-wrap td {
-      display: table-cell;
-      padding: 12px;
-      border-bottom: 1px solid #eef0f4;
-    }
-
-    .table-wrap td::before {
-      content: none;
-    }
-  }
-</style>
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.dropdown-menu.show').forEach(m => {
+          m.classList.remove('show');
+          m.closest('tr')?.classList.remove('dropdown-active');
+          m.closest('td')?.classList.remove('dropdown-active');
+        });
+      }
+    });
+  });
+</script>

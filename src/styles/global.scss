@@ -167,7 +167,8 @@ button {
 body.template-no-scroll .audio-toggle,
 body.template-cover-active .audio-toggle,
 body:has([data-template-cover]:not([style*="display: none"])) .audio-toggle,
-body:has(#cinematic-preloader:not([style*="display: none"])) .audio-toggle {
+body:has(#cinematic-preloader:not([style*="display: none"])) .audio-toggle,
+body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
@@ -267,4 +268,120 @@ body:has(#cinematic-preloader:not([style*="display: none"])) .audio-toggle {
   }
 }
 
+// --- 9. Gift Toggle Button & Gift Card Open/Close Animations ---
 
+// 9.1 Gift Toggle Button (inherits template's native [data-animate] on first load)
+.gift-toggle-btn,
+[data-gift-toggle] {
+  will-change: transform, opacity;
+  transition:
+    background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+// 9.2 Gift Collapse Wrapper (Smooth Height Expansion & Collapse)
+.gift-collapse-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  width: 100%;
+  transition:
+    grid-template-rows 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.7s;
+
+  &.is-opening {
+    display: grid !important;
+    grid-template-rows: 0fr !important;
+    opacity: 0 !important;
+    visibility: visible !important;
+  }
+
+  &.is-open {
+    display: grid !important;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      grid-template-rows 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s;
+  }
+
+  &.is-closing {
+    display: grid !important;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: visible;
+    transition:
+      grid-template-rows 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0.65s;
+  }
+
+  &:not(.is-open):not(.is-closing):not(.is-opening) {
+    display: none;
+  }
+
+  > .gift-collapse-inner {
+    overflow: hidden;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+// 9.3 Gift Card Animations
+.gift-grid {
+  width: 100%;
+
+  .gift-card {
+    will-change: opacity, transform, filter;
+  }
+
+  // Smooth exit transition when closing: fades and glides down gracefully
+  &.is-closing {
+    pointer-events: none;
+
+    .gift-card {
+      opacity: 0 !important;
+      transform: translateY(32px) !important;
+      filter: blur(8px) !important;
+      pointer-events: none;
+      transition:
+        opacity 450ms cubic-bezier(0.22, 1, 0.36, 1) var(--card-rev-delay, 0ms),
+        transform 450ms cubic-bezier(0.22, 1, 0.36, 1) var(--card-rev-delay, 0ms),
+        filter 450ms cubic-bezier(0.22, 1, 0.36, 1) var(--card-rev-delay, 0ms) !important;
+    }
+  }
+}
+
+// Reduced motion safeguard
+@media (prefers-reduced-motion: reduce) {
+  .gift-collapse-wrapper,
+  .gift-collapse-wrapper.is-open,
+  .gift-collapse-wrapper.is-closing {
+    transition: none !important;
+    grid-template-rows: 1fr !important;
+    opacity: 1 !important;
+  }
+
+  .gift-grid.is-closing .gift-card {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}

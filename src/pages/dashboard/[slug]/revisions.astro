@@ -8,7 +8,7 @@ import {
   getRevisionById
 } from '../../../services/revision';
 import { logActivity } from '../../../services/activity-log';
-import PopupDialog from '../../../components/common/PopupDialog.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
 
 export const prerender = false;
 
@@ -145,46 +145,44 @@ function timeAgo(dateStr: string): string {
 }
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{`Revisions: ${detail.wedding.brideName} & ${detail.wedding.groomName} (${slug}) - Dashboard`}</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <PopupDialog />
-    <main class="dashboard-shell">
-      <header class="dashboard-header">
-        <div>
-          <div class="breadcrumb-links">
-            <a href="/dashboard">Dashboard</a>
-            <span class="sep">/</span>
-            <a href={'/dashboard/' + slug + '/edit'}>Edit Invitation ({slug})</a>
-            <span class="sep">/</span>
-            <span>Revisions</span>
-          </div>
-          <p class="eyebrow">Version History & Rollback</p>
-          <h1>Revision History</h1>
-          <p class="subtitle">
+<AdminLayout
+  title={`Revisions: ${detail.wedding.brideName} & ${detail.wedding.groomName}`}
+  breadcrumbs={[
+    { label: "Dashboard", href: "/dashboard" },
+    { label: slug, href: `/dashboard/${slug}/edit` },
+    { label: "Revisions" }
+  ]}
+>
+      <header class="admin-page-header">
+        <div class="admin-page-header__left">
+          <h1 class="admin-page-header__title">Revision History</h1>
+          <p class="admin-page-header__description">
             Couple: <strong>{detail.wedding.brideName} & {detail.wedding.groomName}</strong> • Slug: <code>{slug}</code>
           </p>
         </div>
-        <div class="header-actions">
-          <a class="secondary-action" href={'/dashboard/' + slug + '/edit'}>✏️ Edit Invitation</a>
-          <a class="primary-action" href={'/' + slug} target="_blank" rel="noopener noreferrer">👁️ Live Preview</a>
+        <div class="admin-page-header__actions">
+          <a class="btn-shadcn btn-shadcn--outline btn-shadcn--sm" href={'/dashboard/' + slug + '/edit'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+            </svg>
+            Edit Invitation
+          </a>
+          <a class="btn-shadcn btn-shadcn--primary btn-shadcn--sm" href={'/' + slug} target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Live Preview
+          </a>
         </div>
       </header>
 
 
       {errorMessage ? (
-        <div class="error-panel">{errorMessage}</div>
+        <div class="shadcn-alert shadcn-alert--error" role="alert"><strong>Error:</strong><p>{errorMessage}</p></div>
       ) : successMessage ? (
-        <div class="success-panel">{successMessage}</div>
+        <div class="shadcn-alert shadcn-alert--success" role="alert"><strong>Success:</strong><p>{successMessage}</p></div>
       ) : null}
 
 
@@ -501,7 +499,7 @@ function timeAgo(dateStr: string): string {
     min-height: 100vh;
     background: #f4f5f7;
     color: #20242c;
-    font-family: Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-sans);
   }
 
   .dashboard-shell {
@@ -563,20 +561,20 @@ function timeAgo(dateStr: string): string {
     margin: 0;
     color: #687080;
     font-size: 14px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-sans);
 
     code {
       padding: 2px 6px;
       border-radius: 4px;
       background: #e2e8f0;
-      font-family: 'Montserrat', sans-serif;
+      font-family: var(--font-sans);
       font-weight: 600;
       font-size: 12px;
       color: #0f172a;
     }
 
     strong {
-      font-family: 'Montserrat', sans-serif;
+      font-family: var(--font-sans);
       font-weight: 700;
       color: #0f172a;
     }
@@ -593,7 +591,7 @@ function timeAgo(dateStr: string): string {
     display: inline-flex;
     align-items: center;
     padding: 0 16px;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #0284c7;
     color: #ffffff;
     font-size: 13px;
@@ -611,8 +609,8 @@ function timeAgo(dateStr: string): string {
     display: inline-flex;
     align-items: center;
     padding: 0 14px;
-    border: 1px solid #d9dde5;
-    border-radius: 6px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-sm);
     background: #ffffff;
     color: #394150;
     font-size: 13px;
@@ -630,7 +628,7 @@ function timeAgo(dateStr: string): string {
     gap: 12px;
     margin-bottom: 20px;
     padding: 14px 18px;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-md);
     font-size: 13px;
 
     &:empty {
@@ -669,7 +667,7 @@ function timeAgo(dateStr: string): string {
   .checkpoint-card {
     margin-bottom: 24px;
     padding: 18px 22px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--admin-border);
     border-radius: 10px;
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -717,7 +715,7 @@ function timeAgo(dateStr: string): string {
         height: 38px;
         padding: 0 12px;
         border: 1px solid #cbd5e1;
-        border-radius: 6px;
+        border-radius: var(--admin-radius-sm);
         font-size: 13px;
         outline: none;
 
@@ -732,8 +730,8 @@ function timeAgo(dateStr: string): string {
       height: 38px;
       padding: 0 18px;
       border: none;
-      border-radius: 6px;
-      background: #1e293b;
+      border-radius: var(--admin-radius-sm);
+      background: var(--admin-zinc-800);
       color: #ffffff;
       font-size: 13px;
       font-weight: 700;
@@ -742,14 +740,14 @@ function timeAgo(dateStr: string): string {
       transition: background 0.15s ease;
 
       &:hover {
-        background: #0f172a;
+        background: var(--admin-zinc-900);
       }
     }
   }
 
   .revisions-container {
     padding: 22px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--admin-border);
     border-radius: 10px;
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -780,8 +778,8 @@ function timeAgo(dateStr: string): string {
 
   .revision-card {
     padding: 16px 20px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-md);
     background: #f8fafc;
     transition: all 0.15s ease;
 
@@ -817,8 +815,8 @@ function timeAgo(dateStr: string): string {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
-    background: #1e293b;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-zinc-800);
     color: #ffffff;
     font-size: 14px;
     font-weight: 800;
@@ -869,7 +867,7 @@ function timeAgo(dateStr: string): string {
     height: 34px;
     padding: 0 12px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #ffffff;
     color: #334155;
     font-size: 12px;
@@ -885,7 +883,7 @@ function timeAgo(dateStr: string): string {
     height: 34px;
     padding: 0 14px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #86198f;
     color: #ffffff;
     font-size: 12px;
@@ -917,7 +915,7 @@ function timeAgo(dateStr: string): string {
 
   .change-tag {
     padding: 3px 9px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--admin-border);
     border-radius: 4px;
     background: #ffffff;
     color: #475569;
@@ -929,7 +927,7 @@ function timeAgo(dateStr: string): string {
   dialog.rev-dialog {
     padding: 0;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--admin-radius-lg);
     background: transparent;
     max-width: 860px;
     width: 90%;
@@ -943,7 +941,7 @@ function timeAgo(dateStr: string): string {
 
   .dialog-content {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: var(--admin-radius-lg);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1005,7 +1003,7 @@ function timeAgo(dateStr: string): string {
 
   .current-notice, .no-diff-notice {
     padding: 12px 14px;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #f1f5f9;
     color: #475569;
     font-size: 13px;
@@ -1056,8 +1054,8 @@ function timeAgo(dateStr: string): string {
 
   .snapshot-summary-box {
     padding: 14px 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-md);
     background: #f8fafc;
 
     h4 {
@@ -1086,7 +1084,7 @@ function timeAgo(dateStr: string): string {
     display: inline-block;
     padding: 2px 6px;
     border-radius: 4px;
-    background: #1e293b;
+    background: var(--admin-zinc-800);
     color: #ffffff;
     font-weight: 700;
     text-transform: uppercase;
@@ -1148,7 +1146,7 @@ function timeAgo(dateStr: string): string {
     margin-top: 14px;
     padding: 12px 14px;
     border: 1px solid #bae6fd;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #f0f9ff;
     color: #0369a1;
     font-size: 12px;
@@ -1172,7 +1170,7 @@ function timeAgo(dateStr: string): string {
     height: 36px;
     padding: 0 14px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #ffffff;
     color: #475569;
     font-size: 13px;
@@ -1188,7 +1186,7 @@ function timeAgo(dateStr: string): string {
     height: 36px;
     padding: 0 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     background: #b91c1c;
     color: #ffffff;
     font-size: 13px;

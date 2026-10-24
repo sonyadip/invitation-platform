@@ -1,0 +1,237 @@
+---
+import PopupDialog from '../components/common/PopupDialog.astro';
+import '../styles/admin-shadcn.scss';
+
+interface Props {
+  title?: string;
+  activeNav?: 'overview' | 'activity' | 'settings' | 'new';
+  subtitle?: string;
+  breadcrumbs?: Array<{ label: string; href?: string }>;
+}
+
+const {
+  title = "Dashboard Overview",
+  activeNav = "overview",
+  subtitle = "",
+  breadcrumbs = [{ label: "Dashboard", href: "/dashboard" }, { label: "Overview" }]
+} = Astro.props;
+
+const session = Astro.locals.session;
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} - Admin Console | Senadda</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+</head>
+<body class="admin-body">
+  <PopupDialog />
+
+  <div class="admin-app">
+    <!-- Backdrop for mobile drawer -->
+    <div id="admin-sidebar-backdrop" class="admin-sidebar-backdrop"></div>
+
+    <!-- App Sidebar -->
+    <aside id="admin-sidebar" class="admin-sidebar">
+      <!-- Sidebar Header / Brand -->
+      <div class="admin-sidebar__header">
+        <a href="/dashboard" class="admin-sidebar__brand">
+          <div class="admin-sidebar__logo-badge">S</div>
+          <div class="admin-sidebar__brand-text">
+            <strong>Senadda</strong>
+            <span>Admin Console</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Sidebar Navigation -->
+      <nav class="admin-sidebar__nav">
+        <!-- Main Navigation Group -->
+        <div class="admin-sidebar__group">
+          <p class="admin-sidebar__group-title">Menu</p>
+          
+          <a href="/dashboard" class={`admin-sidebar__link ${activeNav === 'overview' ? 'admin-sidebar__link--active' : ''}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+              <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+              <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+              <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+            </svg>
+            Overview
+          </a>
+
+          <a href="/dashboard/activity" class={`admin-sidebar__link ${activeNav === 'activity' ? 'admin-sidebar__link--active' : ''}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+            Activity Log
+          </a>
+
+          <a href="/dashboard/settings" class={`admin-sidebar__link ${activeNav === 'settings' ? 'admin-sidebar__link--active' : ''}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Platform Settings
+          </a>
+        </div>
+
+        <!-- Management / Quick Actions Group -->
+        <div class="admin-sidebar__group">
+          <p class="admin-sidebar__group-title">Management</p>
+
+          <a href="/dashboard/new" class={`admin-sidebar__link ${activeNav === 'new' ? 'admin-sidebar__link--active' : ''}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 12h8"></path>
+              <path d="M12 8v8"></path>
+            </svg>
+            Create Invitation
+          </a>
+
+          <a href="/" target="_blank" rel="noopener noreferrer" class="admin-sidebar__link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h6v6"></path>
+              <path d="M10 14 21 3"></path>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            </svg>
+            Public Site
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar User Footer -->
+      <div class="admin-sidebar__footer">
+        <div class="admin-sidebar__user">
+          <div class="admin-sidebar__avatar">AD</div>
+          <div class="admin-sidebar__user-info">
+            <strong>Administrator</strong>
+            <span>Superadmin</span>
+          </div>
+        </div>
+
+        <button type="button" class="admin-sidebar__logout-btn" title="Log Out" data-logout aria-label="Log Out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" x2="9" y1="12" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="admin-main-wrap">
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="admin-topbar__left">
+          <!-- Mobile Hamburger Toggle / Sidebar Trigger -->
+          <button type="button" id="admin-mobile-toggle" class="admin-topbar__mobile-toggle" aria-label="Toggle navigation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+              <path d="M9 3v18"></path>
+            </svg>
+          </button>
+
+          <span class="admin-topbar__divider"></span>
+
+          <!-- Breadcrumbs -->
+          <nav class="admin-topbar__breadcrumbs" aria-label="Breadcrumb">
+            {breadcrumbs.map((crumb, idx) => (
+              <>
+                {idx > 0 && (
+                  <span class="separator" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </span>
+                )}
+                {crumb.href && idx < breadcrumbs.length - 1 ? (
+                  <a href={crumb.href}>{crumb.label}</a>
+                ) : (
+                  <span class="current">{crumb.label}</span>
+                )}
+              </>
+            ))}
+          </nav>
+        </div>
+
+        <div class="admin-topbar__right">
+          <div class="admin-topbar__status-pill">
+            <span class="dot"></span>
+            <span>Live System</span>
+          </div>
+
+          <a href="/dashboard/new" class="btn-shadcn btn-shadcn--primary btn-shadcn--sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+            Create Invitation
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content Slot -->
+      <main class="admin-content">
+        <slot />
+      </main>
+    </div>
+  </div>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleBtn = document.getElementById('admin-mobile-toggle');
+      const sidebar = document.getElementById('admin-sidebar');
+      const backdrop = document.getElementById('admin-sidebar-backdrop');
+
+      function openDrawer() {
+        sidebar?.classList.add('open');
+        backdrop?.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeDrawer() {
+        sidebar?.classList.remove('open');
+        backdrop?.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      toggleBtn?.addEventListener('click', openDrawer);
+      backdrop?.addEventListener('click', closeDrawer);
+
+      // Logout handler with modal confirmation
+      document.querySelectorAll('[data-logout]').forEach((el) => {
+        el.addEventListener('click', async (e) => {
+          e.preventDefault();
+          if (typeof window.showConfirm === 'function') {
+            const confirmed = await window.showConfirm({
+              title: 'Konfirmasi Keluar',
+              message: 'Apakah Anda yakin ingin keluar dari Admin Console?',
+              confirmText: 'Keluar',
+              cancelText: 'Batal',
+              variant: 'danger',
+              icon: 'logout'
+            });
+            if (confirmed) {
+              window.location.href = '/api/auth/logout';
+            }
+          } else {
+            if (confirm('Apakah Anda yakin ingin keluar dari Admin Console?')) {
+              window.location.href = '/api/auth/logout';
+            }
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

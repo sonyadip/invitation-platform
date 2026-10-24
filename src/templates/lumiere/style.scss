@@ -971,6 +971,44 @@ body.template-lumiere {
 
     &:hover .gallery-item__img  { transform: scale(1.04); }
     &:hover .gallery-item__overlay { opacity: 1; }
+
+    &.is-video {
+      .gallery-item__overlay {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.28);
+      }
+
+      .gallery-item__zoom {
+        width: 58px;
+        height: 58px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        // border: 1.5px solid rgba(255, 255, 255, 0.7);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+        transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+
+        svg {
+          width: 22px;
+          height: 22px;
+          stroke: none;
+          fill: #ffffff;
+        }
+      }
+
+      &:hover {
+        .gallery-item__overlay {
+          background: rgba(0, 0, 0, 0.4);
+        }
+        .gallery-item__zoom {
+          transform: scale(1.1);
+          background: rgba(0, 0, 0, 0.6);
+        }
+      }
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════════

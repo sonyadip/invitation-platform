@@ -73,36 +73,133 @@ function fallbackCopy(text: string): boolean {
 }
 
 export function initGiftInteractions(root: Element | Document = document) {
-  const giftToggle = root.querySelector('[data-gift-toggle]');
-  const giftGrid = root.querySelector('[data-gift-grid]');
-  const copyBtns = root.querySelectorAll('[data-copy-btn]') || [];
+  const giftToggles = root.querySelectorAll<HTMLButtonElement>('[data-gift-toggle], .gift-toggle-btn');
+  const copyBtns = root.querySelectorAll<HTMLElement>('[data-copy-btn]') || [];
 
-  if (giftToggle instanceof HTMLButtonElement && giftGrid instanceof HTMLElement) {
-    if (giftToggle.dataset.bound !== 'true') {
-      giftToggle.dataset.bound = 'true';
-      giftToggle.addEventListener('click', () => {
-        if (!(giftGrid instanceof HTMLElement)) return;
-        const isHidden = giftGrid.hasAttribute('hidden');
-        const span = giftToggle.querySelector('span');
-        if (isHidden) {
-          giftGrid.removeAttribute('hidden');
-          giftGrid.classList.add('is-open');
-          giftGrid.querySelectorAll('[data-animate]').forEach((item) => item.classList.add('is-animated'));
-          giftToggle.setAttribute('aria-expanded', 'true');
-          const hideText = giftToggle.getAttribute('data-hide-text') || 'Sembunyikan Hadiah';
-          if (span) span.textContent = hideText;
-          else giftToggle.textContent = hideText;
-        } else {
-          giftGrid.setAttribute('hidden', '');
-          giftGrid.classList.remove('is-open');
-          giftToggle.setAttribute('aria-expanded', 'false');
-          const showText = giftToggle.getAttribute('data-show-text') || 'Lihat Hadiah';
-          if (span) span.textContent = showText;
-          else giftToggle.textContent = showText;
-        }
-      });
+  giftToggles.forEach((giftToggle) => {
+    const giftWrapper =
+      giftToggle.closest('.gift-section, [data-gift-section], .gift-container')?.querySelector<HTMLElement>('[data-gift-wrapper]') ||
+      (root instanceof Element ? root.querySelector<HTMLElement>('[data-gift-wrapper]') : document.querySelector<HTMLElement>('[data-gift-wrapper]'));
+
+    const giftGrid =
+      giftWrapper?.querySelector<HTMLElement>('[data-gift-grid]') ||
+      giftToggle.closest('.gift-section, [data-gift-section], .gift-container')?.querySelector<HTMLElement>('[data-gift-grid]') ||
+      (root instanceof Element ? root.querySelector<HTMLElement>('[data-gift-grid]') : document.querySelector<HTMLElement>('[data-gift-grid]'));
+
+    // Ensure giftToggle first-load reveal matches the template's animation
+    if (!giftToggle.dataset.firstLoadInit) {
+      giftToggle.dataset.firstLoadInit = 'true';
+      if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              giftToggle.classList.add('is-animated');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+        observer.observe(giftToggle);
+      } else {
+        giftToggle.classList.add('is-animated');
+      }
     }
-  }
+
+    if (giftToggle.dataset.bound === 'true') return;
+    giftToggle.dataset.bound = 'true';
+
+    let closeTimeoutId: number | undefined;
+
+    giftToggle.addEventListener('click', () => {
+      const span = giftToggle.querySelector('span');
+      if (!giftToggle.dataset.originalText) {
+        const textVal = span ? span.textContent?.trim() : giftToggle.textContent?.trim();
+        giftToggle.dataset.originalText = textVal || 'Lihat Hadiah';
+      }
+
+      const showText = giftToggle.getAttribute('data-show-text') || giftToggle.dataset.originalText || 'Lihat Hadiah';
+      const hideText = giftToggle.getAttribute('data-hide-text') || 'Sembunyikan Hadiah';
+
+      const isOpen = giftWrapper ? giftWrapper.classList.contains('is-open') : giftGrid?.classList.contains('is-open');
+      const cards = Array.from((giftGrid || giftWrapper)?.querySelectorAll<HTMLElement>('.gift-card') || []);
+
+      if (!isOpen) {
+        // --- OPEN ANIMATION: Smooth Height Expansion + Card Entrance ---
+        if (closeTimeoutId) {
+          clearTimeout(closeTimeoutId);
+          closeTimeoutId = undefined;
+        }
+
+        if (giftWrapper) {
+          giftWrapper.classList.remove('is-closing');
+          giftWrapper.classList.add('is-opening');
+          void giftWrapper.offsetHeight; // reflow to commit display: grid
+          giftWrapper.classList.add('is-open');
+          giftWrapper.classList.remove('is-opening');
+        }
+
+        if (giftGrid) {
+          giftGrid.removeAttribute('hidden');
+          giftGrid.classList.remove('is-closing');
+          giftGrid.classList.add('is-open');
+        }
+
+        // Reset state & assign gentle stagger delay
+        cards.forEach((card, index) => {
+          card.classList.remove('is-closing');
+          card.classList.remove('is-animated');
+          card.style.setProperty('--animate-delay', `${index * 140}ms`);
+        });
+
+        // Force reflow so template transitions trigger cleanly
+        if (giftGrid) void giftGrid.offsetHeight;
+
+        // Trigger the template's native [data-animate] transition
+        cards.forEach((card) => {
+          card.classList.add('is-animated');
+        });
+
+        giftToggle.setAttribute('aria-expanded', 'true');
+        if (span) span.textContent = hideText;
+        else giftToggle.textContent = hideText;
+      } else {
+        // --- CLOSE ANIMATION: Smooth Height Collapse + Card Exit ---
+        if (giftWrapper) {
+          giftWrapper.classList.remove('is-open');
+          giftWrapper.classList.add('is-closing');
+        }
+
+        if (giftGrid) {
+          giftGrid.classList.remove('is-open');
+          giftGrid.classList.add('is-closing');
+        }
+
+        cards.forEach((card, index) => {
+          card.classList.remove('is-animated');
+          const revDelay = (cards.length - 1 - index) * 60;
+          card.style.setProperty('--card-rev-delay', `${revDelay}ms`);
+          card.classList.add('is-closing');
+        });
+
+        giftToggle.setAttribute('aria-expanded', 'false');
+        if (span) span.textContent = showText;
+        else giftToggle.textContent = showText;
+
+        const closeDuration = 700; // matches wrapper's 0.65s transition
+        closeTimeoutId = window.setTimeout(() => {
+          if (giftWrapper) {
+            giftWrapper.classList.remove('is-closing');
+          }
+          if (giftGrid) {
+            giftGrid.classList.remove('is-closing');
+          }
+          cards.forEach((card) => {
+            card.classList.remove('is-closing');
+          });
+          closeTimeoutId = undefined;
+        }, closeDuration);
+      }
+    });
+  });
 
   copyBtns.forEach((btn) => {
     if (!(btn instanceof HTMLElement)) return;

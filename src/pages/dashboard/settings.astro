@@ -1,12 +1,11 @@
 ---
 import { getPlatformSettings, savePlatformSettings } from '../../services/platform-settings';
 import { hashPasswordSHA256 } from '../../utils/security';
-import PopupDialog from '../../components/common/PopupDialog.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
 
 export const prerender = false;
 
 const session = Astro.locals.session;
-
 if (session?.role !== 'admin') {
   return Astro.redirect('/?login=admin');
 }
@@ -49,7 +48,7 @@ if (Astro.request.method === 'POST') {
       google_analytics_id: val('google_analytics_id'),
       google_tag_manager_id: val('google_tag_manager_id'),
     });
-    successMessage = 'Settings saved successfully.';
+    successMessage = 'Platform settings have been saved successfully.';
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : 'Failed to save settings.';
   }
@@ -58,605 +57,408 @@ if (Astro.request.method === 'POST') {
 const settings = await getPlatformSettings();
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Platform Settings - Dashboard</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <PopupDialog />
-    <main class="shell">
-      <header class="header">
+<AdminLayout
+  title="Platform Settings"
+  activeNav="settings"
+  breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Platform Settings" }]}
+>
+  <!-- Page Header -->
+  <header class="admin-page-header">
+    <div class="admin-page-header__left">
+      <h1 class="admin-page-header__title">Platform Settings</h1>
+      <p class="admin-page-header__description">
+        Manage brand identity, contact channels, homepage content, and SEO metadata.
+      </p>
+    </div>
+
+    <div class="admin-page-header__actions">
+      <a href="/" target="_blank" rel="noopener noreferrer" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        View Public Landing Page
+      </a>
+    </div>
+  </header>
+
+  <!-- Alerts -->
+  {successMessage && (
+    <div class="shadcn-alert shadcn-alert--success" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <div>
+        <strong>Settings Saved</strong>
+        <p>{successMessage}</p>
+      </div>
+    </div>
+  )}
+
+  {errorMessage && (
+    <div class="shadcn-alert shadcn-alert--error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <strong>Error</strong>
+        <p>{errorMessage}</p>
+      </div>
+    </div>
+  )}
+
+  <form class="form-panel" method="POST">
+    <!-- SECTION 1: IDENTITY -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">🏢</span>
         <div>
-          <a class="back-link" href="/dashboard">← Back to Dashboard</a>
-          <p class="eyebrow">Platform Management</p>
-          <h1>Platform Settings</h1>
-          <p class="subtitle">Manage brand identity, contact channels, homepage content, and SEO metadata.</p>
+          <h2>Platform Identity</h2>
+          <p>Name, tagline, and brand logos displayed across public pages.</p>
         </div>
-        <a class="secondary-action" href="/" target="_blank" rel="noopener noreferrer">🌐 View Landing Page</a>
-      </header>
-
-      {successMessage && <div class="success-panel">{successMessage}</div>}
-      {errorMessage && <div class="error-panel">{errorMessage}</div>}
-
-      <form class="form-panel" method="POST">
-        <!-- IDENTITY -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">🏢</span>
-            <div>
-              <h2>Platform Identity</h2>
-              <p>Name, tagline, and logos displayed across the platform.</p>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Platform Name <span class="required">*</span></label>
+          <input name="site_name" value={settings.site_name} placeholder="Senadda" required />
+        </div>
+        <div class="field-group">
+          <label>Tagline</label>
+          <input name="site_tagline" value={settings.site_tagline} placeholder="Digital Wedding Invitation Platform" />
+        </div>
+        <div class="field-group wide">
+          <label>Logo URL (Light Theme)</label>
+          <input name="logo_url" value={settings.logo_url} placeholder="/images/senadda-logo.png" />
+          {settings.logo_url && (
+            <div style="margin-top: 8px; padding: 8px; background: #fafafa; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-sm); display: inline-block;">
+              <img src={settings.logo_url} alt="Logo Preview" style="height: 24px; width: auto; object-fit: contain; display: block;" />
             </div>
-          </div>
-          <div class="form-grid">
-            <label>
-              Platform Name
-              <input name="site_name" value={settings.site_name} placeholder="Senadda" required />
-            </label>
-            <label>
-              Tagline
-              <input name="site_tagline" value={settings.site_tagline} placeholder="Digital Wedding Invitation Platform" />
-            </label>
-            <label class="wide">
-              Logo URL (Light)
-              <input name="logo_url" value={settings.logo_url} placeholder="/images/senadda-logo.png" />
-              {settings.logo_url && <img class="logo-preview" src={settings.logo_url} alt="Logo preview" />}
-            </label>
-            <label class="wide">
-              Logo URL (Dark / Alternative)
-              <input name="logo_dark_url" value={settings.logo_dark_url} placeholder="https://example.com/logo-dark.png" />
-              {settings.logo_dark_url && <img class="logo-preview" src={settings.logo_dark_url} alt="Logo dark preview" />}
-            </label>
-          </div>
-        </section>
-
-        <!-- SOCIAL MEDIA & CONTACT -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">📱</span>
-            <div>
-              <h2>Contact & Social Media</h2>
-              <p>Links used in CTA buttons, footer, and social media channels.</p>
+          )}
+        </div>
+        <div class="field-group wide">
+          <label>Logo URL (Dark / Alternative)</label>
+          <input name="logo_dark_url" value={settings.logo_dark_url} placeholder="https://example.com/logo-dark.png" />
+          {settings.logo_dark_url && (
+            <div style="margin-top: 8px; padding: 8px; background: #18181b; border: 1px solid var(--admin-zinc-800); border-radius: var(--admin-radius-sm); display: inline-block;">
+              <img src={settings.logo_dark_url} alt="Dark Logo Preview" style="height: 24px; width: auto; object-fit: contain; display: block;" />
             </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: SOCIAL MEDIA & CONTACT -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">📱</span>
+        <div>
+          <h2>Contact & Social Media</h2>
+          <p>Links used in CTA buttons, footer, and social media channels.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>WhatsApp URL</label>
+          <input name="whatsapp_url" value={settings.whatsapp_url} placeholder="https://wa.me/6281234567890" />
+          <span class="hint">Format: https://wa.me/62812xxxxx</span>
+        </div>
+        <div class="field-group">
+          <label>Official Email</label>
+          <input type="email" name="email" value={settings.email} placeholder="hello@senadda.id" />
+        </div>
+        <div class="field-group">
+          <label>Instagram URL</label>
+          <input name="instagram_url" value={settings.instagram_url} placeholder="https://instagram.com/senadda" />
+        </div>
+        <div class="field-group">
+          <label>Facebook URL</label>
+          <input name="facebook_url" value={settings.facebook_url} placeholder="https://facebook.com/senadda" />
+        </div>
+        <div class="field-group">
+          <label>TikTok URL</label>
+          <input name="tiktok_url" value={settings.tiktok_url} placeholder="https://tiktok.com/@senadda" />
+        </div>
+        <div class="field-group">
+          <label>YouTube URL</label>
+          <input name="youtube_url" value={settings.youtube_url} placeholder="https://youtube.com/@senadda" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: HOMEPAGE CONTENT -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">🏠</span>
+        <div>
+          <h2>Homepage Content</h2>
+          <p>Hero texts, descriptions, and button labels on the main landing page.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Heading Word 1</label>
+          <input name="home_heading_1" value={settings.home_heading_1} placeholder="Wedding" />
+        </div>
+        <div class="field-group">
+          <label>Heading Word 2</label>
+          <input name="home_heading_2" value={settings.home_heading_2} placeholder="Digital" />
+        </div>
+        <div class="field-group">
+          <label>Heading Word 3</label>
+          <input name="home_heading_3" value={settings.home_heading_3} placeholder="Invitations" />
+        </div>
+        <div class="field-group">
+          <label>CTA Button Label</label>
+          <input name="home_cta_label" value={settings.home_cta_label} placeholder="View Collection" />
+        </div>
+        <div class="field-group wide">
+          <label>Animated Seal Text</label>
+          <input name="home_hero_seal_text" value={settings.home_hero_seal_text} placeholder="SENADDA • DIGITAL STUDIO • INVITATION •" />
+        </div>
+        <div class="field-group wide">
+          <label>Hero Description</label>
+          <textarea name="home_description" rows="3" placeholder="Enter landing hero description...">{settings.home_description}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: HERO STATS -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">📈</span>
+        <div>
+          <h2>Hero Statistics</h2>
+          <p>Stat metric and label displayed in the landing hero section.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Statistic Number</label>
+          <input name="home_stat_number" value={settings.home_stat_number} placeholder="5+" />
+        </div>
+        <div class="field-group">
+          <label>Statistic Label</label>
+          <input name="home_stat_label" value={settings.home_stat_label} placeholder="Exclusive Designs" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: TEMPLATES COLLECTION -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">🎨</span>
+        <div>
+          <h2>Design Collection</h2>
+          <p>Catalog cards and texts for the template showcase section.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Eyebrow Subtitle</label>
+          <input name="home_templates_eyebrow" value={settings.home_templates_eyebrow} placeholder="Design Collection" />
+        </div>
+        <div class="field-group">
+          <label>Heading</label>
+          <input name="home_templates_heading" value={settings.home_templates_heading} placeholder="Choose Your Theme." />
+        </div>
+        <div class="field-group wide">
+          <label>Design Catalog Cards</label>
+          <input type="hidden" name="home_template_cards" id="template_cards_input" value={JSON.stringify(settings.home_template_cards)} />
+          <div id="template_cards_container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 6px;"></div>
+          <div style="margin-top: 12px;">
+            <button type="button" id="add_template_card_btn" class="btn-shadcn btn-shadcn--outline btn-shadcn--sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              Add Card
+            </button>
           </div>
-          <div class="form-grid">
-            <label>
-              WhatsApp URL
-              <input name="whatsapp_url" value={settings.whatsapp_url} placeholder="https://wa.me/6281234567890" />
-              <span class="hint">Format: https://wa.me/62812xxxxx</span>
-            </label>
-            <label>
-              Email
-              <input type="email" name="email" value={settings.email} placeholder="hello@senadda.com" />
-            </label>
-            <label>
-              Instagram URL
-              <input name="instagram_url" value={settings.instagram_url} placeholder="https://instagram.com/senadda" />
-            </label>
-            <label>
-              Facebook URL
-              <input name="facebook_url" value={settings.facebook_url} placeholder="https://facebook.com/senadda" />
-            </label>
-            <label>
-              TikTok URL
-              <input name="tiktok_url" value={settings.tiktok_url} placeholder="https://tiktok.com/@senadda" />
-            </label>
-            <label>
-              YouTube URL
-              <input name="youtube_url" value={settings.youtube_url} placeholder="https://youtube.com/@senadda" />
-            </label>
-          </div>
-        </section>
+          <span class="hint" style="display: block; margin-top: 8px;">
+            Default template keys: lumiere, lumiere-metatah, lumiere-metatah-v2, deauville, air, editorial, noir, atelier, sage, ochre, ivory.
+          </span>
+        </div>
+      </div>
+    </div>
 
-        <!-- HOMEPAGE CONTENT -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">🏠</span>
-            <div>
-              <h2>Homepage Content</h2>
-              <p>Hero texts, descriptions, and button labels on the main landing page.</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label>
-              Heading Word 1
-              <input name="home_heading_1" value={settings.home_heading_1} placeholder="Wedding" />
-            </label>
-            <label>
-              Heading Word 2
-              <input name="home_heading_2" value={settings.home_heading_2} placeholder="Digital" />
-            </label>
-            <label>
-              Heading Word 3
-              <input name="home_heading_3" value={settings.home_heading_3} placeholder="Invitations" />
-            </label>
-            <label>
-              CTA Button Label
-              <input name="home_cta_label" value={settings.home_cta_label} placeholder="View Collection" />
-            </label>
-            <label class="wide">
-              Animated Seal Text
-              <input name="home_hero_seal_text" value={settings.home_hero_seal_text} placeholder="SENADDA • DIGITAL STUDIO • INVITATION •" />
-            </label>
-            <label class="wide">
-              Hero Description
-              <textarea name="home_description" rows="3">{settings.home_description}</textarea>
-            </label>
-          </div>
-        </section>
+    <!-- SECTION 6: BOOKING & CONTACT SECTION -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">💬</span>
+        <div>
+          <h2>Booking & Contact Section</h2>
+          <p>Texts for the booking inquiry call-to-action.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Eyebrow Subtitle</label>
+          <input name="home_booking_eyebrow" value={settings.home_booking_eyebrow} placeholder="Next Steps" />
+        </div>
+        <div class="field-group">
+          <label>Heading</label>
+          <input name="home_booking_heading" value={settings.home_booking_heading} placeholder="Tell us about your wedding." />
+        </div>
+        <div class="field-group wide">
+          <label>WhatsApp Button Label</label>
+          <input name="home_booking_cta" value={settings.home_booking_cta} placeholder="Contact via WhatsApp" />
+        </div>
+      </div>
+    </div>
 
-        <!-- HERO STATS -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">📈</span>
-            <div>
-              <h2>Hero Statistics</h2>
-              <p>Stat metric and label displayed in the hero section.</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label>
-              Statistic Number
-              <input name="home_stat_number" value={settings.home_stat_number} placeholder="5+" />
-            </label>
-            <label>
-              Statistic Label
-              <input name="home_stat_label" value={settings.home_stat_label} placeholder="Exclusive Designs" />
-            </label>
-          </div>
-        </section>
+    <!-- SECTION 7: SEO -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">🔍</span>
+        <div>
+          <h2>SEO & Metadata</h2>
+          <p>Meta title and description displayed in search engines and social cards.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group wide">
+          <label>Meta Title</label>
+          <input name="meta_title" value={settings.meta_title} placeholder="Senadda - Digital Wedding Invitations" />
+        </div>
+        <div class="field-group wide">
+          <label>Meta Description</label>
+          <textarea name="meta_description" rows="3" placeholder="Enter meta description for search engines...">{settings.meta_description}</textarea>
+        </div>
+      </div>
+    </div>
 
-        <!-- TEMPLATES COLLECTION -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">🎨</span>
-            <div>
-              <h2>Design Collection</h2>
-              <p>Texts and catalog cards for the template showcase section.</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label>
-              Eyebrow Subtitle
-              <input name="home_templates_eyebrow" value={settings.home_templates_eyebrow} placeholder="Design Collection" />
-            </label>
-            <label>
-              Heading
-              <input name="home_templates_heading" value={settings.home_templates_heading} placeholder="Choose Your Theme." />
-            </label>
-            <div class="wide repeater-field">
-              <label>Design Catalog Cards</label>
-              <input type="hidden" name="home_template_cards" id="template_cards_input" value={JSON.stringify(settings.home_template_cards)} />
-              <div id="template_cards_container" class="repeater-container"></div>
-              <button type="button" id="add_template_card_btn" class="secondary-action" style="margin-top: 10px;">+ Add Card</button>
-              <span class="hint" style="display:block; margin-top: 8px;">Default template keys: lumiere, lumiere-metatah, lumiere-metatah-v2, deauville, air, editorial, noir, atelier, sage, ochre, ivory. If image URL is blank, default theme preview will be used.</span>
-            </div>
-          </div>
-        </section>
+    <!-- SECTION 8: ANALYTICS & TRACKING -->
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">📊</span>
+        <div>
+          <h2>Analytics & Tracking</h2>
+          <p>Tracking IDs for Google Analytics 4 (GA4) and Google Tag Manager (GTM).</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group wide">
+          <label>Google Analytics 4 Measurement ID</label>
+          <input name="google_analytics_id" value={settings.google_analytics_id || ''} placeholder="G-PS8CJGKXWG" />
+          <span class="hint">Example: G-PS8CJGKXWG. Automatically injected into landing page and wedding invitations in production.</span>
+        </div>
+        <div class="field-group wide">
+          <label>Google Tag Manager Container ID (Optional)</label>
+          <input name="google_tag_manager_id" value={settings.google_tag_manager_id || ''} placeholder="GTM-XXXXXXX" />
+          <span class="hint">Leave blank if only using GA4 measurement ID.</span>
+        </div>
+      </div>
+    </div>
 
-        <!-- BOOKING / CONTACT SECTION -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">💬</span>
-            <div>
-              <h2>Booking & Contact Section</h2>
-              <p>Texts for the booking inquiry call-to-action.</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label>
-              Eyebrow Subtitle
-              <input name="home_booking_eyebrow" value={settings.home_booking_eyebrow} placeholder="Next Steps" />
-            </label>
-            <label>
-              Heading
-              <input name="home_booking_heading" value={settings.home_booking_heading} placeholder="Tell us about your wedding." />
-            </label>
-            <label class="wide">
-              WhatsApp Button Label
-              <input name="home_booking_cta" value={settings.home_booking_cta} placeholder="Contact via WhatsApp" />
-            </label>
-          </div>
-        </section>
+    <!-- Sticky Bottom Actions Bar -->
+    <div class="form-actions-bar">
+      <a href="/dashboard" class="btn-shadcn btn-shadcn--outline">Cancel</a>
+      <button type="submit" class="btn-shadcn btn-shadcn--primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        Save Settings
+      </button>
+    </div>
+  </form>
+</AdminLayout>
 
-        <!-- SEO -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">🔍</span>
-            <div>
-              <h2>SEO & Metadata</h2>
-              <p>Title and description displayed on search engines and social share previews.</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label class="wide">
-              Meta Title
-              <input name="meta_title" value={settings.meta_title} placeholder="Senadda - Digital Wedding Invitations" />
-            </label>
-            <label class="wide">
-              Meta Description
-              <textarea name="meta_description" rows="3">{settings.meta_description}</textarea>
-            </label>
-          </div>
-        </section>
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('template_cards_container');
+    const input = document.getElementById('template_cards_input');
+    const addBtn = document.getElementById('add_template_card_btn');
+    const form = document.querySelector('.form-panel');
 
-        <!-- ANALYTICS & TRACKING -->
-        <section>
-          <div class="section-label">
-            <span class="section-icon">📊</span>
-            <div>
-              <h2>Analytics & Tracking</h2>
-              <p>ID pelacakan untuk Google Analytics 4 (GA4) dan Google Tag Manager (GTM). Otomatis hanya aktif di website live (dinonaktifkan di localhost/development).</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label class="wide">
-              Google Analytics 4 Measurement ID
-              <input name="google_analytics_id" value={settings.google_analytics_id || ''} placeholder="G-PS8CJGKXWG" />
-              <span class="hint" style="display:block; margin-top: 6px; font-size: 0.8rem; color: #718096;">Contoh: G-PS8CJGKXWG. Otomatis terpasang di seluruh homepage dan template undangan.</span>
-            </label>
-            <label class="wide">
-              Google Tag Manager Container ID (Opsional)
-              <input name="google_tag_manager_id" value={settings.google_tag_manager_id || ''} placeholder="GTM-XXXXXXX" />
-              <span class="hint" style="display:block; margin-top: 6px; font-size: 0.8rem; color: #718096;">Kosongkan jika hanya menggunakan Google Analytics 4 biasa.</span>
-            </label>
-          </div>
-        </section>
-
-        <footer class="form-actions">
-          <a href="/dashboard">Cancel</a>
-          <button type="submit">Save Settings</button>
-        </footer>
-      </form>
-    </main>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('template_cards_container');
-        const input = document.getElementById('template_cards_input');
-        const addBtn = document.getElementById('add_template_card_btn');
-        const form = document.querySelector('.form-panel');
-        
-        let cards = [];
-        try {
-          cards = JSON.parse(input.value || '[]');
-        } catch (e) {
-          cards = [];
-        }
-        
-        function render() {
-          container.innerHTML = '';
-          cards.forEach((card, index) => {
-            const row = document.createElement('div');
-            row.className = 'repeater-row';
-            row.innerHTML = `
-              <div class="repeater-grid">
-                <label>
-                  Theme Key
-                  <input type="text" placeholder="lumiere" value="${card.key || ''}" data-idx="${index}" data-field="key" />
-                </label>
-                <label>
-                  Card Name
-                  <input type="text" placeholder="Lumiere" value="${card.name || ''}" data-idx="${index}" data-field="name" />
-                </label>
-                <label>
-                  Category
-                  <select data-idx="${index}" data-field="category">
-                    <option value="pernikahan" ${card.category !== 'metatah' ? 'selected' : ''}>Pernikahan</option>
-                    <option value="metatah" ${card.category === 'metatah' ? 'selected' : ''}>Metatah</option>
-                  </select>
-                </label>
-                <label>
-                  Price
-                  <input type="text" placeholder="Rp 450.000" value="${card.price || ''}" data-idx="${index}" data-field="price" />
-                </label>
-                <label>
-                  Promo Price
-                  <input type="text" placeholder="Rp 300.000" value="${card.promoPrice || ''}" data-idx="${index}" data-field="promoPrice" />
-                </label>
-                <label>
-                  Image URL
-                  <input type="text" placeholder="(Optional)" value="${card.image || ''}" data-idx="${index}" data-field="image" />
-                </label>
-              </div>
-              <button type="button" class="remove-btn" data-idx="${index}">Delete</button>
-            `;
-            container.appendChild(row);
-          });
-        }
-
-        const handleFieldChange = (e) => {
-          const target = e.target;
-          if (target && target.dataset && target.dataset.idx !== undefined && target.dataset.field) {
-            cards[target.dataset.idx][target.dataset.field] = target.value;
-          }
-        };
-
-        container.addEventListener('input', handleFieldChange);
-        container.addEventListener('change', handleFieldChange);
-
-        container.addEventListener('click', (e) => {
-          if (e.target.classList.contains('remove-btn')) {
-            const idx = e.target.dataset.idx;
-            cards.splice(idx, 1);
-            render();
-          }
-        });
-
-        addBtn.addEventListener('click', () => {
-          cards.push({ key: '', name: '', category: 'pernikahan', price: '', promoPrice: '', image: '' });
-          render();
-        });
-
-        form.addEventListener('submit', () => {
-          const validCards = cards.filter(c => c.key || c.name);
-          input.value = JSON.stringify(validCards);
-        });
-
-        render();
-      });
-    </script>
-  </body>
-</html>
-
-<style lang="scss">
-  :global(*) { box-sizing: border-box; }
-  :global(body) {
-    margin: 0;
-    min-height: 100vh;
-    background: #f4f5f7;
-    color: #20242c;
-    font-family: Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .shell {
-    width: min(1100px, 100%);
-    margin: 0 auto;
-    padding: 28px;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 18px;
-    margin-bottom: 22px;
-  }
-
-  .back-link {
-    display: inline-flex;
-    margin-bottom: 18px;
-    color: #2563eb;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .secondary-action {
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 14px;
-    border: 1px solid #d9dde5;
-    border-radius: 6px;
-    background: #ffffff;
-    color: #394150;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    white-space: nowrap;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .eyebrow {
-    margin: 0 0 8px;
-    color: #687080;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  h1 { margin: 0 0 8px; font-size: 32px; font-family: 'Montserrat', sans-serif; }
-  h2 { margin: 0 0 4px; font-size: 17px; font-family: 'Montserrat', sans-serif; }
-
-  .subtitle { margin: 0; color: #687080; font-size: 14px; font-family: 'Montserrat', sans-serif; }
-
-  .success-panel,
-  .error-panel {
-    margin-bottom: 16px;
-    padding: 14px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-  }
-
-  .success-panel { color: #047857; background: #ecfdf5; border: 1px solid #6ee7b7; }
-  .error-panel   { color: #991b1b; background: #fff5f5; border: 1px solid #fca5a5; }
-
-  .form-panel {
-    border: 1px solid #d9dde5;
-    border-radius: 8px;
-    background: #ffffff;
-  }
-
-  section {
-    padding: 22px 24px;
-    border-bottom: 1px solid #eef0f4;
-  }
-
-  .section-label {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-
-  .section-icon {
-    flex-shrink: 0;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: #f4f5f7;
-    font-size: 18px;
-  }
-
-  .section-label p {
-    margin: 0;
-    color: #687080;
-    font-size: 13px;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-
-  label {
-    display: grid;
-    gap: 7px;
-    color: #394150;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  label.wide { grid-column: 1 / -1; }
-
-  .hint {
-    margin-top: -2px;
-    color: #687080;
-    font-size: 12px;
-    font-weight: 400;
-  }
-
-  input, select, textarea {
-    width: 100%;
-    min-height: 42px;
-    padding: 9px 11px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font: inherit;
-    font-weight: 400;
-    color: #20242c;
-    transition: border-color 0.15s;
-
-    &:focus {
-      outline: none;
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    let cards = [];
+    try {
+      cards = JSON.parse(input?.value || '[]');
+    } catch (e) {
+      cards = [];
     }
-  }
 
-  textarea { resize: vertical; }
+    function render() {
+      if (!container) return;
+      container.innerHTML = '';
+      cards.forEach((card, index) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'background: #fafafa; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 16px; position: relative;';
+        row.innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            <div class="field-group">
+              <label style="font-size: 11px;">Theme Key</label>
+              <input type="text" placeholder="lumiere" value="${card.key || ''}" data-idx="${index}" data-field="key" />
+            </div>
+            <div class="field-group">
+              <label style="font-size: 11px;">Card Name</label>
+              <input type="text" placeholder="Lumiere" value="${card.name || ''}" data-idx="${index}" data-field="name" />
+            </div>
+            <div class="field-group">
+              <label style="font-size: 11px;">Category</label>
+              <select data-idx="${index}" data-field="category">
+                <option value="pernikahan" ${card.category !== 'metatah' ? 'selected' : ''}>Pernikahan</option>
+                <option value="metatah" ${card.category === 'metatah' ? 'selected' : ''}>Metatah</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label style="font-size: 11px;">Price</label>
+              <input type="text" placeholder="Rp 450.000" value="${card.price || ''}" data-idx="${index}" data-field="price" />
+            </div>
+            <div class="field-group">
+              <label style="font-size: 11px;">Promo Price</label>
+              <input type="text" placeholder="Rp 300.000" value="${card.promoPrice || ''}" data-idx="${index}" data-field="promoPrice" />
+            </div>
+            <div class="field-group">
+              <label style="font-size: 11px;">Image URL</label>
+              <input type="text" placeholder="(Optional)" value="${card.image || ''}" data-idx="${index}" data-field="image" />
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn-shadcn btn-shadcn--destructive-outline btn-shadcn--sm remove-card-btn" data-idx="${index}">
+              Delete Card
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
 
-  .logo-preview {
-    display: block;
-    max-height: 48px;
-    max-width: 180px;
-    object-fit: contain;
-    margin-top: 4px;
-    border: 1px solid #eef0f4;
-    border-radius: 6px;
-    padding: 4px 8px;
-    background: #fafbfc;
-  }
+    const handleFieldChange = (e) => {
+      const target = e.target;
+      if (target && target.dataset && target.dataset.idx !== undefined && target.dataset.field) {
+        cards[target.dataset.idx][target.dataset.field] = target.value;
+      }
+    };
 
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 20px 24px;
-  }
+    container?.addEventListener('input', handleFieldChange);
+    container?.addEventListener('change', handleFieldChange);
 
-  .form-actions a,
-  .form-actions button {
-    min-height: 42px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 18px;
-    border-radius: 6px;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-  }
+    container?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.remove-card-btn');
+      if (btn) {
+        const idx = btn.dataset.idx;
+        cards.splice(idx, 1);
+        render();
+      }
+    });
 
-  .form-actions a {
-    border: 1px solid #d9dde5;
-    color: #394150;
-    background: #ffffff;
-  }
+    addBtn?.addEventListener('click', () => {
+      cards.push({ key: '', name: '', category: 'pernikahan', price: '', promoPrice: '', image: '' });
+      render();
+    });
 
-  .form-actions button {
-    border: 0;
-    background: #111827;
-    color: #ffffff;
-    transition: background 0.15s;
+    form?.addEventListener('submit', () => {
+      const validCards = cards.filter(c => c.key || c.name);
+      if (input) input.value = JSON.stringify(validCards);
+    });
 
-    &:hover { background: #1f2937; }
-  }
-
-  @media (max-width: 720px) {
-    .shell { padding: 18px; }
-    .header { align-items: flex-start; flex-direction: column; }
-    .form-grid { grid-template-columns: 1fr; }
-    section { padding: 18px; }
-    :global(.repeater-grid) { grid-template-columns: 1fr; }
-    :global(.repeater-row) { flex-direction: column; }
-    :global(.remove-btn) { width: 100%; }
-  }
-  
-  .repeater-field { grid-column: 1 / -1; margin-top: 10px; }
-  .repeater-container { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
-  
-  :global(.repeater-row) {
-    display: flex; gap: 16px; align-items: flex-end;
-    padding: 18px; background: #fafbfc; border: 1px solid #eef0f4; border-radius: 8px;
-  }
-  :global(.repeater-grid) {
-    flex: 1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px;
-  }
-  :global(.repeater-grid label) {
-    display: grid;
-    gap: 7px;
-    color: #394150;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  :global(.repeater-grid input) {
-    width: 100%;
-    min-height: 42px;
-    padding: 9px 11px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font: inherit;
-    font-weight: 400;
-    color: #20242c;
-    transition: border-color 0.15s;
-  }
-  :global(.repeater-grid input:focus) {
-    outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  }
-  :global(.remove-btn) {
-    background: #fee2e2; color: #991b1b; border: none; padding: 0 16px; border-radius: 6px; cursor: pointer;
-    font-size: 13px; font-weight: 700; min-height: 42px; transition: background 0.15s;
-  }
-  :global(.remove-btn:hover) { background: #fecaca; }
-</style>
+    render();
+  });
+</script>
