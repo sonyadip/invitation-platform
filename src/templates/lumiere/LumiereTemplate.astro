@@ -26,7 +26,7 @@ import rsvpPhoto     from './assets/rsvp.webp';
 import closingPhoto  from './assets/closing.webp';
 import saveDatePhoto from './assets/save-date.webp';
 
-import './style.scss';
+import styleUrl from './style.scss?url';
 
 interface Props {
   data: FullInvitationData;
@@ -42,7 +42,6 @@ const themeContent = themeConfig.content || {};
 
 const isPreview = wedding.id.startsWith('preview-');
 
-// ── Asset resolution (prefer CMS override, fall back to local template assets ONLY in preview mode) ──
 const coverImage    = themeAssets.coverImage    || (isPreview ? coverPhoto.src : undefined);
 const groomImage    = themeAssets.groomImage    || (isPreview ? groomPhoto.src : undefined);
 const brideImage    = themeAssets.brideImage    || (isPreview ? bridePhoto.src : undefined);
@@ -51,7 +50,6 @@ const rsvpImage     = themeAssets.rsvpImage     || (isPreview ? rsvpPhoto.src : 
 const closingImage  = themeAssets.closingImage  || (isPreview ? closingPhoto.src : undefined);
 const saveDateImage = themeAssets.countdownImage || (isPreview ? saveDatePhoto.src : undefined);
 
-// Slideshow pool — deduplicated, cover goes last (it's the "home" slide)
 const heroImage = themeAssets.heroImage;
 const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || coverImage || heroImage || (isPreview ? coverPhoto.src : undefined);
 const heroSlides = [
@@ -63,7 +61,6 @@ const heroSlides = [
   coverImage
 ].filter((s, i, a) => Boolean(s) && a.indexOf(s) === i);
 
-// ── Text / content ─────────────────────────────────────────────────────────────
 const defaultText = {
   verse: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri supaya kamu mendapat ketenangan hati dan dijadikan-Nya kasih sayang di antara kamu. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir.',
   verseSource: 'QS. Ar-rum : 21',
@@ -72,7 +69,7 @@ const defaultText = {
   groomAddress: '',
   brideAddress: '',
   giftDescription: 'Tanpa mengurangi rasa hormat kami, bagi tamu yang ingin mengirimkan hadiah kepada kedua mempelai dapat mengirimnya melalui :',
-  rsvpDescription: 'Bagi tamu undangan yang akan hadir di acara pernikahan kami silahkan kirimkan konfirmasi kehadiran dengan mengisi form berikut :',
+  rsvpDescription: 'Mohon konfirmasi kehadiran Anda dan berikan doa restu untuk kami.',
   closingMessage: 'Merupakan suatu kebahagiaan dan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.',
   attireMessage: 'Kami dengan hormat menganjurkan para tamu kami untuk mengenakan warna-warna ini untuk hari istimewa kami.',
   photoBooth: 'Bagikan kebahagiaan Anda dengan berfoto menggunakan bingkai eksklusif acara ini.',
@@ -196,6 +193,7 @@ const activeStory = wedding.story && wedding.story.length > 0
   to={guestName}
   templateClass="template-lumiere"
   image={coverImage}
+  styleUrl={styleUrl}
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
@@ -206,7 +204,6 @@ const activeStory = wedding.story && wedding.story.length > 0
       />
     )}
 
-    <!-- ── Background slideshow (same pattern as Editorial) ──────────────── -->
     <div class="page-bg" data-template-slider aria-hidden="true">
       {themeAssets.heroVideo ? (
         <div class="template-slide is-active" style="overflow: hidden;">
@@ -261,7 +258,6 @@ const activeStory = wedding.story && wedding.story.length > 0
       )}
     </div>
 
-    <!-- ══════════════════ COVER / HERO ══════════════════ -->
     <section class="cover-section" data-template-cover>
       <SmartImage src={coverImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__overlay"></div>
@@ -284,7 +280,6 @@ const activeStory = wedding.story && wedding.story.length > 0
       </div>
     </section>
 
-    <!-- ══════════════════ INVITATION LAYOUT (hidden until opened) ══════════════════ -->
     <div class="invitation-layout" data-template-layout>
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
@@ -303,7 +298,6 @@ const activeStory = wedding.story && wedding.story.length > 0
 
       <main>
 
-        <!-- ── Intro / Hero Section ──────────────────────────── -->
         <section class="intro-section" id="awal-undangan">
           <div class="intro-section__inner" data-animate>
             <span class="intro-section__eyebrow">The Wedding Of</span>
@@ -319,7 +313,6 @@ const activeStory = wedding.story && wedding.story.length > 0
           </div>
         </section>
 
-        <!-- ── Quote Section ─────────────────────────────────── -->
         <section class="quote-section">
           <div class="quote-section__inner" data-animate>
             <blockquote class="quote-section__verse">
@@ -329,7 +322,6 @@ const activeStory = wedding.story && wedding.story.length > 0
           </div>
         </section>
 
-        <!-- ── Couple info ───────────────────────────────────── -->
         {sections.coupleInfo && (
           <section class="couple-section" id="data-mempelai">
             <article class="couple-section__person">
@@ -398,7 +390,6 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── Journey of Love / Story ──────────────────────── -->
         {sections.story && (
           <section class="story-section">
             <h2 class="story-section__title" data-animate>Journey of Love</h2>
@@ -411,7 +402,6 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── Save the Date / Countdown ──────────────────────── -->
         {sections.countdown && settings.countdown_enabled && (
           <section class="countdown-section" data-animate>
             <h2 class="event-section__title" data-animate>Save The Date</h2>
@@ -436,7 +426,6 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── Events Section ─────────────────────────────────── -->
         {sections.eventDetails && (
           <section class="event-section" id="event">
             {(eventImage || saveDateImage) && (
@@ -472,40 +461,11 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── Attire Guide ──────────────────────────────────── -->
-        <!-- <section class="attire-section">
-          <div class="attire-section__inner" data-animate>
-            <h2 class="attire-section__title">A Guide to Attire</h2>
-            <p class="attire-section__text">{text.attireMessage}</p>
-          </div>
-        </section> -->
-
-        <!-- ── Virtual Photo Booth ──────────────────────────── -->
-        <!-- <section class="photobooth-section">
-          <div class="photobooth-section__inner" data-animate>
-            <p class="photobooth-section__eyebrow">Capture Your Moment</p>
-            <h2 class="photobooth-section__title">Virtual Photo<br />Booth</h2>
-            <p class="photobooth-section__text">{text.photoBooth}</p>
-            <a
-              class="template-btn"
-              href={themeContent.photoBoothUrl || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              📷 Mulai Berfoto
-            </a>
-          </div>
-        </section> -->
-
-        <!-- ── Gallery / Our Moment ─────────────────────────── -->
         {sections.gallery && settings.gallery_enabled && activeGallery.length > 0 && (
           <section class="gallery-section" id="gallery-section">
             <div class="gallery-container">
               <div class="gallery-header" data-animate data-stagger-heading>
                 <h2 class="section-title gallery-section__title">Our Moment</h2>
-                {/* <p class="gallery-section__quote">{text.galleryQuote}</p>
-                <p class="gallery-section__byline">{wedding.groom_name} &amp; {wedding.bride_name}</p>
-                <div class="section-rule"></div> */}
               </div>
               <div class={`gallery-grid ${galleryColClass}`}>
                 {activeGallery.map((image, index) => {
@@ -549,12 +509,8 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── RSVP ─────────────────────────────────────────── -->
         {sections.rsvp && settings.rsvp_enabled && (
           <section class="rsvp-row" id="rsvp" data-rsvp-section>
-            {/* <div class="rsvp-row__media" data-animate>
-              <SmartImage src={rsvpImage} alt="" loading="lazy" />
-            </div> */}
             <div class="rsvp-row__content">
               <section class="rsvp-section" data-animate>
                 <div class="rsvp-container">
@@ -670,7 +626,6 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── Wedding Gift ──────────────────────────────────── -->
         {sections.gift && settings.gift_enabled && (
           <section class="gift-section" id="gift" data-animate data-gift-section>
             <div class="gift-container">
@@ -687,7 +642,6 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <!-- ── Closing / Thank You ───────────────────────────── -->
         <section class="closing-row">
           {closingImage && (
             <div class="closing-row__media" data-animate>
@@ -728,7 +682,6 @@ const activeStory = wedding.story && wedding.story.length > 0
 
       </main>
 
-      <!-- Music toggle -->
       {sections.music && (
         <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
           <div class="audio-icon-wrapper">
@@ -753,5 +706,3 @@ const activeStory = wedding.story && wedding.story.length > 0
 <script>
   import './script.js';
 </script>
-
-

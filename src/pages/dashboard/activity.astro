@@ -119,7 +119,6 @@ function formatFullDate(dateStr: string): string {
   activeNav="activity"
   breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Activity Log" }]}
 >
-  <!-- Page Header -->
   <header class="admin-page-header">
     <div class="admin-page-header__left">
       <h1 class="admin-page-header__title">Activity Log</h1>
@@ -148,7 +147,6 @@ function formatFullDate(dateStr: string): string {
     </div>
   </header>
 
-  <!-- Stats Grid -->
   <section class="metric-grid" aria-label="Activity summary statistics">
     <div class="metric-card">
       <div class="metric-card__top">
@@ -199,7 +197,6 @@ function formatFullDate(dateStr: string): string {
     </div>
   </section>
 
-  <!-- Filter Card -->
   <section class="shadcn-card" style="margin-bottom: 24px;">
     <div class="shadcn-card__header">
       <div class="shadcn-card__title-wrap">
@@ -284,7 +281,6 @@ function formatFullDate(dateStr: string): string {
     </div>
   </section>
 
-  <!-- Logs Table Card -->
   <section class="shadcn-card">
     <div class="shadcn-card__header">
       <div class="shadcn-card__title-wrap">
@@ -402,7 +398,6 @@ function formatFullDate(dateStr: string): string {
       </div>
     )}
 
-    <!-- Card Footer & Pagination -->
     <div class="shadcn-card__footer">
       <span>
         Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>

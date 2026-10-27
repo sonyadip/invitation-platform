@@ -170,7 +170,6 @@ if (Astro.request.method === 'POST') {
   )}
 
   <form class="form-panel" id="new-invitation-form" method="POST" enctype="multipart/form-data">
-    <!-- GENERAL SETTINGS -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">⚙️</span>
@@ -211,13 +210,11 @@ if (Astro.request.method === 'POST') {
         </div>
       </div>
 
-      <!-- Access & Client Security -->
       <div style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 14px;">
         <div style="font-weight: 600; font-size: 13px; color: var(--admin-zinc-950); display: flex; align-items: center; gap: 6px;">
           <span>🔐</span> Access & Client Security
         </div>
 
-        <!-- Guest Password Gate -->
         <div style="background: #ffffff; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
             <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; color: var(--admin-zinc-900);">
@@ -232,7 +229,6 @@ if (Astro.request.method === 'POST') {
           </div>
         </div>
 
-        <!-- Client Password -->
         <div style="background: #ffffff; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
             <span style="font-weight: 600; font-size: 13px; color: var(--admin-zinc-900);">Client Dashboard Password</span>
@@ -245,7 +241,6 @@ if (Astro.request.method === 'POST') {
         </div>
       </div>
 
-      <!-- Feature Toggles Grid -->
       <div style="margin-top: 10px;">
         <label style="margin-bottom: 8px; font-weight: 600;">Active Features</label>
         <div class="toggle-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px;">
@@ -264,7 +259,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- OPENING & HERO -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">🖼️</span>
@@ -301,7 +295,6 @@ if (Astro.request.method === 'POST') {
           <input name="heroVideoUrl" value={values.heroVideoUrl} placeholder="https://example.com/hero.mp4" />
         </div>
 
-        <!-- Slider Images Repeater -->
         <div class="field-group wide" style="margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--admin-border-subtle);">
           <label style="font-weight: 600;">Slider / Slideshow Photos (Optional)</label>
           <span class="hint">Photos for opening slider. If left empty, gallery photos will be used automatically.</span>
@@ -334,7 +327,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- COUPLE -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">💍</span>
@@ -345,7 +337,6 @@ if (Astro.request.method === 'POST') {
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-        <!-- Groom Card -->
         <div style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
           <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; color: var(--admin-zinc-950);">🤵 Groom Profile</h3>
           <div class="form-grid cols-1">
@@ -388,7 +379,6 @@ if (Astro.request.method === 'POST') {
           </div>
         </div>
 
-        <!-- Bride Card -->
         <div style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
           <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; color: var(--admin-zinc-950);">👰 Bride Profile</h3>
           <div class="form-grid cols-1">
@@ -433,7 +423,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- EVENTS -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">📅</span>
@@ -502,7 +491,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- LOVE STORY -->
     <div class="form-card" data-setting-target="storyEnabled">
       <div class="form-card__header">
         <span class="section-icon">📖</span>
@@ -538,7 +526,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- GALLERY -->
     <div class="form-card" data-setting-target="galleryEnabled">
       <div class="form-card__header">
         <span class="section-icon">📸</span>
@@ -579,7 +566,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- GIFTS & QRIS -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">🎁</span>
@@ -634,7 +620,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- MUSIC -->
     <div class="form-card" data-setting-target="musicEnabled">
       <div class="form-card__header">
         <span class="section-icon">🎵</span>
@@ -656,7 +641,6 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
-    <!-- Sticky Bottom Actions Bar -->
     <div class="form-actions-bar">
       <a href="/dashboard" class="btn-shadcn btn-shadcn--outline">Cancel</a>
       <button type="submit" class="btn-shadcn btn-shadcn--primary">
@@ -670,7 +654,6 @@ if (Astro.request.method === 'POST') {
     </div>
   </form>
 
-  <!-- Templates for Dynamic Repeaters -->
   <template id="event_template">
     <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
       <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Event <span class="idx"></span></div>
@@ -874,7 +857,6 @@ if (Astro.request.method === 'POST') {
     });
   }
 
-  // Automatic Smart OG Image Generator (1200x630)
   import { createOgImageBlob } from '../../utils/og-generator';
 
   const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
@@ -928,7 +910,6 @@ if (Astro.request.method === 'POST') {
     }
   });
 
-  // Auto Media Compression (WebP image resize + LAME MP3 128kbps)
   import('../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
     if (newForm) bindAutoMediaCompression(newForm);
   }).catch(console.warn);

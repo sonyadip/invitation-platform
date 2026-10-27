@@ -288,7 +288,6 @@ if (clientSlug) {
   try {
     const clientData = await getInvitationByDomainOrSlug(clientSlug, false);
     if (clientData) {
-      // Merge wedding details
       const wedding = {
         ...defaultData.wedding,
         ...clientData.wedding,
@@ -303,12 +302,11 @@ if (clientSlug) {
         story: (clientData.wedding.story && clientData.wedding.story.length > 0)
           ? clientData.wedding.story
           : defaultData.wedding.story,
-        music_url: defaultData.wedding.music_url, // Lagu dipertahankan sesuai permintaan pengguna
+        music_url: defaultData.wedding.music_url,
         template: templateKey,
         status: 'published' as const
       };
 
-      // Ensure all layouts are enabled and complete
       const settings = {
         ...defaultData.settings,
         ...clientData.settings,
@@ -354,7 +352,6 @@ if (clientSlug) {
         }
       };
 
-      // Build complete events
       let events = (clientData.events && clientData.events.length > 0)
         ? clientData.events.map((evt, idx) => ({
             ...evt,

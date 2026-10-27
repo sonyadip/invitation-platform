@@ -29,6 +29,11 @@ src/templates/
     style.scss
     script.js
     assets/
+  terre/
+    TerreTemplate.astro
+    style.scss
+    script.js
+    assets/
 ```
 
 Rules:

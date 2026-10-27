@@ -163,7 +163,6 @@ export const getInstagramUsername = (url: string | undefined | null): string => 
     }
     return 'Instagram';
   } catch (e) {
-    // If not a URL, it might be raw text or a bad URL.
     const rawName = url.split('/').filter(Boolean).pop() || '';
     if (!rawName) return 'Instagram';
     return rawName.startsWith('@') ? rawName.slice(1) : rawName;
@@ -203,4 +202,3 @@ export const decodeHtmlEntities = (str: string | undefined | null): string => {
   }
   return decoded;
 };
-

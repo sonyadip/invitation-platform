@@ -9,7 +9,7 @@ import galleryTwo from './assets/gallery-2.webp';
 import galleryThree from './assets/gallery-3.webp';
 import galleryFour from './assets/gallery-4.webp';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import './style.scss';
+import styleUrl from './style.scss?url';
 
 import {
   formatChildPrefix,
@@ -211,6 +211,7 @@ const brideParentLines = buildCoupleLines(
   to={guestName}
   templateClass="template-air"
   image={coverImage || heroImage}
+  styleUrl={styleUrl}
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
@@ -221,7 +222,6 @@ const brideParentLines = buildCoupleLines(
       />
     )}
 
-    {/* COVER SECTION */}
     <div class="cover-section" data-template-cover>
       <div class="cover-section__slides" data-hero-section-slider>
         {heroSlides.map((slide, index) => (
@@ -237,18 +237,15 @@ const brideParentLines = buildCoupleLines(
         ))}
       </div>
       <div class="cover-section__top">
-        <a class="cover-section__brand" href={googleCalendarUrl} target="_blank" rel="noopener noreferrer" title="Simpan ke Kalender">Save The Date</a>
+        <div class="cover-section__guest-top">
+          <span class="cover-section__guest-label">Kepada Yth.</span>
+          <span class="cover-section__guest-name">{guestName || 'Nama Tamu'}</span>
+        </div>
         <span class="cover-section__date">{formattedDate}</span>
       </div>
       <div class="cover-section__content">
         <p class="cover-section__subtitle">The Wedding Of</p>
         <h1 class="cover-section__title">{wedding.groom_name}<br /><span class="cover-section__amp">&amp;</span>&nbsp;&nbsp;{wedding.bride_name}</h1>
-        {guestName && (
-          <div class="cover-section__guest">
-            <span>Kepada Yth.</span>
-            <strong>{guestName}</strong>
-          </div>
-        )}
         <button class="template-btn template-btn--light cover-section__btn" data-template-open type="button">
           <svg class="template-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
@@ -259,9 +256,7 @@ const brideParentLines = buildCoupleLines(
       </div>
     </div>
 
-    {/* MAIN LAYOUT */}
     <div class="invitation-layout" data-template-layout style="display: none;">
-      {/* LEFT FIXED SIDEBAR (desktop only) */}
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section cover-section">
           <div class="cover-section__slides" data-hero-section-slider>
@@ -270,24 +265,20 @@ const brideParentLines = buildCoupleLines(
             ))}
           </div>
           <div class="cover-section__top">
-            <a class="cover-section__brand" href={googleCalendarUrl} target="_blank" rel="noopener noreferrer" title="Simpan ke Kalender">Save The Date</a>
+            <div class="cover-section__guest-top">
+              <span class="cover-section__guest-label">Kepada Yth.</span>
+              <span class="cover-section__guest-name">{guestName || 'Nama Tamu'}</span>
+            </div>
             <span class="cover-section__date">{formattedDate}</span>
           </div>
           <div class="cover-section__content">
             <p class="cover-section__subtitle">The Wedding Of</p>
             <h2 class="cover-section__title">{wedding.groom_name}<br /><span class="cover-section__amp">&amp;</span>&nbsp;&nbsp;{wedding.bride_name}</h2>
-            {guestName && (
-              <div class="cover-section__guest">
-                <span>Kepada Yth.</span>
-                <strong>{guestName}</strong>
-              </div>
-            )}
           </div>
         </aside>
       </div>
 
       <main class="invitation-main">
-        {/* HERO SECTION */}
         <section class="hero-section" id="hero-section">
           <div class="hero-section__media" data-hero-section-slider>
             {heroSlides.map((slide, index) => (
@@ -295,18 +286,15 @@ const brideParentLines = buildCoupleLines(
             ))}
           </div>
           <div class="hero-section__top">
-            <a class="hero-section__brand" href={googleCalendarUrl} target="_blank" rel="noopener noreferrer" title="Simpan ke Kalender">Save The Date</a>
+            <div class="hero-section__guest-top">
+              <span class="hero-section__guest-label">Kepada Yth. Bapak/Ibu/Saudara/i</span>
+              <span class="hero-section__guest-name">{guestName || 'Nama Tamu'}</span>
+            </div>
             <span class="hero-section__date">{formattedDate}</span>
           </div>
           <div class="hero-section__content">
             <p class="hero-section__kicker">The Wedding Of</p>
             <h2 class="hero-section__title">{wedding.groom_name}<br /><span class="hero-section__amp">&amp;</span>&nbsp;&nbsp;{wedding.bride_name}</h2>
-            {guestName && (
-              <div class="hero-section__guest">
-                <span>Kepada Yth.</span>
-                <strong>{guestName}</strong>
-              </div>
-            )}
             <a href="#intro-section" class="hero-section__scroll-btn" aria-label="Lihat Detail">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -316,7 +304,6 @@ const brideParentLines = buildCoupleLines(
           </div>
         </section>
 
-        {/* INTRO SECTION */}
         <section class="intro-section template-section" id="intro-section">
           <p data-animate="fade-up">
             "Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu."
@@ -324,11 +311,9 @@ const brideParentLines = buildCoupleLines(
           </p>
         </section>
 
-        {/* COUPLE SECTION */}
         {sections.coupleInfo && (
           <section class="template-section couple-section" id="couple-section">
             <div class="couple-swiss">
-              <!-- BRIDE WRAPPER -->
               <div class="couple-swiss__wrapper couple-swiss__wrapper--bride">
                 <span class="vertical-role vertical-role--left">The Bride</span>
                 <div class="couple-swiss__item couple-swiss__item--bride-img" data-animate="fade-up">
@@ -367,7 +352,6 @@ const brideParentLines = buildCoupleLines(
                 </div>
               </div>
 
-              <!-- GROOM WRAPPER -->
               <div class="couple-swiss__wrapper couple-swiss__wrapper--groom">
                 <span class="vertical-role vertical-role--right">The Groom</span>
                 <div class="couple-swiss__item couple-swiss__item--groom-img" data-animate="fade-up">
@@ -409,7 +393,6 @@ const brideParentLines = buildCoupleLines(
           </section>
         )}
 
-        {/* OUR STORY SECTION */}
         {sections.story && (
           <section class="template-section story-section" id="story-section">
             <div class="template-section__head" data-animate="fade-up">
@@ -427,12 +410,8 @@ const brideParentLines = buildCoupleLines(
           </section>
         )}
 
-        {/* EVENTS SECTION */}
         {sections.eventDetails && (
           <section class="template-section events-section" id="events-section">
-            {/* <div class="template-section__head" data-animate="fade-up">
-              <h3>Events</h3>
-            </div> */}
             <div class="events-section__grid">
               {activeEvents.map((evt) => (
                 <article class="event-card" data-animate="fade-up">
@@ -459,11 +438,9 @@ const brideParentLines = buildCoupleLines(
           </section>
         )}
 
-        {/* COUNTDOWN SECTION */}
         {sections.countdown && settings.countdown_enabled && (
           <section class="countdown-section template-section" data-animate="fade-up">
             <div class="countdown-section__head">
-              {/* <span>Waktu yang Dinanti</span> */}
               <h3>Save The Date</h3>
             </div>
             <CountdownTimer date={wedding.wedding_date} />
@@ -476,7 +453,6 @@ const brideParentLines = buildCoupleLines(
           </section>
         )}
 
-        {/* GALLERY SECTION */}
         {sections.gallery && settings.gallery_enabled && (activeGallery.length > 0 || (videoUrl && videoUrl.trim() !== "")) && (
           <section class="template-section gallery-section" id="gallery-section">
             <div class="template-section__head" data-animate="fade-up">
@@ -514,7 +490,6 @@ const brideParentLines = buildCoupleLines(
           </section>
         )}
 
-        {/* RSVP & WISHES SECTION */}
         {sections.rsvp && settings.rsvp_enabled && (
           <section class="template-section rsvp-section" id="rsvp-section" data-rsvp-section>
             <div class="template-section__head" data-animate="fade-up">
@@ -616,7 +591,6 @@ const brideParentLines = buildCoupleLines(
           </section>
         )}
 
-        {/* GIFT SECTION */}
         {sections.gift && settings.gift_enabled && (
           <section class="template-section gift-section" data-gift-section>
             <div class="template-section__head" data-animate="fade-up">
@@ -635,7 +609,6 @@ const brideParentLines = buildCoupleLines(
           </section>
         )}
 
-        {/* THANK YOU SECTION */}
         <section class="thankyou-section">
           <SmartImage class="thankyou-section__bg" src={closingImage} alt="" aria-hidden="true" />
           <div class="thankyou-section__inner" data-animate="fade-up" style="--animate-delay: 300ms;">
@@ -690,7 +663,6 @@ const brideParentLines = buildCoupleLines(
         </section>
       </main>
 
-      {/* AUDIO FLOATING TOGGLE */}
       {sections.music && (
                         <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
           <div class="audio-icon-wrapper">
@@ -715,6 +687,3 @@ const brideParentLines = buildCoupleLines(
 <script>
   import './script.js';
 </script>
-
-
-

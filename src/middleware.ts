@@ -11,7 +11,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = url.pathname;
   const acceptHeader = context.request.headers.get('accept') || '';
 
-  // 1. LLM Markdown context
   if (acceptHeader.includes('text/markdown') && (pathname === '/' || pathname === '')) {
     const markdown = `# Senadda - Undangan Pernikahan Digital
 
@@ -41,36 +40,28 @@ Silakan merujuk ke [/llms.txt](/llms.txt) untuk konteks lengkap agen AI.
     });
   }
 
-  // 2. Resolve cryptographically verified session
   const session = await getSessionFromCookies(context.cookies);
   context.locals.session = session;
 
-  // 3. Protect /dashboard routes
   if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
-    const segments = pathname.split('/').filter(Boolean); // e.g. ['dashboard'] or ['dashboard', 'slug', 'edit']
-    const isRootDashboard = segments.length === 1; // '/dashboard'
-    const subRoute = segments[1]; // 'activity', 'new', 'settings', or [slug]
+    const segments = pathname.split('/').filter(Boolean);
+    const isRootDashboard = segments.length === 1;
+    const subRoute = segments[1];
 
-    // Admin exclusive global pages
     if (isRootDashboard || subRoute === 'activity' || subRoute === 'new' || subRoute === 'settings') {
       if (session?.role !== 'admin') {
         return context.redirect('/?login=admin');
       }
     } else {
-      // Slug-based dashboard: /dashboard/:slug[/subpage]
       const slug = subRoute;
-      const action = segments[2]; // 'edit', 'revisions', 'rsvp', 'kirim-undangan', 'profile'
+      const action = segments[2];
 
-      // Admin has full access to all client dashboards and edit tools
       if (session?.role === 'admin') {
-        // Proceed downstream
       } else if (session?.role === 'client' && session.slug === slug) {
-        // Edit and Revisions are strictly Admin-only
         if (action === 'edit' || action === 'revisions') {
           return context.redirect(`/dashboard/${slug}`);
         }
       } else {
-        // Not authenticated or attempting to access unauthorized slug
         return context.redirect('/?login=client');
       }
     }
@@ -81,8 +72,11 @@ Silakan merujuk ke [/llms.txt](/llms.txt) untuk konteks lengkap agen AI.
     const duration = Date.now() - startTime;
     response.headers.set('X-Request-Id', requestId);
     response.headers.set('Server-Timing', `total;dur=${duration}`);
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-    // Log server errors (5xx) with structured metadata
     if (response.status >= 500) {
       console.error(
         JSON.stringify({

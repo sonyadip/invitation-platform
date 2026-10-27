@@ -15,7 +15,6 @@ export function parseUserAgent(uaString: string | null | undefined): ParsedUserA
 
   const ua = uaString.toLowerCase();
 
-  // 1. Detect Device Type
   let deviceType: 'mobile' | 'tablet' | 'desktop' = 'desktop';
   const isTablet = /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk)/i.test(ua);
   const isMobile = /(iphone|ipod|android.*mobile|windows phone|blackberry|mobile|opera mini|iemobile|facebookexternalhit|whatsapp|instagram|telegram)/i.test(ua);
@@ -28,7 +27,6 @@ export function parseUserAgent(uaString: string | null | undefined): ParsedUserA
     deviceType = 'desktop';
   }
 
-  // 2. Detect Operating System
   let os: 'iOS' | 'Android' | 'Windows' | 'macOS' | 'Linux' | 'Other' = 'Other';
   if (/iphone|ipad|ipod/i.test(ua)) {
     os = 'iOS';
@@ -42,7 +40,6 @@ export function parseUserAgent(uaString: string | null | undefined): ParsedUserA
     os = 'Linux';
   }
 
-  // 3. Detect Browser / In-App WebView
   let browser = 'Other';
   if (/whatsapp/i.test(ua)) {
     browser = 'WhatsApp';
@@ -208,4 +205,3 @@ export function isLiveTrackingEnvironment(hostname?: string | null): boolean {
 
   return !isLocalHost(host);
 }
-

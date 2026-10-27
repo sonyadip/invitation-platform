@@ -29,7 +29,6 @@ export async function logActivity(entry: CreateActivityLogInput): Promise<void> 
       console.warn('[ActivityLog] Non-critical: Failed to insert activity log:', error.message);
     }
   } catch (err) {
-    // Non-critical: catch all errors so calling functions continue smoothly
     console.warn('[ActivityLog] Non-critical exception during logging:', err instanceof Error ? err.message : err);
   }
 }

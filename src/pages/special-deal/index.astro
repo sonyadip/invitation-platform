@@ -1,0 +1,3837 @@
+---
+export const prerender = false;
+Astro.response.headers.set('Link', '</llms.txt>; rel="describedby"');
+
+import airCover from "../../templates/air/assets/cover.webp";
+import deauvilleCover from "../../templates/deauville/assets/cover.webp";
+import ivoryCover from "../../templates/ivory/assets/bg-hero.webp";
+import noirCover from "../../templates/noir/assets/cover.webp";
+import ochreMotionCover from "../../templates/ochre/assets/gallery-8.webp";
+import sageCover from "../../templates/sage/assets/bg-hero.webp";
+import editorialCover from "../../templates/editorial/assets/cover.webp";
+import lumiereCover from "../../templates/lumiere/assets/cover.webp";
+import lumiereMetatahCover from "../../templates/lumiere-metatah/assets/cover.webp";
+import lumiereMetatahV2Cover from "../../templates/lumiere-metatah-v2/assets/cover.webp";
+import atelierCover from "../../templates/atelier/assets/cover.webp";
+import terreCover from "../../templates/terre/assets/cover.webp";
+import GoogleAnalytics from "../../components/common/GoogleAnalytics.astro";
+import { getPlatformSettings } from "../../services/platform-settings";
+
+const siteSettings = await getPlatformSettings();
+const getWaUrl = (templateName?: string, promoPrice?: string) => {
+  const base = siteSettings.whatsapp_url || "https://wa.me/6288236262247";
+  const message = templateName 
+    ? `Halo Admin Senadda, saya tertarik untuk membuat undangan digital dengan tema *${templateName}* seharga promo *${promoPrice || ''}*. Boleh minta informasi mengenai cara pemesanannya?`
+    : `Halo Admin Senadda, saya tertarik untuk membuat undangan digital dengan harga promo. Boleh minta informasi mengenai cara pemesanannya?`;
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}text=${encodeURIComponent(message)}`;
+};
+const defaultBookingUrl = getWaUrl();
+
+const navItems = [
+  ["Koleksi", "#templates"],
+  ["Fitur", "#features"],
+  ["FAQ", "#faq"],
+  ["Konsultasi", "#booking"],
+];
+
+const headingWords = [
+  siteSettings.home_heading_1 || "Undangan",
+  siteSettings.home_heading_2 || "Pernikahan",
+  siteSettings.home_heading_3 || "Digital",
+];
+
+const imageMap: Record<string, string> = {
+  lumiere: lumiereCover.src,
+  "lumiere-metatah": lumiereMetatahCover.src,
+  "lumiere-metatah-v2": lumiereMetatahV2Cover.src,
+  editorial: editorialCover.src,
+  atelier: atelierCover.src,
+  deauville: deauvilleCover.src,
+  air: airCover.src,
+  noir: noirCover.src,
+  terre: terreCover.src,
+  sage: sageCover.src,
+  ochre: ochreMotionCover.src,
+  ivory: ivoryCover.src
+};
+
+const defaultTemplateCards = [
+  { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereCover.src },
+  { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahCover.src },
+  { key: "lumiere-metatah-v2", name: "Lumiere v2", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahV2Cover.src },
+  { key: "atelier", name: "Atelier", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: atelierCover.src },
+  { key: "editorial", name: "Editorial", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000", image: editorialCover.src },
+  { key: "deauville", name: "Deauville", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: deauvilleCover.src },
+  { key: "air", name: "Air", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: airCover.src },
+  { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: noirCover.src },
+  { key: "terre", name: "Terre", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: terreCover.src },
+];
+
+const resolveCategory = (c: any): 'pernikahan' | 'metatah' => {
+  if (c.category && typeof c.category === 'string') {
+    return c.category.toLowerCase().includes('metatah') ? 'metatah' : 'pernikahan';
+  }
+  const id = `${c.key || ''}`.toLowerCase();
+  return id.includes('metatah') ? 'metatah' : 'pernikahan';
+};
+
+let rawCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
+  ? siteSettings.home_template_cards.map((c: any) => ({
+      ...c,
+      name: c.key === 'lumiere-metatah' ? 'Lumiere' : (c.key === 'lumiere-metatah-v2' ? (c.name || 'Lumiere v2') : (c.name || 'Lumiere')),
+      category: resolveCategory(c),
+      promoPrice: c.promo_price || c.promoPrice || null,
+      image: c.image || imageMap[c.key] || ''
+    }))
+  : defaultTemplateCards;
+
+if (!rawCards.some((c: any) => resolveCategory(c) === 'metatah')) {
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.category === 'metatah')];
+}
+
+if (!rawCards.some((c: any) => c.key === 'terre')) {
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.key === 'terre')];
+}
+
+const parsePrice = (p?: string | null) => parseInt((p || '').replace(/\D/g, ''), 10) || 0;
+const formatRupiah = (val: number) => 'Rp ' + val.toLocaleString('id-ID');
+
+rawCards = rawCards.map((c: any) => {
+  const homePromoVal = parsePrice(c.promoPrice || c.price);
+  const halfVal = Math.round(homePromoVal / 2);
+  return {
+    ...c,
+    price: c.promoPrice || c.price,
+    promoPrice: formatRupiah(halfVal)
+  };
+});
+
+rawCards.sort((a: any, b: any) => parsePrice(b.price) - parsePrice(a.price) || parsePrice(b.promoPrice) - parsePrice(a.promoPrice));
+
+const templateCards = rawCards;
+
+const statNumber = (siteSettings.home_stat_number && siteSettings.home_stat_number !== '6+')
+  ? siteSettings.home_stat_number
+  : `${templateCards.length}+`;
+
+const stats = [
+  [statNumber, siteSettings.home_stat_label || "Koleksi\nEksklusif"],
+];
+
+const heroMotionCards = templateCards;
+
+const features = [
+  "Tamu Tanpa Batas",
+  "RSVP & Ucapan",
+  "Amplop Digital",
+  "Navigasi Maps",
+  "Total 12 Foto",
+  "Musik Latar",
+  "Hitung Mundur",
+  "Kisah Cinta",
+  "Total 1 Video",
+  "Simpan Kalender",
+  "Link Instagram",
+  "Aktif 1 Bulan",
+  "Dashboard Analytics",
+  "Export Data Tamu",
+];
+
+const addons = [
+  { name: "Prioritas 24 jam", price: "+ 50.000" },
+  { name: "Tambah Foto", price: "+ 5.000 / foto" },
+  { name: "Tambah Video", price: "+ 20.000 / video" },
+];
+
+const faqs = [
+
+  {
+    q: "Waktu Pengerjaan Undangan",
+    a: "Proses pembuatan biasanya memakan waktu 1 hingga 3 hari kerja setelah semua data acara dan foto kami terima dengan lengkap. Tersedia juga fasilitas prioritas 24 jam."
+  },
+  {
+    q: "Pengganti Video Background",
+    a: "Jika template memiliki background video tapi Anda tidak punya video, kami bisa menggantinya dengan fitur image slider (slideshow) yang akan memutar foto-foto Anda secara bergantian."
+  },
+  {
+    q: "Fasilitas Revisi Minor",
+    a: "Kami memberikan fasilitas revisi minor sepuasnya. Ini berlaku untuk perbaikan typo nama, ganti lagu, ganti foto, ganti quotes, penyesuaian lokasi, hingga menghapus section tertentu."
+  },
+  {
+    q: "Fasilitas Revisi Mayor",
+    a: "Untuk revisi mayor, kami sediakan jatah satu kali. Perlu dicatat, Anda tidak bisa mengganti tema undangan, tapi Anda diperbolehkan merombak ulang posisi atau susunan section-nya."
+  },
+  {
+    q: "Masa Aktif Tautan Undangan",
+    a: "Link undangan akan tetap aktif sampai satu bulan setelah acara selesai, jadi Anda masih punya banyak waktu untuk membaca ulang ucapan-ucapan dari para tamu."
+  },
+  {
+    q: "Cara Membagikan Undangan",
+    a: "Anda akan mendapat akses dashboard khusus untuk memasukkan daftar nama tamu. Dari situ, sistem bisa langsung men-generate link unik per orang untuk Anda sebar via WhatsApp."
+  },
+  {
+    q: "Cara Menulis Nama Tamu Manual",
+    a: "Selain lewat dashboard, Anda bisa menulis nama tamu manual dengan menambahkan <code>?to=Nama+Tamu</code> di akhir link undangan. Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code> (ganti spasi dengan tanda +)."
+  },
+  {
+    q: "Perubahan Setelah Undangan Dibagikan",
+    a: "Kalau ada perubahan jadwal atau lokasi mendadak, infokan saja ke kami. Nanti link undangan yang sudah disebar akan otomatis ter-update mengikuti info yang baru."
+  },
+  {
+    q: "Konfirmasi Kehadiran & Ucapan",
+    a: "Di undangan ada form khusus agar tamu bisa mengirim ucapan dan mengonfirmasi kehadiran (RSVP). Semua datanya akan terekap otomatis dan bisa Anda pantau dari dashboard."
+  }
+];
+
+const midFaq = Math.ceil(faqs.length / 2);
+const faqCol1 = faqs.slice(0, midFaq);
+const faqCol2 = faqs.slice(midFaq);
+
+const pageTitle = siteSettings.meta_title || "Senadda - Undangan Digital Bali";
+const pageDescription = siteSettings.meta_description || "Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.";
+const pageKeywords = "undangan digital bali, senada undangan digital, senadda, senadda id, senadda.id, senada, undangan senada, undangan senada bali, undangan digital senada, jasa undangan digital bali, undangan pernikahan bali, undangan pernikahan digital, undangan pawiwahan bali, undangan metatah bali, undangan mepandes, undangan digital denpasar, platform undangan digital";
+const pageUrl = "https://senadda.id/";
+const faviconPath = "/logo.jpg";
+const pageImage = new URL(faviconPath, pageUrl).toString();
+
+const schemaData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://senadda.id/#website",
+      "url": pageUrl,
+      "name": pageTitle,
+      "alternateName": [
+        "Senada",
+        "Senada ID",
+        "Senada.id",
+        "Undangan Senada",
+        "Senada Undangan Digital",
+        "Undangan Digital Senada",
+        "Senada Bali",
+        "Senadda",
+        "Senadda ID",
+        "Senadda.id",
+        "Undangan Senadda"
+      ],
+      "description": pageDescription,
+      "inLanguage": "id-ID",
+      "publisher": {
+        "@id": "https://senadda.id/#organization"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://senadda.id/#organization",
+      "name": "Senadda",
+      "alternateName": [
+        "Senada",
+        "Senada ID",
+        "Senada.id",
+        "Undangan Senada",
+        "Senada Undangan Digital",
+        "Undangan Digital Senada",
+        "Senada Bali",
+        "Undangan Senadda",
+        "Senadda ID"
+      ],
+      "url": pageUrl,
+      "logo": "https://senadda.id/logo.jpg",
+      "sameAs": [
+        ...new Set([
+          "https://www.instagram.com/senadda.id",
+          siteSettings.instagram_url,
+          siteSettings.tiktok_url,
+          siteSettings.facebook_url
+        ].filter(Boolean))
+      ]
+    },
+    {
+      "@type": ["LocalBusiness", "ProfessionalService"],
+      "@id": "https://senadda.id/#localbusiness",
+      "name": "Senadda - Undangan Pernikahan Digital Bali",
+      "alternateName": [
+        "Senada",
+        "Senada ID",
+        "Senada.id",
+        "Undangan Senada",
+        "Senada Undangan Digital",
+        "Undangan Digital Senada",
+        "Senada Bali",
+        "Undangan Senada Bali",
+        "Senadda",
+        "Senadda ID",
+        "Senadda.id",
+        "Undangan Senadda",
+        "Senadda Undangan Bali",
+        "Senadda Digital Invitation",
+        "Undangan Digital Bali Senadda"
+      ],
+      "url": pageUrl,
+      "logo": "https://senadda.id/logo.jpg",
+      "image": pageImage,
+      "description": "Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, serta upacara metatah/mepandes.",
+      "telephone": siteSettings.whatsapp_url ? siteSettings.whatsapp_url.replace(/[^0-9+]/g, '') : "+6288236262247",
+      "priceRange": "Rp 150.000 - Rp 450.000",
+      "currenciesAccepted": "IDR",
+      "paymentAccepted": "Bank Transfer, QRIS, Bank BPD Bali, BCA, Mandiri, BRI, BNI",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "opens": "08:00",
+          "closes": "21:00"
+        }
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Koleksi Layanan Undangan Digital Bali",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Undangan Pernikahan Digital Bali",
+              "description": "Layanan pembuatan undangan pernikahan digital modern dan luxury dengan fitur RSVP WhatsApp dan musik latar."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Undangan Pawiwahan Adat Hindu Bali",
+              "description": "Undangan digital bernuansa adat Bali lengkap dengan salam Om Swastyastu, sloka Bhagawad Gita, peta pura/banjar, dan amplop Bank BPD Bali."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Undangan Upacara Metatah / Mepandes Bali",
+              "description": "Koleksi khusus upacara Manusa Yadnya potong gigi khas Bali yang sakral dan elegan."
+            }
+          }
+        ]
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Denpasar",
+        "addressRegion": "Bali",
+        "addressCountry": "ID"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -8.670458,
+        "longitude": 115.212629
+      },
+      "areaServed": [
+        { "@type": "AdministrativeArea", "name": "Bali" },
+        { "@type": "AdministrativeArea", "name": "Denpasar" },
+        { "@type": "AdministrativeArea", "name": "Badung" },
+        { "@type": "AdministrativeArea", "name": "Gianyar" },
+        { "@type": "AdministrativeArea", "name": "Tabanan" },
+        { "@type": "Country", "name": "Indonesia" }
+      ],
+      "knowsAbout": [
+        "Senada",
+        "Senada ID",
+        "Undangan Senada",
+        "Senada Undangan Digital",
+        "Undangan Digital Senada",
+        "Senada Bali",
+        "Senadda",
+        "Senadda ID",
+        "Undangan Senadda",
+        "Undangan Bali",
+        "Undangan Digital Bali",
+        "Jasa Undangan Digital Bali",
+        "Undangan Digital Denpasar",
+        "Undangan Digital Badung",
+        "Undangan Digital Gianyar",
+        "Senadda Undangan Digital",
+        "Undangan Digital",
+        "Undangan Pernikahan",
+        "Undangan Pernikahan Bali",
+        "Undangan Pawiwahan Bali",
+        "Undangan Metatah Bali",
+        "Undangan Mepandes Bali",
+        "RSVP Online",
+        "Website Pernikahan"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://senadda.id/#faq",
+      "mainEntity": faqs.map((item) => ({
+        "@type": "Question",
+        "name": item.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.a.replace(/<[^>]+>/g, '')
+        }
+      }))
+    }
+  ]
+};
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <GoogleAnalytics />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>{pageTitle}</title>
+    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content={pageKeywords} />
+    <meta name="author" content="Senadda" />
+    <link rel="canonical" href="https://senadda.id/" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta property="og:locale" content="id_ID" />
+
+    <meta name="geo.region" content="ID-BA" />
+    <meta name="geo.placename" content="Denpasar, Bali" />
+    <meta name="geo.position" content="-8.670458;115.212629" />
+    <meta name="ICBM" content="-8.670458, 115.212629" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:site_name" content="Senadda" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={pageImage} />
+    <meta property="og:image:secure_url" content={pageImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="739" />
+    <meta property="og:image:height" content="739" />
+    <meta property="og:image:alt" content="Senadda - Undangan Pernikahan Digital Bali" />
+
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:url" content={pageUrl} />
+    <meta property="twitter:title" content={pageTitle} />
+    <meta property="twitter:description" content={pageDescription} />
+    <meta property="twitter:image" content={pageImage} />
+    <meta name="theme-color" content="#17160f" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="preload"
+      href="/fonts/SaolDisplay-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+  </head>
+  <body id="top" class="intro-complete">
+    
+
+    <main>
+      <div id="main-content-wrapper">
+      <nav class="hero-nav" aria-label="Navigasi utama">
+        <a
+          class="brand-logo motion-down"
+          style="--i: 0"
+          href="#top"
+          aria-label="Kembali ke atas"
+        >
+          <img
+            src={siteSettings.logo_url || "/images/senadda-logo.png"}
+            alt={siteSettings.site_name + " Logo"}
+            class="brand-logo__image"
+          />
+        </a>
+
+        <div class="nav-right" style="display: flex; align-items: center; gap: 12px;">
+          <a
+            href={defaultBookingUrl}
+            target="_blank"
+            rel="noreferrer"
+            class="nav-action motion-down"
+            style="--i: 4"
+            id="nav-wa-btn"
+            aria-label="Konsultasi via WhatsApp"
+          >
+            WhatsApp
+          </a>
+        </div>
+      </nav>
+
+      <div class="nav-links" aria-label="Menu desktop">
+        {
+          navItems.map(([label, href], index) => (
+            <a class="motion-down" style={`--i: ${index + 1}`} href={href}>
+              {label}
+            </a>
+          ))
+        }
+      </div>
+
+      <button class="menu-toggle motion-down" style="--i: 5" id="menu-toggle" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+
+      <a
+        href={defaultBookingUrl}
+        target="_blank"
+        rel="noreferrer"
+        class="floating-wa motion-up"
+        style="--i: 6"
+        id="floating-wa"
+        aria-label="Konsultasi via WhatsApp"
+      >
+        <svg viewBox="0 0 448 512" aria-hidden="true">
+          <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+        </svg>
+      </a>
+
+      <div class="hero-shell-placeholder" aria-hidden="true"></div>
+
+      <section class="hero-shell section-observe is-visible" data-section>
+        <div class="hero-sticky">
+          <div class="hero-motion-wrap" aria-hidden="true">
+            <div class="hero-motion">
+              {
+                heroMotionCards.map((template, index) => (
+                  <figure
+                    class={`hero-motion__card${index === 0 ? " is-active" : ""}`}
+                    data-hero-motion-card
+                  >
+                    <img
+                      src={template.image}
+                      alt={`Desain Undangan Digital Bali - ${template.name}`}
+                      loading={index === 0 ? "eager" : "lazy"}
+                      decoding={index === 0 ? "sync" : "async"}
+                    />
+                  </figure>
+                ))
+              }
+            </div>
+
+            <div class="hero-motion-seal">
+              <svg viewBox="0 0 120 120">
+                <defs>
+                  <path
+                    id="hero-motion-seal-path"
+                    d="M60 60 m -43 0 a 43 43 0 1 1 86 0 a 43 43 0 1 1 -86 0"
+                  ></path>
+                </defs>
+                <text>
+                  <textPath href="#hero-motion-seal-path" startOffset="0%">
+                    {siteSettings.home_hero_seal_text || "SENADDA • DIGITAL STUDIO • UNDANGAN •"}
+                  </textPath>
+                </text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="stats-row" aria-label="Statistik platform">
+            <div class="stats-row__inner">
+              {
+                stats.map(([number, label], index) => (
+                  <div class="stat-item motion-up" style={`--i: ${index + 2}`}>
+                    <strong>
+                      <span>+</span>
+                      {number}
+                    </strong>
+                    <p>{label}</p>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="bottom-content" aria-label="Hero content">
+            <div class="bottom-content__top">
+              <div class="hero-cta-wrapper">
+                <div class="hero-wa-anchor" id="hero-wa-anchor" aria-hidden="true"></div>
+                <a class="hero-cta motion-up" style="--i: 6" href="#templates">
+                  {siteSettings.home_cta_label || "Lihat Koleksi"}
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 17 17 7"></path>
+                    <path d="M8 7h9v9"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="bottom-content__main">
+              <p class="description motion-up" style="--i: 7">
+                {siteSettings.home_description || "Bagikan momen bahagia Anda lewat undangan digital yang elegan, tanpa batas jarak dan waktu."}
+              </p>
+              <h1 aria-label={headingWords.join(' ')}>
+                {
+                  headingWords.map((word, index) => (
+                    <span class="heading-mask">
+                      <span class="heading-word" style={`--word-i: ${index}`}>
+                        {word}
+                      </span>
+                    </span>
+                  ))
+                }
+              </h1>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="template-list section-observe"
+        id="templates"
+        data-section
+      >
+        <div class="section-heading">
+          <p>{siteSettings.home_templates_eyebrow || "Koleksi Desain"}</p>
+          <h2>{siteSettings.home_templates_heading || "Pilih Nuansa."}</h2>
+          <p class="section-subheading">Koleksi undangan digital eksklusif untuk pernikahan modern, Pawiwahan adat Hindu Bali, hingga Upacara Metatah / Mepandes dari Senadda.</p>
+        </div>
+
+        <div class="template-filter-bar reveal-blur" role="tablist" aria-label="Filter kategori tema">
+          <button
+            type="button"
+            class="template-filter-btn is-active"
+            role="tab"
+            aria-selected="true"
+            data-filter="pernikahan"
+          >
+            Pernikahan
+          </button>
+          <button
+            type="button"
+            class="template-filter-btn"
+            role="tab"
+            aria-selected="false"
+            data-filter="metatah"
+          >
+            Metatah
+          </button>
+        </div>
+
+        <div class="template-grid" id="template-grid">
+          {
+            templateCards.map((template, index) => (
+              <article
+                class={`template-card${template.category !== 'pernikahan' ? ' is-filtered-out' : ''}`}
+                style={`--template-i: ${index}`}
+                data-category={template.category}
+              >
+                <div class="template-card__media">
+                  <img
+                    src={template.image}
+                    alt={`Undangan Digital ${template.category === 'metatah' ? 'Metatah Adat Bali' : 'Pernikahan Bali'} Tema ${template.name} - Senadda`}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="template-card__body">
+                  <div class="template-card__meta">
+                    <strong>{template.name}</strong>
+                    {template.promoPrice ? (
+                      <div class="template-card__price-wrapper">
+                        <span class="template-card__price template-card__price--original"><s>{template.price}</s></span>
+                        <span class="template-card__price template-card__price--promo">{template.promoPrice}</span>
+                      </div>
+                    ) : (
+                      <span class="template-card__price">{template.price}</span>
+                    )}
+                  </div>
+                  <div class="template-card__actions">
+                    <a
+                      href={`/preview/${template.key}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Preview
+                    </a>
+                    <a href={getWaUrl(template.name, template.promoPrice)} target="_blank" rel="noreferrer">
+                      Pesan
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+
+        <div class="template-empty hidden" id="template-empty">
+          <p>Belum ada template pada kategori ini.</p>
+        </div>
+      </section>
+
+      <section
+        class="dashboard-showcase section-observe"
+        id="dashboard"
+        data-section
+      >
+        <div class="section-heading-centered reveal-blur">
+          <p style="font-size: 11px; margin-bottom: 6px;">Dashboard</p>
+          <h2 style="color: var(--black);">Kelola Undanganmu.</h2>
+        </div>
+
+        <div class="dashboard-tabs">
+          <div class="dashboard-tabs__nav">
+            <span class="dashboard-tabs__indicator"></span>
+            <button class="dashboard-tabs__btn is-active" data-tab="home">
+              <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Dashboard
+            </button>
+            <button class="dashboard-tabs__btn" data-tab="kirim">
+              <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Kirim Undangan
+            </button>
+            <button class="dashboard-tabs__btn" data-tab="rsvp">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              RSVP
+            </button>
+          </div>
+
+          <div class="dashboard-tabs__panels">
+            <div class="dashboard-tabs__panel is-active" data-panel="home">
+              <div class="dashboard-tabs__screenshot">
+                <img
+                  src="/images/dashboard/dashboard-home.png"
+                  alt="Dashboard Manajemen Undangan Digital Senadda"
+                  loading="lazy"
+                  decoding="async"
+                  width="976"
+                  height="686"
+                />
+              </div>
+              <div class="dashboard-tabs__info">
+                <h3>Pantau Semuanya</h3>
+                <p>Lihat ringkasan lengkap undangan: statistik RSVP, jumlah tamu, countdown hari H, rangkaian acara, dan ucapan terbaru dalam satu halaman.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-tabs__panel" data-panel="kirim">
+              <div class="dashboard-tabs__screenshot">
+                <img
+                  src="/images/dashboard/dashboard-kirim.png"
+                  alt="Kirim Undangan Digital WhatsApp - Senadda"
+                  loading="lazy"
+                  decoding="async"
+                  width="976"
+                  height="686"
+                />
+              </div>
+              <div class="dashboard-tabs__info">
+                <h3>Kirim dengan Mudah</h3>
+                <p>Pilih template pesan sesuai nada (Formal, Teman, Keluarga), kelola daftar tamu, dan kirim undangan langsung via WhatsApp. Satu klik, langsung terkirim.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-tabs__panel" data-panel="rsvp">
+              <div class="dashboard-tabs__screenshot">
+                <img
+                  src="/images/dashboard/dashboard-rsvp.png"
+                  alt="Lacak RSVP & Buku Tamu Undangan Digital - Senadda"
+                  loading="lazy"
+                  decoding="async"
+                  width="976"
+                  height="686"
+                />
+              </div>
+              <div class="dashboard-tabs__info">
+                <h3>Lacak Kehadiran</h3>
+                <p>Ringkasan RSVP real-time: siapa yang hadir, berapa total pax, filter berdasarkan status, dan export data tamu kapan saja.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="features-list section-observe"
+        id="features"
+        data-section
+      >
+        <div class="features-container">
+          <div class="section-heading-centered reveal-blur">
+            <h2>Features</h2>
+          </div>
+
+          <ul class="features-grid-simple">
+            {
+              features.map((feature, index) => (
+                <li class="feature-item dark-item" style={`--feature-i: ${index}`}>
+                  <div class="addon-left">
+                    <svg viewBox="0 0 24 24" class="check-box-icon" fill="none" stroke="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <path d="M9 12l2 2 4-4" />
+                    </svg>
+                    {feature}
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="section-heading-centered reveal-blur" style="margin-top: 60px;">
+            <h2>Addon</h2>
+          </div>
+
+          <ul class="addon-list">
+            {
+              addons.map((addon, index) => (
+                <li class="feature-item dark-item" style={`--feature-i: ${index + features.length}`}>
+                  <div class="addon-left">
+                    <svg viewBox="0 0 24 24" class="check-box-icon" fill="none" stroke="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    </svg>
+                    {addon.name}
+                  </div>
+                  <span class="addon-price">{addon.price}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <section class="faq-section section-observe" id="faq" data-section>
+        <div class="faq-section-inner">
+          <div class="section-heading-centered reveal-blur" style="margin-bottom: 50px;">
+            <h2 style="color: var(--black);">FAQ</h2>
+          </div>
+        
+        <style>
+        .faq-section {
+            background-color: var(--white);
+            position: relative;
+            z-index: 2;
+            padding: 110px 20px;
+        }
+        .faq-section-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .faq-section {
+                padding: 120px 48px;
+            }
+        }
+        @media (max-width: 640px) {
+            .faq-section {
+                padding: 60px 16px;
+            }
+        }
+.faq-container,
+        .faq-container *,
+        .faq-container *::before,
+        .faq-container *::after {
+            box-sizing: border-box !important;
+        }
+.faq-container {
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .faq-container {
+                grid-template-columns: repeat(2, 1fr);
+                align-items: start;
+            }
+        }
+
+        .faq-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+.faq-item {
+            background-color: var(--white) !important; 
+            border: 1px solid var(--black) !important; 
+            border-radius: 6px;
+            overflow: hidden;
+            transition: border-color 0.3s var(--ease), opacity 1s var(--ease), transform 1.1s var(--ease), filter 1s var(--ease);
+            width: 100%;
+        }
+
+        .faq-item:hover {
+            border-color: var(--black) !important;
+        }
+
+        .faq-item.active {
+            border-color: var(--black) !important; 
+            box-shadow: 0 10px 30px rgba(23, 22, 15, 0.05) !important;
+        }
+.faq-btn {
+            width: 100%;
+            text-align: left;
+            background: transparent !important; 
+            border: none !important;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            cursor: pointer;
+            outline: none !important; 
+            box-shadow: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        .faq-btn:focus,
+        .faq-btn:active {
+            outline: none !important;
+            background: transparent !important;
+        }
+
+        .faq-question {
+            font-family: var(--font-body) !important;
+            font-size: 18px !important;
+            font-weight: 500 !important;
+            color: var(--black) !important; 
+            margin: 0 !important;
+            padding-right: 15px;
+            line-height: 1.4 !important;
+            transition: color 0.3s var(--ease);
+            flex: 1 1 auto !important; 
+            white-space: normal !important;
+            word-wrap: break-word !important; 
+            word-break: break-word !important;
+            min-width: 0 !important;
+        }
+
+        .faq-icon {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .faq-icon::before,
+        .faq-icon::after {
+            content: '';
+            position: absolute;
+            background-color: var(--black) !important; 
+            transition: transform 0.4s var(--ease), background-color 0.4s var(--ease);
+        }
+        .faq-icon::before { top: 11px; left: 4px; right: 4px; height: 2px; }
+        .faq-icon::after { top: 4px; bottom: 4px; left: 11px; width: 2px; }
+
+        .faq-item.active .faq-icon::after {
+            transform: rotate(90deg);
+            background-color: var(--black) !important;
+        }
+        .faq-item.active .faq-icon::before {
+            background-color: var(--black) !important;
+        }
+.faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s var(--ease);
+        }
+
+        .faq-answer {
+            font-family: var(--font-body) !important;
+            font-size: 15px !important;
+            color: var(--deep-charcoal) !important; 
+            line-height: 1.7 !important;
+            margin: 0 !important;
+            padding: 0 24px 24px 24px !important; 
+        }
+@media (max-width: 767px) {
+            .faq-btn { padding: 20px 16px; }
+            .faq-question { font-size: 16px !important; line-height: 1.5 !important; }
+            .faq-answer { font-size: 14px !important; padding: 0 16px 20px 16px !important; }
+        }
+        </style>
+
+        <div class="faq-container">
+            <div class="faq-col">
+              {faqCol1.map((item) => (
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">{item.q}</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer" set:html={item.a}></p>
+                    </div>
+                </div>
+              ))}
+            </div>
+
+            <div class="faq-col">
+              {faqCol2.map((item) => (
+                <div class="faq-item reveal-blur">
+                    <button class="faq-btn">
+                        <h3 class="faq-question">{item.q}</h3>
+                        <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-content">
+                        <p class="faq-answer" set:html={item.a}></p>
+                    </div>
+                </div>
+              ))}
+            </div>
+        </div>
+
+        <script is:inline>
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach(item => {
+                const btn = item.querySelector('.faq-btn');
+                const content = item.querySelector('.faq-content');
+
+                if (btn && content) {
+                    btn.addEventListener('click', () => {
+                        const isActive = item.classList.contains('active');
+
+                        faqItems.forEach(otherItem => {
+                            otherItem.classList.remove('active');
+                            const otherContent = otherItem.querySelector('.faq-content');
+                            if (otherContent) otherContent.style.maxHeight = null;
+                        });
+
+                        if (!isActive) {
+                            item.classList.add('active');
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    });
+                }
+            });
+        });
+        </script>
+      </section>
+      </div>
+    </main>
+
+      <section class="start section-observe" id="booking" data-section>
+        <p class="reveal-blur">{siteSettings.home_booking_eyebrow || "Langkah Selanjutnya"}</p>
+        <h2 class="reveal-blur" style="--delay: 100ms">
+          {siteSettings.home_booking_heading || "Ceritakan undangan Anda."}
+        </h2>
+        <a
+          class="start__button reveal-blur"
+          style="--delay: 190ms"
+          href={defaultBookingUrl}
+          target="_blank"
+          rel="noreferrer">{siteSettings.home_booking_cta || "Hubungi via WhatsApp"}</a>
+        <footer class="start-footer reveal-blur" style="--delay: 240ms">
+          <div class="start-footer__links">
+            <a href="#templates">Koleksi</a>
+            <a href="#features">Fitur</a>
+            <a href="#faq">FAQ</a>
+            <a href={siteSettings.instagram_url || "https://www.instagram.com/senadda.id"} target="_blank" rel="noopener">Instagram</a>
+            <a href={siteSettings.whatsapp_url || "https://wa.me/088236262247"} target="_blank" rel="noopener">WhatsApp</a>
+          </div>
+          <div class="start-footer__copy">
+            <span>&copy; {new Date().getFullYear()} Senadda</span>
+            <span class="start-footer__dot" aria-hidden="true">&bull;</span>
+            <span>Bali, Indonesia</span>
+          </div>
+        </footer>
+      </section>
+      <dialog id="login-modal" class="login-modal">
+        <div class="login-modal__backdrop" id="login-modal-close"></div>
+        <div class="login-modal__content">
+          <button class="login-modal__close-btn" id="login-modal-close-btn" aria-label="Tutup">
+            <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+          <div class="login-modal__header">
+            <h2>Login</h2>
+            <p>Masuk ke dashboard akun Anda.</p>
+          </div>
+          
+          <form id="login-form-unified" class="login-modal__form" method="POST" action="/api/auth/login">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" name="username" required placeholder="Masukkan username" />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" required placeholder="••••••••" />
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+          </form>
+        </div>
+      </dialog>
+    <script>
+      import { initLenis, getLenis } from "../../scripts/lenis-smooth-scroll";
+
+      initLenis({ duration: 1.1, lerp: 0.08, offset: -84 });
+
+      const loginBtn = document.getElementById("login-btn");
+      const loginModal = document.getElementById("login-modal");
+      const loginModalClose = document.getElementById("login-modal-close");
+      const loginModalCloseBtn = document.getElementById("login-modal-close-btn");
+      const loginFormUnified = document.getElementById("login-form-unified");
+      const menuToggle = document.getElementById("menu-toggle");
+      const navLinks = document.querySelector(".nav-links");
+
+      if (menuToggle && navLinks) {
+        const updateMenuPosition = () => {
+          if (window.innerWidth > 768) {
+            navLinks.style = '';
+            return;
+          }
+          const rect = menuToggle.getBoundingClientRect();
+          const menuHeight = navLinks.offsetHeight;
+          const menuWidth = navLinks.offsetWidth;
+          
+          let topPos;
+          if (rect.bottom + 16 + menuHeight > window.innerHeight) {
+             topPos = rect.top - menuHeight - 16;
+          } else {
+             topPos = rect.bottom + 16;
+          }
+          
+          let leftPos = rect.right - menuWidth;
+          if (leftPos < 16) leftPos = 16;
+          if (leftPos + menuWidth > window.innerWidth - 16) leftPos = window.innerWidth - menuWidth - 16;
+          
+          navLinks.style.position = 'fixed';
+          navLinks.style.top = `${topPos}px`;
+          navLinks.style.bottom = 'auto';
+          navLinks.style.left = `${leftPos}px`;
+          navLinks.style.right = 'auto';
+        };
+
+        const closeMenu = () => {
+          navLinks.classList.remove("is-open");
+          menuToggle.classList.remove("is-open");
+          menuToggle.setAttribute("aria-expanded", "false");
+        };
+
+        menuToggle.addEventListener("click", () => {
+          const isOpen = navLinks.classList.toggle("is-open");
+          menuToggle.classList.toggle("is-open", isOpen);
+          menuToggle.setAttribute("aria-expanded", String(isOpen));
+          if (isOpen) {
+            updateMenuPosition();
+          }
+        });
+
+        navLinks.querySelectorAll("a").forEach(a => {
+          a.addEventListener("click", closeMenu);
+        });
+        
+        document.addEventListener("pointerdown", (e) => {
+          if (navLinks.classList.contains("is-open")) {
+            if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+              closeMenu();
+            }
+          }
+        });
+        
+        window.addEventListener("resize", () => {
+           if (navLinks.classList.contains("is-open")) updateMenuPosition();
+        });
+      }
+
+      if (loginBtn && loginModal && loginModalClose && loginModalCloseBtn) {
+        loginBtn.addEventListener("click", () => {
+          loginModal.setAttribute("open", "true");
+          document.body.style.overflow = "hidden";
+        });
+
+        const closeModal = () => {
+          loginModal.removeAttribute("open");
+          document.body.style.overflow = "";
+        };
+
+        loginModalClose.addEventListener("click", closeModal);
+        loginModalCloseBtn.addEventListener("click", closeModal);
+      }
+      
+      if (loginFormUnified) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const loginType = urlParams.get('login');
+        if (loginType === 'admin' || loginType === 'client') {
+          loginBtn?.click();
+          if (loginType === 'admin') {
+            document.getElementById("username").value = "admin";
+          }
+          
+          if (urlParams.get('error') === '1') {
+            if (!document.getElementById("admin-error")) {
+              const errorMsg = document.createElement("p");
+              errorMsg.id = "admin-error";
+              errorMsg.style.color = "#b91c1c";
+              errorMsg.style.fontSize = "13px";
+              errorMsg.style.marginTop = "0.5rem";
+              errorMsg.innerText = "Username atau Password salah.";
+              loginFormUnified.insertBefore(errorMsg, loginFormUnified.querySelector(".submit-btn"));
+            }
+          }
+        }
+      }
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+      
+
+      const updateReveal = () => {
+        const main = document.querySelector("main");
+        const start = document.querySelector(".start");
+        if (main && start) {
+          main.style.paddingBottom = `${start.offsetHeight}px`;
+        }
+      };
+      window.addEventListener("resize", updateReveal);
+      window.addEventListener("load", updateReveal);
+      setTimeout(updateReveal, 100);
+      setTimeout(updateReveal, 500);
+      updateReveal();
+
+      const sections = document.querySelectorAll("[data-section]");
+      const parallaxItems = document.querySelectorAll("[data-parallax]");
+      const heroSection = document.querySelector(".hero-shell");
+      const heroPlaceholder = document.querySelector(".hero-shell-placeholder");
+      const heroMotionCards = Array.from(
+        document.querySelectorAll("[data-hero-motion-card]"),
+      );
+      const anchorLinks = document.querySelectorAll('a[href^="#"]');
+
+      const heroRevealDuration = 3600;
+      const heroRevealInterval = 6000;
+      const heroIntroRevealDuration = 650;
+      const heroIntroRevealInterval = 820;
+
+      const introEnterDuration = 1100;
+      const introHoldDuration = 700;
+      const introRingShrinkDuration = 1500;
+      const introExitDuration = 1250;
+      const introTotalDuration =
+        introEnterDuration +
+        introHoldDuration +
+        introRingShrinkDuration +
+        introExitDuration;
+      const postIntroRevealDelay = 1800;
+
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      let lastScrollY = 0;
+      let activeHeroMotionCard = 0;
+      let isHeroMotionAnimating = false;
+
+      const isIntroScrollLocked = () => false;
+
+      const completeIntro = () => {
+        document.body.classList.remove(
+          "intro-enter",
+          "intro-hold",
+          "intro-ring-shrink",
+          "intro-exit",
+        );
+        document.body.classList.add("intro-complete");
+        document.documentElement.classList.remove("intro-scroll-lock");
+        lastScrollY = 0;
+        setScrollState();
+      };
+
+      const syncHeroFixed = () => {
+        if (
+          !(heroSection instanceof HTMLElement) ||
+          !(heroPlaceholder instanceof HTMLElement)
+        )
+          return;
+
+        heroSection.classList.remove("hero-shell--fixed");
+        heroPlaceholder.style.height = "";
+
+        if (window.innerWidth >= 768) {
+          heroPlaceholder.style.height = `${window.innerHeight * 2}px`;
+          heroSection.classList.add("hero-shell--fixed");
+        }
+      };
+
+      const setScrollState = () => {
+        const currentScrollY = window.scrollY;
+        const heroHidePoint =
+          (heroSection?.clientHeight || window.innerHeight) * 0.6;
+        const heroProgress = Math.min(currentScrollY / window.innerHeight, 1);
+
+        const isScrollingDown =
+          currentScrollY > lastScrollY && currentScrollY > heroHidePoint;
+
+        if (heroSection) {
+          heroSection.style.setProperty("--hero-scroll", String(heroProgress));
+          if (currentScrollY > window.innerHeight * 2.5) {
+            heroSection.style.visibility = "hidden";
+          } else {
+            heroSection.style.visibility = "";
+          }
+        }
+        document.body.classList.toggle("nav-hidden", isScrollingDown);
+        document.body.classList.toggle("has-scrolled", currentScrollY > 8);
+        lastScrollY = Math.max(currentScrollY, 0);
+
+        const menuBtn = document.getElementById("menu-toggle");
+        if (menuBtn && window.innerWidth <= 767) {
+          const wasScrolled = menuBtn.classList.contains("is-scrolled");
+          const isNowScrolled = heroProgress >= 0.4;
+          const nav = document.querySelector(".nav-links");
+          if (isNowScrolled && !wasScrolled) {
+            menuBtn.classList.add("is-scrolled");
+            document.body.classList.add("menu-scrolled");
+            menuBtn.style.left = '';
+            menuBtn.style.top = '';
+            if (nav) {
+              nav.classList.add("is-scrolled");
+              nav.style.left = '';
+              nav.style.top = '';
+              nav.style.bottom = '';
+              nav.style.right = '';
+            }
+          } else if (!isNowScrolled && wasScrolled) {
+            menuBtn.classList.remove("is-scrolled");
+            document.body.classList.remove("menu-scrolled");
+            menuBtn.style.left = '';
+            menuBtn.style.top = '';
+            if (nav) {
+              nav.classList.remove("is-scrolled");
+              nav.style.left = '';
+              nav.style.top = '';
+              nav.style.bottom = '';
+              nav.style.right = '';
+            }
+          }
+        }
+
+        const waBtn = document.getElementById("floating-wa");
+        const waAnchor = document.getElementById("hero-wa-anchor");
+        if (waBtn) {
+          const isWaScrolled = heroProgress >= 0.4 || currentScrollY > 400;
+          if (isWaScrolled) {
+            waBtn.classList.add("is-scrolled");
+          } else {
+            waBtn.classList.remove("is-scrolled");
+            if (waAnchor) {
+              const r = waAnchor.getBoundingClientRect();
+              const vpWidth = document.documentElement.clientWidth || window.innerWidth;
+              const vpHeight = document.documentElement.clientHeight || window.innerHeight;
+              const b = Math.max(0, Math.round(vpHeight - r.bottom));
+              const right = Math.max(0, Math.round(vpWidth - r.right));
+              if (b > 0 && right > 0) {
+                waBtn.style.setProperty("--wa-bottom", `${b}px`);
+                waBtn.style.setProperty("--wa-right", `${right}px`);
+              }
+            }
+          }
+        }
+
+        parallaxItems.forEach((item) => {
+          const rect = item.getBoundingClientRect();
+          const centerOffset =
+            (rect.top + rect.height / 2 - window.innerHeight / 2) /
+            window.innerHeight;
+          item.style.setProperty("--shift", `${centerOffset * -42}px`);
+        });
+      };
+
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
+      );
+
+      const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
+      elementsToObserve.forEach((el) => revealObserver.observe(el));
+
+      const filterBtns = document.querySelectorAll(".template-filter-btn");
+      const templateCardEls = document.querySelectorAll(".template-grid .template-card");
+      const emptyStateEl = document.getElementById("template-empty");
+
+      const applyFilter = (filter) => {
+        let visibleCount = 0;
+        templateCardEls.forEach((card) => {
+          const cardCat = card.getAttribute("data-category") || "pernikahan";
+          if (cardCat === filter) {
+            card.classList.remove("is-filtered-out");
+            card.classList.add("is-visible");
+            visibleCount++;
+          } else {
+            card.classList.add("is-filtered-out");
+          }
+        });
+
+        if (emptyStateEl) {
+          if (visibleCount === 0) {
+            emptyStateEl.classList.remove("hidden");
+          } else {
+            emptyStateEl.classList.add("hidden");
+          }
+        }
+      };
+
+      filterBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const filter = btn.getAttribute("data-filter") || "pernikahan";
+          filterBtns.forEach((b) => {
+            b.classList.remove("is-active");
+            b.setAttribute("aria-selected", "false");
+          });
+          btn.classList.add("is-active");
+          btn.setAttribute("aria-selected", "true");
+          applyFilter(filter);
+
+          try {
+            const url = new URL(window.location.href);
+            if (filter === "pernikahan") {
+              url.searchParams.delete("kategori");
+              url.searchParams.delete("category");
+              url.searchParams.delete("filter");
+            } else {
+              url.searchParams.set("kategori", filter);
+            }
+            window.history.replaceState({}, "", url.toString());
+          } catch {}
+        });
+      });
+
+      try {
+        const initialParams = new URLSearchParams(window.location.search);
+        const targetCategory = initialParams.get("kategori") || initialParams.get("category") || initialParams.get("filter");
+        if (targetCategory && targetCategory.toLowerCase() === "metatah") {
+          const matchingBtn = document.querySelector(`.template-filter-btn[data-filter="metatah"]`);
+          if (matchingBtn) {
+            matchingBtn.click();
+          }
+        }
+      } catch {}
+
+      const scrollToTarget = (targetId) => {
+        document.body.classList.remove("nav-hidden");
+        
+        if (targetId === "#booking") {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth"
+          });
+          const target = document.querySelector(targetId);
+          if (target) target.classList.add("is-visible");
+          return;
+        }
+
+        const target = document.querySelector(targetId);
+        if (!target) return;
+        target.classList.add("is-visible");
+
+        const lenis = getLenis();
+        if (lenis) {
+          lenis.scrollTo(target as HTMLElement, {
+            offset: -84,
+            duration: 1.2,
+          });
+        } else {
+          requestAnimationFrame(() => {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+            window.setTimeout(
+              () =>
+                target.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                }),
+              1000,
+            );
+          });
+        }
+      };
+
+      anchorLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          const targetId = link.getAttribute("href");
+          if (!targetId || targetId === "#") return;
+          event.preventDefault();
+          history.pushState(null, "", targetId);
+          scrollToTarget(targetId);
+        });
+      });
+
+      const revealNextHeroMotionCard = (duration = heroRevealDuration) => {
+        if (heroMotionCards.length <= 1 || isHeroMotionAnimating) return;
+
+        const previous = heroMotionCards[activeHeroMotionCard];
+        activeHeroMotionCard =
+          (activeHeroMotionCard + 1) % heroMotionCards.length;
+        const next = heroMotionCards[activeHeroMotionCard];
+
+        if (!previous || !next) return;
+        isHeroMotionAnimating = true;
+
+        previous.classList.remove("is-revealing");
+        next.classList.add("is-next");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            next.classList.add("is-revealing");
+          });
+        });
+
+        const completeReveal = () => {
+          previous.classList.remove("is-active", "is-revealing");
+          next.classList.remove("is-next");
+          next.classList.add("is-active", "is-revealing");
+          isHeroMotionAnimating = false;
+        };
+        window.setTimeout(completeReveal, duration);
+      };
+
+      if (heroMotionCards.length > 1) {
+        let introRevealTimer = 0;
+        const startNormalHeroReveal = () => {
+          window.setTimeout(() => {
+            revealNextHeroMotionCard(heroRevealDuration);
+            window.setInterval(
+              () => revealNextHeroMotionCard(heroRevealDuration),
+              heroRevealInterval,
+            );
+          }, postIntroRevealDelay);
+        };
+
+        if (!reduceMotion) {
+          window.setTimeout(() => {
+            revealNextHeroMotionCard(heroIntroRevealDuration);
+            introRevealTimer = window.setInterval(
+              () => revealNextHeroMotionCard(heroIntroRevealDuration),
+              heroIntroRevealInterval,
+            );
+          }, 260);
+
+          window.setTimeout(
+            () => window.clearInterval(introRevealTimer),
+            introEnterDuration + introHoldDuration - 120,
+          );
+        }
+        window.setTimeout(
+          startNormalHeroReveal,
+          reduceMotion ? 0 : introTotalDuration,
+        );
+      }
+
+      sections.forEach((section) => revealObserver.observe(section));
+
+      completeIntro();
+      syncHeroFixed();
+      setScrollState();
+
+      const scrollToTemplates = () => {
+        const target = document.getElementById("templates");
+        if (target) {
+          const heading = target.querySelector(".section-heading");
+          const nav = document.querySelector(".hero-nav");
+          const navHeight = nav ? nav.offsetHeight : 54;
+          const navOffset = window.innerWidth <= 768 ? 44 : 64;
+          if (heading) {
+            const headingTop = heading.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({ top: Math.max(0, headingTop - navHeight - navOffset), behavior: "instant" });
+          } else {
+            target.scrollIntoView({ behavior: "instant", block: "start" });
+          }
+        }
+      };
+      scrollToTemplates();
+      window.addEventListener("load", scrollToTemplates);
+      window.addEventListener("scroll", setScrollState, {
+        passive: true,
+      });
+      window.addEventListener("resize", () => {
+        syncHeroFixed();
+        setScrollState();
+      });
+
+      (() => {
+        const nav = document.querySelector('.dashboard-tabs__nav');
+        if (!nav) return;
+        const indicator = nav.querySelector('.dashboard-tabs__indicator');
+        const btns = nav.querySelectorAll('.dashboard-tabs__btn');
+
+        const moveIndicator = (btn) => {
+          const navPad = parseFloat(getComputedStyle(nav).paddingLeft);
+          indicator.style.width = btn.offsetWidth + 'px';
+          indicator.style.left = (btn.offsetLeft) + 'px';
+        };
+
+        requestAnimationFrame(() => {
+          const activeBtn = nav.querySelector('.dashboard-tabs__btn.is-active');
+          if (activeBtn) moveIndicator(activeBtn);
+        });
+
+        btns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            btns.forEach(b => b.classList.remove('is-active'));
+            document.querySelectorAll('.dashboard-tabs__panel').forEach(p => p.classList.remove('is-active'));
+            btn.classList.add('is-active');
+            document.querySelector(`[data-panel="${tab}"]`).classList.add('is-active');
+            moveIndicator(btn);
+          });
+        });
+
+        window.addEventListener('resize', () => {
+          const cur = nav.querySelector('.dashboard-tabs__btn.is-active');
+          if (cur) moveIndicator(cur);
+        });
+
+        const popup = document.getElementById('promo-popup');
+        if (popup) {
+          const closeBtn = popup.querySelector('.promo-popup__close');
+          const ctaBtn = popup.querySelector('.promo-popup__cta');
+          const overlay = popup.querySelector('.promo-popup__overlay');
+          
+          if (!localStorage.getItem('senadda_promo_closed')) {
+            setTimeout(() => {
+              popup.classList.remove('hidden');
+              setTimeout(() => popup.classList.add('is-visible'), 50);
+            }, 6100);
+          }
+          
+          const closePopup = () => {
+            popup.classList.remove('is-visible');
+            setTimeout(() => popup.classList.add('hidden'), 400);
+            localStorage.setItem('senadda_promo_closed', 'true');
+          };
+          
+          closeBtn.addEventListener('click', closePopup);
+          overlay.addEventListener('click', closePopup);
+          ctaBtn.addEventListener('click', () => {
+            closePopup();
+          });
+          
+          const PROMO_DURATION_MS = 2 * 24 * 60 * 60 * 1000;
+          let endTime = localStorage.getItem('senadda_promo_end');
+          
+          if (!endTime) {
+            endTime = new Date().getTime() + PROMO_DURATION_MS;
+            localStorage.setItem('senadda_promo_end', endTime);
+          } else {
+            endTime = parseInt(endTime, 10);
+            if (new Date().getTime() > endTime) {
+              endTime = new Date().getTime() + PROMO_DURATION_MS;
+              localStorage.setItem('senadda_promo_end', endTime);
+            }
+          }
+          
+          const updateCountdown = () => {
+            const now = new Date().getTime();
+            let distance = endTime - now;
+            
+            if (distance < 0) {
+              endTime = new Date().getTime() + PROMO_DURATION_MS;
+              localStorage.setItem('senadda_promo_end', endTime);
+              distance = endTime - now;
+            }
+            
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('cd-days').innerText = d.toString().padStart(2, '0');
+            document.getElementById('cd-hours').innerText = h.toString().padStart(2, '0');
+            document.getElementById('cd-minutes').innerText = m.toString().padStart(2, '0');
+            document.getElementById('cd-seconds').innerText = s.toString().padStart(2, '0');
+          };
+          
+          updateCountdown();
+          setInterval(updateCountdown, 1000);
+        }
+
+      })();
+    </script>
+    <div id="promo-popup" class="promo-popup hidden">
+      <div class="promo-popup__overlay"></div>
+      <div class="promo-popup__content">
+        <button class="promo-popup__close" aria-label="Close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+        </button>
+        <div class="promo-popup__badge">🚀 Promo Launching</div>
+        <h3>Harga Spesial!</h3>
+        <p>Dapatkan harga spesial untuk semua koleksi desain kami selama masa launching berlangsung.</p>
+        
+        <div class="promo-countdown" id="promo-countdown">
+          <div class="countdown-item"><span id="cd-days">00</span><small>Hari</small></div>
+          <div class="countdown-item"><span id="cd-hours">00</span><small>Jam</small></div>
+          <div class="countdown-item"><span id="cd-minutes">00</span><small>Menit</small></div>
+          <div class="countdown-item"><span id="cd-seconds">00</span><small>Detik</small></div>
+        </div>
+        
+        <a href="#templates" class="promo-popup__cta">Lihat Koleksi</a>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style lang="scss">
+  @font-face {
+    font-family: "SaolDisplay-Regular";
+    src: url("/fonts/SaolDisplay-Regular.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    color-scheme: light;
+    scroll-behavior: smooth;
+
+    --ink-charcoal: #17160f;
+    --deep-charcoal: #2f2e25;
+    --ivory-paper: #f7f5ea;
+    --soft-parchment: #efeddf;
+    --warm-taupe: #b8aa92;
+    --muted-clay: #a9785f;
+
+    --accent: var(--muted-clay);
+    --black: var(--ink-charcoal);
+    --white: var(--ivory-paper);
+    --grey: var(--warm-taupe);
+    --dark-grey: var(--deep-charcoal);
+    --line: var(--warm-taupe);
+
+    --font-heading: "SaolDisplay-Regular", serif;
+    --font-body: "Montserrat", sans-serif;
+
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-soft: cubic-bezier(0.29, 0.73, 0.45, 1);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .login-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    width: 100%;
+    height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: none;
+    background: transparent;
+  }
+  
+  .login-modal[open] {
+    display: flex;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .login-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: -1;
+  }
+
+  .login-modal__content {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  }
+
+  .login-modal__close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--grey);
+    transition: color 0.2s ease;
+    padding: 0.25rem;
+    border-radius: 50%;
+  }
+
+  .login-modal__close-btn:hover {
+    color: var(--black);
+    background: var(--soft-parchment);
+  }
+
+  .login-modal__header h2 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+    color: var(--black);
+  }
+
+  .login-modal__header p {
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--deep-charcoal);
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--deep-charcoal);
+    border-radius: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    background: var(--white);
+    color: var(--black);
+    transition: all 0.2s ease;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--black);
+    box-shadow: 0 0 0 3px rgba(169, 120, 95, 0.1);
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 0.75rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+
+  .submit-btn:hover {
+    background: var(--deep-charcoal);
+  }
+
+  .submit-btn:active {
+    transform: scale(0.98);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.7;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  html.intro-scroll-lock,
+  html.intro-scroll-lock body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  html.intro-scroll-lock body {
+    touch-action: none;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  p,
+  h1,
+  h2 {
+    margin: 0;
+  }
+
+  svg {
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+  }
+
+  #main-content-wrapper {
+    position: relative;
+    z-index: 2;
+    isolation: isolate;
+    background: var(--white);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  body.intro-enter #main-content-wrapper,
+  body.intro-hold #main-content-wrapper,
+  body.intro-ring-shrink #main-content-wrapper,
+  body.intro-exit #main-content-wrapper,
+  body.intro-complete #main-content-wrapper {
+    z-index: 220;
+  }
+
+  .section-observe:not(.hero-shell):not(.start) {
+    position: relative;
+    background: var(--white);
+  }
+
+  .hero-shell-placeholder {
+    display: block;
+  }
+
+  .intro-animation {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    background: var(--white);
+    color: var(--black);
+    pointer-events: auto;
+    transition:
+      opacity 0.9s var(--ease) 0.16s,
+      filter 0.9s var(--ease) 0.16s,
+      visibility 0s linear 1.12s;
+  }
+
+  body.intro-complete .intro-animation {
+    opacity: 0;
+    filter: none;
+    visibility: hidden;
+    pointer-events: none;
+    transition: none;
+  }
+
+  .hero-shell {
+    --hero-scroll: 0;
+    --hero-overlay: calc(var(--hero-scroll) * 1);
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    height: 200svh;
+    background: var(--white);
+  }
+
+  body.intro-enter .hero-shell,
+  body.intro-hold .hero-shell,
+  body.intro-ring-shrink .hero-shell,
+  body.intro-exit .hero-shell {
+    --hero-reveal-duration: 650ms;
+    z-index: 220;
+  }
+
+  .hero-shell--fixed {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100svh;
+  }
+
+  .hero-shell--fixed + .template-list {
+    margin-top: -100svh;
+  }
+
+  .hero-shell--fixed .hero-sticky {
+    position: relative;
+  }
+
+  .hero-sticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100svh;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--white);
+  }
+
+  .hero-motion-wrap {
+    position: absolute;
+    top: 82px;
+    left: 20px;
+    z-index: 0;
+    width: fit-content;
+    height: fit-content;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition:
+      top 1.25s cubic-bezier(0.76, 0, 0.24, 1),
+      left 1.25s cubic-bezier(0.76, 0, 0.24, 1),
+      transform 1.25s cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: top, left, transform;
+  }
+
+  body.intro-enter .hero-motion-wrap {
+    top: 50%;
+    left: 50%;
+    z-index: 140;
+    transform: translate3d(-50%, -50%, 0) scale(0.96);
+  }
+  body.intro-hold .hero-motion-wrap {
+    top: 50%;
+    left: 50%;
+    z-index: 140;
+    transform: translate3d(-50%, -50%, 0) scale(0.96);
+  }
+  body.intro-ring-shrink .hero-motion-wrap {
+    top: 50%;
+    left: 50%;
+    z-index: 140;
+    transform: translate3d(-50%, -50%, 0) scale(0.96);
+  }
+  body.intro-exit .hero-motion-wrap {
+    z-index: 140;
+  }
+
+  body.intro-enter .hero-motion__card img,
+  body.intro-hold .hero-motion__card img,
+  body.intro-ring-shrink .hero-motion__card img {
+    --hero-image-parallax: 0px;
+    transform: translate3d(0, 0, 0) scale(1.05);
+    transition: transform 1.25s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .hero-motion {
+    position: relative;
+    width: min(36vw, 520px);
+    min-width: 320px;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(44, 18, 85, 0.05);
+    transition:
+      width 1.25s cubic-bezier(0.76, 0, 0.24, 1),
+      height 1.25s cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: width, height;
+  }
+
+  body.intro-enter .hero-motion,
+  body.intro-hold .hero-motion,
+  body.intro-ring-shrink .hero-motion {
+    width: min(42vw, 540px);
+    min-width: 340px;
+  }
+
+  .hero-motion__card {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--soft-parchment);
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path var(--hero-reveal-duration, 3600ms)
+      cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: clip-path;
+  }
+  .hero-motion__card.is-active {
+    z-index: 2;
+    clip-path: inset(0 0 0 0);
+  }
+  .hero-motion__card.is-next {
+    z-index: 3;
+    clip-path: inset(0 0 100% 0);
+  }
+  .hero-motion__card.is-next.is-revealing {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .hero-motion__card img {
+    --hero-image-parallax: calc(var(--hero-scroll) * -20px);
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.94) contrast(1.04);
+    transform: translate3d(0, var(--hero-image-parallax), 0) scale(1.05);
+    transition: transform 0.12s linear;
+    will-change: transform;
+  }
+
+  .hero-motion-seal {
+    --seal-size: 104px;
+    position: absolute;
+    top: -32px;
+    left: -52px;
+    z-index: 3;
+    display: grid;
+    width: var(--seal-size);
+    height: var(--seal-size);
+    place-items: center;
+    border-radius: 999px;
+    color: var(--accent);
+    pointer-events: none;
+    transform: translate3d(0, 0, 0);
+    transition:
+      top 1.25s cubic-bezier(0.76, 0, 0.24, 1),
+      left 1.25s cubic-bezier(0.76, 0, 0.24, 1),
+      width 1.5s cubic-bezier(0.76, 0, 0.24, 1),
+      height 1.5s cubic-bezier(0.76, 0, 0.24, 1),
+      transform 1.25s cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: top, left, width, height, transform;
+  }
+
+  body.intro-enter .hero-motion-seal,
+  body.intro-hold .hero-motion-seal {
+    --seal-size: 780px;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+  }
+  body.intro-ring-shrink .hero-motion-seal {
+    --seal-size: 320px;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+  }
+  body.intro-exit .hero-motion-seal {
+    z-index: 4;
+  }
+
+  .hero-motion-seal svg {
+    grid-area: 1 / 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: sealRotate 12s linear infinite;
+  }
+
+  .hero-motion-seal text {
+    fill: currentColor;
+    font-size: 8.85px;
+    letter-spacing: 0.22em;
+  }
+
+  .hero-sticky::before {
+    position: absolute;
+    inset: 0;
+    z-index: 1000;
+    content: "";
+    pointer-events: none;
+  }
+
+  .hero-nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 12px;
+    background: linear-gradient(
+      180deg,
+      rgba(247, 245, 234, 0.9),
+      rgba(247, 245, 234, 0)
+    );
+    backdrop-filter: blur(14px);
+    transition:
+      opacity 0.28s ease,
+      transform 0.28s ease,
+      background 0.28s ease;
+    will-change: transform, opacity;
+  }
+  .nav-hidden .hero-nav {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-100%);
+  }
+
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    margin-top: 5px;
+    transition: transform 0.3s ease;
+  }
+
+  .brand-logo__image {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    animation: floatElegantly 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    transform-origin: center;
+    transition: transform 0.4s var(--ease-soft);
+  }
+
+  .brand-logo:hover .brand-logo__image {
+    animation-play-state: paused;
+    transform: scale(0.95);
+  }
+
+  @keyframes floatElegantly {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+
+  .has-scrolled .brand-logo {
+    transform: scale(0.85);
+  }
+
+  .menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--ink-charcoal);
+    cursor: pointer;
+    padding: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    box-shadow: none;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, top 0.4s ease, right 0.4s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  .menu-toggle:active {
+    transform: scale(0.92);
+  }
+  .menu-toggle.is-open {
+    background: var(--ink-charcoal);
+    color: var(--white);
+    border-color: transparent;
+  }
+  .menu-toggle.is-scrolled {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  .menu-toggle svg {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .menu-toggle.is-open svg {
+    transform: rotate(90deg);
+  }
+
+  .floating-wa {
+    position: fixed;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--ink-charcoal);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    padding: 0;
+    touch-action: none;
+    text-decoration: none;
+    bottom: var(--wa-bottom, 108px);
+    right: var(--wa-right, 48px);
+    transition: bottom 0.55s cubic-bezier(0.16, 1, 0.3, 1), 
+                right 0.55s cubic-bezier(0.16, 1, 0.3, 1), 
+                transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                background 0.3s ease, 
+                color 0.3s ease, 
+                box-shadow 0.3s ease;
+  }
+  .floating-wa.is-scrolled {
+    bottom: 48px;
+    right: 48px;
+    background: rgba(247, 245, 234, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  .floating-wa:hover {
+    background: var(--ink-charcoal);
+    color: var(--white);
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(23, 22, 15, 0.16);
+  }
+  .floating-wa:active {
+    transform: scale(0.92);
+  }
+  .floating-wa svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+  }
+  .floating-wa:hover svg {
+    transform: scale(1.05);
+  }
+
+  .nav-links {
+    display: none;
+    align-items: center;
+    gap: 36px;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    align-items: flex-end;
+  }
+
+  .nav-links a,
+  .hero-cta,
+  .nav-action {
+    transition:
+      opacity 0.22s ease,
+      color 0.22s ease;
+  }
+  .nav-links a:hover,
+  .nav-action:hover {
+    opacity: 0.62;
+  }
+
+  .nav-action {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--black);
+    color: var(--white);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+  }
+  .nav-action svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor !important;
+    stroke: none !important;
+  }
+
+  .stats-row {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 32px 20px;
+  }
+  .stats-row__inner {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    text-align: right;
+  }
+
+  .stat-item {
+    display: grid;
+    gap: 8px;
+    justify-items: end;
+  }
+  .stat-item strong {
+    display: flex;
+    align-items: flex-start;
+    gap: 1px;
+    font-size: clamp(1.5rem, 5vw, 3.5rem);
+    letter-spacing: 0;
+  }
+  .stat-item strong span {
+    color: var(--accent);
+    font-size: 0.5em;
+    line-height: 1.15;
+  }
+  .stat-item p {
+    font-size: 10px;
+    line-height: 1.15;
+    max-width: 60%;
+  }
+
+  .bottom-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 0 20px 32px;
+  }
+  .bottom-content__top,
+  .bottom-content__main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .bottom-content__main {
+    align-items: flex-end;
+    gap: 12px;
+  }
+
+  .hero-cta-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    margin-left: auto;
+  }
+  .hero-wa-anchor {
+    width: 48px;
+    height: 48px;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+  .hero-cta svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .description {
+    width: 120px;
+    flex: 0 0 auto;
+    font-size: 9px;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  h1 {
+    display: grid;
+    justify-items: end;
+    font-family: var(--font-heading);
+    font-size: clamp(42px, 7vw, 110px);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+    text-align: right;
+  }
+
+  .heading-mask {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.25em;
+    margin-bottom: -0.25em;
+    padding-top: 0.1em;
+    margin-top: -0.1em;
+  }
+  .heading-word {
+    display: block;
+    transform: translateY(140%);
+  }
+
+  .motion-down {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  .motion-up {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  .intro-complete .heading-word {
+    animation: headingIn 0.7s var(--ease) forwards;
+    animation-delay: calc(0.28s + (var(--word-i) * 0.1s));
+  }
+  .intro-complete .motion-down {
+    animation: fadeDown 0.5s var(--ease) forwards;
+    animation-delay: calc(0.22s + (var(--i) * 0.07s));
+  }
+  .intro-complete .motion-up {
+    animation: fadeUp 0.6s var(--ease) forwards;
+    animation-delay: calc(0.3s + (var(--i) * 0.08s));
+  }
+
+  .template-list {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    margin-top: -100svh;
+    gap: 42px;
+    padding: 110px 20px 90px;
+    background: var(--white);
+    scroll-margin-top: 84px;
+  }
+
+  .section-heading {
+    display: grid;
+    gap: 10px;
+    max-width: 1120px;
+    opacity: 0;
+    transform: translateY(34px);
+    transition:
+      opacity 1s var(--ease),
+      transform 1.1s var(--ease);
+  }
+  .is-visible .section-heading {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .section-heading p,
+  .booking-cta__inner p {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  .section-heading h2,
+  .booking-cta__inner h2 {
+    max-width: 980px;
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 120px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+  .section-heading span,
+  .booking-cta__actions span {
+    max-width: 520px;
+    color: var(--dark-grey);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .template-filter-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: -12px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .template-filter-btn {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 9px 22px;
+    border-radius: 999px;
+    border: 1px solid var(--black);
+    background: transparent;
+    color: var(--deep-charcoal);
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .template-filter-btn:hover {
+    border-color: var(--black);
+    color: var(--black);
+    transform: translateY(-1px);
+  }
+
+  .template-filter-btn.is-active {
+    background: var(--black);
+    border-color: var(--black);
+    color: var(--white);
+    box-shadow: 0 4px 14px rgba(23, 22, 15, 0.15);
+  }
+
+  .template-card.is-filtered-out {
+    display: none !important;
+  }
+
+  .template-empty {
+    padding: 50px 20px;
+    text-align: center;
+    color: var(--dark-grey);
+    font-family: var(--font-body);
+    font-size: 15px;
+    grid-column: 1 / -1;
+  }
+
+  .template-empty.hidden {
+    display: none;
+  }
+
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 34px 22px;
+  }
+
+  .template-card {
+    --template-enter-y: 34px;
+    --template-reveal-y: var(--template-enter-y);
+    --template-offset-y: 0px;
+    --template-hover-y: 0px;
+
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--black);
+    opacity: 0;
+    transform: translate3d(
+      0,
+      calc(
+        var(--template-offset-y) + var(--template-hover-y) +
+          var(--template-reveal-y)
+      ),
+      0
+    );
+    transition:
+      transform 1s var(--ease),
+      opacity 1s var(--ease);
+    will-change: transform;
+  }
+  .template-card:hover {
+    --template-hover-y: -3px;
+    transition-duration: 0.3s;
+  }
+  .template-card.is-visible {
+    opacity: 1;
+    --template-reveal-y: 0px;
+  }
+
+  .template-card__media {
+    aspect-ratio: 4 / 5;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 5px;
+    background: var(--soft-parchment);
+    box-shadow: 0 26px 70px rgba(33, 21, 48, 0.12);
+    transition:
+      box-shadow 0.35s ease,
+      transform 0.35s ease;
+    will-change: transform;
+  }
+  .template-card__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition: transform 0.6s var(--ease);
+    will-change: transform;
+  }
+
+  .template-card:hover .template-card__media img {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  .template-card:hover .template-card__media {
+    box-shadow: 0 30px 84px rgba(44, 18, 85, 0.18);
+    transform: translateY(-2px);
+  }
+
+  .template-card__body {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 14px 2px 0;
+  }
+  .template-card__body strong {
+    max-width: 92%;
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(24px, 2.5vw, 48px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+  .template-card__meta {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .template-card__price {
+    flex-shrink: 0;
+    color: var(--black);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.06em;
+  }
+  .template-card__price-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .template-card__price--original {
+    color: var(--dark-grey);
+    font-size: clamp(8px,1.3vw,14px);
+    font-weight: 400;
+    opacity: 0.35;
+  }
+  .template-card__price--promo {
+    color: var(--black);
+    font-size: clamp(11.5px,1.3vw,24px);
+    font-weight: 600;
+  }
+  .template-card__body p {
+    color: var(--dark-grey);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .template-card__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    align-self: end;
+    padding-top: 6px;
+  }
+  .template-card__actions a {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    border-radius: 999px;
+    color: var(--black);
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    backdrop-filter: blur(10px);
+    transition:
+      background 0.22s ease,
+      border-color 0.22s ease,
+      transform 0.22s ease,
+      color 0.22s ease;
+  }
+  .template-card__actions a:first-child {
+    background: var(--black);
+    color: var(--white);
+    border-color: var(--black);
+  }
+  .template-card__actions a:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--white);
+    transform: translateY(-1px);
+  }
+
+  .start {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 1 !important;
+    display: grid;
+    min-height: 74svh;
+    place-items: center;
+    gap: 18px;
+    padding: 120px 48px;
+    background: #414238 !important;
+    scroll-margin-top: 84px;
+    text-align: center;
+  }
+  .start p {
+    color: var(--soft-parchment);
+    font-size: 11px;
+  }
+  .start h2 {
+    max-width: 1120px;
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(42px, 8vw, 110px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--white);
+    margin-bottom: 32px;
+  }
+  .start__button {
+    display: inline-flex;
+    min-height: 52px;
+    align-items: center;
+    padding: 0 28px;
+    margin-top: 10px;
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--black);
+    font-size: 13px;
+    letter-spacing: 1.4px;
+    transition: background 0.3s ease;
+  }
+  .start__button:hover {
+    background: var(--soft-parchment);
+  }
+
+  .section-subheading {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--dark-grey);
+    margin-top: 8px;
+    max-width: 580px;
+  }
+
+  .start-footer {
+    width: 100%;
+    max-width: 760px;
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(239, 237, 223, 0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: var(--soft-parchment);
+    text-align: center;
+
+    &__links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+
+      a {
+        color: var(--soft-parchment);
+        text-decoration: none;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 500;
+        opacity: 0.72;
+        transition: opacity 0.2s ease, color 0.2s ease;
+
+        &:hover {
+          opacity: 1;
+          color: var(--white);
+        }
+      }
+    }
+
+    &__copy {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: rgba(239, 237, 223, 0.45);
+      margin: 0;
+      font-weight: 400;
+
+      .start-footer__dot {
+        opacity: 0.4;
+      }
+    }
+  }
+
+  @media (max-width: 860px) {
+    .start-footer {
+      margin-top: 32px;
+      padding-top: 20px;
+      gap: 12px;
+
+      &__links {
+        gap: 16px;
+
+        a {
+          font-size: 10.5px;
+          letter-spacing: 0.06em;
+        }
+      }
+
+      &__copy {
+        font-size: 10px;
+        gap: 6px;
+      }
+    }
+  }
+
+  .reveal-blur {
+    opacity: 0;
+    transform: translateY(34px);
+    transition:
+      opacity 1s var(--ease),
+      transform 1.1s var(--ease);
+    transition-delay: var(--delay, 0ms);
+  }
+  .reveal-blur.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .features-list {
+    position: relative;
+    z-index: 2;
+    padding: 110px 20px;
+    background-color: #414238 !important;
+    scroll-margin-top: 84px;
+    color: var(--white);
+  }
+
+  .features-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .section-heading-centered {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .section-heading-centered h2 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(36px, 7vw, 64px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--white);
+  }
+
+  .features-grid-simple {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 40px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .addon-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .feature-item.dark-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--white);
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(16px);
+    transition: opacity 0.8s var(--ease), filter 0.8s var(--ease), transform 0.8s var(--ease);
+  }
+
+  .feature-item.is-visible {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+
+  .addon-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .check-box-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: var(--white);
+    stroke-width: 1.5;
+  }
+
+  .addon-price {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  @keyframes fadeDown {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fadeUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes headingIn {
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes sealRotate {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  @media (min-width: 640px) {
+    .hero-nav {
+      padding: 20px 32px 12px;
+    }
+    .hero-motion-wrap {
+      left: 32px;
+      min-width: 360px;
+    }
+    .hero-motion-seal {
+      left: -52px;
+    }
+    .stats-row {
+      padding-inline: 32px;
+    }
+    .stats-row__inner {
+      gap: 32px;
+    }
+    .stat-item p,
+    .description {
+      font-size: 12px;
+    }
+    .bottom-content {
+      padding-inline: 32px;
+    }
+    .hero-cta {
+      font-size: 20px;
+    }
+    .hero-cta svg {
+      width: 22px;
+      height: 22px;
+    }
+    .description {
+      width: 180px;
+    }
+    .template-list, .features-list {
+      padding-inline: 32px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .hero-nav {
+      padding: 24px 48px 14px;
+    }
+    .hero-motion-wrap {
+      top: 102px;
+      left: 56px;
+    }
+    .hero-motion {
+      height: clamp(320px, calc(100svh - 260px), 75vh);
+      width: auto;
+      min-width: 0;
+      aspect-ratio: 4 / 5;
+    }
+    body.intro-enter .hero-motion,
+    body.intro-hold .hero-motion,
+    body.intro-ring-shrink .hero-motion {
+      height: clamp(420px, calc(100svh - 160px), 620px);
+      width: auto;
+      min-width: 0;
+      aspect-ratio: 4 / 5;
+    }
+    .hero-motion-seal {
+      --seal-size: 112px;
+      top: -32px;
+      left: -56px;
+    }
+    .nav-links {
+      display: flex;
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      will-change: transform, opacity;
+    }
+    .nav-hidden .nav-links {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -100%);
+    }
+    .stats-row {
+      padding-block: 0;
+      padding-inline: 48px;
+    }
+    .stats-row__inner {
+      gap: 40px;
+    }
+    .stat-item p,
+    .description {
+      font-size: 14px;
+    }
+    .bottom-content {
+      gap: 48px;
+      padding: 0 48px 48px;
+    }
+    .hero-cta {
+      font-size: 24px;
+    }
+    .bottom-content__main {
+      gap: 16px;
+    }
+    .description {
+      width: 300px;
+    }
+    .template-list {
+      padding: 120px 48px 100px;
+    }
+    .features-list {
+      padding: 120px 48px;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .template-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero-nav {
+      padding: 14px 16px 12px;
+    }
+    .menu-toggle {
+      display: flex;
+      position: fixed;
+      top: calc(87px + max(215px, min(93.75vw, 437.5px)));
+      right: 16px;
+
+      @media (max-height: 900px) {
+        top: calc(87px + max(215px, min(93.75vw, 400px)));
+      }
+      @media (max-height: 800px) {
+        top: calc(87px + max(215px, min(93.75vw, 362.5px)));
+      }
+      @media (max-height: 700px) {
+        top: calc(-2px + max(215px, min(93.75vw, 325px)));
+        width: 44px;
+        height: 44px;
+      }
+    }
+    .menu-toggle.is-scrolled {
+      top: 10px;
+      right: 16px;
+      width: 42px;
+      height: 42px;
+    }
+    .nav-right {
+      transition: margin-right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    body.menu-scrolled .nav-right,
+    body:has(#menu-toggle.is-scrolled) .nav-right {
+      margin-right: 50px;
+    }
+    .hero-cta-wrapper {
+      gap: 10px;
+    }
+    .hero-wa-anchor {
+      width: 44px;
+      height: 44px;
+
+      @media (max-height: 700px) {
+        position: fixed;
+        top: calc(52px + max(215px, min(93.75vw, 325px)));
+        right: 16px;
+      }
+    }
+    .floating-wa {
+      width: 44px;
+      height: 44px;
+      bottom: var(--wa-bottom, 68px);
+      right: var(--wa-right, 16px);
+    }
+    .floating-wa svg {
+      width: 22px;
+      height: 22px;
+    }
+    .floating-wa.is-scrolled {
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      right: 16px;
+    }
+    .nav-links {
+      position: fixed;
+      top: calc(147px + max(215px, min(93.75vw, 437.5px)));
+      bottom: auto;
+
+      @media (max-height: 900px) { top: calc(147px + max(215px, min(93.75vw, 400px))); }
+      @media (max-height: 800px) { top: calc(147px + max(215px, min(93.75vw, 362.5px))); }
+      @media (max-height: 700px) { top: calc(52px + max(215px, min(93.75vw, 325px))); }
+      right: 16px;
+      width: calc(100% - 32px);
+      max-width: 150px;
+      background: rgba(247, 245, 234, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 24px;
+      display: flex;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.4);
+      z-index: 999;
+      
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px) scale(0.95);
+      transform-origin: bottom right;
+      transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s ease, bottom 0.4s ease, right 0.4s ease, left 0.4s ease;
+    }
+    .nav-links.is-scrolled {
+      top: 60px;
+      bottom: auto;
+      right: 16px;
+      transform-origin: top right;
+    }
+    .nav-links.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .hero-motion-wrap {
+      top: 135px;
+      left: 16px;
+
+      @media (max-height: 700px) {
+        top: 100px;
+      }
+    }
+    .hero-motion {
+      width: min(75vw, 350px);
+      min-width: 172px;
+
+      @media (max-height: 900px) {
+        width: min(75vw, 320px);
+      }
+      @media (max-height: 800px) {
+        width: min(75vw, 290px);
+      }
+      @media (max-height: 700px) {
+        width: min(75vw, 260px);
+      }
+    }
+    body.intro-enter .hero-motion,
+    body.intro-hold .hero-motion,
+    body.intro-ring-shrink .hero-motion {
+      width: min(76vw, 290px);
+      min-width: 0;
+    }
+    body.intro-enter .hero-motion-seal,
+    body.intro-hold .hero-motion-seal {
+      --seal-size: min(130vw, 650px);
+    }
+    body.intro-ring-shrink .hero-motion-seal {
+      --seal-size: min(70vw, 160px);
+    }
+    .hero-motion-seal {
+      --seal-size: 82px;
+      top: -24px;
+      left: -18px;
+    }
+    .hero-motion-seal text {
+      font-size: 9px;
+      letter-spacing: 0.205em;
+    }
+    .stats-row {
+      padding-inline: 16px;
+    }
+    .stats-row__inner {
+      gap: 14px;
+    }
+    .stat-item p {
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    .bottom-content {
+      gap: 20px;
+      padding: 0 16px 18px;
+
+      @media (max-height: 700px) {
+        gap: 6px;
+      }
+    }
+    .hero-cta {
+      font-size: 13px;
+      letter-spacing: 0.11em;
+    }
+    .description {
+      width: 140px;
+      font-size: 10px;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      font-size: clamp(32px, 11vw, 48px);
+      line-height: 1.0;
+    }
+    .template-list {
+      gap: 24px;
+      padding: 58px 16px 70px;
+
+    }
+    .features-list {
+      padding: 60px 16px;
+    }
+    .section-heading {
+      gap: 10px;
+    }
+    .section-heading p {
+      font-size: 12px;
+      line-height: 1.25;
+    }
+    .section-heading h2 {
+      max-width: 94%;
+      font-size: clamp(32px, 9vw, 51px);
+      line-height: 0.96;
+    }
+    .template-filter-bar {
+      gap: 8px;
+      margin-top: -6px;
+    }
+    .template-filter-btn {
+      font-size: 12px;
+      padding: 8px 16px;
+    }
+    .template-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+      gap: 28px 10px;
+      overflow: visible;
+    }
+    .features-grid-simple {
+      gap: 0 16px;
+    }
+    .feature-item.dark-item {
+      font-size: 13px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .addon-left {
+      gap: 10px;
+    }
+    .check-box-icon {
+      width: 18px;
+      height: 18px;
+    }
+    .addon-price {
+      font-size: 12px;
+    }
+    .section-heading-centered h2 {
+      font-size: clamp(32px, 11vw, 42px);
+    }
+    .template-card {
+      --template-enter-y: 28px;
+      --template-offset-y: 0px;
+      min-height: 0;
+    }
+    .template-card__media {
+      aspect-ratio: 4 / 5;
+      border-radius: 5px;
+      box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
+    }
+    .template-card__body {
+      gap: 5px;
+      padding: 12px 0 0;
+    }
+    .template-card__actions a {
+      min-height: 30px;
+      justify-content: center;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--black);
+      font-size: 9px;
+      line-height: 1.2;
+      letter-spacing: 0.12em;
+      backdrop-filter: blur(8px);
+    }
+    .template-card__body strong {
+      max-width: 100%;
+      font-size: clamp(18px, 5vw, 28px);
+      line-height: 0.92;
+    }
+    .template-card__price {
+      color: var(--black);
+      font-size: 12px;
+      font-weight: 500;
+
+    }
+    .template-card__price--original {
+      font-size: 10px;
+    }
+    .template-card__price--promo {
+      font-size: 12px;
+    }
+    .template-card__body p {
+      font-size: 10px;
+      line-height: 1.45;
+    }
+    .template-card__actions {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding-top: 4px;
+    }
+    .template-card__actions a {
+      min-height: 30px;
+      justify-content: center;
+      border: 1px solid rgba(0, 0, 0, 0.16);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--black);
+      font-size: 9px;
+      line-height: 1.2;
+      letter-spacing: 0.12em;
+      backdrop-filter: blur(8px);
+    }
+    .template-card__actions a:first-child {
+      border-color: var(--black);
+      background: var(--black);
+      color: var(--white);
+    }
+    .template-card__actions a:hover {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+    .start h2 {
+      max-width: 100%;
+      font-size: clamp(32px, 13vw, 56px);
+      line-height: 0.94;
+
+      @media (max-height: 700px) {
+        font-size: clamp(32px, 12vw, 56px);
+      }
+    }
+    .start {
+      min-height: 42svh;
+      gap: 14px;
+      padding: 60px 16px;
+    }
+    .start p {
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .start__button {
+      width: auto;
+      min-height: 48px;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 350px) {
+    .template-card__price--promo {
+      font-size: 11px;
+    }
+
+    .template-card__body {
+      font-size: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 1ms !important;
+    }
+    .hero-motion {
+      transform: none !important;
+    }
+    .hero-motion-wrap {
+      transition: none !important;
+    }
+    .hero-motion__card {
+      transition: none !important;
+    }
+    .hero-motion__card img {
+      transform: scale(1.08) !important;
+    }
+    .template-card,
+    .template-card__media img {
+      opacity: 1 !important;
+      filter: none !important;
+      transform: none !important;
+    }
+    .hero-motion-seal svg {
+      animation: none !important;
+    }
+  }
+
+  .dashboard-showcase {
+    padding: 100px 20px 90px;
+    background: var(--white);
+    scroll-margin-top: 84px;
+  }
+
+  .dashboard-tabs {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dashboard-tabs__nav {
+    position: relative;
+    display: inline-flex;
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--soft-parchment);
+    margin-bottom: 40px;
+  }
+
+  .dashboard-tabs__indicator {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    border-radius: 9px;
+    background: var(--black);
+    transition: left 0.4s var(--ease), width 0.4s var(--ease);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dashboard-tabs__btn {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: 9px;
+    background: transparent;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--dark-grey);
+    cursor: pointer;
+    transition: color 0.35s var(--ease);
+    opacity: 0.6;
+  }
+  .dashboard-tabs__btn:focus,
+  .dashboard-tabs__btn:focus-visible,
+  .dashboard-tabs__btn:active {
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  .dashboard-tabs__btn.is-active:focus,
+  .dashboard-tabs__btn.is-active:focus-visible,
+  .dashboard-tabs__btn.is-active:active {
+    background: transparent;
+  }
+  .dashboard-tabs__btn svg {
+    width: 15px;
+    height: 15px;
+  }
+  .dashboard-tabs__btn:hover {
+    color: var(--black);
+  }
+  .dashboard-tabs__btn.is-active {
+    color: var(--white);
+    font-weight: 600;
+    opacity: 1;
+  }
+
+  .dashboard-tabs__panels {
+    display: grid;
+    grid-template-areas: "panel";
+  }
+
+  .dashboard-tabs__panel {
+    grid-area: panel;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transform: translateY(12px) scale(0.99);
+    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease), visibility 0.4s;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .dashboard-tabs__panel.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .dashboard-tabs__screenshot {
+    display: flex;
+    justify-content: center;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.08),
+      0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .dashboard-tabs__screenshot img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .dashboard-tabs__info {
+    text-align: center;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .dashboard-tabs__info h3 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(22px, 3vw, 32px);
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    
+    @media (max-width: 768px) {
+      margin-top: 0;
+    }
+  }
+  .dashboard-tabs__info p {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--dark-grey);
+  }
+
+  @media (max-width: 640px) {
+    .dashboard-showcase {
+      padding: 24px 16px 56px;
+    }
+    .dashboard-tabs__nav {
+      gap: 4px;
+    }
+    .dashboard-tabs__btn {
+      padding: 8px 14px;
+      font-size: 11px;
+    }
+    .dashboard-tabs__btn svg {
+      display: none;
+    }
+  }
+
+  .promo-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .promo-popup.hidden {
+    display: none;
+  }
+  .promo-popup.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .promo-popup__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+  }
+  .promo-popup__content {
+    position: relative;
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .promo-popup.is-visible .promo-popup__content {
+    transform: translateY(0) scale(1);
+  }
+  .promo-popup__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #687080;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+  }
+  .promo-popup__close:hover {
+    background: #f4f5f7;
+    color: var(--black);
+  }
+  .promo-popup__badge {
+    display: inline-block;
+    background: rgba(229, 62, 62, 0.1);
+    color: #e53e3e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .promo-popup h3 {
+    font-size: 28px;
+    font-family: var(--font-heading);
+    margin: 0 0 12px 0;
+    color: var(--black);
+    line-height: 1.1;
+  }
+  .promo-popup p {
+    font-size: 14px;
+    color: var(--dark-grey);
+    margin: 0 0 28px 0;
+    line-height: 1.5;
+  }
+  .promo-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .countdown-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f4f5f7;
+    padding: 12px 14px;
+    border-radius: 12px;
+    min-width: 68px;
+  }
+  .countdown-item span {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--black);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .countdown-item small {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--dark-grey);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .promo-popup__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    background: var(--black);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .promo-popup__cta:hover {
+    background: #1f2937;
+    transform: translateY(-2px);
+  }
+</style>
+
+<script>
+  if ('modelContext' in navigator) {
+    const controller = new AbortController();
+    
+    if (typeof (navigator as any).modelContext.provideContext === 'function') {
+      (navigator as any).modelContext.provideContext({
+        tools: [
+          {
+            name: "get_templates",
+            description: "Get a list of available wedding invitation templates",
+            inputSchema: { type: "object", properties: {} },
+            execute: async () => {
+              return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
+            }
+          }
+        ]
+      }, { signal: controller.signal });
+    } else if (typeof (navigator as any).modelContext.registerTool === 'function') {
+      (navigator as any).modelContext.registerTool({
+        name: "get_templates",
+        description: "Get a list of available wedding invitation templates",
+        inputSchema: { type: "object", properties: {} },
+        execute: async () => {
+          return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
+        }
+      }, { signal: controller.signal });
+    }
+  }
+</script>

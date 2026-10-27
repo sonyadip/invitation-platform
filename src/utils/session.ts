@@ -101,7 +101,7 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
     const isValid = await globalThis.crypto.subtle.verify(
       'HMAC',
       key,
-      signatureBytes,
+      signatureBytes as unknown as BufferSource,
       data
     );
 
@@ -111,7 +111,7 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
     const payload: SessionPayload = JSON.parse(payloadJson);
 
     if (!payload.exp || Date.now() > payload.exp) {
-      return null; // Expired
+      return null;
     }
 
     return payload;
@@ -151,7 +151,6 @@ export async function setSessionCookie(
     sameSite: 'lax'
   });
 
-  // Set companion display cookies (non-sensitive)
   cookies.set('auth_role', payload.role, {
     path: '/',
     maxAge,

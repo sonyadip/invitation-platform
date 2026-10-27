@@ -13,11 +13,11 @@ export interface Wedding {
   groom_name: string;
   bride_full_name: string;
   groom_full_name: string;
-  wedding_date: string; // ISO string
+  wedding_date: string;
   venue_name: string;
   venue_address: string;
   maps_url: string;
-  story: LoveStoryItem[]; // Parsed from JSONB
+  story: LoveStoryItem[];
   music_url: string | null;
   template: string;
   status: WeddingStatus;
@@ -73,7 +73,6 @@ export interface ThemeConfig {
   };
 }
 
-
 export interface SectionToggles {
   hero: boolean;
   countdown: boolean;
@@ -116,10 +115,10 @@ export interface InvitationSettings {
 export interface WeddingEvent {
   id: string;
   wedding_id: string;
-  event_name: string; // Ceremony, Reception, Engagement, Tea Ceremony
-  event_date: string; // ISO string
-  start_time: string; // '09:00'
-  end_time: string;   // '12:00' or 'Finished'
+  event_name: string;
+  event_date: string;
+  start_time: string;
+  end_time: string;
   venue_name: string;
   venue_address: string;
   maps_url: string;
@@ -138,8 +137,8 @@ export interface GalleryImage {
 export interface GiftAccount {
   id: string;
   wedding_id: string;
-  bank_name: string; // e.g. BCA, Mandiri, QRIS
-  bank_logo?: string; // Optional URL for bank logo
+  bank_name: string;
+  bank_logo?: string;
   account_number: string;
   account_name: string;
   qris_url: string | null;
@@ -174,14 +173,13 @@ export interface CustomDomain {
   created_at: string;
 }
 
-// Unified payload returned by the database resolver service
 export interface FullInvitationData {
   wedding: Wedding;
   settings: InvitationSettings;
   events: WeddingEvent[];
   gallery: GalleryImage[];
   gifts: GiftAccount[];
-  wishes: RSVP[]; // Attending RSVPs with messages
+  wishes: RSVP[];
 }
 
 export type ActivityActorType = 'admin' | 'client' | 'guest' | 'system';
@@ -243,7 +241,7 @@ export interface RevisionSnapshot {
 export interface RevisionDiffItem {
   field: string;
   label: string;
-  category: 'mempelai' | 'acara' | 'tema' | 'fitur' | 'galeri' | 'kado' | 'lainnya';
+  category: 'mempelai' | 'acara' | 'tema' | 'fitur' | 'galeri' | 'kado' | 'lainnya' | 'couple' | 'events' | 'theme' | 'features' | 'gallery' | 'gifts' | 'other';
   oldValue: any;
   newValue: any;
 }
@@ -259,4 +257,3 @@ export interface InvitationRevision {
   changes_summary: string[];
   created_at: string;
 }
-

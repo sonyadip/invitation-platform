@@ -33,12 +33,11 @@ export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOpti
 
   const guestName = options.guestName ?? document.body.dataset.guestName ?? null;
 
-  // Prevent duplicate rapid-fire event submissions within 1.5 seconds
   const dedupeKey = `${weddingId}:${eventType}:${guestName || ''}`;
   const now = Date.now();
   const lastTime = recentEventCache.get(dedupeKey) || 0;
   if (now - lastTime < 1500) {
-    return; // Debounce duplicate event
+    return;
   }
   recentEventCache.set(dedupeKey, now);
 
@@ -75,7 +74,6 @@ export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOpti
       }).catch(() => {});
     }
   } catch (err) {
-    // Fail silently so user experience is never interrupted
   }
 }
 
@@ -97,12 +95,10 @@ export function initAutomaticInteractionTracking() {
   let lastRsvpTrackTime = 0;
   let lastWishTrackTime = 0;
 
-  // Track user click events on key elements (using capture phase to intercept before 3rd party plugins stop propagation)
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
 
-    // 1. Cover open button
     const openBtn = target.closest('[data-template-open]');
     if (openBtn && !coverOpenedTracked) {
       coverOpenedTracked = true;
@@ -110,7 +106,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 2. Google Maps link click
     const mapsLink = target.closest('a[href*="google.com/maps"], a[href*="maps.app.goo.gl"], a[href*="goo.gl/maps"], [data-track-maps]');
     if (mapsLink) {
       sendAnalyticsEvent('click_maps', {
@@ -119,7 +114,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 4. Google Calendar / Calendar link click
     const calLink = target.closest('a[href*="calendar.google.com"], [data-track-calendar]');
     if (calLink) {
       sendAnalyticsEvent('click_calendar', {
@@ -128,7 +122,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 5. Gift account copy button
     const copyBtn = target.closest('[data-copy-btn]');
     if (copyBtn) {
       const value = copyBtn.getAttribute('data-value') || '';
@@ -138,7 +131,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 6. Non-Lightbox Gallery Item Click Fallback (Fancybox lightbox is tracked directly via Fancybox events)
     const galleryEl = target.closest(
       '.gallery-item, [data-gallery-img], .gallery-card, .gallery-img, a[href*="gallery" i], a[href*="galeri" i], [data-nav*="gallery" i], [data-nav*="galeri" i]'
     );
@@ -156,7 +148,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 8. RSVP navigation / CTA / Form interaction click
     let isRsvpAction = false;
     const rsvpDirect = target.closest(
       'a[href*="rsvp" i], a[href*="RSVP"], [data-rsvp-trigger], [data-rsvp-submit], .rsvp-cta-btn, .rsvp-form__submit, [data-nav*="rsvp" i], [data-target*="rsvp" i], [data-section*="rsvp" i], .rsvp-nav, .nav-rsvp'
@@ -202,7 +193,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 9. Wishes / Ucapan / Pagination click
     let isWishAction = false;
     const wishDirect = target.closest('a[href*="wishes" i], a[href*="ucapan" i], a[href*="doa" i], [data-wish-btn], [data-wishes-next], [data-wishes-prev], [data-wishes-page], .wishes-pagination__btn, .wishes-pagination__num, .wishes-pagination button');
     if (wishDirect) {
@@ -227,7 +217,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 9. Vendor / Platform WhatsApp (Pemilik Jasa / Pesan Undangan)
     const vendorWaLink = target.closest('[data-track-vendor-whatsapp], .thankyou-section__socials a[aria-label="WhatsApp"], .thankyou-section a[aria-label="WhatsApp"], .thankyou-section a[href*="wa.me"], .thankyou-section a[href*="whatsapp.com"], a[href*="wa.me"][href*="Senadda"], a[href*="whatsapp.com"][href*="Senadda"]');
     if (vendorWaLink) {
       sendAnalyticsEvent('click_vendor_whatsapp', {
@@ -236,7 +225,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 10. Vendor / Platform Instagram
     const vendorIgLink = target.closest('[data-track-vendor-instagram], .thankyou-section__socials a[aria-label="Instagram"], .thankyou-section a[aria-label="Instagram"], .thankyou-section a[href*="instagram.com"]');
     if (vendorIgLink) {
       sendAnalyticsEvent('click_vendor_instagram', {
@@ -245,7 +233,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 11. Vendor / Platform Website
     const vendorSiteLink = target.closest('[data-track-vendor-site], .thankyou-section__socials a[aria-label="Website"], .thankyou-section a[aria-label="Website"], .thankyou-section a[href="/"], .thankyou-section a[href*="senadda"]');
     if (vendorSiteLink) {
       sendAnalyticsEvent('click_vendor_site', {
@@ -254,7 +241,6 @@ export function initAutomaticInteractionTracking() {
       return;
     }
 
-    // 12. Couple Instagram link (Pengantin Pria / Wanita)
     const coupleIgLink = target.closest('[data-track-couple-instagram], .person-card__social, .couple-section__social, .couple-swiss a[href*="instagram.com"], .couple-section a[href*="instagram.com"]');
     if (coupleIgLink) {
       const role = coupleIgLink.getAttribute('data-track-couple-instagram') || 'couple';

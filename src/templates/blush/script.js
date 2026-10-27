@@ -23,7 +23,6 @@ if (cover instanceof HTMLElement) document.body.classList.add('template-no-scrol
 openBtn?.addEventListener('click', () => {
   if (cover instanceof HTMLElement) {
     cover.style.transition = 'opacity 1.6s, transform 2.4s';
-    // cover.style.opacity = '0';
     cover.style.transform = 'translateY(-100%)';
     setTimeout(() => {
       cover.style.display = 'none';

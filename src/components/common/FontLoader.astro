@@ -23,7 +23,6 @@ if (!customFonts.includes(bodyParam)) {
   fontsToLoad.push(`family=${bodyParam}:wght@400;500;600;700`);
 }
 
-// Generate premium loading string covering standard styling weights
 const googleFontsUrl = fontsToLoad.length > 0 
   ? `https://fonts.googleapis.com/css2?${fontsToLoad.join('&')}&display=swap`
   : null;

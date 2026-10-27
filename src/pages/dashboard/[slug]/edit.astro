@@ -138,7 +138,6 @@ const giftValues = detail.gifts.length
     }))
   : [];
 
-// Check if client has claimed their account (password is set)
 const { data: wedAuth } = await supabase
   .from('weddings')
   .select('client_password_hash')
@@ -161,7 +160,6 @@ if (!isClaimed) {
     { label: "Edit" }
   ]}
 >
-      <!-- Top Header -->
       <header class="admin-page-header">
         <div class="admin-page-header__left">
           <h1 class="admin-page-header__title">Edit Invitation</h1>
@@ -214,14 +212,11 @@ if (!isClaimed) {
         </div>
       )}
 
-      <!-- 2-Column Editor Layout -->
       <div class="editor-layout">
-        <!-- Main Content Area (Form) -->
         <div class="editor-main">
           <form id="edit-form" class="form-panel" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="action" value="save" />
 
-            <!-- SECTION 1: General Settings -->
             <section class="collapsible-section is-collapsed" id="sec-general">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -266,7 +261,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 2: Access & Client Security -->
             <section class="collapsible-section is-collapsed" id="sec-security">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -286,7 +280,6 @@ if (!isClaimed) {
                 </div>
               </div>
               <div class="collapsible-body">
-                <!-- Access Password (Guest Protection Gate) -->
                 <div class="security-card">
                   <div class="security-card__top">
                     <label class="checkbox-label">
@@ -304,7 +297,6 @@ if (!isClaimed) {
                   </div>
                 </div>
 
-                <!-- Client Password (Client Dashboard Authentication) -->
                 <div class="security-card">
                   <div class="security-card__top">
                     <div>
@@ -356,7 +348,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 3: Feature Toggles -->
             <section class="collapsible-section is-collapsed" id="sec-features">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -387,7 +378,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 4: Opening & Hero Section -->
             <section class="collapsible-section is-collapsed" id="sec-opening">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -454,7 +444,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 5: Couple Details -->
             <section class="collapsible-section is-collapsed" id="sec-couple">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -503,7 +492,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 6: Wedding Events -->
             <section class="collapsible-section is-collapsed" id="sec-events">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -544,7 +532,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 7: Our Story -->
             <section class="collapsible-section is-collapsed" id="sec-story" data-setting-target="storyEnabled">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -576,7 +563,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 8: Gallery & Media -->
             <section class="collapsible-section is-collapsed" id="sec-gallery" data-setting-target="galleryEnabled">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -618,7 +604,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 9: RSVP & Countdown Media -->
             <section class="collapsible-section is-collapsed" id="sec-countdown">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -642,7 +627,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 10: Gifts & Digital Accounts -->
             <section class="collapsible-section is-collapsed" id="sec-gifts" data-setting-target="giftEnabled">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -682,7 +666,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 11: Background Music -->
             <section class="collapsible-section is-collapsed" id="sec-music" data-setting-target="musicEnabled">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -704,7 +687,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- SECTION 12: Revision Note -->
             <section class="collapsible-section memo-section is-collapsed" id="sec-revision">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">
@@ -728,7 +710,6 @@ if (!isClaimed) {
               </div>
             </section>
 
-            <!-- Form Actions Footer -->
             <footer class="form-actions">
               <a class="cancel-link" href={`/dashboard/${detail.summary.slug}`}>Cancel</a>
               <button type="submit" class="save-primary-btn">Save Changes</button>
@@ -736,7 +717,6 @@ if (!isClaimed) {
           </form>
         </div>
 
-        <!-- Sticky Right Sidebar -->
         <aside class="editor-sidebar">
           <div class="sticky-box">
             <div class="sidebar-header">
@@ -747,7 +727,6 @@ if (!isClaimed) {
               <span class={`status-pill status-pill--${detail.wedding.status}`}>{detail.wedding.status}</span>
             </div>
 
-            <!-- Primary Action Button -->
             <div class="sidebar-main-actions">
               <button type="button" class="sidebar-save-btn" id="sidebar-save-trigger">
                 <span class="material-symbols-outlined">save</span>
@@ -756,9 +735,6 @@ if (!isClaimed) {
               <p class="save-shortcut-hint">Shortcut: <kbd>Ctrl</kbd> + <kbd>S</kbd></p>
             </div>
 
-
-
-            <!-- Section Toggle Bar -->
             <div class="sidebar-view-toggles">
               <span class="nav-heading">Section Visibility</span>
               <div class="toggle-btn-row">
@@ -771,7 +747,6 @@ if (!isClaimed) {
               </div>
             </div>
 
-            <!-- Danger Zone Action Buttons (Collapsible) -->
             <details class="sidebar-danger-zone">
               <summary class="danger-heading">
                 <span>⚠️ Danger Zone</span>
@@ -852,7 +827,6 @@ if (!isClaimed) {
       </form>
     </main>
 
-    <!-- Dynamic Repeater Templates -->
     <template id="event_template">
       <fieldset class="event-card repeater-item">
         <legend>Event <span class="idx"></span></legend>
@@ -915,7 +889,6 @@ if (!isClaimed) {
     </template>
 
     <script>
-      // 1. Repeater Handler
       function setupRepeater(containerId, btnId, templateId) {
         const container = document.getElementById(containerId);
         const btn = document.getElementById(btnId);
@@ -964,7 +937,6 @@ if (!isClaimed) {
       setupRepeater('gallery_videos_container', 'add_gallery_video_btn', 'gallery_video_template');
       setupRepeater('gifts_container', 'add_gift_btn', 'gift_template');
 
-      // 2. Feature Toggles & Conditional Display
       const settingTargets = document.querySelectorAll('[data-setting-target]');
       function syncSettingTargets() {
         settingTargets.forEach((target) => {
@@ -980,7 +952,6 @@ if (!isClaimed) {
         .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
       syncSettingTargets();
 
-      // 3. Password Input helper
       const accessPasswordInput = document.getElementById('accessPasswordInput');
       const passwordProtectionToggle = document.getElementById('passwordProtectionToggle');
       if (accessPasswordInput && passwordProtectionToggle) {
@@ -991,7 +962,6 @@ if (!isClaimed) {
         });
       }
 
-      // 4. Collapsible Section Handler
       const sections = document.querySelectorAll('.collapsible-section');
       sections.forEach(section => {
         const header = section.querySelector('.collapsible-header');
@@ -1014,7 +984,6 @@ if (!isClaimed) {
       document.getElementById('sidebar-expand-btn')?.addEventListener('click', expandAll);
       document.getElementById('sidebar-collapse-btn')?.addEventListener('click', collapseAll);
 
-      // 5. Automatic Smart OG Image Generator (1200x630)
       import { createOgImageBlob } from '../../../utils/og-generator';
 
       const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
@@ -1053,7 +1022,6 @@ if (!isClaimed) {
         }
       }
 
-      // Auto generate in background as soon as hero file is selected
       heroFileInput?.addEventListener('change', () => {
         const file = heroFileInput.files?.[0];
         if (file) {
@@ -1068,10 +1036,8 @@ if (!isClaimed) {
         }
       });
 
-      // 6. Sidebar Save Button & Shortcut (Ctrl+S)
       const editForm = document.getElementById('edit-form') as HTMLFormElement;
 
-      // Auto Media Compression (WebP image resize + LAME MP3 128kbps)
       import('../../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
         if (editForm) bindAutoMediaCompression(editForm);
       }).catch(console.warn);
@@ -1232,7 +1198,6 @@ if (!isClaimed) {
   .error-panel { color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; }
   .success-panel { color: #065f46; background: #ecfdf5; border: 1px solid #a7f3d0; }
 
-  /* 2-Column Layout */
   .editor-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
@@ -1252,7 +1217,6 @@ if (!isClaimed) {
     overflow: hidden;
   }
 
-  /* Collapsible Sections */
   .collapsible-section {
     border-bottom: 1px solid #e2e8f0;
     transition: background-color 0.15s ease;
@@ -1321,7 +1285,6 @@ if (!isClaimed) {
     border-top: 1px solid #f1f5f9;
   }
 
-  /* Collapsed state */
   .collapsible-section.is-collapsed {
     .chevron {
       transform: rotate(-90deg);
@@ -1335,7 +1298,6 @@ if (!isClaimed) {
     border-left: 4px solid #0284c7;
   }
 
-  /* Badges & Pills */
   .status-pill {
     display: inline-flex;
     align-items: center;
@@ -1383,7 +1345,6 @@ if (!isClaimed) {
     color: #475569;
   }
 
-  /* Security Components */
   .security-card {
     background: #f8fafc;
     border: 1px solid var(--admin-border);
@@ -1485,7 +1446,6 @@ if (!isClaimed) {
     &:hover { background: #f8fafc; border-color: #94a3b8; }
   }
 
-  /* Form Grids */
   .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1548,7 +1508,6 @@ if (!isClaimed) {
 
   textarea { resize: vertical; }
 
-  /* Feature Toggles */
   .toggle-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1591,7 +1550,6 @@ if (!isClaimed) {
     span { color: #991b1b; }
   }
 
-  /* Form Actions Bottom Bar */
   .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -1633,7 +1591,6 @@ if (!isClaimed) {
     &:hover { background: var(--admin-zinc-800); }
   }
 
-  /* Sticky Right Sidebar */
   .editor-sidebar {
     width: 320px;
     flex-shrink: 0;
@@ -1728,8 +1685,6 @@ if (!isClaimed) {
     }
   }
 
-
-
   .sidebar-view-toggles {
     display: flex;
     flex-direction: column;
@@ -1776,7 +1731,6 @@ if (!isClaimed) {
     }
   }
 
-  /* Sidebar Danger Zone */
   .sidebar-danger-zone {
     display: flex;
     flex-direction: column;

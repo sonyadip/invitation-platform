@@ -13,6 +13,7 @@ import lumiereCover from "../templates/lumiere/assets/cover.webp";
 import lumiereMetatahCover from "../templates/lumiere-metatah/assets/cover.webp";
 import lumiereMetatahV2Cover from "../templates/lumiere-metatah-v2/assets/cover.webp";
 import atelierCover from "../templates/atelier/assets/cover.webp";
+import terreCover from "../templates/terre/assets/cover.webp";
 import GoogleAnalytics from "../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../services/platform-settings";
 
@@ -49,6 +50,7 @@ const imageMap: Record<string, string> = {
   deauville: deauvilleCover.src,
   air: airCover.src,
   noir: noirCover.src,
+  terre: terreCover.src,
   sage: sageCover.src,
   ochre: ochreMotionCover.src,
   ivory: ivoryCover.src
@@ -63,6 +65,7 @@ const defaultTemplateCards = [
   { key: "deauville", name: "Deauville", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: deauvilleCover.src },
   { key: "air", name: "Air", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: airCover.src },
   { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: noirCover.src },
+  { key: "terre", name: "Terre", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: terreCover.src },
 ];
 
 const resolveCategory = (c: any): 'pernikahan' | 'metatah' => {
@@ -87,14 +90,21 @@ if (!rawCards.some((c: any) => resolveCategory(c) === 'metatah')) {
   rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.category === 'metatah')];
 }
 
+if (!rawCards.some((c: any) => c.key === 'terre')) {
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.key === 'terre')];
+}
+
 const parsePrice = (p?: string | null) => parseInt((p || '').replace(/\D/g, ''), 10) || 0;
 rawCards.sort((a: any, b: any) => parsePrice(b.price) - parsePrice(a.price) || parsePrice(b.promoPrice) - parsePrice(a.promoPrice));
 
 const templateCards = rawCards;
 
+const statNumber = (siteSettings.home_stat_number && siteSettings.home_stat_number !== '6+')
+  ? siteSettings.home_stat_number
+  : `${templateCards.length}+`;
+
 const stats = [
-  [siteSettings.home_stat_number || `${templateCards.length}+`, siteSettings.home_stat_label || "Koleksi\nEksklusif"],
-  // ["24J", "Proses\nPengerjaan"],
+  [statNumber, siteSettings.home_stat_label || "Koleksi\nEksklusif"],
 ];
 
 const heroMotionCards = templateCards;
@@ -123,10 +133,7 @@ const addons = [
 ];
 
 const faqs = [
-  // {
-  //   q: "Apakah template Senadda mendukung tradisi adat Bali (Pawiwahan & Metatah)?",
-  //   a: "Tentu. Kami menyediakan koleksi khusus berkarakter adat Hindu Bali yang mendukung salam panganjali Om Swastyastu, kutipan Sloka suci Bhagawad Gita, detail prosesi adat (Pawiwahan, Metatah/Mepandes), rute lokasi banjar/pura/griya, hingga amplop digital Bank BPD Bali maupun bank nasional & QRIS."
-  // },
+
   {
     q: "Waktu Pengerjaan Undangan",
     a: "Proses pembuatan biasanya memakan waktu 1 hingga 3 hari kerja setelah semua data acara dan foto kami terima dengan lengkap. Tersedia juga fasilitas prioritas 24 jam."
@@ -365,7 +372,6 @@ const schemaData = {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- Primary Meta Tags (SEO: Undangan Bali, Undangan digital Bali, Undangan digital, Undangan Pernikahan) -->
     <title>{pageTitle}</title>
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
     <link rel="apple-touch-icon" href="/logo.jpg" />
@@ -377,13 +383,11 @@ const schemaData = {
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta property="og:locale" content="id_ID" />
 
-    <!-- Geo Meta Tags for Bali & Local GEO Search -->
     <meta name="geo.region" content="ID-BA" />
     <meta name="geo.placename" content="Denpasar, Bali" />
     <meta name="geo.position" content="-8.670458;115.212629" />
     <meta name="ICBM" content="-8.670458, 115.212629" />
 
-    <!-- Open Graph / Facebook / WhatsApp (Social Previews) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={pageUrl} />
     <meta property="og:site_name" content="Senadda" />
@@ -396,7 +400,6 @@ const schemaData = {
     <meta property="og:image:height" content="739" />
     <meta property="og:image:alt" content="Senadda - Undangan Pernikahan Digital Bali" />
 
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary" />
     <meta property="twitter:url" content={pageUrl} />
     <meta property="twitter:title" content={pageTitle} />
@@ -418,7 +421,6 @@ const schemaData = {
       crossorigin
     />
 
-    <!-- Schema.org Structured Data for Google, Local GEO & AI Answer Engines (AEO) -->
     <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
   </head>
   <body id="top" class="intro-enter">
@@ -798,12 +800,6 @@ const schemaData = {
           </div>
         
         <style>
-        /* =========================================
-           -1. RESPONSIVE SECTION PADDING
-           ========================================= */
-        /* =========================================
-           -1. RESPONSIVE SECTION PADDING
-           ========================================= */
         .faq-section {
             background-color: var(--white);
             position: relative;
@@ -824,46 +820,33 @@ const schemaData = {
                 padding: 60px 16px;
             }
         }
-
-        /* =========================================
-           0. RESET BOX SIZING
-           ========================================= */
-        .faq-container,
+.faq-container,
         .faq-container *,
         .faq-container *::before,
         .faq-container *::after {
             box-sizing: border-box !important;
         }
-
-        /* =========================================
-           1. FAQ WRAPPER (Grid Fisik 2 Kolom)
-           ========================================= */
-        .faq-container {
+.faq-container {
             width: 100%;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 1fr; /* Mobile: Tumpuk ke bawah */
+            grid-template-columns: 1fr;
             gap: 16px;
         }
 
         @media (min-width: 768px) {
             .faq-container {
-                grid-template-columns: repeat(2, 1fr); /* Desktop: 2 Kolom terpisah */
-                align-items: start; /* PENTING: Mencegah kolom melar mengikuti sebelah */
+                grid-template-columns: repeat(2, 1fr);
+                align-items: start;
             }
         }
 
-        /* Pembungkus spesifik tiap kolom */
         .faq-col {
             display: flex;
             flex-direction: column;
-            gap: 16px; /* Jarak atas-bawah antar FAQ */
+            gap: 16px;
         }
-
-        /* =========================================
-           2. FAQ ITEM BOX
-           ========================================= */
-        .faq-item {
+.faq-item {
             background-color: var(--white) !important; 
             border: 1px solid var(--black) !important; 
             border-radius: 6px;
@@ -880,11 +863,7 @@ const schemaData = {
             border-color: var(--black) !important; 
             box-shadow: 0 10px 30px rgba(23, 22, 15, 0.05) !important;
         }
-
-        /* =========================================
-           3. TOMBOL PERTANYAAN
-           ========================================= */
-        .faq-btn {
+.faq-btn {
             width: 100%;
             text-align: left;
             background: transparent !important; 
@@ -921,7 +900,6 @@ const schemaData = {
             min-width: 0 !important;
         }
 
-        /* Ikon Animasi Plus/Minus */
         .faq-icon {
             position: relative;
             width: 24px;
@@ -946,11 +924,7 @@ const schemaData = {
         .faq-item.active .faq-icon::before {
             background-color: var(--black) !important;
         }
-
-        /* =========================================
-           4. AREA JAWABAN
-           ========================================= */
-        .faq-content {
+.faq-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.4s var(--ease);
@@ -964,11 +938,7 @@ const schemaData = {
             margin: 0 !important;
             padding: 0 24px 24px 24px !important; 
         }
-
-        /* =========================================
-           5. RESPONSIVE MOBILE
-           ========================================= */
-        @media (max-width: 767px) {
+@media (max-width: 767px) {
             .faq-btn { padding: 20px 16px; }
             .faq-question { font-size: 16px !important; line-height: 1.5 !important; }
             .faq-answer { font-size: 14px !important; padding: 0 16px 20px 16px !important; }
@@ -1017,14 +987,12 @@ const schemaData = {
                     btn.addEventListener('click', () => {
                         const isActive = item.classList.contains('active');
 
-                        // Tutup FAQ lain
                         faqItems.forEach(otherItem => {
                             otherItem.classList.remove('active');
                             const otherContent = otherItem.querySelector('.faq-content');
                             if (otherContent) otherContent.style.maxHeight = null;
                         });
 
-                        // Buka yang di-klik
                         if (!isActive) {
                             item.classList.add('active');
                             content.style.maxHeight = content.scrollHeight + "px";
@@ -1089,6 +1057,10 @@ const schemaData = {
         </div>
       </dialog>
     <script>
+      import { initLenis, getLenis } from "../scripts/lenis-smooth-scroll";
+
+      initLenis({ duration: 1.1, lerp: 0.08, offset: -84 });
+
       const loginBtn = document.getElementById("login-btn");
       const loginModal = document.getElementById("login-modal");
       const loginModalClose = document.getElementById("login-modal-close");
@@ -1109,9 +1081,9 @@ const schemaData = {
           
           let topPos;
           if (rect.bottom + 16 + menuHeight > window.innerHeight) {
-             topPos = rect.top - menuHeight - 16; // place above
+             topPos = rect.top - menuHeight - 16;
           } else {
-             topPos = rect.bottom + 16; // place below
+             topPos = rect.bottom + 16;
           }
           
           let leftPos = rect.right - menuWidth;
@@ -1125,88 +1097,29 @@ const schemaData = {
           navLinks.style.right = 'auto';
         };
 
-        let hasMoved = false;
-        let startX, startY, initialX, initialY;
-
-        const onPointerDown = (e) => {
-          if (e.button !== 0 && e.pointerType === 'mouse') return;
-          menuToggle.setPointerCapture(e.pointerId);
-          startX = e.clientX;
-          startY = e.clientY;
-          
-          menuToggle.style.transition = 'none'; // remove delay during drag
-          
-          const rect = menuToggle.getBoundingClientRect();
-          initialX = rect.left;
-          initialY = rect.top;
-          hasMoved = false;
-
-          menuToggle.addEventListener("pointermove", onPointerMove);
-          menuToggle.addEventListener("pointerup", onPointerUp);
+        const closeMenu = () => {
+          navLinks.classList.remove("is-open");
+          menuToggle.classList.remove("is-open");
+          menuToggle.setAttribute("aria-expanded", "false");
         };
 
-        const onPointerMove = (e) => {
-          const dx = e.clientX - startX;
-          const dy = e.clientY - startY;
-          
-          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-            hasMoved = true;
+        menuToggle.addEventListener("click", () => {
+          const isOpen = navLinks.classList.toggle("is-open");
+          menuToggle.classList.toggle("is-open", isOpen);
+          menuToggle.setAttribute("aria-expanded", String(isOpen));
+          if (isOpen) {
+            updateMenuPosition();
           }
-
-          if (hasMoved) {
-            menuToggle.dataset.manuallyPositioned = "true";
-            let newX = initialX + dx;
-            let newY = initialY + dy;
-            
-            // Bounds checking
-            const maxX = window.innerWidth - menuToggle.offsetWidth;
-            const maxY = window.innerHeight - menuToggle.offsetHeight;
-            newX = Math.max(0, Math.min(newX, maxX));
-            newY = Math.max(0, Math.min(newY, maxY));
-
-            menuToggle.style.left = `${newX}px`;
-            menuToggle.style.top = `${newY}px`;
-            menuToggle.style.right = 'auto';
-            menuToggle.style.bottom = 'auto';
-            
-            if (navLinks.classList.contains("is-open")) {
-              updateMenuPosition();
-            }
-          }
-        };
-
-        const onPointerUp = (e) => {
-          menuToggle.releasePointerCapture(e.pointerId);
-          menuToggle.removeEventListener("pointermove", onPointerMove);
-          menuToggle.removeEventListener("pointerup", onPointerUp);
-          
-          menuToggle.style.transition = ''; // restore transition
-
-          if (!hasMoved) {
-            navLinks.classList.toggle("is-open");
-            menuToggle.classList.toggle("is-open");
-            if (navLinks.classList.contains("is-open")) {
-              updateMenuPosition();
-            }
-          }
-          setTimeout(() => { hasMoved = false; }, 0);
-        };
-
-        menuToggle.addEventListener("pointerdown", onPointerDown);
-        menuToggle.addEventListener("dragstart", (e) => e.preventDefault());
+        });
 
         navLinks.querySelectorAll("a").forEach(a => {
-          a.addEventListener("click", () => {
-            navLinks.classList.remove("is-open");
-            menuToggle.classList.remove("is-open");
-          });
+          a.addEventListener("click", closeMenu);
         });
         
         document.addEventListener("pointerdown", (e) => {
           if (navLinks.classList.contains("is-open")) {
             if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-              navLinks.classList.remove("is-open");
-              menuToggle.classList.remove("is-open");
+              closeMenu();
             }
           }
         });
@@ -1232,7 +1145,6 @@ const schemaData = {
       }
       
       if (loginFormUnified) {
-        // Handle auto-open for ?login=admin or ?login=client
         const urlParams = new URLSearchParams(window.location.search);
         const loginType = urlParams.get('login');
         if (loginType === 'admin' || loginType === 'client') {
@@ -1268,7 +1180,6 @@ const schemaData = {
       };
       window.addEventListener("resize", updateReveal);
       window.addEventListener("load", updateReveal);
-      // Fallback timeout to ensure fonts/images are loaded if load event already fired
       setTimeout(updateReveal, 100);
       setTimeout(updateReveal, 500);
       updateReveal();
@@ -1383,7 +1294,6 @@ const schemaData = {
 
         if (heroSection) {
           heroSection.style.setProperty("--hero-scroll", String(heroProgress));
-          // Sembunyikan hero-shell jika sudah lewat jauh (mencegah bocor di transparan area .start)
           if (currentScrollY > window.innerHeight * 2.5) {
             heroSection.style.visibility = "hidden";
           } else {
@@ -1395,7 +1305,7 @@ const schemaData = {
         lastScrollY = Math.max(currentScrollY, 0);
 
         const menuBtn = document.getElementById("menu-toggle");
-        if (menuBtn && window.innerWidth <= 767 && menuBtn.dataset.manuallyPositioned !== "true") {
+        if (menuBtn && window.innerWidth <= 767) {
           const wasScrolled = menuBtn.classList.contains("is-scrolled");
           const isNowScrolled = heroProgress >= 0.4;
           const nav = document.querySelector(".nav-links");
@@ -1472,7 +1382,6 @@ const schemaData = {
       const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
       elementsToObserve.forEach((el) => revealObserver.observe(el));
 
-      // Category filter for templates (Pernikahan & Metatah)
       const filterBtns = document.querySelectorAll(".template-filter-btn");
       const templateCardEls = document.querySelectorAll(".template-grid .template-card");
       const emptyStateEl = document.getElementById("template-empty");
@@ -1552,20 +1461,28 @@ const schemaData = {
         if (!target) return;
         target.classList.add("is-visible");
 
-        requestAnimationFrame(() => {
-          target.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
+        const lenis = getLenis();
+        if (lenis) {
+          lenis.scrollTo(target as HTMLElement, {
+            offset: -84,
+            duration: 1.2,
           });
-          window.setTimeout(
-            () =>
-              target.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              }),
-            1000,
-          );
-        });
+        } else {
+          requestAnimationFrame(() => {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+            window.setTimeout(
+              () =>
+                target.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                }),
+              1000,
+            );
+          });
+        }
       };
 
       anchorLinks.forEach((link) => {
@@ -1676,7 +1593,6 @@ const schemaData = {
         setScrollState();
       });
 
-      /* Dashboard tabs — segmented control */
       (() => {
         const nav = document.querySelector('.dashboard-tabs__nav');
         if (!nav) return;
@@ -1689,7 +1605,6 @@ const schemaData = {
           indicator.style.left = (btn.offsetLeft) + 'px';
         };
 
-        // init on next frame so layout is settled
         requestAnimationFrame(() => {
           const activeBtn = nav.querySelector('.dashboard-tabs__btn.is-active');
           if (activeBtn) moveIndicator(activeBtn);
@@ -1711,7 +1626,6 @@ const schemaData = {
           if (cur) moveIndicator(cur);
         });
 
-        // Promo Popup Logic
         const popup = document.getElementById('promo-popup');
         if (popup) {
           const closeBtn = popup.querySelector('.promo-popup__close');
@@ -1721,7 +1635,6 @@ const schemaData = {
           if (!localStorage.getItem('senadda_promo_closed')) {
             setTimeout(() => {
               popup.classList.remove('hidden');
-              // small delay to allow display block to apply before animating opacity
               setTimeout(() => popup.classList.add('is-visible'), 50);
             }, 6100);
           }
@@ -1738,7 +1651,7 @@ const schemaData = {
             closePopup();
           });
           
-          const PROMO_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
+          const PROMO_DURATION_MS = 2 * 24 * 60 * 60 * 1000;
           let endTime = localStorage.getItem('senadda_promo_end');
           
           if (!endTime) {
@@ -1746,7 +1659,6 @@ const schemaData = {
             localStorage.setItem('senadda_promo_end', endTime);
           } else {
             endTime = parseInt(endTime, 10);
-            // Evergreen: reset jika sudah lewat
             if (new Date().getTime() > endTime) {
               endTime = new Date().getTime() + PROMO_DURATION_MS;
               localStorage.setItem('senadda_promo_end', endTime);
@@ -1758,7 +1670,6 @@ const schemaData = {
             let distance = endTime - now;
             
             if (distance < 0) {
-              // Reset lagi secara realtime jika waktunya pas habis saat user membuka halaman
               endTime = new Date().getTime() + PROMO_DURATION_MS;
               localStorage.setItem('senadda_promo_end', endTime);
               distance = endTime - now;
@@ -1781,7 +1692,6 @@ const schemaData = {
 
       })();
     </script>
-    <!-- Promo Popup -->
     <div id="promo-popup" class="promo-popup hidden">
       <div class="promo-popup__overlay"></div>
       <div class="promo-popup__content">
@@ -1818,7 +1728,6 @@ const schemaData = {
     color-scheme: light;
     scroll-behavior: smooth;
 
-    /* Primary Palette */
     --ink-charcoal: #17160f;
     --deep-charcoal: #2f2e25;
     --ivory-paper: #f7f5ea;
@@ -1833,7 +1742,6 @@ const schemaData = {
     --dark-grey: var(--deep-charcoal);
     --line: var(--warm-taupe);
 
-    /* Typography */
     --font-heading: "SaolDisplay-Regular", serif;
     --font-body: "Montserrat", sans-serif;
 
@@ -2326,7 +2234,6 @@ const schemaData = {
     height: 100%;
     width: auto;
     object-fit: contain;
-    /* Elegant floating motion aligned with UX skill recommendations */
     animation: floatElegantly 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     transform-origin: center;
     transition: transform 0.4s var(--ease-soft);
@@ -2355,9 +2262,7 @@ const schemaData = {
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(247, 245, 234, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: transparent;
     border: none;
     color: var(--ink-charcoal);
     cursor: pointer;
@@ -2366,9 +2271,8 @@ const schemaData = {
     height: 48px;
     border-radius: 50%;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, color 0.3s ease, top 0.4s ease, right 0.4s ease, left 0.4s ease;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, top 0.4s ease, right 0.4s ease;
     z-index: 1000;
-    touch-action: none;
   }
   .menu-toggle:active {
     transform: scale(0.92);
@@ -2377,6 +2281,12 @@ const schemaData = {
     background: var(--ink-charcoal);
     color: var(--white);
     border-color: transparent;
+  }
+  .menu-toggle.is-scrolled {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    width: 48px;
   }
   .menu-toggle svg {
     width: 24px;
@@ -2396,9 +2306,7 @@ const schemaData = {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: rgba(247, 245, 234, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: transparent;
     border: none;
     color: var(--ink-charcoal);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -2416,8 +2324,13 @@ const schemaData = {
                 box-shadow 0.3s ease;
   }
   .floating-wa.is-scrolled {
+    width: 48px;
     bottom: 48px;
     right: 48px;
+    background: rgba(247, 245, 234, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
   .floating-wa:hover {
     background: var(--ink-charcoal);
@@ -3270,7 +3183,9 @@ const schemaData = {
         top: calc(87px + max(215px, min(93.75vw, 362.5px)));
       }
       @media (max-height: 700px) {
-        top: calc(87px + max(215px, min(93.75vw, 325px)));
+        top: calc(-2px + max(215px, min(93.75vw, 325px)));
+        width: 44px;
+        height: 44px;
       }
     }
     .menu-toggle.is-scrolled {
@@ -3290,18 +3205,16 @@ const schemaData = {
       gap: 10px;
     }
     .hero-wa-anchor {
-      width: 42px;
-      height: 42px;
+
+      @media (max-height: 700px) {
+        position: fixed;
+        top: calc(52px + max(215px, min(93.75vw, 325px)));
+        right: 16px;
+      }
     }
     .floating-wa {
-      width: 48px;
-      height: 48px;
       bottom: var(--wa-bottom, 68px);
       right: var(--wa-right, 16px);
-    }
-    .floating-wa svg {
-      width: 24px;
-      height: 24px;
     }
     .floating-wa.is-scrolled {
       bottom: calc(16px + env(safe-area-inset-bottom, 0px));
@@ -3314,7 +3227,7 @@ const schemaData = {
 
       @media (max-height: 900px) { top: calc(147px + max(215px, min(93.75vw, 400px))); }
       @media (max-height: 800px) { top: calc(147px + max(215px, min(93.75vw, 362.5px))); }
-      @media (max-height: 700px) { top: calc(147px + max(215px, min(93.75vw, 325px))); }
+      @media (max-height: 700px) { top: calc(52px + max(215px, min(93.75vw, 325px))); }
       right: 16px;
       width: calc(100% - 32px);
       max-width: 150px;
@@ -3331,7 +3244,6 @@ const schemaData = {
       border: 1px solid rgba(255,255,255,0.4);
       z-index: 999;
       
-      /* Animation states */
       opacity: 0;
       pointer-events: none;
       transform: translateY(20px) scale(0.95);
@@ -3352,6 +3264,10 @@ const schemaData = {
     .hero-motion-wrap {
       top: 135px;
       left: 16px;
+
+      @media (max-height: 700px) {
+        top: 100px;
+      }
     }
     .hero-motion {
       width: min(75vw, 350px);
@@ -3425,7 +3341,7 @@ const schemaData = {
     .template-list {
       gap: 24px;
       padding: 58px 16px 70px;
-      // box-shadow: 0 2px 20px rgba(23, 22, 15, 0.08);
+
     }
     .features-list {
       padding: 60px 16px;
@@ -3512,7 +3428,7 @@ const schemaData = {
       color: var(--black);
       font-size: 12px;
       font-weight: 500;
-      // letter-spacing: 0.1em;
+
     }
     .template-card__price--original {
       font-size: 10px;
@@ -3620,7 +3536,6 @@ const schemaData = {
     }
   }
 
-  /* ── Dashboard Showcase ── */
   .dashboard-showcase {
     padding: 100px 20px 90px;
     background: var(--white);
@@ -3715,7 +3630,6 @@ const schemaData = {
     visibility: hidden;
     transform: translateY(12px) scale(0.99);
     transition: opacity 0.4s var(--ease), transform 0.4s var(--ease), visibility 0.4s;
-    /* Layout for contents */
     display: grid;
     grid-template-columns: 1fr;
     gap: 32px;
@@ -3781,7 +3695,6 @@ const schemaData = {
     }
   }
 
-  /* Promo Popup */
   .promo-popup {
     position: fixed;
     inset: 0;
@@ -3921,7 +3834,6 @@ const schemaData = {
   if ('modelContext' in navigator) {
     const controller = new AbortController();
     
-    // The WebMCP API is evolving, so we check for both provideContext and registerTool
     if (typeof (navigator as any).modelContext.provideContext === 'function') {
       (navigator as any).modelContext.provideContext({
         tools: [
@@ -3930,7 +3842,7 @@ const schemaData = {
             description: "Get a list of available wedding invitation templates",
             inputSchema: { type: "object", properties: {} },
             execute: async () => {
-              return { success: true, templates: ["Lumiere", "Deauville", "Air", "Editorial", "Noir"] };
+              return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
             }
           }
         ]
@@ -3941,7 +3853,7 @@ const schemaData = {
         description: "Get a list of available wedding invitation templates",
         inputSchema: { type: "object", properties: {} },
         execute: async () => {
-          return { success: true, templates: ["Lumiere", "Deauville", "Air", "Editorial", "Noir"] };
+          return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
         }
       }, { signal: controller.signal });
     }

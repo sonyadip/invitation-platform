@@ -1,6 +1,4 @@
-/* Aura Invite - Global SCSS Stylesheet */
 
-// --- 1. CSS Custom Properties (Variables) ---
 :root {
   --primary-color: #C8A165;
   --primary-light: #DFBE8C;
@@ -14,7 +12,6 @@
   --bg-color: #FFFFFF;
 }
 
-// --- 2. Base Resets ---
 *,
 *::before,
 *::after {
@@ -46,15 +43,11 @@ button {
   font-family: inherit;
 }
 
-// --- 3. Selection Styling ---
 ::selection {
   background-color: rgba(200, 161, 101, 0.3);
   color: inherit;
 }
 
-// --- 4. Shared Component Classes ---
-
-// Glassmorphism (used in Countdown, [slug].astro status cards)
 .glassmorphism {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
@@ -66,7 +59,6 @@ button {
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-// --- 6. Wishes Pagination Component ---
 .wishes-pagination {
   display: flex;
   align-items: center;
@@ -158,24 +150,27 @@ button {
   margin-right: auto !important;
 }
 
-// --- 7. Floating Audio Toggle Component ---
-.audio-toggle {
+.audio-toggle,
+.floating-audio-wrap {
   transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, border-color 0.3s ease;
 }
 
-// Hide audio toggle while cover popup or cinematic preloader is active
 body.template-no-scroll .audio-toggle,
+body.template-no-scroll .floating-audio-wrap,
 body.template-cover-active .audio-toggle,
+body.template-cover-active .floating-audio-wrap,
 body:has([data-template-cover]:not([style*="display: none"])) .audio-toggle,
+body:has([data-template-cover]:not([style*="display: none"])) .floating-audio-wrap,
 body:has(#cinematic-preloader:not([style*="display: none"])) .audio-toggle,
-body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
+body:has(#cinematic-preloader:not([style*="display: none"])) .floating-audio-wrap,
+body:has(#intro-awal:not([style*="display: none"])) .audio-toggle,
+body:has(#intro-awal:not([style*="display: none"])) .floating-audio-wrap {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
   transform: scale(0.8) !important;
 }
 
-// --- 8. Gift Button & Copy Micro-interactions ---
 .gift-btn {
   position: relative;
   display: inline-flex;
@@ -268,9 +263,6 @@ body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
   }
 }
 
-// --- 9. Gift Toggle Button & Gift Card Open/Close Animations ---
-
-// 9.1 Gift Toggle Button (inherits template's native [data-animate] on first load)
 .gift-toggle-btn,
 [data-gift-toggle] {
   will-change: transform, opacity;
@@ -290,7 +282,6 @@ body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
   }
 }
 
-// 9.2 Gift Collapse Wrapper (Smooth Height Expansion & Collapse)
 .gift-collapse-wrapper {
   display: grid;
   grid-template-rows: 0fr;
@@ -345,7 +336,6 @@ body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
   }
 }
 
-// 9.3 Gift Card Animations
 .gift-grid {
   width: 100%;
 
@@ -353,7 +343,6 @@ body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
     will-change: opacity, transform, filter;
   }
 
-  // Smooth exit transition when closing: fades and glides down gracefully
   &.is-closing {
     pointer-events: none;
 
@@ -370,7 +359,6 @@ body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
   }
 }
 
-// Reduced motion safeguard
 @media (prefers-reduced-motion: reduce) {
   .gift-collapse-wrapper,
   .gift-collapse-wrapper.is-open,
@@ -385,3 +373,80 @@ body:has(#intro-awal:not([style*="display: none"])) .audio-toggle {
     transition-delay: 0ms !important;
   }
 }
+
+// Reset hover & active styles on NON-VIDEO gallery items for mobile / touch devices across all templates
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
+  .gallery-item:not(.is-video),
+  .gallery-section__item:not(.gallery-section__video):not(.is-video) {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+
+    &:hover,
+    &:active,
+    &:focus {
+      outline: none !important;
+      box-shadow: none !important;
+      transform: none !important;
+
+      .gallery-item__img,
+      .gallery-section__item img,
+      img {
+        transform: none !important;
+      }
+
+      .gallery-item__overlay,
+      .gallery-section__overlay {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+
+      .gallery-item__zoom {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transform: none !important;
+      }
+    }
+  }
+}
+
+// Video gallery items: play button and overlay must NEVER disappear when clicked, hovered, or active (mobile & desktop)
+.gallery-item.is-video,
+.gallery-section__video,
+.gallery-video-full,
+.gallery-slider__slide--video,
+.gallery-slider__slide.is-video,
+[class*="is-video"] {
+  -webkit-tap-highlight-color: transparent !important;
+
+  .gallery-item__overlay,
+  .gallery-section__overlay {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .gallery-item__zoom,
+  .gallery-item__play,
+  .gallery-section__play {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  &:hover,
+  &:active,
+  &:focus {
+    .gallery-item__overlay,
+    .gallery-section__overlay {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .gallery-item__zoom,
+    .gallery-item__play,
+    .gallery-section__play {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+  }
+}
+

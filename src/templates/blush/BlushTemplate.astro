@@ -16,7 +16,7 @@ import gallerySix from '../noir/assets/gallery-6.jpg';
 import gallerySeven from '../noir/assets/gallery-7.jpg';
 import galleryEight from '../noir/assets/gallery-8.webp';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import './style.scss';
+import styleUrl from './style.scss?url';
 
 import {
   formatChildPrefix,
@@ -38,7 +38,6 @@ interface Props {
 const { data, guestName } = Astro.props;
 const { wedding, settings, events, gallery, gifts, wishes } = data;
 const sections = settings.sections;
-// Override gallery with custom local images for Noir template
 const customGallery = [
   { id: '1', image_url: galleryOne, variant: 'full-16x10' },
   { id: '2', image_url: galleryTwo, variant: 'half' },
@@ -57,14 +56,13 @@ const themeConfig = (settings.theme_config || {
 const themeContent = themeConfig.content || {};
 const platformSettings = await getPlatformSettings();
 
-// Override font & color settings for the Noir theme
 const overrideSettings = {
   ...settings,
   theme_config: {
     ...themeConfig,
     theme: {
       ...themeConfig.theme,
-      primaryColor: '#FFFFFF', // Noir White
+      primaryColor: '#FFFFFF',
       secondaryColor: '#111111',
       textColor: '#FFFFFF',
       bgColor: '#111111',
@@ -174,7 +172,6 @@ const activeGifts = gifts && gifts.length > 0
       { id: '2', bank_name: 'Bank Mandiri', account_number: '0987654321', account_name: 'Pratiwi Indah', qris_url: null }
     ];
 
-
 const defaultText = {
   verse: "Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan. Ya Allah semoga ridho-Mu tercurah mengiringi pernikahan kami.",
   verseSource: "",
@@ -198,6 +195,7 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
   to={guestName}
   templateClass="template-blush"
   image={heroImage}
+  styleUrl={styleUrl}
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
@@ -207,7 +205,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
         subtitle="The Wedding Of"
       />
     )}
-    <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
       <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__body">
@@ -228,10 +225,8 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
       </div>
     </div>
 
-    <!-- ===================== MAIN LAYOUT ===================== -->
     <div class="invitation-layout" data-template-layout>
 
-      <!-- LEFT FIXED SIDEBAR (desktop only) -->
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
           <SmartImage class="section-bg section-bg--sidebar" src={heroImage} alt="" aria-hidden="true" />
@@ -247,7 +242,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
         </aside>
       </div>
 
-      <!-- RIGHT SCROLLABLE CONTENT -->
       <main class="invitation-main">
         
         <section class="solstice-hero">
@@ -270,14 +264,12 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
           </div>
         </section>
 
-        <!-- Opening Verse Section -->
         <blockquote class="intro-section__verse" data-animate>
           "Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu."
           <cite class="intro-section__source">(Rgveda : X.85.42)</cite>
         </blockquote>
 
         <div id="template-content" class="sections-stack">
-          <!-- Couple Section -->
           <section class="couple-section">
             <div class="couple-section__photos">
               <SmartImage src={groomImage} alt="Groom" class="couple-section__photo couple-section__photo--groom" loading="lazy" />
@@ -328,7 +320,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
             </div>
           </section>
 
-          <!-- Events Section -->
           <section class="events-section">
             <SmartImage class="events-section__bg" src={eventImage} alt="" loading="lazy" />
             <div class="events-section__overlay"></div>
@@ -360,7 +351,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
             </div>
           </section>
 
-          <!-- Gallery Section -->
           {sections.gallery && settings.gallery_enabled && (activeGallery.length > 0 || (videoUrl && videoUrl.trim() !== "")) && (
             <section class="gallery-section">
               <h2 class="section-title" data-animate>Gallery</h2>
@@ -384,7 +374,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
             </section>
           )}
 
-          <!-- Gifts Section -->
           {sections.gift && settings.gift_enabled && (
             <>
               <section class="gift-section" data-gift-section>
@@ -402,7 +391,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
               </>
           )}
 
-          <!-- RSVP & Wishes Section -->
           {sections.rsvp && settings.rsvp_enabled && (
             <section class="rsvp-section" data-rsvp-section>
               <div class="rsvp-container">
@@ -519,7 +507,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
 
         </div>
 
-        <!-- Closing Section -->
         <section class="thankyou-section">
           <SmartImage class="thankyou-section__bg" src={closingImage} alt="" aria-hidden="true" />
           <div class="thankyou-section__inner" data-animate="fade-up" style="--animate-delay: 300ms;">
@@ -562,7 +549,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
       </main>
     </div>
 
-    <!-- Floating Audio Player -->
     {sections.music && (
               <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
           <div class="audio-icon-wrapper">
@@ -584,7 +570,6 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
   <script>
     import './script.js';
 
-    // Solstice Hero Scroll Animation
     document.addEventListener('DOMContentLoaded', () => {
       const heroImage = document.querySelector('.solstice-hero__image');
       if (heroImage) {
@@ -602,6 +587,3 @@ const compactDate = new Date(wedding?.wedding_date || new Date().toISOString()).
     });
   </script>
 </BaseLayout>
-
-
-

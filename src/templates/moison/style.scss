@@ -1,6 +1,6 @@
-// Fonts loaded locally via assets/fonts.css
 
-// ─── Design tokens (dark/blue palette from Untitled-3) ────────────────────────
+@import url('./assets/fonts.css');
+
 body.template-moison {
   --lm-black:   #000000;
   --lm-bg:      #090909;
@@ -26,7 +26,6 @@ body.template-moison {
     font-family: 'Edensor', serif !important;
   }
 
-  // ── Root & page background (mirrors Editorial exactly) ──────────────────────
   .invitation-root {
     position: relative;
     min-height: 100vh;
@@ -73,7 +72,6 @@ body.template-moison {
     }
   }
 
-  // ── Invitation layout (hidden at first, shown after open) ─────────────────
   .invitation-layout {
     display: flex;
     flex-direction: column;
@@ -83,9 +81,6 @@ body.template-moison {
     margin: 0 auto;
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // COVER SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .cover-section {
     position: relative;
     min-height: 100vh;
@@ -189,7 +184,6 @@ body.template-moison {
       margin-bottom: 8px;
     }
 
-    // opening animation
     &.is-opening {
       animation: lm-cover-fade 1.6s ease forwards;
     }
@@ -199,7 +193,6 @@ body.template-moison {
     to { opacity: 0; transform: scale(1.04); }
   }
 
-  // ── Shared button ────────────────────────────────────────────────────────────
   .template-btn {
     display: inline-flex;
     align-items: center;
@@ -236,7 +229,6 @@ body.template-moison {
     }
   }
 
-  // ── Shared: section label / rule (from Editorial) ────────────────────────────
   .section-title {
     margin: 0 0 8px;
     font-family: 'Edensor', sans-serif;
@@ -253,9 +245,6 @@ body.template-moison {
     margin: 16px auto;
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // INTRO / HERO SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .intro-section {
     min-height: 100vh;
     min-height: 100svh;
@@ -339,7 +328,6 @@ body.template-moison {
       }
     }
 
-    // countdown — override global .countdown-grid styles inside intro
     .countdown-grid {
       display: flex;
       gap: 32px;
@@ -397,13 +385,9 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // QUOTE SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .quote-section {
     padding: 4rem 24px;
     text-align: center;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
     &__inner {
       display: flex;
@@ -430,9 +414,6 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // COUPLE SECTION (Transparent background, light text & lines as in image)
-  // ══════════════════════════════════════════════════════════════════════════════
   .couple-section {
     padding: 3rem 20px;
     display: flex;
@@ -568,12 +549,8 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // STORY SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .story-section {
     padding: 3rem 24px;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
     &__title {
       font-family: 'Edensor', sans-serif;
@@ -612,9 +589,6 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // EVENT SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .event-section {
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
@@ -803,9 +777,6 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // ATTIRE SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .attire-section {
     padding: 4rem 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
@@ -835,9 +806,6 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // PHOTO BOOTH SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .photobooth-section {
     padding: 3.5rem 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
@@ -877,9 +845,6 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // GALLERY SECTION  (reuses Editorial gallery classes verbatim)
-  // ══════════════════════════════════════════════════════════════════════════════
   .gallery-section {
     padding: 15% 5%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
@@ -960,13 +925,12 @@ body.template-moison {
       stroke: #fff;
     }
 
-    &:hover .gallery-item__img  { transform: scale(1.04); }
-    &:hover .gallery-item__overlay { opacity: 1; }
+    @media (hover: hover) and (pointer: fine) {
+      &:hover .gallery-item__img  { transform: scale(1.04); }
+      &:hover .gallery-item__overlay { opacity: 1; }
+    }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // RSVP (mirrors Editorial rsvp-row / rsvp-section classes)
-  // ══════════════════════════════════════════════════════════════════════════════
   .rsvp-row {
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
@@ -1205,12 +1169,8 @@ body.template-moison {
     &:hover { color: var(--lm-white); border-color: rgba(255,255,255,0.4); }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // GIFT SECTION (reuses Editorial gift classes)
-  // ══════════════════════════════════════════════════════════════════════════════
   .gift-section {
     padding: 3rem 24px;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     text-align: center;
   }
 
@@ -1374,13 +1334,10 @@ body.template-moison {
     color: #10b981;
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // CLOSING ROW (mirrors Editorial closing-row classes)
-  // ══════════════════════════════════════════════════════════════════════════════
   .closing-row {
     display: grid;
     grid-template-columns: 1fr;
-    padding: 5% 5% 15%;
+    padding: 5% 5% 10%;
 
     &__media {
       width: 100%;
@@ -1405,7 +1362,7 @@ body.template-moison {
 
     &__title {
       font-family: 'Edensor', serif;
-      font-size: 20px; /* Mobile match for Editorial */
+      font-size: 20px;
       font-style: italic;
       font-weight: 400;
       line-height: 1.1;
@@ -1424,7 +1381,7 @@ body.template-moison {
 
     &__names {
       font-family: 'Edensor', serif;
-      font-size: 20px; /* Mobile match for Editorial */
+      font-size: 20px;
       font-weight: 400;
       line-height: 1.02;
       color: var(--lm-blue);
@@ -1432,9 +1389,6 @@ body.template-moison {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // SIDEBAR (Mobile hidden, Desktop fixed pane)
-  // ══════════════════════════════════════════════════════════════════════════════
   .section-bg {
     position: absolute;
     inset: 0;
@@ -1580,7 +1534,6 @@ body.template-moison {
 
   }
 
-  // Footer (shared Editorial classes)
   .thankyou-section__footer {
     display: grid;
     gap: 12px;
@@ -1626,13 +1579,10 @@ body.template-moison {
     
     &:hover, &:focus-visible { 
       background: var(--lm-blue);
-      color: var(--lm-black); /* Assuming --lm-black is the dark background */
+      color: var(--lm-black);
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // AUDIO TOGGLE (mirrors Editorial audio-toggle)
-  // ══════════════════════════════════════════════════════════════════════════════
   .audio-toggle {
     position: fixed;
     bottom: 28px;
@@ -1641,8 +1591,8 @@ body.template-moison {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.15); /* Softer border */
-    background: rgba(255,255,255,0.05); /* Softer background */
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
     backdrop-filter: blur(12px);
     cursor: pointer;
     display: flex;
@@ -1679,13 +1629,13 @@ body.template-moison {
     .icon-play {
       opacity: 1;
       transform: scale(1) rotate(0deg);
-      color: rgba(255,255,255,0.75); /* Softer icon color */
+      color: rgba(255,255,255,0.75);
     }
     
     .icon-pause {
       opacity: 0;
       transform: scale(0.5) rotate(-90deg);
-      color: rgba(255,255,255,0.75); /* Softer icon color */
+      color: rgba(255,255,255,0.75);
     }
 
     &--playing {
@@ -1710,9 +1660,6 @@ body.template-moison {
     to { transform: rotate(360deg); }
   }
 
-
-
-  // ── data-animate (reveal on scroll, wired by template-modules) ───────────────
   [data-animate] {
     opacity: 0;
     transform: translateY(40px);

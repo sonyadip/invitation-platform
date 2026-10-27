@@ -118,7 +118,6 @@ body.template-ochre {
     font-style: normal;
     letter-spacing: 1px;
     line-height: 1.15;
-    // text-align: center;
   }
 
   .section-rule {
@@ -128,7 +127,6 @@ body.template-ochre {
     background-color: var(--template-text);
   }
 
-  /* Cover */
   .cover-section {
     position: fixed;
     inset: 0;
@@ -247,7 +245,6 @@ body.template-ochre {
     transition: opacity 0.25s ease, border-color 0.25s ease, color 0.25s ease;
   }
 
-  /* Layout */
   .invitation-layout {
     display: flex;
     min-height: 100vh;
@@ -336,7 +333,6 @@ body.template-ochre {
     color: var(--template-text);
   }
 
-  /* Hero */
   .hero-section {
     position: relative;
     display: flex;
@@ -422,7 +418,6 @@ body.template-ochre {
     }
   }
 
-  /* Opening */
   .opening-section {
     display: flex;
     flex-direction: column;
@@ -467,7 +462,6 @@ body.template-ochre {
     flex-direction: column;
   }
 
-  /* Couple */
   .couple-section {
     display: flex;
     flex-direction: column;
@@ -612,7 +606,6 @@ body.template-ochre {
     line-height: 1.4;
   }
 
-  /* Countdown */
   .countdown-section {
     display: flex;
     width: 100%;
@@ -704,7 +697,6 @@ body.template-ochre {
     transition: opacity 0.25s ease;
   }
 
-  /* Events */
   .events-section {
     display: flex;
     flex-direction: column;
@@ -717,7 +709,6 @@ body.template-ochre {
   .events-section__header {
     display: flex;
     flex-direction: column;
-    // align-items: center;
     gap: 8px;
     width: 100%;
   }
@@ -728,7 +719,6 @@ body.template-ochre {
     font-size: 13px;
     font-weight: 400;
     line-height: 1.8;
-    // text-align: center;
   }
 
   .events-section__cards {
@@ -741,14 +731,12 @@ body.template-ochre {
   .event-card {
     display: flex;
     flex-direction: column;
-    // align-items: center;
     gap: 16px;
     margin-bottom: 16px;
     padding: 32px 24px;
     border: 1px solid var(--template-border);
     border-radius: 16px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
-    // text-align: center;
     transition: border-color 0.3s ease;
   }
 
@@ -796,7 +784,6 @@ body.template-ochre {
 
   .event-card__venue-name {
     font-weight: 500;
-    // letter-spacing: 1px;
     line-height: 1.4;
   }
 
@@ -841,7 +828,6 @@ body.template-ochre {
     }
   }
 
-  /* Gallery */
   .gallery-section {
     padding: 80px 16px;
     background-color: var(--template-bg-soft);
@@ -936,7 +922,6 @@ body.template-ochre {
     }
   }
 
-  /* RSVP */
   .rsvp-section {
     display: flex;
     width: 100%;
@@ -987,9 +972,7 @@ body.template-ochre {
 
   .rsvp-card {
     width: 100%;
-    // padding: 24px;
     border: 0;
-    // border-bottom: 1px solid var(--template-border);
     border-radius: 0;
     background: transparent;
     box-shadow: none;
@@ -1236,7 +1219,6 @@ body.template-ochre {
     padding: 12px 24px;
   }
 
-  /* Gift */
   .gift-section {
     display: flex;
     flex-direction: column;
@@ -1406,7 +1388,6 @@ body.template-ochre {
     color: #f8f5ef;
   }
 
-  /* QRIS */
   .qris-lightbox {
     position: fixed;
     inset: 0;
@@ -1495,7 +1476,6 @@ body.template-ochre {
     line-height: 1.75;
   }
 
-  /* Thank You */
   .thankyou-section {
     position: relative;
     display: flex;
@@ -1615,7 +1595,6 @@ body.template-ochre {
     letter-spacing: 1px;
   }
 
-  
   .audio-toggle {
     position: fixed;
     bottom: 28px;
@@ -1739,7 +1718,6 @@ body.template-ochre {
     }
   }
 
-  /* Interactions */
   .cover-section__btn:focus-visible,
   .countdown-section__calendar-btn:focus-visible,
   .event-card__map-btn:focus-visible,
@@ -1754,7 +1732,7 @@ body.template-ochre {
     outline-offset: 3px;
   }
 
-  @media (hover: hover) {
+  @media (hover: hover) and (pointer: fine) {
 
     .cover-section__btn:hover,
     .countdown-section__calendar-btn:hover,

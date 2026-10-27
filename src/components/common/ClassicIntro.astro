@@ -3,7 +3,7 @@ export interface Props {
   groomName: string;
   brideName?: string;
   subtitle?: string;
-  coverImage?: string; // Kept for compatibility but not used in pure minimalist version
+  coverImage?: string;
   fontClass?: string;
   textColor?: string;
 }
@@ -29,30 +29,43 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
 <script>
   import { animate, stagger } from "framer-motion";
 
+  function setMetaThemeColor(color: string) {
+    let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.id = 'meta-theme-color';
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', color);
+  }
+
   function initClassicIntro() {
     const intro = document.getElementById("intro-awal");
     const progresbar = document.querySelector(".progresbar");
     const layout = document.querySelector("[data-template-layout]") as HTMLElement;
     const elements = document.querySelectorAll(".intro-element");
-    const minDisplayTime = 3000; // 3 seconds counting time
+    const minDisplayTime = 3000;
 
     if (intro && progresbar && elements.length > 0) {
-      // Hide layout initially while intro plays
+      // Ensure mobile system and browser bars match intro black immediately
+      setMetaThemeColor('#000000');
+      document.documentElement.style.backgroundColor = '#000000';
+      document.body.style.backgroundColor = '#000000';
+
       if (layout) {
         layout.style.opacity = "0";
       }
-      // 1. Staggered fade in for all elements
       animate(
         elements,
         { opacity: [0, 1], y: [15, 0] },
         { 
           duration: 1.2, 
           ease: [0.33, 1, 0.68, 1], 
-          delay: stagger(0.25) // Each element appears 250ms after the previous
+          delay: stagger(0.25)
         }
       );
 
-      // 2. Synchronize progress bar
       let progress = 0;
       const interval = 10;
       const steps = minDisplayTime / interval;
@@ -67,9 +80,7 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
         }
       }, interval);
 
-      // 3. Close intro after counting is done + a small delay
       setTimeout(() => {
-        // Fade out text elements elegantly
         animate(
           elements,
           { opacity: 0 },
@@ -79,8 +90,18 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
           }
         );
 
-        // Fade out the black background
         setTimeout(() => {
+          // Transition mobile system and browser bars to the main page theme
+          document.body.classList.add("is-intro-finished");
+          document.documentElement.classList.add("is-intro-finished");
+          document.documentElement.style.backgroundColor = '';
+          document.body.style.backgroundColor = '';
+
+          const targetBg = document.body.dataset.themeBg 
+            || getComputedStyle(document.body).getPropertyValue('--template-bg').trim() 
+            || '#f1e9de';
+          setMetaThemeColor(targetBg);
+
           animate(
             intro,
             { opacity: 0 },
@@ -93,15 +114,12 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
             }
           );
 
-          // Show actual layout
           if (layout) {
             layout.style.transition = "opacity 1.5s ease";
             layout.style.opacity = "1";
           }
-          document.body.classList.add("is-intro-finished");
-
-        }, 800); // Start background fade out before text is completely gone
-      }, minDisplayTime + 400); // Wait 400ms after reaching 100%
+        }, 800);
+      }, minDisplayTime + 400);
     }
   }
 
@@ -115,13 +133,15 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
 <style is:global>
   @import url('https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&family=Inter:wght@300;400;500&display=swap');
 
-  /* Global hiding of layout until intro finishes */
+  html:has(#intro-awal):not(.is-intro-finished),
+  body:has(#intro-awal):not(.is-intro-finished) {
+    background-color: #000000 !important;
+    overflow: hidden;
+  }
+
   body:has(#intro-awal):not(.is-intro-finished) [data-template-layout] {
     opacity: 0 !important;
     pointer-events: none;
-  }
-  body:has(#intro-awal):not(.is-intro-finished) {
-    overflow: hidden;
   }
 
   #intro-awal { 
@@ -148,10 +168,9 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
   }
 
   .intro-element {
-    opacity: 0; /* Hidden initially for framer-motion */
+    opacity: 0;
     will-change: opacity, transform;
   }
-
 
   .subtitle {
     font-family: 'Baskervville', serif;

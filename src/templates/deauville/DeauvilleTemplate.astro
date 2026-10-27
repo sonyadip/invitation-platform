@@ -12,7 +12,7 @@ import deauvilleRsvp from "./assets/deauville-rsvp.jpg";
 import deauvilleSaveDate from "./assets/deauville-save-date.jpg";
 import deauvilleClosing from "./assets/deauville-closing.jpg";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
-import "./style.scss";
+import styleUrl from "./style.scss?url";
 
 import {
   formatChildPrefix,
@@ -278,7 +278,6 @@ if (hasVideo) {
   }
 } else {
   if (rawGallery.length === 0) {
-    // empty
   } else if (rawGallery.length === 1) {
     topFeaturedSingle = rawGallery[0];
   } else if (rawGallery.length <= 8) {
@@ -328,6 +327,7 @@ const activeGifts =
   to={guestName}
   templateClass={`template-deauville${sections.introAnimation !== false ? " has-intro" : ""}`}
   image={coverImage}
+  styleUrl={styleUrl}
 >
   <style>
     .yt-bg-container {
@@ -340,9 +340,9 @@ const activeGifts =
       top: 50%;
       left: 50%;
       width: 100vw;
-      height: 56.25vw; /* 16:9 aspect ratio */
+      height: 56.25vw;
       min-height: 100vh;
-      min-width: 177.77vh; /* 16:9 */
+      min-width: 177.77vh;
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
@@ -370,7 +370,6 @@ const activeGifts =
             <span class="deauville-name deauville-name--glasvia"
               >{wedding.groom_name}</span
             >
-            <!-- <em>AND</em> -->
             <span class="deauville-name deauville-name--letterx"
               >{wedding.bride_name}</span
             >
@@ -405,7 +404,6 @@ const activeGifts =
       </div>
 
       <main class="invitation-main">
-
 
         <section class="hero-section snap-section">
           <div class="template-slider" data-template-slider>
@@ -1003,6 +1001,3 @@ const activeGifts =
 <script>
   import "./script.js";
 </script>
-
-
-

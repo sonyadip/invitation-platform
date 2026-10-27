@@ -41,14 +41,12 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       return jsonResponse({ error: 'Forbidden: Anda tidak memiliki akses ke data undangan ini.' }, 403);
     }
 
-    // Support batch insertion
     if (Array.isArray(guests) && guests.length > 0) {
       const validGuests = guests.filter((g: any) => g && g.name && String(g.name).trim());
       if (validGuests.length === 0) {
         return jsonResponse({ error: 'Tidak ada data tamu valid untuk diimpor.' }, 400);
       }
 
-      // Check past views for all guests in batch (fast single query up to 500)
       const { data: allPastViews } = await adminSupabase
         .from('invitation_views')
         .select('guest_name, created_at')
@@ -99,14 +97,12 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       });
     }
 
-    // Single insertion
     if (!name) {
       return jsonResponse({ error: 'Nama tamu (name) diperlukan.' }, 400);
     }
 
     const cleanName = String(name).trim();
 
-    // Check if there are existing views for this guest in invitation_views
     const { data: pastViews } = await adminSupabase
       .from('invitation_views')
       .select('created_at')
@@ -168,7 +164,6 @@ export const DELETE: APIRoute = async ({ request, cookies, locals }) => {
     const adminSupabase = await getSupabaseAdmin();
 
     if (session.role !== 'admin') {
-      // Ensure client owns the guest record
       const { data: guestRecord } = await adminSupabase
         .from('sent_invitations')
         .select('wedding_id')

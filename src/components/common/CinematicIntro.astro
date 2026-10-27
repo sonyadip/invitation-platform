@@ -42,7 +42,6 @@ const {
 
   if (preloader && imgWrap && img && topText && bottomText) {
     const startCinematic = () => {
-      // Phase 0: Names Fade In (Staggered from bottom)
       animate(
         topText,
         { opacity: [0, 1], y: [40, 0] },
@@ -56,7 +55,6 @@ const {
         );
       }, 400);
 
-      // Phase 1: Reveal Image Placeholder
       setTimeout(() => {
         animate(
           imgWrap,
@@ -67,7 +65,6 @@ const {
         animate(img, { scale: 1 }, { duration: 1, ease: [0.33, 1, 0.68, 1] });
       }, 1800);
 
-      // Phase 2: Expand to Full Screen / Target Size
       setTimeout(() => {
         animate(topText, { opacity: 0, y: -40 }, { duration: 2, ease: "easeInOut" });
         animate(bottomText, { opacity: 0, y: 40 }, { duration: 2, ease: "easeInOut" });
@@ -83,12 +80,22 @@ const {
         );
       }, 4000);
 
-      // Phase 3: Swap to real layout and trigger template animations
       setTimeout(() => {
         if (layout) {
-          layout.style.opacity = "1"; // Instant show to prevent crossfade dip
+          layout.style.opacity = "1";
         }
         document.body.classList.add("is-intro-finished");
+        document.documentElement.classList.add("is-intro-finished");
+        document.documentElement.style.backgroundColor = '';
+        document.body.style.backgroundColor = '';
+
+        let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+        if (meta) {
+          const targetBg = document.body.dataset.themeBg 
+            || getComputedStyle(document.body).getPropertyValue('--template-bg').trim() 
+            || '#f1e9de';
+          meta.setAttribute('content', targetBg);
+        }
 
         animate(
           preloader,
@@ -106,16 +113,26 @@ const {
     const safeStart = () => {
       if (started) return;
       started = true;
+      let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+      if (meta) {
+        meta.setAttribute('content', '#000000');
+      }
+      document.documentElement.style.backgroundColor = '#000000';
+      document.body.style.backgroundColor = '#000000';
       startCinematic();
     };
 
-    // Force start immediately without waiting for image load
     setTimeout(safeStart, 50);
   }
 </script>
 
 <style is:global lang="scss">
-  /* Global hiding of layout until intro finishes, only if preloader exists */
+  html:has(#cinematic-preloader):not(.is-intro-finished),
+  body:has(#cinematic-preloader):not(.is-intro-finished) {
+    background-color: #000000 !important;
+    overflow: hidden;
+  }
+
   body:has(#cinematic-preloader):not(.is-intro-finished) [data-template-layout] {
     opacity: 0 !important;
     pointer-events: none;

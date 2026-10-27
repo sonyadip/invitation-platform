@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Belleza&family=Bitter:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@400;500;600&display=swap');
 
-// ─── Design tokens (dark/blue palette from Untitled-3) ────────────────────────
 body.template-lumiere-metatah-v2 {
   --lm-black:   #000000;
   --lm-bg:      #090909;
@@ -48,7 +47,6 @@ body.template-lumiere-metatah-v2 {
     font-family: 'Belleza', serif !important;
   }
 
-  // ── Root & page background (mirrors Editorial exactly) ──────────────────────
   .invitation-root {
     position: relative;
     min-height: 100vh;
@@ -102,7 +100,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ── Invitation layout (hidden at first, shown after open) ─────────────────
   .invitation-layout {
     display: flex;
     flex-direction: column;
@@ -112,15 +109,18 @@ body.template-lumiere-metatah-v2 {
     margin: 0 auto;
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // COVER SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .cover-section {
-    position: relative;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100svh;
     min-height: 100vh;
     min-height: 100svh;
+    z-index: 100;
     display: flex;
     overflow: hidden;
+    background: var(--lm-bg);
 
     > img,
     > picture > img {
@@ -153,6 +153,7 @@ body.template-lumiere-metatah-v2 {
       min-height: 100svh;
       max-width: 480px;
       margin: 0 auto;
+      transition: opacity 0.4s ease;
     }
 
     &__title-block {
@@ -216,12 +217,15 @@ body.template-lumiere-metatah-v2 {
       font-size: 1.25rem;
       color: var(--lm-blue);
       font-weight: 500;
-      // margin-bottom: 8px;
     }
 
-    // opening animation
     &.is-opening {
+      pointer-events: none;
       animation: lm-cover-fade 1.6s ease forwards;
+
+      .cover-section__body {
+        opacity: 0;
+      }
     }
   }
 
@@ -229,7 +233,6 @@ body.template-lumiere-metatah-v2 {
     to { opacity: 0; transform: scale(1.04); }
   }
 
-  // ── Shared button ────────────────────────────────────────────────────────────
   .template-btn {
     display: inline-flex;
     align-items: center;
@@ -266,7 +269,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ── Shared: section label / rule (from Editorial) ────────────────────────────
   .section-title {
     margin: 0 0 8px;
     font-family: 'Belleza', sans-serif;
@@ -283,9 +285,6 @@ body.template-lumiere-metatah-v2 {
     margin: 16px auto;
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // INTRO / HERO SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .intro-section {
     min-height: 100vh;
     min-height: 100svh;
@@ -388,13 +387,9 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // QUOTE SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .quote-section {
     padding: 4rem 24px;
     text-align: center;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
     &__inner {
       display: flex;
@@ -421,9 +416,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // MEDIA SECTION (Foto Bersama Peserta Upacara)
-  // ══════════════════════════════════════════════════════════════════════════════
   .media-section {
     padding: 0.5rem 20px 1rem;
     width: 100%;
@@ -467,7 +459,6 @@ body.template-lumiere-metatah-v2 {
       max-height: 480px;
       overflow: hidden;
       background: rgba(255, 255, 255, 0.04);
-      // border: 1px solid rgba(255, 255, 255, 0.2);
 
       img, picture img {
         width: 100%;
@@ -494,9 +485,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // COUPLE SECTION (Transparent background, light text & lines as in image)
-  // ══════════════════════════════════════════════════════════════════════════════
   .couple-section {
     padding: 3.5rem 20px 1rem;
     display: flex;
@@ -841,7 +829,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ── Participant Detail Modal (Lumiere Metatah v2) ───────────────────
   .participant-modal {
     display: none;
     border: none;
@@ -908,7 +895,6 @@ body.template-lumiere-metatah-v2 {
       backface-visibility: hidden;
     }
 
-    // Active state when opened
     &.is-open {
       .participant-modal__overlay {
         opacity: 1;
@@ -920,7 +906,6 @@ body.template-lumiere-metatah-v2 {
       }
     }
 
-    // Smooth exit state when closing
     &.is-closing {
       .participant-modal__overlay {
         opacity: 0;
@@ -992,7 +977,6 @@ body.template-lumiere-metatah-v2 {
     &__image-wrap {
       position: relative;
       width: 100%;
-      // max-width: 120px;
       aspect-ratio: 4 / 5;
       overflow: hidden;
       margin: 4px 0 16px;
@@ -1133,12 +1117,8 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // STORY SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .story-section {
     padding: 3rem 24px;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
     &__title {
       font-family: 'Belleza', sans-serif;
@@ -1177,9 +1157,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // COUNTDOWN SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .countdown-section {
     padding: 3rem 24px;
     display: flex;
@@ -1196,9 +1173,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // EVENT SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .event-section {
     &__media {
       width: 100%;
@@ -1385,9 +1359,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // ATTIRE SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .attire-section {
     padding: 4rem 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
@@ -1417,9 +1388,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // PHOTO BOOTH SECTION
-  // ══════════════════════════════════════════════════════════════════════════════
   .photobooth-section {
     padding: 3.5rem 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
@@ -1459,9 +1427,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // GALLERY SECTION  (reuses Editorial gallery classes verbatim)
-  // ══════════════════════════════════════════════════════════════════════════════
   .gallery-section {
     padding: 15% 5%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
@@ -1550,13 +1515,12 @@ body.template-lumiere-metatah-v2 {
       stroke: #fff;
     }
 
-    &:hover .gallery-item__img  { transform: scale(1.04); }
-    &:hover .gallery-item__overlay { opacity: 1; }
+    @media (hover: hover) and (pointer: fine) {
+      &:hover .gallery-item__img  { transform: scale(1.04); }
+      &:hover .gallery-item__overlay { opacity: 1; }
+    }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // RSVP (mirrors Editorial rsvp-row / rsvp-section classes)
-  // ══════════════════════════════════════════════════════════════════════════════
   .rsvp-row {
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
@@ -1802,12 +1766,8 @@ body.template-lumiere-metatah-v2 {
     &:hover { color: var(--lm-white); border-color: rgba(255,255,255,0.4); }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // GIFT SECTION (reuses Editorial gift classes)
-  // ══════════════════════════════════════════════════════════════════════════════
   .gift-section {
     padding: 3rem 24px;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     text-align: center;
   }
 
@@ -1971,13 +1931,10 @@ body.template-lumiere-metatah-v2 {
     color: #10b981;
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // CLOSING ROW (mirrors Editorial closing-row classes)
-  // ══════════════════════════════════════════════════════════════════════════════
   .closing-row {
     display: grid;
     grid-template-columns: 1fr;
-    padding: 5% 5% 15%;
+    padding: 5% 5% 10%;
 
     &__media {
       width: 100%;
@@ -2002,7 +1959,7 @@ body.template-lumiere-metatah-v2 {
 
     &__title {
       font-family: 'Belleza', serif;
-      font-size: 20px; /* Mobile match for Editorial */
+      font-size: 20px;
       font-style: italic;
       font-weight: 400;
       line-height: 1.1;
@@ -2021,7 +1978,7 @@ body.template-lumiere-metatah-v2 {
 
     &__names {
       font-family: 'Belleza', serif;
-      font-size: 20px; /* Mobile match for Editorial */
+      font-size: 20px;
       font-weight: 400;
       line-height: 1.02;
       color: var(--lm-blue);
@@ -2029,9 +1986,6 @@ body.template-lumiere-metatah-v2 {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // SIDEBAR (Mobile hidden, Desktop fixed pane)
-  // ══════════════════════════════════════════════════════════════════════════════
   .section-bg {
     position: absolute;
     inset: 0;
@@ -2178,7 +2132,6 @@ body.template-lumiere-metatah-v2 {
 
   }
 
-  // Footer (shared Editorial classes)
   .thankyou-section__footer {
     display: grid;
     gap: 12px;
@@ -2224,13 +2177,10 @@ body.template-lumiere-metatah-v2 {
     
     &:hover, &:focus-visible { 
       background: var(--lm-blue);
-      color: var(--lm-black); /* Assuming --lm-black is the dark background */
+      color: var(--lm-black);
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════════
-  // AUDIO TOGGLE (mirrors Editorial audio-toggle)
-  // ══════════════════════════════════════════════════════════════════════════════
   .audio-toggle {
     position: fixed;
     bottom: 28px;
@@ -2239,8 +2189,8 @@ body.template-lumiere-metatah-v2 {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.15); /* Softer border */
-    background: rgba(255,255,255,0.05); /* Softer background */
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
     backdrop-filter: blur(12px);
     cursor: pointer;
     display: flex;
@@ -2277,13 +2227,13 @@ body.template-lumiere-metatah-v2 {
     .icon-play {
       opacity: 1;
       transform: scale(1) rotate(0deg);
-      color: rgba(255,255,255,0.75); /* Softer icon color */
+      color: rgba(255,255,255,0.75);
     }
     
     .icon-pause {
       opacity: 0;
       transform: scale(0.5) rotate(-90deg);
-      color: rgba(255,255,255,0.75); /* Softer icon color */
+      color: rgba(255,255,255,0.75);
     }
 
     &--playing {
@@ -2308,9 +2258,6 @@ body.template-lumiere-metatah-v2 {
     to { transform: rotate(360deg); }
   }
 
-
-
-  // ── data-animate (reveal on scroll, wired by template-modules) ───────────────
   [data-animate] {
     opacity: 0;
     transform: translateY(40px);

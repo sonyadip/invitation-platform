@@ -26,7 +26,6 @@ export async function compressImageFile(
 ): Promise<{ file: File; originalSize: number; compressedSize: number; didCompress: boolean }> {
   const originalSize = file.size;
 
-  // Skip non-images, animated GIFs, SVGs, or already lightweight images (< 180 KB)
   if (
     !file.type.startsWith('image/') ||
     file.type === 'image/gif' ||
@@ -108,7 +107,6 @@ export async function compressAudioFile(
 ): Promise<{ file: File; originalSize: number; compressedSize: number; didCompress: boolean }> {
   const originalSize = file.size;
 
-  // If already MP3/AAC and under 2.5 MB, skip re-encoding
   if (
     (file.type.includes('mpeg') || file.type.includes('mp3') || file.type.includes('aac')) &&
     originalSize < 2.5 * 1024 * 1024
@@ -157,7 +155,7 @@ export async function compressAudioFile(
 
     await audioCtx.close().catch(() => {});
 
-    const blob = new Blob(mp3Chunks, { type: 'audio/mpeg' });
+    const blob = new Blob(mp3Chunks as unknown as BlobPart[], { type: 'audio/mpeg' });
 
     if (blob.size >= originalSize && file.name.toLowerCase().endsWith('.mp3')) {
       return { file, originalSize, compressedSize: originalSize, didCompress: false };
@@ -190,11 +188,9 @@ export function bindAutoMediaCompression(form: HTMLFormElement) {
   const fileInputs = form.querySelectorAll<HTMLInputElement>('input[type="file"]');
 
   fileInputs.forEach((input) => {
-    // Avoid double binding
     if (input.dataset.compressBound === 'true') return;
     input.dataset.compressBound = 'true';
 
-    // Badge container for compression feedback
     let feedbackEl = input.parentElement?.querySelector('.compress-feedback') as HTMLElement | null;
     if (!feedbackEl) {
       feedbackEl = document.createElement('div');

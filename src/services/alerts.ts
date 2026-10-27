@@ -25,7 +25,6 @@ export async function sendCriticalAlert(payload: AlertPayload): Promise<void> {
 
   const timeStr = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });
 
-  // 1. Send to Discord Webhook if configured
   const discordWebhookUrl = typeof process !== 'undefined' ? process.env?.DISCORD_WEBHOOK_URL : undefined;
   if (discordWebhookUrl && discordWebhookUrl.startsWith('https://discord.com/api/webhooks/')) {
     try {
@@ -55,7 +54,6 @@ export async function sendCriticalAlert(payload: AlertPayload): Promise<void> {
     }
   }
 
-  // 2. Send to Telegram if configured
   const telegramBotToken = typeof process !== 'undefined' ? process.env?.TELEGRAM_BOT_TOKEN : undefined;
   const telegramChatId = typeof process !== 'undefined' ? process.env?.TELEGRAM_CHAT_ID : undefined;
 

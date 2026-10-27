@@ -16,7 +16,6 @@ const song = root?.querySelector('[data-template-audio]');
 const audioBtn = root?.querySelector('[data-template-audio-toggle]');
 let isPlaying = false;
 
-// Variabel YouTube Player
 let ytPlayer = null;
 let ytReady = false;
 let ytDeferredPlay = false;
@@ -79,7 +78,6 @@ if (typeof document !== 'undefined') {
     v.pause();
   });
 }
-
 
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -259,7 +257,6 @@ function initGallerySliders() {
     slider.addEventListener('mouseenter', stopTimer);
     slider.addEventListener('mouseleave', startTimer);
 
-    // Passive touch swipe detection without hijacking scrolling
     let startX = 0;
     let startY = 0;
     let isSwiping = false;
@@ -451,10 +448,8 @@ function initFullpageScroll() {
     
     clearTimeout(window.resizeSnapTimeout);
     window.resizeSnapTimeout = setTimeout(() => {
-      // Re-snap when window height increases (e.g. mobile keyboard closes) or orientation changes
       if (window.innerHeight > windowHeight || Math.abs(window.innerHeight - windowHeight) > 100) {
         if (!isScrolling && allSections[currentSectionIndex]) {
-          // Temporarily disable isScrolling block for immediate snap
           const tempIsScrolling = isScrolling;
           isScrolling = false;
           scrollToSection(currentSectionIndex);
@@ -465,12 +460,10 @@ function initFullpageScroll() {
     }, 250);
   }, { passive: true });
 
-  // Also handle focusout for forms as a fallback
   window.addEventListener('focusout', (e) => {
     const targetTag = e.target.tagName?.toLowerCase();
     if (targetTag === 'textarea' || targetTag === 'input' || targetTag === 'select') {
       setTimeout(() => {
-        // Only snap if no other input is currently focused
         if (!['textarea', 'input', 'select'].includes(document.activeElement?.tagName?.toLowerCase())) {
           const tempIsScrolling = isScrolling;
           isScrolling = false;

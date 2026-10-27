@@ -1,7 +1,3 @@
-// ==============================================================================
-// Admin Console Stylesheet - Clean Zinc / shadcn/ui Design System
-// Inspired by https://github.com/shadcn-ui/ui
-// ==============================================================================
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -28,9 +24,9 @@
   --admin-text-muted: #71717a;
   --admin-text-dim: #a1a1aa;
 
-  --admin-radius-sm: 0.375rem; // 6px
-  --admin-radius-md: 0.5rem;   // 8px
-  --admin-radius-lg: 0.75rem;  // 12px
+  --admin-radius-sm: 0.375rem;
+  --admin-radius-md: 0.5rem;
+  --admin-radius-lg: 0.75rem;
 
   --admin-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --admin-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
@@ -54,17 +50,12 @@ body.admin-body {
   line-height: 1.5;
 }
 
-// -----------------------------------------------------------------------------
-// App Shell Layout (Sidebar + Topbar + Main)
-// -----------------------------------------------------------------------------
-
 .admin-app {
   display: flex;
   min-height: 100vh;
   width: 100%;
 }
 
-// Sidebar
 .admin-sidebar {
   width: 256px;
   min-width: 256px;
@@ -90,43 +81,16 @@ body.admin-body {
   &__brand {
     display: flex;
     align-items: center;
-    gap: 10px;
     text-decoration: none;
     color: var(--admin-text-main);
   }
 
-  &__logo-badge {
-    width: 28px;
-    height: 28px;
-    border-radius: var(--admin-radius-sm);
-    background-color: var(--admin-zinc-950);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: -0.02em;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  }
-
-  &__brand-text {
-    display: flex;
-    flex-direction: column;
-
-    strong {
-      font-size: 13.5px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--admin-zinc-950);
-      line-height: 1.2;
-    }
-
-    span {
-      font-size: 11px;
-      color: var(--admin-text-muted);
-      font-weight: 400;
-    }
+  &__logo {
+    height: 22px;
+    width: auto;
+    max-width: 150px;
+    object-fit: contain;
+    display: block;
   }
 
   &__nav {
@@ -273,7 +237,6 @@ body.admin-body {
   }
 }
 
-// Mobile Drawer Backdrop
 .admin-sidebar-backdrop {
   display: none;
   position: fixed;
@@ -285,7 +248,6 @@ body.admin-body {
   transition: opacity 0.25s ease;
 }
 
-// Main Content Area
 .admin-main-wrap {
   flex: 1;
   display: flex;
@@ -295,7 +257,6 @@ body.admin-body {
   overflow-x: hidden;
 }
 
-// Topbar
 .admin-topbar {
   height: 52px;
   background-color: rgba(255, 255, 255, 0.95);
@@ -384,6 +345,26 @@ body.admin-body {
     gap: 12px;
   }
 
+  &__updated {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--admin-text-muted);
+    background-color: var(--admin-zinc-50);
+    border: 1px solid var(--admin-border);
+    padding: 4px 10px;
+    border-radius: var(--admin-radius-sm);
+    white-space: nowrap;
+
+    svg {
+      width: 13px;
+      height: 13px;
+      color: var(--admin-zinc-400);
+      flex-shrink: 0;
+    }
+  }
+
   &__status-pill {
     display: inline-flex;
     align-items: center;
@@ -406,7 +387,6 @@ body.admin-body {
   }
 }
 
-// Content Container
 .admin-content {
   flex: 1;
   padding: 28px;
@@ -415,7 +395,6 @@ body.admin-body {
   margin: 0 auto;
 }
 
-// Page Header
 .admin-page-header {
   display: flex;
   justify-content: space-between;
@@ -445,6 +424,28 @@ body.admin-body {
     margin: 0;
   }
 
+  &__updated {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--admin-zinc-600);
+    background-color: #ffffff;
+    border: 1px solid var(--admin-border);
+    padding: 6px 12px;
+    border-radius: var(--admin-radius-sm);
+    white-space: nowrap;
+    box-shadow: var(--admin-shadow-xs);
+
+    svg {
+      width: 13px;
+      height: 13px;
+      color: var(--admin-zinc-400);
+      flex-shrink: 0;
+    }
+  }
+
   &__actions {
     display: flex;
     align-items: center;
@@ -452,10 +453,6 @@ body.admin-body {
     flex-wrap: wrap;
   }
 }
-
-// -----------------------------------------------------------------------------
-// shadcn/ui Cards
-// -----------------------------------------------------------------------------
 
 .shadcn-card {
   background-color: var(--admin-card-bg);
@@ -515,10 +512,6 @@ body.admin-body {
     color: var(--admin-text-muted);
   }
 }
-
-// -----------------------------------------------------------------------------
-// Metric Cards Grid
-// -----------------------------------------------------------------------------
 
 .metric-grid {
   display: grid;
@@ -588,19 +581,13 @@ body.admin-body {
     letter-spacing: -0.025em;
     color: var(--admin-zinc-950);
     line-height: 1.2;
-    margin: 0 0 4px 0;
+    margin: 0;
   }
 
   &__sub {
-    font-size: 12px;
-    color: var(--admin-text-muted);
-    margin: 0;
+    display: none;
   }
 }
-
-// -----------------------------------------------------------------------------
-// Search & Filter Toolbar
-// -----------------------------------------------------------------------------
 
 .table-toolbar {
   display: flex;
@@ -705,10 +692,6 @@ body.admin-body {
   }
 }
 
-// -----------------------------------------------------------------------------
-// shadcn/ui Table
-// -----------------------------------------------------------------------------
-
 .shadcn-table-wrap {
   width: 100%;
   max-width: 100%;
@@ -719,7 +702,7 @@ body.admin-body {
 
 .shadcn-table {
   width: 100%;
-  min-width: 840px;
+  min-width: 900px;
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
@@ -748,6 +731,14 @@ body.admin-body {
 
       &:hover {
         background-color: rgba(244, 244, 245, 0.6);
+      }
+
+      &.invitation-row {
+        cursor: pointer;
+
+        &:hover {
+          background-color: rgba(244, 244, 245, 0.75);
+        }
       }
     }
 
@@ -810,7 +801,6 @@ body.admin-body {
   }
 }
 
-// Template cell badge
 .template-badge {
   display: inline-flex;
   align-items: center;
@@ -834,12 +824,20 @@ body.admin-body {
   }
 }
 
-// Sticky Action Column (nempel di kanan)
 th.col-actions,
 td.col-actions {
   position: sticky;
   right: 0;
   text-align: right;
+  background-color: #ffffff;
+}
+
+thead th.col-actions {
+  background-color: #ffffff;
+}
+
+tbody tr:hover td.col-actions {
+  background-color: #f4f4f5;
 }
 
 tbody tr.dropdown-active,
@@ -849,7 +847,66 @@ tbody tr:has(.dropdown-menu.show) td.col-actions {
   z-index: 70 !important;
 }
 
-// Row Actions & Dropdown
+/* Mobile responsive table: Actions do NOT stay, Slug stays instead */
+@media (max-width: 768px) {
+  th.col-actions,
+  td.col-actions {
+    position: static !important;
+    right: auto !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  tbody tr:hover td.col-actions {
+    background-color: transparent !important;
+  }
+
+  tbody tr.dropdown-active td.col-actions,
+  tbody tr:has(.dropdown-menu.show) td.col-actions {
+    position: static !important;
+  }
+
+  th.col-slug,
+  td.col-slug {
+    position: sticky !important;
+    left: 0 !important;
+    background-color: #ffffff !important;
+    z-index: 20 !important;
+    box-shadow: 1px 0 0 var(--admin-border), 3px 0 6px -2px rgba(0, 0, 0, 0.06);
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 155px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  thead th.col-slug {
+    background-color: #ffffff !important;
+    z-index: 25 !important;
+  }
+
+  tbody tr:hover td.col-slug,
+  tbody tr.invitation-row:hover td.col-slug {
+    background-color: #f4f4f5 !important;
+  }
+
+  .slug-badge__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    max-width: 130px;
+  }
+
+  .slug-badge__domain {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    max-width: 130px;
+  }
+}
+
 .row-actions-group {
   display: inline-flex;
   align-items: center;
@@ -881,7 +938,6 @@ tbody tr:has(.dropdown-menu.show) td.col-actions {
   }
 }
 
-// Open upwards when near the bottom of the table to prevent clipping
 tr:last-child .dropdown-menu,
 tr:nth-last-child(2) .dropdown-menu {
   top: auto;
@@ -957,10 +1013,6 @@ tr:nth-last-child(2) .dropdown-menu {
   background-color: var(--admin-zinc-100);
   margin: 4px 0;
 }
-
-// -----------------------------------------------------------------------------
-// shadcn/ui Buttons
-// -----------------------------------------------------------------------------
 
 .btn-shadcn {
   display: inline-flex;
@@ -1082,10 +1134,6 @@ tr:nth-last-child(2) .dropdown-menu {
   }
 }
 
-// -----------------------------------------------------------------------------
-// shadcn/ui Badges
-// -----------------------------------------------------------------------------
-
 .shadcn-badge {
   display: inline-flex;
   align-items: center;
@@ -1134,10 +1182,6 @@ tr:nth-last-child(2) .dropdown-menu {
     border-color: #fecaca;
   }
 }
-
-// -----------------------------------------------------------------------------
-// Alerts & Banners
-// -----------------------------------------------------------------------------
 
 .shadcn-alert {
   padding: 14px 18px;
@@ -1188,10 +1232,6 @@ tr:nth-last-child(2) .dropdown-menu {
   }
 }
 
-// -----------------------------------------------------------------------------
-// Empty State
-// -----------------------------------------------------------------------------
-
 .empty-state {
   padding: 48px 24px;
   text-align: center;
@@ -1231,10 +1271,6 @@ tr:nth-last-child(2) .dropdown-menu {
   }
 }
 
-// -----------------------------------------------------------------------------
-// Responsive Media Queries
-// -----------------------------------------------------------------------------
-
 @media (max-width: 1024px) {
   .admin-sidebar {
     position: fixed;
@@ -1265,14 +1301,29 @@ tr:nth-last-child(2) .dropdown-menu {
 
 @media (max-width: 640px) {
   .admin-topbar {
-    padding: 0 16px;
+    padding: 0 12px;
 
     &__status-pill {
       display: none;
     }
 
-    .btn-shadcn {
-      display: none;
+    &__right {
+      gap: 6px;
+
+      .btn-shadcn {
+        padding: 0 8px;
+        height: 32px;
+        font-size: 12px;
+
+        .btn-text-desktop {
+          display: none;
+        }
+
+        svg {
+          width: 14px;
+          height: 14px;
+        }
+      }
     }
   }
 
@@ -1297,10 +1348,6 @@ tr:nth-last-child(2) .dropdown-menu {
     overflow-x: auto;
   }
 }
-
-// -----------------------------------------------------------------------------
-// Form Controls & Common Admin Elements (shadcn/ui Form Style)
-// -----------------------------------------------------------------------------
 
 .form-panel {
   display: flex;
@@ -1444,7 +1491,6 @@ tr:nth-last-child(2) .dropdown-menu {
   z-index: 20;
 }
 
-// Material Symbols Icon Support
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined', sans-serif;
   font-weight: normal;

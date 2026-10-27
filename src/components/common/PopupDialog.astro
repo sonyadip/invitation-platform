@@ -1,17 +1,13 @@
 ---
-// PopupDialog.astro - Universal Clean, Smooth & Luxury Modal Popup & Toast System for Senadda
 ---
 
 <div id="senadda-popup-root">
-  <!-- Toast Notification Stack -->
   <div id="senadda-toast-container" class="senadda-toasts" aria-live="polite" role="region" aria-label="Notifications"></div>
 
-  <!-- Universal Modal Dialog (Confirm & Alert) -->
   <div id="senadda-dialog" class="senadda-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="senadda-dialog-title" aria-describedby="senadda-dialog-message">
     <div class="senadda-modal__backdrop" id="senadda-dialog-backdrop"></div>
     <div class="senadda-modal__container">
       <div class="senadda-modal__card" id="senadda-dialog-card">
-        <!-- Close Button (Top-Right) -->
         <button type="button" class="senadda-modal__close" id="senadda-dialog-close" aria-label="Close dialog">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -19,18 +15,14 @@
           </svg>
         </button>
 
-        <!-- Icon Badge (Hero Avatar) -->
         <div class="senadda-modal__icon-wrap" id="senadda-dialog-icon">
-          <!-- Injected dynamically based on variant/icon -->
         </div>
 
-        <!-- Typography Content -->
         <div class="senadda-modal__body">
           <h3 class="senadda-modal__title" id="senadda-dialog-title"></h3>
           <p class="senadda-modal__message" id="senadda-dialog-message"></p>
         </div>
 
-        <!-- Action Buttons -->
         <div class="senadda-modal__actions" id="senadda-dialog-actions">
           <button type="button" class="senadda-modal__btn senadda-modal__btn--cancel" id="senadda-dialog-cancel">
             Batal
@@ -52,11 +44,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
-  /* ==========================================================================
-     TOAST NOTIFICATIONS (Clean, Soft UI, Floating)
-     ========================================================================== */
-  .senadda-toasts {
+.senadda-toasts {
     position: fixed;
     top: 24px;
     right: 24px;
@@ -241,11 +229,7 @@
     from { transform: scaleX(1); }
     to { transform: scaleX(0); }
   }
-
-  /* ==========================================================================
-     MODAL POPUP DIALOG (Ultra Smooth Transitions, Clean & Responsive)
-     ========================================================================== */
-  .senadda-modal {
+.senadda-modal {
     position: fixed;
     inset: 0;
     z-index: 100002;
@@ -540,7 +524,6 @@
 
 <script is:inline>
   (function () {
-    // Vector SVGs with crisp stroke-width 2.2
     const ICONS = {
       success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
       error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
@@ -623,7 +606,6 @@
       const closeBtn = toast.querySelector('.senadda-toast__close');
       if (closeBtn) closeBtn.addEventListener('click', removeToast);
 
-      // Pause on hover
       if (duration > 0) {
         let remainingTime = duration;
         let startTime = Date.now();
@@ -656,7 +638,6 @@
       container.appendChild(toast);
     };
 
-    // Dialog state management
     let activeDialogResolve = null;
 
     function closeDialog(result) {
@@ -745,7 +726,6 @@
 
         dialog.classList.remove('senadda-modal--closing');
         
-        // Use requestAnimationFrame for smooth CSS transition trigger
         requestAnimationFrame(() => {
           dialog.classList.add('senadda-modal--open');
           dialog.setAttribute('aria-hidden', 'false');
@@ -829,7 +809,6 @@
       });
     };
 
-    // Attach listeners once DOM is ready
     function setupDialogEvents() {
       const confirmBtn = document.getElementById('senadda-dialog-confirm');
       const cancelBtn = document.getElementById('senadda-dialog-cancel');
@@ -849,7 +828,6 @@
         backdrop.onclick = () => closeDialog(false);
       }
 
-      // Keyboard support: Escape cancels, Enter confirms
       document.addEventListener('keydown', (e) => {
         const dialog = document.getElementById('senadda-dialog');
         if (!dialog || !dialog.classList.contains('senadda-modal--open')) return;
@@ -865,7 +843,6 @@
         }
       });
 
-      // Global listener for [data-confirm] buttons and forms
       document.addEventListener('click', async (e) => {
         const trigger = e.target.closest('[data-confirm]');
         if (!trigger) return;

@@ -17,13 +17,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect('/?error=invalid_setup_input');
   }
 
-  // 1. Verify token
   const slug = await verifySetupToken(token);
   if (!slug) {
     return redirect('/?error=invalid_setup_link');
   }
 
-  // 2. Check if already claimed
   const { data: wedding, error: checkError } = await supabase
     .from('weddings')
     .select('id, slug, bride_name, groom_name, client_password_hash')
@@ -35,11 +33,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   if (wedding.client_password_hash) {
-    // Password already set, token is no longer valid for setup
     return redirect('/?login=client&error=link_used');
   }
 
-  // 3. Hash password and save
   const hashed = await hashPasswordSHA256(password);
   const supabaseAdmin = await getSupabaseAdmin();
   
@@ -63,7 +59,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     description: `Client '${wedding.slug}' successfully claimed account and set up password.`
   });
 
-  // 4. Log the user in with signed session cookie
   const isSecure = import.meta.env.PROD;
   await setSessionCookie(cookies, {
     role: 'client',

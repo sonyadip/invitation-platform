@@ -7,13 +7,15 @@ interface Props {
   activeNav?: 'overview' | 'activity' | 'settings' | 'new';
   subtitle?: string;
   breadcrumbs?: Array<{ label: string; href?: string }>;
+  updatedAt?: string | null;
 }
 
 const {
   title = "Dashboard Overview",
   activeNav = "overview",
   subtitle = "",
-  breadcrumbs = [{ label: "Dashboard", href: "/dashboard" }, { label: "Overview" }]
+  breadcrumbs = [{ label: "Dashboard", href: "/dashboard" }, { label: "Overview" }],
+  updatedAt = null
 } = Astro.props;
 
 const session = Astro.locals.session;
@@ -36,25 +38,16 @@ const session = Astro.locals.session;
   <PopupDialog />
 
   <div class="admin-app">
-    <!-- Backdrop for mobile drawer -->
     <div id="admin-sidebar-backdrop" class="admin-sidebar-backdrop"></div>
 
-    <!-- App Sidebar -->
     <aside id="admin-sidebar" class="admin-sidebar">
-      <!-- Sidebar Header / Brand -->
       <div class="admin-sidebar__header">
-        <a href="/dashboard" class="admin-sidebar__brand">
-          <div class="admin-sidebar__logo-badge">S</div>
-          <div class="admin-sidebar__brand-text">
-            <strong>Senadda</strong>
-            <span>Admin Console</span>
-          </div>
+        <a href="/dashboard" class="admin-sidebar__brand" aria-label="Senadda Dashboard">
+          <img src="/images/senadda-logo.png" alt="Senadda Logo" class="admin-sidebar__logo" />
         </a>
       </div>
 
-      <!-- Sidebar Navigation -->
       <nav class="admin-sidebar__nav">
-        <!-- Main Navigation Group -->
         <div class="admin-sidebar__group">
           <p class="admin-sidebar__group-title">Menu</p>
           
@@ -83,32 +76,8 @@ const session = Astro.locals.session;
             Platform Settings
           </a>
         </div>
-
-        <!-- Management / Quick Actions Group -->
-        <div class="admin-sidebar__group">
-          <p class="admin-sidebar__group-title">Management</p>
-
-          <a href="/dashboard/new" class={`admin-sidebar__link ${activeNav === 'new' ? 'admin-sidebar__link--active' : ''}`}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M8 12h8"></path>
-              <path d="M12 8v8"></path>
-            </svg>
-            Create Invitation
-          </a>
-
-          <a href="/" target="_blank" rel="noopener noreferrer" class="admin-sidebar__link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 3h6v6"></path>
-              <path d="M10 14 21 3"></path>
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            </svg>
-            Public Site
-          </a>
-        </div>
       </nav>
 
-      <!-- Sidebar User Footer -->
       <div class="admin-sidebar__footer">
         <div class="admin-sidebar__user">
           <div class="admin-sidebar__avatar">AD</div>
@@ -128,12 +97,9 @@ const session = Astro.locals.session;
       </div>
     </aside>
 
-    <!-- Main Content Wrapper -->
     <div class="admin-main-wrap">
-      <!-- Topbar Header -->
       <header class="admin-topbar">
         <div class="admin-topbar__left">
-          <!-- Mobile Hamburger Toggle / Sidebar Trigger -->
           <button type="button" id="admin-mobile-toggle" class="admin-topbar__mobile-toggle" aria-label="Toggle navigation">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2"></rect>
@@ -143,7 +109,6 @@ const session = Astro.locals.session;
 
           <span class="admin-topbar__divider"></span>
 
-          <!-- Breadcrumbs -->
           <nav class="admin-topbar__breadcrumbs" aria-label="Breadcrumb">
             {breadcrumbs.map((crumb, idx) => (
               <>
@@ -165,22 +130,25 @@ const session = Astro.locals.session;
         </div>
 
         <div class="admin-topbar__right">
-          <div class="admin-topbar__status-pill">
-            <span class="dot"></span>
-            <span>Live System</span>
-          </div>
-
-          <a href="/dashboard/new" class="btn-shadcn btn-shadcn--primary btn-shadcn--sm">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-shadcn btn-shadcn--outline btn-shadcn--sm admin-topbar__public-btn"
+            title="Public Site"
+          >
+            <span class="btn-text-desktop">Public Site</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 5v14"></path>
-              <path d="M5 12h14"></path>
+              <path d="M15 3h6v6"></path>
+              <path d="M10 14 21 3"></path>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
             </svg>
-            Create Invitation
           </a>
+
+          <slot name="topbar-right" />
         </div>
       </header>
 
-      <!-- Main Content Slot -->
       <main class="admin-content">
         <slot />
       </main>
@@ -208,7 +176,6 @@ const session = Astro.locals.session;
       toggleBtn?.addEventListener('click', openDrawer);
       backdrop?.addEventListener('click', closeDrawer);
 
-      // Logout handler with modal confirmation
       document.querySelectorAll('[data-logout]').forEach((el) => {
         el.addEventListener('click', async (e) => {
           e.preventDefault();

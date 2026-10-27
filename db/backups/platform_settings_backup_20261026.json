@@ -1,0 +1,82 @@
+{
+  "id": "45af2764-9913-44c0-a3cc-f1eefab3241c",
+  "site_name": "Senadda",
+  "site_tagline": "Jasa Pembuatan Undangan Digital Bali & Pernikahan Elegan",
+  "logo_url": "/images/senadda-logo.png",
+  "logo_dark_url": "",
+  "whatsapp_url": "https://wa.me/088236262247",
+  "instagram_url": "https://www.instagram.com/senadda.id",
+  "email": "",
+  "facebook_url": "",
+  "tiktok_url": "",
+  "youtube_url": "",
+  "home_heading_1": "Undangan",
+  "home_heading_2": "Pernikahan",
+  "home_heading_3": "Digital",
+  "home_description": "",
+  "home_cta_label": "Lihat Koleksi",
+  "meta_title": "Senadda - Undangan Pernikahan Digital Bali",
+  "meta_description": "Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.",
+  "updated_at": "2026-10-09T13:12:35.371561+00:00",
+  "home_templates_eyebrow": "Koleksi Desain",
+  "home_templates_heading": "Pilih Nuansa.",
+  "home_booking_eyebrow": "Langkah Selanjutnya",
+  "home_booking_heading": "Ceritakan undangan Anda.",
+  "home_booking_cta": "Hubungi via WhatsApp",
+  "home_hero_seal_text": "SENADDA • DIGITAL STUDIO • UNDANGAN •",
+  "home_stat_number": "6+",
+  "home_stat_label": "Koleksi Eksklusif",
+  "home_template_cards": [
+    {
+      "key": "lumiere",
+      "name": "Lumiere",
+      "price": "Rp 450.000",
+      "category": "pernikahan",
+      "promoPrice": "Rp 300.000"
+    },
+    {
+      "key": "lumiere-metatah",
+      "name": "Lumiere",
+      "price": "Rp 450.000",
+      "category": "metatah",
+      "promoPrice": "Rp 300.000"
+    },
+    {
+      "key": "atelier",
+      "name": "Atelier",
+      "price": "Rp 450.000",
+      "category": "pernikahan",
+      "promoPrice": "Rp 300.000"
+    },
+    {
+      "key": "editorial",
+      "name": "Editorial",
+      "price": "Rp 350.000",
+      "category": "pernikahan",
+      "promoPrice": "Rp 250.000"
+    },
+    {
+      "key": "deauville",
+      "name": "Deauville",
+      "price": "Rp 300.000",
+      "category": "pernikahan",
+      "promoPrice": "Rp 200.000"
+    },
+    {
+      "key": "air",
+      "name": "Air",
+      "price": "Rp 200.000",
+      "category": "pernikahan",
+      "promoPrice": "Rp 150.000"
+    },
+    {
+      "key": "noir",
+      "name": "Noir",
+      "price": "Rp 200.000",
+      "category": "pernikahan",
+      "promoPrice": "Rp 150.000"
+    }
+  ],
+  "google_analytics_id": "G-PS8CJGKXWG",
+  "google_tag_manager_id": ""
+}

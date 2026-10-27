@@ -1,8 +1,4 @@
-const templateModules: Record<string, () => Promise<any>> = {
-  ...import.meta.glob('./*/*Template.astro'),
-  './lumiere-metatah/LumiereMetatahTemplate.astro': () => import('./lumiere-metatah/LumiereMetatahTemplate.astro'),
-  './lumiere-metatah-v2/LumiereMetatahV2Template.astro': () => import('./lumiere-metatah-v2/LumiereMetatahV2Template.astro')
-};
+const templateModules: Record<string, () => Promise<any>> = import.meta.glob('./*/*Template.astro');
 
 export function listTemplateKeys(): string[] {
   return Array.from(

@@ -85,7 +85,6 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       return rows;
     }
 
-    // Fetch lightweight columns from views and events
     const [viewsData, eventsData, rsvpsRes] = await Promise.all([
       fetchAllRows<any>((from, to) =>
         adminSupabase
@@ -190,12 +189,10 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       };
     });
 
-    // Merge and sort
     const allActivities = [...viewItems, ...eventItems].sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-    // Helper: isWithinTimeRange
     const now = Date.now();
     function isWithinTime(createdAtStr: string): boolean {
       if (timeRange === 'all' || !createdAtStr) return true;
@@ -211,7 +208,6 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       return true;
     }
 
-    // Filter by time & search first for base counts
     const timeAndSearchFiltered = allActivities.filter((item) => {
       if (!isWithinTime(item.createdAt)) return false;
       if (search) {
@@ -222,7 +218,6 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       return true;
     });
 
-    // Compute dynamic tag counts
     const tagCounts = {
       all: timeAndSearchFiltered.length,
       identified: timeAndSearchFiltered.filter(i => i.isGuest).length,
@@ -232,7 +227,6 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       kunjungan: timeAndSearchFiltered.filter(i => i.category === 'kunjungan').length
     };
 
-    // Apply active category filter
     const finalFiltered = timeAndSearchFiltered.filter((item) => {
       if (category === 'identified' && !item.isGuest) return false;
       if (category === 'interaksi' && item.category !== 'interaksi') return false;

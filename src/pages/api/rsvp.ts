@@ -8,22 +8,10 @@ import { logActivity } from '../../services/activity-log';
 
 export const prerender = false;
 
-/**
- * Endpoint for processing incoming guest RSVPs.
- * Incorporates setting overrides (checking if RSVP is active or has expired),
- * handles input sanitization, and saves records securely.
- */
 export const POST: APIRoute = async ({ request }) => {
   try {
     const payload = await request.json();
     const { weddingId, name, attendance, count, message } = payload;
-    console.log('[Noir RSVP API CHECK] raw payload:', payload);
-    console.log('[Noir RSVP API] submit request', {
-      weddingId,
-      name,
-      attendance,
-      hasMessage: Boolean(message)
-    });
 
     if (!weddingId) {
       return jsonResponse({ error: 'Wedding ID (weddingId) is required.' }, 400);
@@ -31,7 +19,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     const normalizedMessage = message ? String(message).trim().slice(0, 500) : '';
 
-    // Mock handler for preview pages
     if (typeof weddingId === 'string' && weddingId.startsWith('preview-')) {
       const validated = validateRSVPInput(name, attendance, count);
       const mockItem = {
@@ -50,38 +37,27 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // 1. Fetch dynamic settings to verify toggle & expiration state
-    const { data: settings, error: settingsError } = await supabase
+    const { data: settings, error: settingsError } = await (supabase
       .from('invitation_settings')
       .select('rsvp_enabled, expiration_date')
       .eq('wedding_id', weddingId)
-      .maybeSingle();
-    console.log('[Noir RSVP API CHECK] settings lookup result:', {
-      weddingId,
-      settings,
-      settingsError
-    });
+      .maybeSingle() as any);
 
     if (settingsError || !settings) {
-      console.error('[Noir RSVP API] settings lookup failed', { weddingId, settingsError });
+      console.error('[RSVP API] settings lookup failed', { weddingId, settingsError });
       return jsonResponse({ error: 'Invitation settings not found or invalid.' }, 404);
     }
 
-    // 2. Enforce RSVP enabled constraint
     if (!settings.rsvp_enabled) {
       return jsonResponse({ error: 'RSVP confirmation for this invitation has been closed by admin.' }, 403);
     }
 
-    // 3. Enforce expiration constraint
     if (settings.expiration_date && new Date(settings.expiration_date) < new Date()) {
       return jsonResponse({ error: 'The online invitation has expired. RSVP submission is closed.' }, 403);
     }
 
-    // 4. Sanitize and validate parameters using our security engine
     const validated = validateRSVPInput(name, attendance, count);
-    console.log('[Noir RSVP API CHECK] validated payload:', validated);
 
-    // 5. Store validated RSVP response into Supabase
     const insertPayload = {
       wedding_id: weddingId,
       guest_name: validated.name,
@@ -89,30 +65,18 @@ export const POST: APIRoute = async ({ request }) => {
       guest_count: validated.count,
       message: normalizedMessage
     };
-    console.log('[Noir RSVP API CHECK] insert payload:', insertPayload);
 
-    const { data: insertedRSVP, error: insertError } = await supabase
+    const { data: insertedRSVP, error: insertError } = await (supabase
       .from('rsvps')
-      .insert(insertPayload)
+      .insert(insertPayload as any)
       .select('*')
-      .single();
-    console.log('[Noir RSVP API CHECK] insert result:', {
-      insertedRSVP,
-      insertError
-    });
+      .single() as any);
 
     if (insertError) {
-      console.error('[Noir RSVP API] insert failed', { weddingId, insertError });
+      console.error('[RSVP API] insert failed', { weddingId, insertError });
       throw insertError;
     }
 
-    console.log('[Noir RSVP API] submit response', {
-      weddingId,
-      id: insertedRSVP.id,
-      hasMessage: Boolean(insertedRSVP.message)
-    });
-
-    // Log activity (fail-safe)
     const statusText = validated.status === 'attending' ? 'Attending' : (validated.status === 'tentative' ? 'Tentative' : 'Declined');
     await logActivity({
       wedding_id: weddingId,

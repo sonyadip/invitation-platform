@@ -183,8 +183,8 @@ export function initRSVPForm(root: Element | Document = document) {
   const successState = root.querySelector('[data-rsvp-success]');
   const errorEl = root.querySelector('[data-rsvp-error]');
   const submitBtn = root.querySelector('[data-rsvp-submit]');
-  const wishesContainer = root.querySelector('[data-wishes-list]');
-  const emptyState = root.querySelector('[data-wishes-empty]');
+  const wishesContainer = root.querySelector<HTMLElement>('[data-wishes-list]');
+  const emptyState = root.querySelector<HTMLElement>('[data-wishes-empty]');
 
   if (!(form instanceof HTMLFormElement) || !(successState instanceof HTMLElement) || !(submitBtn instanceof HTMLButtonElement)) return;
   if (form.dataset.rsvpBound === 'true') return;
@@ -245,7 +245,6 @@ export function initRSVPForm(root: Element | Document = document) {
 
       form.style.display = 'none';
       
-      // Handle templates that use grid, flex or block for success state
       successState.style.display = '';
       if (window.getComputedStyle(successState).display === 'none') {
         const isGrid = successState.classList.contains('rsvp-success--grid');
@@ -307,11 +306,11 @@ export function initRSVPForm(root: Element | Document = document) {
 }
 
 export function initWishesPagination(root: Element | Document = document) {
-  const paginationContainer = root.querySelector('[data-wishes-pagination]');
-  const wishesContainer = root.querySelector('[data-wishes-list]');
-  const emptyState = root.querySelector('[data-wishes-empty]');
+  const paginationContainer = root.querySelector<HTMLElement>('[data-wishes-pagination]');
+  const wishesContainer = root.querySelector<HTMLElement>('[data-wishes-list]');
+  const emptyState = root.querySelector<HTMLElement>('[data-wishes-empty]');
 
-  if (!(paginationContainer instanceof HTMLElement) || !wishesContainer) return;
+  if (!paginationContainer || !wishesContainer) return;
   if (paginationContainer.dataset.paginationBound === 'true') return;
   paginationContainer.dataset.paginationBound = 'true';
 
@@ -330,7 +329,6 @@ export function initWishesPagination(root: Element | Document = document) {
       });
     } catch (_) {}
 
-    // Visual loading state
     (wishesContainer as HTMLElement).style.opacity = '0.5';
     (wishesContainer as HTMLElement).style.pointerEvents = 'none';
 
@@ -339,26 +337,30 @@ export function initWishesPagination(root: Element | Document = document) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Gagal memuat ucapan.');
 
-      renderWishItems(wishesContainer, result.items || [], emptyState);
+      renderWishItems(wishesContainer as HTMLElement, result.items || [], emptyState || null);
 
       currentPage = result.page || page;
       totalPages = result.totalPages || totalPages;
-      paginationContainer.dataset.currentPage = String(currentPage);
-      paginationContainer.dataset.totalPages = String(totalPages);
+      if (paginationContainer) {
+        paginationContainer.dataset.currentPage = String(currentPage);
+        paginationContainer.dataset.totalPages = String(totalPages);
+      }
 
       renderPaginationControls();
 
-      // Smooth scroll to top of wishes list
-      wishesContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      (wishesContainer as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (error) {
       console.error('Wishes pagination error:', error);
     } finally {
-      (wishesContainer as HTMLElement).style.opacity = '1';
-      (wishesContainer as HTMLElement).style.pointerEvents = 'auto';
+      if (wishesContainer) {
+        wishesContainer.style.opacity = '1';
+        wishesContainer.style.pointerEvents = 'auto';
+      }
     }
   }
 
   function renderPaginationControls() {
+    if (!paginationContainer) return;
     if (totalPages <= 1) {
       paginationContainer.style.display = 'none';
       return;
@@ -396,7 +398,6 @@ export function initWishesPagination(root: Element | Document = document) {
     }
   }
 
-  // Initial event listeners for next/prev
   const prevBtn = paginationContainer.querySelector('[data-wishes-prev]');
   const nextBtn = paginationContainer.querySelector('[data-wishes-next]');
 
@@ -415,7 +416,6 @@ export function initWishesPagination(root: Element | Document = document) {
   renderPaginationControls();
 }
 
-// Backward compatibility alias:
 export function initWishesLoadMore(root: Element | Document = document) {
   initWishesPagination(root);
 }

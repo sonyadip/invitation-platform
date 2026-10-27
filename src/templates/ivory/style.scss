@@ -1674,7 +1674,7 @@ body.template-ivory {
     outline-offset: 3px;
   }
 
-  @media (hover: hover) {
+  @media (hover: hover) and (pointer: fine) {
     .cover-section__btn:hover,
     .countdown-section__calendar-btn:hover,
     .event-card__map-btn:hover,

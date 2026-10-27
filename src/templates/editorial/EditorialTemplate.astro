@@ -12,7 +12,7 @@ import rsvpPhoto from './assets/rsvp.jpg';
 import saveDatePhoto from './assets/save-date.jpg';
 import closingPhoto from './assets/closing.jpg';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import './style.scss';
+import styleUrl from './style.scss?url';
 
 import {
   buildParentText,
@@ -132,7 +132,6 @@ const bridePrefix = text.brideChildNumber
 const groomAddressText = text.groomAddress || text.groomCity || text.groomOrigin || (isPreview ? 'Denpasar, Bali' : '');
 const brideAddressText = text.brideAddress || text.brideCity || text.brideOrigin || (isPreview ? 'Gianyar, Bali' : '');
 
-
 const groomParentLines = buildCoupleLines(
   groomPrefix,
   text.groomFatherName || (isPreview ? 'Bapak Mempelai' : undefined),
@@ -206,6 +205,7 @@ const activeGifts = gifts && gifts.length > 0
   to={guestName}
   templateClass="template-editorial"
   image={coverImage || heroImage}
+  styleUrl={styleUrl}
 >
   <style>
     .template-slide.is-active {
@@ -225,9 +225,9 @@ const activeGifts = gifts && gifts.length > 0
       top: 50%;
       left: 50%;
       width: 100vw;
-      height: 56.25vw; /* 16:9 aspect ratio */
+      height: 56.25vw;
       min-height: 100vh;
-      min-width: 177.77vh; /* 16:9 */
+      min-width: 177.77vh;
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
@@ -687,5 +687,3 @@ const activeGifts = gifts && gifts.length > 0
 <script>
   import './script.js';
 </script>
-
-

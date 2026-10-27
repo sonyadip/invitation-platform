@@ -70,7 +70,6 @@ export async function trackInvitationView({
       .maybeSingle();
 
     if (!viewExists) {
-      // 1. Try enriched insert first
       const enrichedPayload: Record<string, any> = {
         wedding_id: weddingId,
         ip_hash: ipHash,
@@ -88,7 +87,6 @@ export async function trackInvitationView({
         .from('invitation_views')
         .insert(enrichedPayload);
 
-      // Safe fallback if new columns don't exist yet in the database
       if (insertError) {
         await adminSupabase.from('invitation_views').insert({
           wedding_id: weddingId,
@@ -97,7 +95,6 @@ export async function trackInvitationView({
         });
       }
     } else {
-      // If visitor visits again today, update with latest timestamp & details
       await adminSupabase
         .from('invitation_views')
         .update({
@@ -114,10 +111,8 @@ export async function trackInvitationView({
         .eq('id', viewExists.id);
     }
 
-    // 2. Track Guest Read-Receipt (if guestName is present)
     if (guestName && typeof guestName === 'string' && guestName.trim()) {
       await updateGuestReadReceipt(weddingId, guestName.trim(), now).catch((err) => {
-        // Non-blocking catch
         console.warn('Failed to update guest read receipt:', err?.message || err);
       });
     }
@@ -132,7 +127,6 @@ async function updateGuestReadReceipt(weddingId: string, rawGuestName: string, n
     const cleanGuestName = rawGuestName.replace(/^[+_]+|[+_]+$/g, '').trim();
     if (!cleanGuestName) return;
 
-    // Look up guest in sent_invitations (case-insensitive)
     const { data: guests, error: lookupError } = await adminSupabase
       .from('sent_invitations')
       .select('id, guest_name, open_count, opened_at')
@@ -162,11 +156,9 @@ async function updateGuestReadReceipt(weddingId: string, rawGuestName: string, n
       .eq('id', guest.id);
 
     if (updateError) {
-      // Gracefully ignore if columns not present yet
       console.warn('Update guest opened status notice:', updateError.message);
     }
   } catch (e: any) {
-    // Non-blocking catch for safety
     console.warn('Read receipt process skipped:', e?.message || e);
   }
 }

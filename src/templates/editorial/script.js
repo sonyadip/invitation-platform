@@ -16,13 +16,11 @@ const song = root?.querySelector('[data-template-audio]');
 const audioBtn = root?.querySelector('[data-template-audio-toggle]');
 let isPlaying = false;
 
-// Variabel YouTube Player
 let ytPlayer = null;
 let ytReady = false;
 let ytDeferredPlay = false;
 
 if (document.querySelector('[data-yt-bg]')) {
-  // Load API secara asinkron agar tidak memblokir render
   const tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -59,14 +57,14 @@ window.onYouTubeIframeAPIReady = function() {
       events: {
         'onReady': (event) => {
           ytReady = true;
-          event.target.mute(); // pastikan mute agar bisa autoplay tanpa masalah
+          event.target.mute();
           if (ytDeferredPlay) {
             event.target.playVideo();
           }
         },
         'onStateChange': (event) => {
           if (event.data === YT.PlayerState.ENDED) {
-            event.target.playVideo(); // loop manual jika parameter loop bermasalah
+            event.target.playVideo();
           }
         }
       }
@@ -84,17 +82,12 @@ if (cover instanceof HTMLElement) {
   document.body.classList.add('template-no-scroll', 'template-cover-active');
 }
 
-// ----------------------------------------------------
-// FORCE PAUSE SEMUA VIDEO SAAT FIRST LOAD
-// Mencegah autoplay bandel dari browser atau elemen lain
-// ----------------------------------------------------
 if (typeof document !== 'undefined') {
   document.querySelectorAll('video').forEach(v => {
     v.removeAttribute('autoplay');
     v.pause();
   });
 }
-
 
 openBtn?.addEventListener('click', () => {
   if (cover instanceof HTMLElement) {
@@ -104,7 +97,6 @@ openBtn?.addEventListener('click', () => {
     }, 1600);
   }
 
-  // Panggil synchronously agar tidak diblokir oleh browser policy (Safari/iOS user gesture requirement)
   playAutoplayVideos();
 
   if (layout instanceof HTMLElement) {
@@ -137,12 +129,11 @@ function playAutoplayVideos() {
     }
   });
 
-  // Mainkan YouTube background jika ada
   if (document.querySelector('[data-yt-bg]')) {
     if (ytReady && ytPlayer && typeof ytPlayer.playVideo === 'function') {
       ytPlayer.playVideo();
     } else {
-      ytDeferredPlay = true; // Akan diputar saat onReady terpicu
+      ytDeferredPlay = true;
     }
   }
 }

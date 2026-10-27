@@ -37,9 +37,8 @@ export async function createOgImageBlob(source: File | string): Promise<Blob> {
         const imgW = img.naturalWidth || img.width || 1200;
         const imgH = img.naturalHeight || img.height || 630;
 
-        // 1. Draw Blurred Background (Cover fit)
         ctx.save();
-        const bgScale = Math.max(targetW / imgW, targetH / imgH) * 1.15; // scale 115% to prevent edge blur gaps
+        const bgScale = Math.max(targetW / imgW, targetH / imgH) * 1.15;
         const bgW = imgW * bgScale;
         const bgH = imgH * bgScale;
         const bgX = (targetW - bgW) / 2;
@@ -51,20 +50,17 @@ export async function createOgImageBlob(source: File | string): Promise<Blob> {
         ctx.drawImage(img, bgX, bgY, bgW, bgH);
         ctx.restore();
 
-        // 2. Add subtle dark overlay for contrast & richness
         ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
         ctx.fillRect(0, 0, targetW, targetH);
         ctx.restore();
 
-        // 3. Draw Foreground Image (Full height fit, centered, preserving 100% aspect ratio)
         ctx.save();
         const fgScale = targetH / imgH;
         const fgW = imgW * fgScale;
         const fgX = (targetW - fgW) / 2;
         const fgY = 0;
 
-        // Soft drop shadow
         ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
         ctx.shadowBlur = 32;
         ctx.shadowOffsetX = 0;

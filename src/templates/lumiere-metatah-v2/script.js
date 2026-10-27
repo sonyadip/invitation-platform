@@ -20,7 +20,6 @@ if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
 
-if (layout instanceof HTMLElement) layout.style.display = 'none';
 if (cover instanceof HTMLElement) {
   window.scrollTo(0, 0);
   document.body.classList.add('template-no-scroll', 'template-cover-active');
@@ -31,21 +30,12 @@ openBtn?.addEventListener('click', () => {
     cover.classList.add('is-opening');
     setTimeout(() => {
       cover.style.display = 'none';
+      document.body.classList.remove('template-no-scroll', 'template-cover-active');
     }, 1600);
   }
 
-  if (layout instanceof HTMLElement) {
-    layout.style.display = 'block';
-    layout.style.opacity = '0';
-    requestAnimationFrame(() => {
-      layout.style.transition = 'opacity 1200ms ease';
-      layout.style.opacity = '1';
-      initSlideshows();
-      if (root) initRevealAnimations(root);
-    });
-  }
-
-  document.body.classList.remove('template-no-scroll', 'template-cover-active');
+  initSlideshows();
+  if (root) initRevealAnimations(root);
 
   if (song instanceof HTMLAudioElement) {
     song.play().catch(() => { });
@@ -134,10 +124,8 @@ function initParticipantModals(container) {
     }
     document.body.classList.add('participant-modal-active');
 
-    // Force style reflow so browser commits initial opacity: 0 & translateY
     void dialog.offsetWidth;
 
-    // Trigger smooth enter transition
     requestAnimationFrame(() => {
       dialog.classList.add('is-open');
     });
@@ -163,7 +151,7 @@ function initParticipantModals(container) {
 
   dialogs.forEach((dialog) => {
     dialog.addEventListener('cancel', (e) => {
-      e.preventDefault(); // Intercept ESC key for smooth closing animation
+      e.preventDefault();
       closeDialog(dialog);
     });
 
@@ -176,7 +164,10 @@ function initParticipantModals(container) {
 }
 
 if (root) {
-  initRevealAnimations(root);
+  if (!cover || !openBtn || cover.style.display === 'none') {
+    initRevealAnimations(root);
+    initSlideshows();
+  }
   initCountdown(root);
   initVideoPlayers(root);
   initGalleryLightbox(root, 'gallery-section');
@@ -184,8 +175,4 @@ if (root) {
   initWishesLoadMore(root);
   initGiftInteractions(root);
   initParticipantModals(root);
-
-  if (!cover || !openBtn || cover.style.display === 'none') {
-    initSlideshows();
-  }
 }

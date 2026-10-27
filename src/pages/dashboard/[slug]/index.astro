@@ -44,7 +44,7 @@ function timeAgo(dateStr: string): string {
 const wishesWithMessage = report.rsvps.filter(r => r.message);
 const newWishesCount = wishesWithMessage.filter(r => {
   const diff = Date.now() - new Date(r.createdAt).getTime();
-  return diff < 24 * 60 * 60 * 1000; // last 24h
+  return diff < 24 * 60 * 60 * 1000;
 }).length;
 
 const analytics = report.analytics || {
@@ -54,7 +54,6 @@ const analytics = report.analytics || {
   recentVisitors: []
 };
 
-// Layout & Section feature availability flags
 const showMapsStat = Boolean(report.wedding.mapsUrl || report.events?.some((e: any) => e.maps_url)) || (analytics.interactionStats?.clickMaps || 0) > 0;
 const showCalendarStat = Boolean(report.wedding.weddingDate || report.events?.length > 0) || (analytics.interactionStats?.clickCalendar || 0) > 0;
 const showGiftStat = (Boolean(report.settings.giftEnabled) && (report.gifts?.length > 0)) || (analytics.interactionStats?.copyGift || 0) > 0;
@@ -67,7 +66,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
 
 <ClientLayout title="Dashboard">
   <div class="dashboard-bento-layout">
-  <!-- Hero Section -->
   <section class="fade-in-bottom">
     <div class="hero-card">
       <div class="hero-card__overlay"></div>
@@ -79,7 +77,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
     </div>
   </section>
 
-  <!-- Stats Grid -->
   <section class="fade-in-bottom animate-on-scroll">
     <div class="bento-card bento-card--overview">
       <h3 class="bento-card__title">Overview</h3>
@@ -119,7 +116,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
     </div>
   </section>
 
-  <!-- Countdown Timer -->
   <section class="fade-in-bottom animate-on-scroll">
     <div class="bento-card">
       <div class="countdown-header-row">
@@ -150,7 +146,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
     </div>
   </section>
 
-  <!-- Rangkaian Acara -->
   <section class="fade-in-bottom animate-on-scroll">
     <div class="bento-card">
       <h3 class="bento-card__title">Rangkaian Acara</h3>
@@ -182,7 +177,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
     </div>
   </section>
 
-  <!-- Guest Stats Chart -->
   <section class="fade-in-bottom animate-on-scroll">
     <div class="bento-card">
       <h3 class="bento-card__title">Statistik Tamu</h3>
@@ -216,7 +210,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
     </div>
   </section>
 
-  <!-- Visitor Analytics & Engagement (Admin Only) -->
   {session?.role === 'admin' && (
     <section class="fade-in-bottom animate-on-scroll">
       <div class="bento-card">
@@ -230,7 +223,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
         </a>
       </div>
         
-        <!-- Device Distribution -->
         <div class="analytics-subcard">
           <h4 class="analytics-section-title">
             <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">devices</span>
@@ -272,7 +264,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
           )}
         </div>
 
-        <!-- Feature Interactions -->
         <div class="analytics-subcard">
           <h4 class="analytics-section-title">
             <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">touch_app</span>
@@ -343,7 +334,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
           </div>
         </div>
 
-        <!-- Vendor & Branding Leads (Pemilik Jasa) -->
         <div class="analytics-subcard">
           <h4 class="analytics-section-title">
             <span class="material-symbols-outlined" style="font-size: 18px; color: #10b981;">storefront</span>
@@ -368,7 +358,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
           </div>
         </div>
 
-        <!-- Recent Visitors -->
         {analytics.recentVisitors.length > 0 && (
           <div class="analytics-subcard">
             <h4 class="analytics-section-title">
@@ -406,7 +395,6 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
     </section>
   )}
 
-  <!-- Wishes Section -->
   <section class="fade-in-bottom animate-on-scroll">
     <div class="bento-card">
       <div class="wish-header">

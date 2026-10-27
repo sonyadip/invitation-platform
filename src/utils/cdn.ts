@@ -29,7 +29,6 @@ export function toCdnUrl(url: string | null | undefined): string {
   const trimmed = url.trim();
   if (!trimmed) return '';
 
-  // Pattern matching: https://<project-ref>.supabase.co/storage/v1/object/public/<path>
   const supabasePattern = /^https?:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/(.+)$/i;
   const match = trimmed.match(supabasePattern);
 
@@ -37,7 +36,6 @@ export function toCdnUrl(url: string | null | undefined): string {
     return `/storage/v1/object/public/${match[1]}`;
   }
 
-  // Also match custom SUPABASE_URL if configured
   const host = getSupabaseHost();
   if (host && trimmed.includes(host) && trimmed.includes('/storage/v1/object/public/')) {
     const idx = trimmed.indexOf('/storage/v1/object/public/');
@@ -65,7 +63,6 @@ export function transformMediaUrls<T>(value: T): T {
   const result: any = { ...value };
   for (const [k, v] of Object.entries(result)) {
     if (typeof v === 'string') {
-      // Only transform fields that are likely media URLs or general storage URLs
       if (
         k.endsWith('url') ||
         k.endsWith('Url') ||

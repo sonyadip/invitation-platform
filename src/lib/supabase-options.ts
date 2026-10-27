@@ -9,7 +9,7 @@ export function createSupabaseClientOptions() {
 
   if (typeof globalThis.WebSocket === 'undefined' && typeof window === 'undefined') {
     options.realtime = {
-      transport: ws.WebSocket || ws
+      transport: (ws as any).WebSocket || ws
     };
   }
 

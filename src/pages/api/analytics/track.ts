@@ -56,7 +56,6 @@ export const POST: APIRoute = async ({ request, url }) => {
       return jsonResponse({ error: 'Invalid or unsupported eventType' }, 400);
     }
 
-    // Server-side deduplication safeguard within 2 seconds
     const adminSupabase = await getSupabaseAdmin();
     const twoSecondsAgo = new Date(Date.now() - 2000).toISOString();
     const sanitizedGuest = guestName ? String(guestName).trim().slice(0, 255) : null;
@@ -79,7 +78,6 @@ export const POST: APIRoute = async ({ request, url }) => {
       return jsonResponse({ success: true, deduped: true });
     }
 
-    // Insert into invitation_events using admin supabase
     const { error } = await adminSupabase.from('invitation_events').insert({
       wedding_id: weddingId,
       event_type: eventType,

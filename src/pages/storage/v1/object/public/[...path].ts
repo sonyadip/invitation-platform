@@ -41,12 +41,11 @@ async function handleProxyRequest(request: Request, path: string | undefined, is
     const upstreamResponse = await fetch(targetUrl, {
       method: isHead ? 'HEAD' : 'GET',
       headers: forwardHeaders,
-      // @ts-ignore - Cloudflare edge subrequest caching
       cf: {
         cacheEverything: true,
         cacheTtl: 31536000
       }
-    });
+    } as any);
 
     if (upstreamResponse.status === 304) {
       return new Response(null, {
@@ -56,10 +55,12 @@ async function handleProxyRequest(request: Request, path: string | undefined, is
     }
 
     if (!upstreamResponse.ok && upstreamResponse.status !== 206) {
+      const errorHeaders = new Headers(upstreamResponse.headers);
+      errorHeaders.set('Cache-Control', 'public, max-age=300');
       return new Response(upstreamResponse.body, {
         status: upstreamResponse.status,
         statusText: upstreamResponse.statusText,
-        headers: upstreamResponse.headers
+        headers: errorHeaders
       });
     }
 
@@ -78,7 +79,6 @@ async function handleProxyRequest(request: Request, path: string | undefined, is
       if (val) responseHeaders.set(key, val);
     }
 
-    // Long-lived immutable caching for Cloudflare CDN edge and client browsers
     responseHeaders.set(
       'Cache-Control',
       'public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable'

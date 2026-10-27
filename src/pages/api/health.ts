@@ -20,7 +20,6 @@ export const GET: APIRoute = async ({ url }) => {
     uptime_sec: typeof process !== 'undefined' && typeof process.uptime === 'function' ? Math.floor(process.uptime()) : undefined
   };
 
-  // Shallow check: Edge server is responding
   if (!isDeep) {
     return new Response(JSON.stringify(baseResponse, null, 2), {
       status: 200,
@@ -31,7 +30,6 @@ export const GET: APIRoute = async ({ url }) => {
     });
   }
 
-  // Deep check: Probe Supabase database
   const dbStart = Date.now();
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {

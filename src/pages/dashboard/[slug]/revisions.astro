@@ -30,8 +30,6 @@ if (!detail) {
 let successMessage = '';
 let errorMessage = '';
 
-
-
 const formatUnknownError = (err: unknown, fallback: string) => {
   if (err instanceof Error) return err.message;
   if (err && typeof err === 'object') return JSON.stringify(err);
@@ -108,7 +106,6 @@ const revisions = rawRevisions.map(r => ({
   snapshot: parseSnapshot(r.snapshot)
 })).filter(r => r.snapshot && r.snapshot.wedding);
 
-// Pre-compute diffs compared to current active revision (first item)
 const currentRevision = revisions.length > 0 ? revisions[0] : null;
 const revisionsWithDiff = revisions.map((rev, index) => {
   const isCurrent = index === 0;
@@ -121,7 +118,6 @@ const revisionsWithDiff = revisions.map((rev, index) => {
     diffs
   };
 });
-
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('en-US', {
@@ -178,15 +174,12 @@ function timeAgo(dateStr: string): string {
         </div>
       </header>
 
-
       {errorMessage ? (
         <div class="shadcn-alert shadcn-alert--error" role="alert"><strong>Error:</strong><p>{errorMessage}</p></div>
       ) : successMessage ? (
         <div class="shadcn-alert shadcn-alert--success" role="alert"><strong>Success:</strong><p>{successMessage}</p></div>
       ) : null}
 
-
-      <!-- Checkpoint Creator -->
       <section class="checkpoint-card">
         <div class="checkpoint-header">
           <div>
@@ -223,7 +216,6 @@ function timeAgo(dateStr: string): string {
         </form>
       </section>
 
-      <!-- Revisions Timeline -->
       <section class="revisions-container">
         <div class="section-title-wrap">
           <div>
@@ -294,7 +286,6 @@ function timeAgo(dateStr: string): string {
                   </div>
                 )}
 
-                <!-- Diff & Snapshot Modal -->
                 <dialog id={`diff-modal-${rev.id}`} class="rev-dialog">
                   <div class="dialog-content">
                     <div class="dialog-header">
@@ -306,7 +297,6 @@ function timeAgo(dateStr: string): string {
                     </div>
 
                     <div class="dialog-body">
-                      <!-- Comparison Section -->
                       <div class="diff-section">
                         <h4>Comparison with Current Active Version:</h4>
                         {rev.isCurrent ? (
@@ -341,7 +331,6 @@ function timeAgo(dateStr: string): string {
                         )}
                       </div>
 
-                      <!-- Snapshot Data Summary -->
                       <div class="snapshot-summary-box">
                         <h4>Complete Snapshot Summary:</h4>
                         <div class="snapshot-grid">
@@ -377,7 +366,6 @@ function timeAgo(dateStr: string): string {
                           </div>
                         </div>
 
-                        <!-- Rangkaian Acara di Snapshot -->
                         {rev.snapshot.events && rev.snapshot.events.length > 0 && (
                           <div class="sub-summary-section">
                             <h5>📅 Wedding Events ({rev.snapshot.events.length} Events):</h5>
@@ -391,7 +379,6 @@ function timeAgo(dateStr: string): string {
                           </div>
                         )}
 
-                        <!-- Rekening Hadiah di Snapshot -->
                         {rev.snapshot.gifts && rev.snapshot.gifts.length > 0 && (
                           <div class="sub-summary-section">
                             <h5>🎁 Gift & Digital Accounts ({rev.snapshot.gifts.length} Accounts):</h5>
@@ -406,7 +393,6 @@ function timeAgo(dateStr: string): string {
                         )}
                       </div>
                     </div>
-
 
                     <div class="dialog-footer">
                       <button type="button" class="secondary-btn" data-close-modal={`diff-modal-${rev.id}`}>Close</button>
@@ -424,7 +410,6 @@ function timeAgo(dateStr: string): string {
                   </div>
                 </dialog>
 
-                <!-- Restore Confirmation Modal -->
                 {!rev.isCurrent && (
                   <dialog id={`restore-modal-${rev.id}`} class="rev-dialog restore-confirm-dialog">
                     <div class="dialog-content">
@@ -461,7 +446,6 @@ function timeAgo(dateStr: string): string {
 
     <script is:inline>
       document.addEventListener('DOMContentLoaded', () => {
-        // Modal Handlers
         document.querySelectorAll('[data-modal-target]').forEach(btn => {
           btn.addEventListener('click', () => {
             const targetId = btn.getAttribute('data-modal-target');
@@ -478,7 +462,6 @@ function timeAgo(dateStr: string): string {
           });
         });
 
-        // Close on backdrop click
         document.querySelectorAll('dialog.rev-dialog').forEach(dialog => {
           dialog.addEventListener('click', (e) => {
             if (e.target === dialog) dialog.close();
@@ -634,7 +617,6 @@ function timeAgo(dateStr: string): string {
     &:empty {
       display: none !important;
     }
-
 
     .panel-icon {
       font-size: 18px;
@@ -923,7 +905,6 @@ function timeAgo(dateStr: string): string {
     font-weight: 600;
   }
 
-  /* Dialogs / Modals */
   dialog.rev-dialog {
     padding: 0;
     border: none;
@@ -1140,7 +1121,6 @@ function timeAgo(dateStr: string): string {
       font-size: 11px;
     }
   }
-
 
   .safety-box {
     margin-top: 14px;

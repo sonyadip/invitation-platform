@@ -10,13 +10,13 @@ import {
 
 const root = document.querySelector('body.template-atelier [data-template-root]');
 const cover = root?.querySelector('[data-template-cover]');
-const layout = root?.querySelector('[data-template-layout]');
+const introSection = root?.querySelector('.intro-section');
 const openBtn = root?.querySelector('[data-template-open]');
 const song = root?.querySelector('[data-template-audio]');
 const audioBtn = root?.querySelector('[data-template-audio-toggle]');
 let isPlaying = false;
 
-// Variabel YouTube Player
+
 let ytPlayer = null;
 let ytReady = false;
 let ytDeferredPlay = false;
@@ -85,7 +85,7 @@ if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
 
-if (layout instanceof HTMLElement) layout.style.display = 'none';
+
 if (cover instanceof HTMLElement) {
   window.scrollTo(0, 0);
   document.body.classList.add('template-no-scroll', 'template-cover-active');
@@ -96,23 +96,17 @@ openBtn?.addEventListener('click', () => {
     cover.classList.add('is-opening');
     setTimeout(() => {
       cover.style.display = 'none';
-    }, 1600);
+      document.body.classList.remove('template-no-scroll', 'template-cover-active');
+    }, 1800);
   }
 
   playAutoplayVideos();
+  initSlideshows();
 
-  if (layout instanceof HTMLElement) {
-    layout.style.display = 'block';
-    layout.style.opacity = '0';
-    requestAnimationFrame(() => {
-      layout.style.transition = 'opacity 1200ms ease';
-      layout.style.opacity = '1';
-      initSlideshows();
-      if (root) initRevealAnimations(root);
-    });
-  }
-
-  document.body.classList.remove('template-no-scroll', 'template-cover-active');
+  setTimeout(() => {
+    introSection?.classList.add('is-active');
+    if (root) initRevealAnimations(root);
+  }, 1000);
 
   if (song instanceof HTMLAudioElement) {
     song.play().catch(() => { });
@@ -172,7 +166,6 @@ function initSlideshows() {
 }
 
 if (root) {
-  initRevealAnimations(root);
   initCountdown(root);
   initVideoPlayers(root);
   initGalleryLightbox(root, 'gallery-section');
@@ -181,6 +174,8 @@ if (root) {
   initGiftInteractions(root);
 
   if (!cover || !openBtn || cover.style.display === 'none') {
+    introSection?.classList.add('is-active');
+    initRevealAnimations(root);
     initSlideshows();
   }
 }

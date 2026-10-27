@@ -27,7 +27,6 @@ export async function captureRevisionSnapshot(
   try {
     const supabase = await getSupabaseAdmin();
 
-    // 1. Fetch complete current state
     const [weddingRes, settingsRes, eventsRes, galleryRes, giftsRes] = await Promise.all([
       supabase.from('weddings').select('*').eq('id', weddingId).maybeSingle(),
       supabase.from('invitation_settings').select('*').eq('wedding_id', weddingId).maybeSingle(),
@@ -57,7 +56,6 @@ export async function captureRevisionSnapshot(
       captured_at: new Date().toISOString()
     };
 
-    // 2. Determine next revision number
     const { data: latestRevs, error: latestRevsError } = await supabase
       .from('invitation_revisions')
       .select('revision_number, snapshot')
@@ -72,7 +70,6 @@ export async function captureRevisionSnapshot(
     const lastRevNumber = latestRevs && latestRevs.length > 0 ? Number(latestRevs[0].revision_number) : 0;
     const nextRevisionNumber = lastRevNumber + 1;
 
-    // 3. Compute changes summary if not provided
     let changesSummary = options.changesSummary || [];
     if (changesSummary.length === 0 && latestRevs && latestRevs.length > 0 && latestRevs[0].snapshot) {
       const diffs = computeSnapshotDiff(latestRevs[0].snapshot as RevisionSnapshot, snapshot);
@@ -85,7 +82,6 @@ export async function captureRevisionSnapshot(
 
     const title = options.title || `Revision #${nextRevisionNumber}${changesSummary.length > 0 ? `: ${changesSummary[0]}` : ''}`;
 
-    // 4. Insert revision record
     const { data: inserted, error: insertError } = await supabase
       .from('invitation_revisions')
       .insert({
@@ -112,7 +108,6 @@ export async function captureRevisionSnapshot(
     return { id: null, error: errMsg };
   }
 }
-
 
 /**
  * Retrieves all revisions for a specific wedding.
@@ -169,7 +164,6 @@ export async function restoreRevision(
   try {
     const supabase = await getSupabaseAdmin();
 
-    // 1. Fetch target revision
     const targetRevision = await getRevisionById(revisionId);
     if (!targetRevision || targetRevision.wedding_id !== weddingId) {
       return { success: false, message: 'Target revision not found.' };
@@ -180,7 +174,6 @@ export async function restoreRevision(
       return { success: false, message: 'Target revision snapshot data is corrupt or incomplete.' };
     }
 
-    // 2. Capture a backup of current state before rollback
     await captureRevisionSnapshot(weddingId, {
       title: `Automatic backup before rollback to Revision #${targetRevision.revision_number}`,
       note: `Automatically created before restoring data to version #${targetRevision.revision_number}`,
@@ -188,7 +181,6 @@ export async function restoreRevision(
       changesSummary: [`Automatic backup before rollback to Revision #${targetRevision.revision_number}`]
     });
 
-    // 3. Restore wedding core table
     const targetWedding = snapshot.wedding;
     const { error: updateWeddingError } = await supabase
       .from('weddings')
@@ -212,7 +204,6 @@ export async function restoreRevision(
       throw new Error(`Failed to restore main wedding data: ${updateWeddingError.message}`);
     }
 
-    // 4. Restore invitation_settings table
     if (snapshot.settings) {
       const s = snapshot.settings;
       const { error: updateSettingsError } = await supabase
@@ -241,7 +232,6 @@ export async function restoreRevision(
       }
     }
 
-    // 5. Restore wedding_events
     await supabase.from('wedding_events').delete().eq('wedding_id', weddingId);
     if (snapshot.events && snapshot.events.length > 0) {
       const eventRows = snapshot.events.map((e, index) => ({
@@ -258,7 +248,6 @@ export async function restoreRevision(
       await supabase.from('wedding_events').insert(eventRows);
     }
 
-    // 6. Restore gallery_images
     await supabase.from('gallery_images').delete().eq('wedding_id', weddingId);
     if (snapshot.gallery && snapshot.gallery.length > 0) {
       const galleryRows = snapshot.gallery.map((g, index) => ({
@@ -269,7 +258,6 @@ export async function restoreRevision(
       await supabase.from('gallery_images').insert(galleryRows);
     }
 
-    // 7. Restore gift_accounts
     await supabase.from('gift_accounts').delete().eq('wedding_id', weddingId);
     if (snapshot.gifts && snapshot.gifts.length > 0) {
       const giftRows = snapshot.gifts.map((g, index) => ({
@@ -283,7 +271,6 @@ export async function restoreRevision(
       await supabase.from('gift_accounts').insert(giftRows);
     }
 
-    // 8. Capture the newly restored state as a new revision checkpoint
     await captureRevisionSnapshot(weddingId, {
       title: `Restored from Revision #${targetRevision.revision_number}`,
       note: `Invitation restored to version #${targetRevision.revision_number} (${targetRevision.title})`,
@@ -291,7 +278,6 @@ export async function restoreRevision(
       changesSummary: [`Rollback/Restore from Revision #${targetRevision.revision_number}`]
     });
 
-    // 9. Log activity
     await logActivity({
       wedding_id: weddingId,
       slug: targetWedding.slug,
@@ -334,7 +320,6 @@ export function computeSnapshotDiff(
   const oldW = oldSnap?.wedding;
   const newW = newSnap.wedding;
 
-  // 1. Core Wedding Data (weddings table)
   if (oldW && newW) {
     if (oldW.bride_name !== newW.bride_name) {
       diffs.push({ field: 'bride_name', label: 'Bride Nickname', category: 'couple', oldValue: oldW.bride_name || '-', newValue: newW.bride_name || '-' });
@@ -370,7 +355,6 @@ export function computeSnapshotDiff(
       diffs.push({ field: 'music_url', label: 'Background Music', category: 'features', oldValue: oldW.music_url || 'None', newValue: newW.music_url || 'None' });
     }
 
-    // Love Story Items comparison
     const oldStories = oldW.story || [];
     const newStories = newW.story || [];
     if (JSON.stringify(oldStories) !== JSON.stringify(newStories)) {
@@ -398,7 +382,6 @@ export function computeSnapshotDiff(
   const newS = newSnap.settings;
 
   if (oldS && newS) {
-    // 2. Feature Toggles
     const featureToggles: Array<{ key: keyof typeof oldS; label: string }> = [
       { key: 'rsvp_enabled', label: 'RSVP Feature' },
       { key: 'music_enabled', label: 'Music Feature' },
@@ -432,7 +415,6 @@ export function computeSnapshotDiff(
       diffs.push({ field: 'expiration_date', label: 'Expiration Date', category: 'features', oldValue: oldS.expiration_date || 'No Expiry', newValue: newS.expiration_date || 'No Expiry' });
     }
 
-    // 3. Bio & Content Text (theme_config.content)
     const oldContent = (oldS.theme_config as any)?.content || {};
     const newContent = (newS.theme_config as any)?.content || {};
 
@@ -468,7 +450,6 @@ export function computeSnapshotDiff(
       }
     });
 
-    // 4. Photos & Theme Banner Assets (theme_config.assets)
     const oldAssets = (oldS.theme_config as any)?.assets || {};
     const newAssets = (newS.theme_config as any)?.assets || {};
     const assetFields: Array<{ key: string; label: string }> = [
@@ -510,7 +491,6 @@ export function computeSnapshotDiff(
     }
   }
 
-  // 5. Wedding Events (wedding_events)
   const oldEvents = oldSnap?.events || [];
   const newEvents = newSnap?.events || [];
 
@@ -525,7 +505,6 @@ export function computeSnapshotDiff(
       });
     }
 
-    // Detail per event comparison
     newEvents.forEach((ne, i) => {
       const oe = oldEvents[i];
       if (!oe) {
@@ -565,7 +544,6 @@ export function computeSnapshotDiff(
     }
   }
 
-  // 6. Photo Gallery (gallery_images)
   const oldGal = oldSnap?.gallery || [];
   const newGal = newSnap?.gallery || [];
   if (JSON.stringify(oldGal.map(g => g.image_url)) !== JSON.stringify(newGal.map(g => g.image_url))) {
@@ -580,7 +558,6 @@ export function computeSnapshotDiff(
     });
   }
 
-  // 7. Gift Accounts (gift_accounts)
   const oldGifts = oldSnap?.gifts || [];
   const newGifts = newSnap?.gifts || [];
   if (JSON.stringify(oldGifts) !== JSON.stringify(newGifts)) {
@@ -638,7 +615,6 @@ export function summarizeDiff(diffItems: RevisionDiffItem[]): string[] {
   if (!diffItems.length) return ['Data update with no value changes'];
 
   return diffItems.slice(0, 6).map(diff => {
-    // Single-sided actions (add / remove)
     if (diff.oldValue === '-' || !diff.oldValue || diff.oldValue === '(Empty)') {
       return `${diff.label}: ${diff.newValue}`;
     }
@@ -646,7 +622,6 @@ export function summarizeDiff(diffItems: RevisionDiffItem[]): string[] {
       return `${diff.label} (${diff.oldValue}) removed`;
     }
 
-    // Specific before-after string
     const oldStr = String(diff.oldValue);
     const newStr = String(diff.newValue);
 
@@ -657,4 +632,3 @@ export function summarizeDiff(diffItems: RevisionDiffItem[]): string[] {
     return `${diff.label} updated ("${oldStr.slice(0, 20)}..." → "${newStr.slice(0, 20)}...")`;
   });
 }
-

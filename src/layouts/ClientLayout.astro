@@ -1,6 +1,6 @@
 ---
 const { title = "Dashboard" } = Astro.props;
-const slug = Astro.params.slug || "wayan-ayu"; // default fallback for safety
+const slug = Astro.params.slug || "wayan-ayu";
 const currentPath = `/dashboard/${slug}${Astro.url.pathname.replace(`/dashboard/${slug}`, '')}`;
 const session = Astro.locals.session;
 const isAdmin = session?.role === 'admin';
@@ -23,7 +23,6 @@ import PopupDialog from "../components/common/PopupDialog.astro";
 <body>
   <PopupDialog />
   
-  <!-- TopAppBar -->
   <header class="dashboard-header" id="dashboard-header">
     <div class="dashboard-header__left">
       <button id="menu-btn" class="icon-btn">
@@ -39,7 +38,6 @@ import PopupDialog from "../components/common/PopupDialog.astro";
     </div>
   </header>
 
-  <!-- Mobile Sidebar Drawer -->
   <div id="mobile-drawer" class="dashboard-drawer-wrapper">
     <div id="drawer-backdrop" class="dashboard-drawer__backdrop"></div>
     
@@ -83,7 +81,6 @@ import PopupDialog from "../components/common/PopupDialog.astro";
     </div>
   </div>
 
-  <!-- Navigation Bottom Bar (Mobile App Style) -->
   <nav class="dashboard-bottom-nav">
     <div class="dashboard-bottom-nav__inner">
       <a href={`/dashboard/${slug}`} class={`bottom-nav-item ${currentPath === `/dashboard/${slug}` ? 'bottom-nav-item--active' : ''}`}>
@@ -111,14 +108,12 @@ import PopupDialog from "../components/common/PopupDialog.astro";
     </div>
   </nav>
 
-  <!-- Main Content Wrapper (Mobile Container) -->
   <main class="dashboard-main">
     <slot />
   </main>
 
   <script is:inline>
     document.addEventListener('DOMContentLoaded', () => {
-      // Hamburger Menu Logic
       const menuBtn = document.getElementById('menu-btn');
       const drawer = document.getElementById('mobile-drawer');
       const backdrop = document.getElementById('drawer-backdrop');
@@ -143,7 +138,6 @@ import PopupDialog from "../components/common/PopupDialog.astro";
       if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
       if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
-      // Logout confirmation
       document.querySelectorAll('[data-logout]').forEach(el => {
         el.addEventListener('click', async (e) => {
           e.preventDefault();
@@ -161,7 +155,6 @@ import PopupDialog from "../components/common/PopupDialog.astro";
         });
       });
 
-      // Intersection Observer for fade-in elements
       const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
               if (entry.isIntersecting) {
@@ -172,7 +165,6 @@ import PopupDialog from "../components/common/PopupDialog.astro";
 
       document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 
-      // Tonal Layer scroll effect for Header
       window.addEventListener('scroll', () => {
           const header = document.getElementById('dashboard-header');
           if (window.scrollY > 20) {
@@ -184,7 +176,6 @@ import PopupDialog from "../components/common/PopupDialog.astro";
           }
       });
       
-      // Haptic feedback for buttons
       document.querySelectorAll('button, a').forEach(el => {
           el.addEventListener('click', () => {
               if (window.navigator && window.navigator.vibrate) {

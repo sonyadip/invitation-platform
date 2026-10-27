@@ -16,7 +16,6 @@ if (!slug) {
   return Astro.redirect('/?error=invalid_setup_link');
 }
 
-// Check if password is already set
 const { data: wedding, error } = await supabase
   .from('weddings')
   .select('client_password_hash')

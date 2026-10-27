@@ -111,6 +111,9 @@ export interface SlugReportDetail {
       thankYouMessage: string;
       introVerse: string;
       introVerseSource: string;
+      groomChildNumber?: string;
+      brideChildNumber?: string;
+      [key: string]: any;
     };
   } | null;
   galleryImages: Array<{
@@ -194,19 +197,7 @@ export interface SlugReportDetail {
       country: string | null;
       createdAt: string;
     }>;
-    allVisitors?: Array<{
-      id: string;
-      guestName: string | null;
-      deviceType: string;
-      deviceModel: string;
-      os: string;
-      browser: string;
-      source: string;
-      city: string | null;
-      country: string | null;
-      referrer: string | null;
-      createdAt: string;
-    }>;
+    allVisitors?: any[];
     allEvents?: Array<{
       id: string;
       eventType: string;
@@ -242,37 +233,37 @@ const emptyBucket = (): CountBucket => ({
 export async function getDashboardReport(now = new Date()): Promise<DashboardReport> {
   const [weddings, settingsData, domainsData, viewsData, rsvpsData] = await Promise.all([
     fetchAllRows((from, to) =>
-      supabase
+      (supabase
         .from('weddings')
         .select('id, slug, bride_name, groom_name, wedding_date, template, status, deleted_at, deleted_by, created_at')
         .order('created_at', { ascending: false })
-        .range(from, to)
+        .range(from, to) as any)
     ),
     fetchAllRows((from, to) =>
-      supabase
+      (supabase
         .from('invitation_settings')
         .select('wedding_id, maintenance_mode, expiration_date, password_protection_enabled')
-        .range(from, to)
+        .range(from, to) as any)
     ),
     fetchAllRows((from, to) =>
-      supabase
+      (supabase
         .from('custom_domains')
         .select('wedding_id, domain, status')
         .eq('status', 'active')
-        .range(from, to)
+        .range(from, to) as any)
     ),
     fetchAllRows((from, to) =>
-      supabase
+      (supabase
         .from('invitation_views')
         .select('wedding_id')
-        .range(from, to)
+        .range(from, to) as any)
     ),
     fetchAllRows((from, to) =>
-      supabase
+      (supabase
         .from('rsvps')
         .select('wedding_id, attendance_status, guest_count, message, created_at')
         .order('created_at', { ascending: false })
-        .range(from, to)
+        .range(from, to) as any)
     )
   ]);
 
@@ -434,7 +425,6 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .then(res => res.data || [])
   ]);
 
-  // Lightweight queries for fast SSR (< 100ms, < 5ms CPU)
   const [
     viewsRes,
     trackedEventsCountRes,

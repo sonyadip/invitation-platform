@@ -120,7 +120,7 @@ body.template-noir {
 
   .section-bg--sidebar,
   .section-bg--hero {
-    // object-position: bottom;
+
   }
 
   .section-eyebrow {
@@ -143,7 +143,6 @@ body.template-noir {
     font-style: normal;
     letter-spacing: 1px;
     line-height: 1.15;
-    // text-align: center;
   }
 
   .section-rule {
@@ -153,7 +152,6 @@ body.template-noir {
     background-color: var(--template-text);
   }
 
-  /* Cover */
   .cover-section {
     position: fixed;
     inset: 0;
@@ -277,7 +275,6 @@ body.template-noir {
     transition: opacity 0.25s ease, border-color 0.25s ease, color 0.25s ease;
   }
 
-  /* Layout */
   .invitation-layout {
     display: flex;
     min-height: 100vh;
@@ -366,7 +363,6 @@ body.template-noir {
     color: var(--template-text);
   }
 
-  /* Hero */
   .hero-section {
     position: relative;
     display: flex;
@@ -479,7 +475,6 @@ body.template-noir {
     }
   }
 
-  /* Opening */
   .opening-section {
     display: flex;
     flex-direction: column;
@@ -524,7 +519,6 @@ body.template-noir {
     flex-direction: column;
   }
 
-  /* Couple */
   .couple-section {
     display: flex;
     flex-direction: column;
@@ -658,7 +652,6 @@ body.template-noir {
     }
   }
 
-  /* Countdown */
   .countdown-section {
     display: flex;
     width: 100%;
@@ -777,7 +770,6 @@ body.template-noir {
     transition: opacity 0.25s ease;
   }
 
-  /* Video */
   .video-section {
     width: 100%;
     padding: 0;
@@ -849,7 +841,6 @@ body.template-noir {
     pointer-events: none;
   }
 
-  /* Events */
   .events-section {
     display: flex;
     flex-direction: column;
@@ -862,7 +853,6 @@ body.template-noir {
   .events-section__header {
     display: flex;
     flex-direction: column;
-    // align-items: center;
     gap: 8px;
     width: 100%;
   }
@@ -873,7 +863,6 @@ body.template-noir {
     font-size: 13px;
     font-weight: 400;
     line-height: 1.8;
-    // text-align: center;
   }
 
   .events-section__cards {
@@ -886,14 +875,12 @@ body.template-noir {
   .event-card {
     display: flex;
     flex-direction: column;
-    // align-items: center;
     gap: 16px;
     margin-bottom: 16px;
     padding: 32px 24px;
     border: 1px solid var(--template-border);
     border-radius: 16px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
-    // text-align: center;
     transition: border-color 0.3s ease;
   }
 
@@ -941,7 +928,6 @@ body.template-noir {
 
   .event-card__venue-name {
     font-weight: 500;
-    // letter-spacing: 1px;
     line-height: 1.4;
   }
 
@@ -987,7 +973,6 @@ body.template-noir {
     }
   }
 
-  /* Gallery */
   .gallery-section {
     padding: 80px 16px;
     background-color: var(--template-bg-soft);
@@ -1087,7 +1072,6 @@ body.template-noir {
     }
   }
 
-  /* RSVP */
   .rsvp-section {
     display: flex;
     width: 100%;
@@ -1138,9 +1122,7 @@ body.template-noir {
 
   .rsvp-card {
     width: 100%;
-    // padding: 24px;
     border: 0;
-    // border-bottom: 1px solid var(--template-border);
     border-radius: 0;
     background: transparent;
     box-shadow: none;
@@ -1387,7 +1369,6 @@ body.template-noir {
     padding: 12px 24px;
   }
 
-  /* Gift */
   .gift-section {
     display: flex;
     flex-direction: column;
@@ -1535,7 +1516,6 @@ body.template-noir {
     color: #f8f5ef;
   }
 
-  /* QRIS */
   .qris-lightbox {
     position: fixed;
     inset: 0;
@@ -1624,7 +1604,6 @@ body.template-noir {
     line-height: 1.75;
   }
 
-  /* Thank You */
   .thankyou-section {
     position: relative;
     display: flex;
@@ -1721,7 +1700,6 @@ body.template-noir {
     }
   }
 
-  
   .audio-toggle {
     position: fixed;
     bottom: 28px;
@@ -1799,7 +1777,6 @@ body.template-noir {
     to { transform: rotate(360deg); }
   }
 
-
   .animate-fade-in-up {
     animation: fadeInUp 0.8s ease forwards;
   }
@@ -1876,7 +1853,6 @@ body.template-noir {
     }
   }
 
-  /* Interactions */
   .cover-section__btn:focus-visible,
   .video-section__media:focus-visible,
   .video-section__play:focus-visible,
@@ -1893,7 +1869,7 @@ body.template-noir {
     outline-offset: 3px;
   }
 
-  @media (hover: hover) {
+  @media (hover: hover) and (pointer: fine) {
 
     .cover-section__btn:hover,
     .video-section__play:hover,

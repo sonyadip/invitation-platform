@@ -60,7 +60,6 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       return rows;
     }
 
-    // Fetch lightweight columns across all records for 100% accurate aggregations
     const [
       views,
       events,
@@ -119,7 +118,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
 
       if (v.created_at) {
         const d = new Date(v.created_at);
-        const hour = (d.getUTCHours() + 8) % 24; // WITA
+        const hour = (d.getUTCHours() + 8) % 24;
         hourlyBuckets[hour]++;
       }
     }
@@ -146,7 +145,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
 
       if (ev.created_at) {
         const d = new Date(ev.created_at);
-        const hour = (d.getUTCHours() + 8) % 24; // WITA
+        const hour = (d.getUTCHours() + 8) % 24;
         hourlyBuckets[hour]++;
       }
 

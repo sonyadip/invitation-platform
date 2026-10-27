@@ -151,7 +151,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
   const checked = (name: string) => formData.get(name) === 'on';
   const fileValue = (name: string) => {
     const file = formData.get(name);
-    return isUploadFile(file) ? file : null;
+    return file && isUploadFile(file) ? file : null;
   };
   const fileList = (name: string) => formData
     .getAll(name)
@@ -385,7 +385,7 @@ function validateAudioFile(file: File) {
     throw new Error(`Unsupported audio type for ${file.name}. Use MP3, WAV, OGG, AAC, M4A, or WebM.`);
   }
 
-  const maxAudioBytes = 5 * 1024 * 1024; // 5MB limit for audio
+  const maxAudioBytes = 5 * 1024 * 1024;
   if (file.size > maxAudioBytes) {
     throw new Error(`${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum audio upload is 5 MB.`);
   }
@@ -395,11 +395,10 @@ async function ensureStorageBucket(supabase: Awaited<ReturnType<typeof getSupaba
   const { data: bucket, error: getBucketError } = await supabase.storage.getBucket(storageBucket);
   
   if (!getBucketError && bucket) {
-    // If bucket already exists (e.g. previously configured only for images), update allowed MIME types
     await supabase.storage.updateBucket(storageBucket, {
       public: true,
       fileSizeLimit: 20 * 1024 * 1024,
-      allowedMimeTypes: null as any // null or empty allows all types, or we can omit restriction
+      allowedMimeTypes: null as any
     }).catch(() => {});
     return;
   }
@@ -944,7 +943,6 @@ export async function createInvitation(input: InvitationFormInput) {
   await replaceGalleryImages(supabase, wedding.id, resolvedInput.galleryImageUrls);
   await replaceGiftAccounts(supabase, wedding.id, resolvedInput.gifts);
 
-  // Capture initial revision & log activity (non-blocking)
   await captureRevisionSnapshot(wedding.id, {
     title: 'Revision #1 (Initial Creation)',
     createdBy: 'admin',
@@ -1029,7 +1027,6 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
   await replaceGalleryImages(supabase, weddingId, resolvedInput.galleryImageUrls);
   await replaceGiftAccounts(supabase, weddingId, resolvedInput.gifts);
 
-  // Capture revision snapshot & log activity (non-blocking)
   await captureRevisionSnapshot(weddingId, {
     note: revisionNote || undefined,
     createdBy: 'admin'
@@ -1049,7 +1046,6 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
 export async function softDeleteInvitation(weddingId: string) {
   const supabase = await getSupabaseAdmin();
 
-  // Load slug for log
   const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
 
   const { error } = await supabase
@@ -1268,7 +1264,6 @@ export async function duplicateInvitation(weddingId: string) {
     if (error) throw toDashboardError(error, 'Failed to duplicate gift accounts.');
   }
 
-  // Capture initial revision for duplicate & log activity
   await captureRevisionSnapshot(duplicatedWedding.id, {
     title: `Revision #1 (Duplicated from '${wedding.slug}')`,
     createdBy: 'admin',
@@ -1290,16 +1285,13 @@ export async function resetInvitationActivities(weddingId: string): Promise<void
   const supabase = await getSupabaseAdmin();
   const { data: wedding } = await supabase.from('weddings').select('slug').eq('id', weddingId).maybeSingle();
 
-  // 1. Delete all page views
   const { error: viewsError } = await supabase.from('invitation_views').delete().eq('wedding_id', weddingId);
   if (viewsError) {
     throw toDashboardError(viewsError, 'Failed to reset page views.');
   }
 
-  // 2. Delete all guest interaction events (clicks, music, cover, etc.)
   const { error: eventsError } = await supabase.from('invitation_events').delete().eq('wedding_id', weddingId);
   if (eventsError) {
-    // If the table does not exist or has an issue, gracefully warn instead of blocking
     if ((eventsError as any).code === '42P01' || eventsError.message?.includes('relation "invitation_events" does not exist')) {
       console.warn('invitation_events table not found. Skipping event reset.');
     } else {
@@ -1307,7 +1299,6 @@ export async function resetInvitationActivities(weddingId: string): Promise<void
     }
   }
 
-  // 3. Reset read-receipt status on sent invitations (opened_at, last_opened_at, open_count)
   const { error: sentError } = await supabase
     .from('sent_invitations')
     .update({
@@ -1363,7 +1354,3 @@ export async function deleteRsvp(id: string): Promise<void> {
     description: `RSVP from guest '${rsvp?.guest_name || id}' deleted by admin.`
   });
 }
-
-
-
-

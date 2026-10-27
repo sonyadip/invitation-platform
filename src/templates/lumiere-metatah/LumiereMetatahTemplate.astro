@@ -21,7 +21,7 @@ import {
 import metatahBg    from './assets/metatah-bg.jpg';
 import sidebarBg    from './assets/sidebar-bg.jpg';
 
-import './style.scss';
+import styleUrl from './style.scss?url';
 
 interface Props {
   data: FullInvitationData;
@@ -37,7 +37,6 @@ const themeContent = themeConfig.content || {};
 
 const isPreview = wedding.id.startsWith('preview-');
 
-// ── Asset resolution (prefer CMS override, fall back to the 2 new metatah images) ──────────
 const defaultBg1    = metatahBg.src;
 const defaultBg2    = sidebarBg.src;
 
@@ -50,7 +49,6 @@ const rsvpImage         = themeAssets.rsvpImage        || defaultBg2;
 const closingImage      = themeAssets.closingImage     || defaultBg1;
 const saveDateImage     = themeAssets.countdownImage   || defaultBg2;
 
-// ── Slideshow pool: Gunakan sliderImages jika diisi di backend/CMS, jika kosong gunakan 2 gambar default ──
 const customSliderImages = Array.isArray(themeAssets.sliderImages) && themeAssets.sliderImages.length > 0
   ? themeAssets.sliderImages.filter((url: any) => typeof url === 'string' && url.trim() !== '')
   : null;
@@ -65,7 +63,6 @@ const heroSlides = (customSliderImages && customSliderImages.length > 0
   : defaultSliderImages
 ).filter((s: string, i: number, a: string[]) => Boolean(s) && a.indexOf(s) === i);
 
-// ── Text / Content Defaults (Curated for Hindu Bali / Metatah) ───────────────
 const defaultText = {
   ceremonyTitle: 'Mepandes / Metatah',
   ceremonyEyebrow: 'Upacara Manusa Yadnya',
@@ -112,7 +109,6 @@ const text = { ...defaultText, ...themeContent };
 const closingTitle = text.thankYouTitle || text.closingTitle || defaultText.closingTitle;
 const closingMessage = text.thankYouMessage || text.closingMessage || defaultText.closingMessage;
 
-// ── Metatah & Participant Setup ─────────────────────────────────────────────
 const rawCustomParticipants: any[] | null =
   Array.isArray(themeContent.participants) && themeContent.participants.length > 0
     ? themeContent.participants
@@ -130,7 +126,6 @@ const _baseWa = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
 const _themeName = (wedding.template || 'Lumiere Metatah');
 const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : '';
 
-// Helper to prevent any wedding "mempelai" text from leaking into Metatah ceremony
 const filterMempelai = (val?: string | null): string | undefined => {
   if (!val) return undefined;
   if (/mempelai/i.test(val)) return undefined;
@@ -140,7 +135,6 @@ const filterMempelai = (val?: string | null): string | undefined => {
 const defaultPreviewFather = 'I Wayan Sudarma';
 const defaultPreviewMother = 'Ni Made Sukerti';
 
-// Base participant 1 defaults
 const participantName = themeContent.participantName || wedding.groom_name || 'Peserta';
 const participantFullName = themeContent.participantFullName || wedding.groom_full_name || participantName;
 const participantRole = text.participantRole || text.groomRole || 'Putra';
@@ -169,13 +163,11 @@ const participantInstagramUrl = rawParticipantIg && rawParticipantIg !== '#'
   ? (rawParticipantIg.startsWith('http') ? rawParticipantIg : `https://instagram.com/${rawParticipantIg.replace(/^@/, '')}`)
   : (isPreview ? (instagramUrl !== '#' ? instagramUrl : 'https://instagram.com') : '');
 
-// Family who invite
 const rawFamilyFather = filterMempelai(text.fatherName) || filterMempelai(text.groomFatherName) || participantFather;
 const rawFamilyMother = filterMempelai(text.motherName) || filterMempelai(text.groomMotherName) || participantMother;
 const familyInviting = themeContent.familyInviting || themeContent.parentsName || filterMempelai(text.familyNames) || (rawFamilyFather && rawFamilyMother ? `${rawFamilyFather} & ${rawFamilyMother}` : null);
 const familyAddress = text.familyAddress || participantAddressText;
 
-// Build list of all participants (all rendered with couple-section__person)
 interface MetatahPerson {
   name: string;
   nickname: string;
@@ -230,7 +222,6 @@ if (hasCustomList) {
     };
   });
 } else {
-  // Person 1 (Primary)
   const p1Nickname = themeContent.participantNickname || wedding.groom_name || participantName;
   participantsList.push({
     name: participantName,
@@ -243,7 +234,6 @@ if (hasCustomList) {
     description: null
   });
 
-  // Person 2 (if bride_name exists and is not '-' / empty)
   if (wedding.bride_name && wedding.bride_name.trim() !== '' && wedding.bride_name.trim() !== '-') {
     const p2Nickname = themeContent.brideNickname || wedding.bride_name;
     const brideRole = text.brideRole || 'Putri';
@@ -284,22 +274,16 @@ if (hasCustomList) {
 
 const isMultipleParticipants = participantsList.length > 1;
 
-// Nama ringkas (panggilan) semua peserta (contoh: "Rama" atau "Rama & Ayu")
 const participantsNames = participantsList.map(p => p.nickname || p.name).filter(Boolean).join(' & ') || participantName;
 
-// Nama lengkap semua peserta (contoh: "I Made Rama Pratama & Ni Putu Ayu Lestari")
 const participantsFullNames = participantsList.map(p => p.fullName || p.name).filter(Boolean).join(' & ') || participantFullName;
 
-// ── Overridable Title & Name Resolution ─────────────────────────────────────
-// 1. Cover Section (Default nama peserta, bisa dioverride via field coverTitle / coverName / title)
 const coverEyebrow = text.coverEyebrow || text.ceremonyEyebrow || 'Upacara Manusa Yadnya';
 const coverTitle = text.coverTitle || text.coverName || text.title || themeContent.ceremonyTitle || participantsNames;
 
-// 2. Intro Section (#awal-undangan) - selalu pakai coverTitle / nama peserta secara default, bisa dioverride via field introName / introTitle
 const introEyebrow = text.introEyebrow || 'UPACARA MANUSA YADNYA';
 const introName = text.introName || text.introTitle || coverTitle;
 
-// 3. Sidebar Section (Mengikuti cover / intro-section__name, diformat seperti Lumiere biasa)
 const sidebarEyebrow = text.sidebarEyebrow || text.ceremonyEyebrow || coverEyebrow;
 const sidebarTitleSource = text.sidebarName || text.sidebarTitle || introName;
 
@@ -316,15 +300,12 @@ if (!sidebarGroom && !sidebarBride) {
   }
 }
 
-// 4. ClassicIntro (modal intro animasi)
 const introAnimationName = text.introAnimationName || text.introAnimationTitle || introName;
 const introAnimationSubtitle = text.introAnimationSubtitle || 'Metatah / Potong Gigi';
 
-// 5. Section Peserta Upacara Header
 const pesertaSectionEyebrow = text.pesertaSectionEyebrow || text.coupleEyebrow || 'Metatah / Potong Gigi';
 const pesertaSectionTitle = text.pesertaSectionTitle || 'Peserta Upacara';
 
-// 6. Closing Section (menggunakan isi yang sama dengan intro-section__name)
 const closingNames = text.closingNames || introName;
 
 const formattedDate = formatDate(wedding.wedding_date);
@@ -416,6 +397,7 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
   to={guestName}
   templateClass="template-lumiere-metatah"
   image={coverImage}
+  styleUrl={styleUrl}
   title={text.metaTitle || (isMultipleParticipants ? `${text.ceremonyTitle || 'Upacara Metatah'} - ${participantsNames}` : `Upacara Metatah ${participantsNames}`)}
   description={text.metaDescription || (text.verse ? text.verse.slice(0, 160) : `Upacara Manusa Yadnya (Metatah / Potong Gigi) ${participantsNames}.`)}
 >
@@ -429,7 +411,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
       />
     )}
 
-    <!-- ── Background slideshow ─────────────────────────────────────────── -->
     <div class="page-bg" data-template-slider aria-hidden="true">
       {heroSlides.map((slide, index) => {
           const isInitial = index === 0;
@@ -456,7 +437,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
         })}
     </div>
 
-    <!-- ══════════════════ COVER / HERO ══════════════════ -->
     <section class="cover-section" data-template-cover>
       <SmartImage src={coverImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__overlay"></div>
@@ -478,7 +458,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
       </div>
     </section>
 
-    <!-- ══════════════════ INVITATION LAYOUT (hidden until opened) ══════════════════ -->
     <div class="invitation-layout" data-template-layout>
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
@@ -503,7 +482,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
 
       <main>
 
-        <!-- ── Intro / Hero Section ──────────────────────────── -->
         <section class="intro-section" id="awal-undangan">
           <div class="intro-section__inner" data-animate>
             <span class="intro-section__eyebrow">{introEyebrow}</span>
@@ -518,17 +496,15 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </div>
         </section>
 
-        <!-- ── Quote / Doa Restu Section ─────────────────────── -->
         <section class="quote-section">
           <div class="quote-section__inner" data-animate>
             <blockquote class="quote-section__verse">
               {text.verse}
             </blockquote>
-            <!-- <cite class="quote-section__source">{text.verseSource}</cite> -->
+
           </div>
         </section>
 
-        <!-- ── Peserta Upacara ───────────────────────────────── -->
         {sections.coupleInfo && (
           <section class="couple-section couple-section--metatah" id="data-peserta">
             <div class="couple-section__header" data-animate>
@@ -582,7 +558,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <!-- ── Makna Upacara / Story Section ────────────────── -->
         {sections.story && (
           <section class="story-section">
             <h2 class="story-section__title" data-animate>{text.storyTitle || 'Sekilas Upacara'}</h2>
@@ -595,7 +570,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <!-- ── Save the Date / Countdown ────────────────────── -->
         {sections.countdown && settings.countdown_enabled && (
           <section class="countdown-section" data-animate>
             <h2 class="event-section__title" data-animate>Save The Date</h2>
@@ -620,7 +594,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <!-- ── Events Section ─────────────────────────────────── -->
         {sections.eventDetails && (
           <section class="event-section" id="event">
             <div class="event-section__media" data-animate>
@@ -654,7 +627,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <!-- ── Gallery Section ───────────────────────────────── -->
         {sections.gallery && settings.gallery_enabled && activeGallery.length > 0 && (
           <section class="gallery-section" id="gallery-section">
             <div class="gallery-container">
@@ -709,7 +681,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <!-- ── RSVP & Wishes ─────────────────────────────────── -->
         {sections.rsvp && settings.rsvp_enabled && (
           <section class="rsvp-row" id="rsvp" data-rsvp-section>
             <div class="rsvp-row__content">
@@ -827,7 +798,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <!-- ── Tanda Kasih / Gift ────────────────────────────── -->
         {sections.gift && settings.gift_enabled && (
           <section class="gift-section" id="gift" data-animate data-gift-section>
             <div class="gift-container">
@@ -853,7 +823,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <!-- ── Closing / Suksema ─────────────────────────────── -->
         <section class="closing-row">
           <div class="closing-row__media" data-animate>
             <SmartImage src={closingImage} alt="" loading="lazy" />
@@ -894,7 +863,6 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
 
       </main>
 
-      <!-- Music toggle -->
       {sections.music && (
         <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
           <div class="audio-icon-wrapper">

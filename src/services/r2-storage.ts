@@ -56,7 +56,7 @@ export async function uploadToR2(
   contentType: string
 ): Promise<string> {
   const client = getR2Client();
-  const body = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  const body = Buffer.isBuffer(data) ? data : Buffer.from(data as any);
 
   await client.send(
     new PutObjectCommand({

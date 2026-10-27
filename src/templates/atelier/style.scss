@@ -1,6 +1,5 @@
 @import url('./assets/fonts.css');
 
-// â”€â”€â”€ Design tokens (dark/blue palette from Untitled-3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 body.template-atelier {
   --lm-black:   #000000;
   --lm-bg:      #090909;
@@ -26,7 +25,6 @@ body.template-atelier {
     font-family: 'Edensor', 'Alegreya Sans', serif !important;
   }
 
-  // â”€â”€ Root & page background (mirrors Editorial exactly) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .invitation-root {
     position: relative;
     min-height: 100vh;
@@ -73,7 +71,6 @@ body.template-atelier {
     }
   }
 
-  // â”€â”€ Invitation layout (hidden at first, shown after open) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .invitation-layout {
     display: flex;
     flex-direction: column;
@@ -83,15 +80,18 @@ body.template-atelier {
     margin: 0 auto;
   }
 
-  // â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
-  // COVER SECTION
-  // â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
   .cover-section {
-    position: relative;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100svh;
     min-height: 100vh;
     min-height: 100svh;
+    z-index: 100;
     display: flex;
     overflow: hidden;
+    background: var(--lm-bg);
 
     > img,
     > picture > img {
@@ -124,6 +124,7 @@ body.template-atelier {
       min-height: 100svh;
       max-width: 480px;
       margin: 0 auto;
+      transition: opacity 0.8s ease;
     }
 
     &__title-block {
@@ -189,9 +190,15 @@ body.template-atelier {
       margin-bottom: 8px;
     }
 
-    // opening animation
     &.is-opening {
-      animation: lm-cover-fade 1.6s ease forwards;
+      pointer-events: none;
+      animation: lm-cover-fade 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+
+      .cover-section__body {
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
     }
   }
 
@@ -199,7 +206,6 @@ body.template-atelier {
     to { opacity: 0; transform: scale(1.04); }
   }
 
-  // â”€â”€ Shared button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .template-btn {
     display: inline-flex;
     align-items: center;
@@ -236,7 +242,6 @@ body.template-atelier {
     }
   }
 
-  // â”€â”€ Shared: section label / rule (from Editorial) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .section-title {
     margin: 0 0 8px;
     font-family: 'Edensor', 'Alegreya Sans', serif;
@@ -253,9 +258,6 @@ body.template-atelier {
     margin: 16px auto;
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // INTRO / HERO SECTION
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .intro-section {
     min-height: 100vh;
     min-height: 100svh;
@@ -263,7 +265,7 @@ body.template-atelier {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 80px 24px 0;
+    padding: 0 5% 0;
     text-align: center;
 
     &__inner {
@@ -282,6 +284,13 @@ body.template-atelier {
       letter-spacing: 0.05em;
       color: var(--lm-white);
       margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(-16px);
+      filter: blur(4px);
+      transition: opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1) 100ms,
+                  transform 1000ms cubic-bezier(0.16, 1, 0.3, 1) 100ms,
+                  filter 1000ms cubic-bezier(0.16, 1, 0.3, 1) 100ms;
+      will-change: opacity, transform, filter;
     }
 
     &__title {
@@ -300,6 +309,19 @@ body.template-atelier {
         flex: 1;
         height: 1px;
         background-color: var(--lm-white);
+        transform: scaleX(0);
+        opacity: 0;
+        transition: transform 1200ms cubic-bezier(0.16, 1, 0.3, 1) 300ms,
+                    opacity 1200ms ease 300ms;
+        will-change: transform, opacity;
+      }
+
+      &::before {
+        transform-origin: right center;
+      }
+
+      &::after {
+        transform-origin: left center;
       }
 
       .intro-section__names {
@@ -308,6 +330,26 @@ body.template-atelier {
         align-items: center;
         gap: 0;
         padding-left: 8px;
+      }
+
+      .intro-section__groom {
+        opacity: 0;
+        transform: translateY(22px);
+        filter: blur(6px);
+        transition: opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1) 300ms,
+                    transform 1200ms cubic-bezier(0.16, 1, 0.3, 1) 300ms,
+                    filter 1200ms cubic-bezier(0.16, 1, 0.3, 1) 300ms;
+        will-change: opacity, transform, filter;
+      }
+
+      .intro-section__bride {
+        opacity: 0;
+        transform: translateY(22px);
+        filter: blur(6px);
+        transition: opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1) 500ms,
+                    transform 1200ms cubic-bezier(0.16, 1, 0.3, 1) 500ms,
+                    filter 1200ms cubic-bezier(0.16, 1, 0.3, 1) 500ms;
+        will-change: opacity, transform, filter;
       }
 
       .intro-section__name-text {
@@ -327,6 +369,13 @@ body.template-atelier {
       max-width: 600px;
       margin-top: auto;
       padding-bottom: 24px;
+      opacity: 0;
+      transform: translateY(18px);
+      filter: blur(4px);
+      transition: opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1) 700ms,
+                  transform 1200ms cubic-bezier(0.16, 1, 0.3, 1) 700ms,
+                  filter 1200ms cubic-bezier(0.16, 1, 0.3, 1) 700ms;
+      will-change: opacity, transform, filter;
     }
 
     &__quote {
@@ -344,11 +393,50 @@ body.template-atelier {
       font-weight: 500;
       font-style: normal;
     }
+
+    &.is-active,
+    body:not(.template-cover-active) & {
+      .intro-section__date {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+      }
+
+      .intro-section__title::before,
+      .intro-section__title::after {
+        transform: scaleX(1);
+        opacity: 0.8;
+      }
+
+      .intro-section__groom,
+      .intro-section__bride {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+      }
+
+      .intro-section__bottom {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      &__date,
+      &__title::before,
+      &__title::after,
+      .intro-section__groom,
+      .intro-section__bride,
+      &__bottom {
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+    }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // COUPLE SECTION (Transparent background, light text & lines as in image)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .couple-section {
     padding-top: 60px;
     display: flex;
@@ -360,7 +448,7 @@ body.template-atelier {
       display: flex;
       flex-direction: column;
       color: var(--lm-white);
-      padding: 0 24px;
+      padding: 0 5%;
 
       &:last-child {
         .couple-section__role-label {
@@ -491,12 +579,8 @@ body.template-atelier {
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // STORY SECTION
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .story-section {
-    padding: 3rem 24px;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 3rem 5%;
 
     &__title {
       font-family: 'Edensor', 'Alegreya Sans', serif;
@@ -535,12 +619,9 @@ body.template-atelier {
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // EVENT SECTION
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .event-section {
     margin: 40px 16px;
-    padding: 8px 8px 24px 8px;
+    padding: 8px 8px 5% 8px;
     border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: 200px 200px 0 0;
 
@@ -559,7 +640,7 @@ body.template-atelier {
     }
 
     &__content {
-      padding: 0px 24px 0px;
+      padding: 0px 5% 0px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -589,7 +670,7 @@ body.template-atelier {
 
     &__countdown {
       width: 100%;
-      margin: 16px 0 24px;
+      margin: 16px 0 5%;
 
       .countdown-grid {
         display: flex;
@@ -733,12 +814,6 @@ body.template-atelier {
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // ATTIRE SECTION
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // ══════════════════════════════════════════════════════════════════════════════
-  // FULL-WIDTH MEDIA (mirrors Lumiere event-section__media)
-  // ══════════════════════════════════════════════════════════════════════════════
   .media-section {
     width: 100%;
     height: 280px;
@@ -753,7 +828,7 @@ body.template-atelier {
   }
 
   .attire-section {
-    padding: 4rem 24px;
+    padding: 4rem 5%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     text-align: center;
 
@@ -781,11 +856,8 @@ body.template-atelier {
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // PHOTO BOOTH SECTION
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .photobooth-section {
-    padding: 3.5rem 24px;
+    padding: 3.5rem 5%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     text-align: center;
 
@@ -823,9 +895,6 @@ body.template-atelier {
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // GALLERY SECTION  (reuses Editorial gallery classes verbatim)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .gallery-section {
     padding: 15% 5%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
@@ -838,7 +907,7 @@ body.template-atelier {
   }
 
   .gallery-header {
-    padding: 0 24px;
+    padding: 0 5%;
     text-align: center;
     margin-bottom: 1.5rem;
   }
@@ -914,8 +983,10 @@ body.template-atelier {
       stroke: #fff;
     }
 
-    &:hover .gallery-item__img  { transform: scale(1.04); }
-    &:hover .gallery-item__overlay { opacity: 1; }
+    @media (hover: hover) and (pointer: fine) {
+      &:hover .gallery-item__img  { transform: scale(1.04); }
+      &:hover .gallery-item__overlay { opacity: 1; }
+    }
 
     &.is-video {
       .gallery-item__overlay {
@@ -930,7 +1001,7 @@ body.template-atelier {
         background: rgba(0, 0, 0, 0.4);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        // border: 1.5px solid rgba(255, 255, 255, 0.7);
+
         display: grid;
         place-items: center;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
@@ -944,21 +1015,20 @@ body.template-atelier {
         }
       }
 
-      &:hover {
-        .gallery-item__overlay {
-          background: rgba(0, 0, 0, 0.4);
-        }
-        .gallery-item__zoom {
-          transform: scale(1.1);
-          background: rgba(0, 0, 0, 0.6);
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          .gallery-item__overlay {
+            background: rgba(0, 0, 0, 0.4);
+          }
+          .gallery-item__zoom {
+            transform: scale(1.1);
+            background: rgba(0, 0, 0, 0.6);
+          }
         }
       }
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // RSVP (mirrors Editorial rsvp-row / rsvp-section classes)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .rsvp-row {
     border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
@@ -1198,12 +1268,8 @@ body.template-atelier {
     &:hover { color: var(--lm-white); border-color: rgba(255,255,255,0.4); }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // GIFT SECTION (reuses Editorial gift classes)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .gift-section {
-    padding: 3rem 24px;
-    // border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 3rem 5%;
     text-align: center;
   }
 
@@ -1367,13 +1433,10 @@ body.template-atelier {
     color: #10b981;
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // CLOSING ROW (mirrors Editorial closing-row classes)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .closing-row {
     display: grid;
     grid-template-columns: 1fr;
-    padding: 5% 5% 15%;
+    padding: 5% 5% 10%;
 
     &__media {
       width: 100%;
@@ -1398,7 +1461,7 @@ body.template-atelier {
 
     &__title {
       font-family: 'Edensor', 'Alegreya Sans', serif;
-      font-size: 20px; /* Mobile match for Editorial */
+      font-size: 20px;
       font-style: italic;
       font-weight: 400;
       line-height: 1.1;
@@ -1417,7 +1480,7 @@ body.template-atelier {
 
     &__names {
       font-family: 'Edensor', 'Alegreya Sans', serif;
-      font-size: 20px; /* Mobile match for Editorial */
+      font-size: 20px;
       font-weight: 400;
       line-height: 1.02;
       color: var(--lm-blue);
@@ -1425,9 +1488,6 @@ body.template-atelier {
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // SIDEBAR (Mobile hidden, Desktop fixed pane)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .section-bg {
     position: absolute;
     inset: 0;
@@ -1573,7 +1633,6 @@ body.template-atelier {
 
   }
 
-  // Footer (shared Editorial classes)
   .thankyou-section__footer {
     display: grid;
     gap: 12px;
@@ -1619,13 +1678,10 @@ body.template-atelier {
     
     &:hover, &:focus-visible { 
       background: var(--lm-blue);
-      color: var(--lm-black); /* Assuming --lm-black is the dark background */
+      color: var(--lm-black);
     }
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // AUDIO TOGGLE (mirrors Editorial audio-toggle)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   .audio-toggle {
     position: fixed;
     bottom: 28px;
@@ -1634,8 +1690,8 @@ body.template-atelier {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.15); /* Softer border */
-    background: rgba(255,255,255,0.05); /* Softer background */
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
     backdrop-filter: blur(12px);
     cursor: pointer;
     display: flex;
@@ -1672,13 +1728,13 @@ body.template-atelier {
     .icon-play {
       opacity: 1;
       transform: scale(1) rotate(0deg);
-      color: rgba(255,255,255,0.75); /* Softer icon color */
+      color: rgba(255,255,255,0.75);
     }
     
     .icon-pause {
       opacity: 0;
       transform: scale(0.5) rotate(-90deg);
-      color: rgba(255,255,255,0.75); /* Softer icon color */
+      color: rgba(255,255,255,0.75);
     }
 
     &--playing {
@@ -1703,9 +1759,6 @@ body.template-atelier {
     to { transform: rotate(360deg); }
   }
 
-
-
-  // â”€â”€ data-animate (reveal on scroll, wired by template-modules) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   [data-animate] {
     opacity: 0;
     transform: translateY(40px);
@@ -1724,5 +1777,3 @@ body.template-atelier {
     }
   }
 }
-
-

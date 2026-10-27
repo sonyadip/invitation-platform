@@ -1,11 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createSupabaseClientOptions } from './supabase-options';
 
 function getEnvValue(name: string) {
   return (typeof process !== 'undefined' ? process.env[name] : '') || import.meta.env[name] || '';
 }
 
-function createSupabaseClient() {
+let cachedClient: SupabaseClient<any> | null = null;
+let cachedKey = '';
+
+export function getSupabaseClient() {
   const supabaseUrl = getEnvValue('SUPABASE_URL');
   const supabaseAnonKey = getEnvValue('SUPABASE_ANON_KEY');
 
@@ -13,20 +16,23 @@ function createSupabaseClient() {
     throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY are required.');
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey, createSupabaseClientOptions());
+  const currentKey = `${supabaseUrl}::${supabaseAnonKey}`;
+  if (!cachedClient || cachedKey !== currentKey) {
+    cachedClient = createClient<any>(supabaseUrl, supabaseAnonKey, createSupabaseClientOptions());
+    cachedKey = currentKey;
+  }
+
+  return cachedClient;
 }
 
-export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+export const supabase = new Proxy({} as SupabaseClient<any>, {
   get(_target, property) {
-    const client = createSupabaseClient() as any;
+    const client = getSupabaseClient() as any;
     const value = client[property];
     return typeof value === 'function' ? value.bind(client) : value;
   }
 });
 
-/**
- * Automatically pages through Supabase queries in chunks of 1000 to overcome PostgREST default max-rows limit.
- */
 export async function fetchAllRows<T = any>(
   fetchPage: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>
 ): Promise<T[]> {
@@ -47,4 +53,3 @@ export async function fetchAllRows<T = any>(
 
   return results;
 }
-

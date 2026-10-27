@@ -11,7 +11,6 @@ import { shouldTrackInvitationView, trackInvitationView } from '../services/view
 import { loadTemplate } from '../templates/registry';
 import { extractClientContext } from '../utils/analytics';
 
-// Force dynamic SSR execution for Cloudflare Pages serverless runtime
 export const prerender = false;
 
 const { slug } = Astro.params;
@@ -121,7 +120,6 @@ if (!ActiveTemplate) {
             </>
           ) : (
             <>
-              {/* <p class="status-eyebrow">Sampai di Sini</p> */}
               <h1 class="status-title">Undangan Ini<br/>Sudah Tidak Aktif</h1>
               <p class="status-desc">
                 Terima kasih sudah berkunjung.
@@ -200,7 +198,6 @@ if (!ActiveTemplate) {
     box-sizing: inherit;
   }
 
-  /* ── Nav ── */
   .hero-nav {
     position: fixed;
     inset: 0 0 auto;
@@ -256,7 +253,6 @@ if (!ActiveTemplate) {
     &:hover { opacity: 0.65; }
   }
 
-  /* ── Status Section ── */
   .status-section {
     flex: 1;
     display: flex;
@@ -334,7 +330,6 @@ if (!ActiveTemplate) {
     }
   }
 
-  /* ── Gate Form (password) ── */
   .gate-form {
     width: 100%;
     max-width: 320px;
@@ -399,5 +394,3 @@ if (!ActiveTemplate) {
     &:hover { background: var(--accent); }
   }
 </style>
-
-

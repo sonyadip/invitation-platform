@@ -16,7 +16,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect('/?login=admin&error=1');
   }
 
-  // 1. Check Admin Login
   if (username === 'admin') {
     const dashboardPassword = import.meta.env.DASHBOARD_PASSWORD || 
                               (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') || '';
@@ -54,7 +53,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect('/?login=admin&error=1');
   }
 
-  // 2. Check Client Login
   const { data: wedding, error } = await supabase
     .from('weddings')
     .select('id, slug, bride_name, groom_name, client_password_hash')

@@ -23,7 +23,6 @@ export async function generateSetupToken(slug: string, expiresInHours: number = 
   const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   
   const tokenRaw = `${payload}:${signature}`;
-  // Web safe base64 encoding
   return btoa(tokenRaw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
@@ -34,7 +33,6 @@ export async function generateSetupToken(slug: string, expiresInHours: number = 
  */
 export async function verifySetupToken(token: string): Promise<string | null> {
   try {
-    // Restore base64 standard chars
     let base64 = token.replace(/-/g, '+').replace(/_/g, '/');
     while (base64.length % 4) {
       base64 += '=';
@@ -47,9 +45,8 @@ export async function verifySetupToken(token: string): Promise<string | null> {
     const [slug, expStr, signature] = parts;
     const exp = parseInt(expStr, 10);
     
-    if (Date.now() > exp) return null; // Expired
+    if (Date.now() > exp) return null;
     
-    // Re-verify signature
     const payload = `${slug}:${expStr}`;
     const msgBuffer = new TextEncoder().encode(payload + getSecret());
     const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgBuffer);
@@ -60,6 +57,6 @@ export async function verifySetupToken(token: string): Promise<string | null> {
     
     return slug;
   } catch (e) {
-    return null; // Invalid base64 or other error
+    return null;
   }
 }

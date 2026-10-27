@@ -20,7 +20,6 @@ if (isLive) {
 ---
 
 {isLive && gtmId && (
-  <!-- Google Tag Manager -->
   <script is:inline define:vars={{ gtmId }}>
     (function(w,d,s,l,i){
       var h = (w.location.hostname || '').toLowerCase();
@@ -31,12 +30,10 @@ if (isLive) {
       'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer',gtmId);
   </script>
-  <!-- End Google Tag Manager -->
 )}
 
 {isLive && gaId && (
   <>
-    <!-- Google tag (gtag.js) -->
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
     <script is:inline define:vars={{ gaId }}>
       (function() {

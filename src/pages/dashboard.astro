@@ -120,8 +120,10 @@ if (isUnlocked) {
 }
 ---
 
-<AdminLayout title="Dashboard Overview" activeNav="overview">
-  <!-- Page Header -->
+<AdminLayout
+  title="Dashboard Overview"
+  activeNav="overview"
+>
   <header class="admin-page-header">
     <div class="admin-page-header__left">
       <h1 class="admin-page-header__title">Dashboard Overview</h1>
@@ -130,29 +132,17 @@ if (isUnlocked) {
       </p>
     </div>
 
-    <div class="admin-page-header__actions">
-      {report && (
-        <div class="date-cell" style="background: #ffffff; padding: 6px 12px; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-sm);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <span>Updated {formatDateTime(report.generatedAt)}</span>
-        </div>
-      )}
-
-      <a href="/dashboard/new" class="btn-shadcn btn-shadcn--primary">
+    {report && (
+      <div class="admin-page-header__updated">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="16"></line>
-          <line x1="8" y1="12" x2="16" y2="12"></line>
+          <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        New Invitation
-      </a>
-    </div>
+        <span>Updated {formatDateTime(report.generatedAt)}</span>
+      </div>
+    )}
   </header>
 
-  <!-- Notification Alerts -->
   {successMessage && (
     <div class="shadcn-alert shadcn-alert--success" role="alert">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -196,9 +186,7 @@ if (isUnlocked) {
 
   {report && (
     <>
-      <!-- Primary Metric Cards (shadcn dashboard-01 style) -->
       <section class="metric-grid" aria-label="Key platform metrics">
-        <!-- Card 1: Total Slugs -->
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Total Slugs</span>
@@ -207,10 +195,8 @@ if (isUnlocked) {
             </svg>
           </div>
           <div class="metric-card__value">{formatNumber(report.totals.invitations)}</div>
-          <p class="metric-card__sub">Registered invitation slugs</p>
         </div>
 
-        <!-- Card 2: Published -->
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Published</span>
@@ -220,10 +206,8 @@ if (isUnlocked) {
             </svg>
           </div>
           <div class="metric-card__value">{formatNumber(report.totals.published)}</div>
-          <p class="metric-card__sub">Live & publicly accessible</p>
         </div>
 
-        <!-- Card 3: Total Views -->
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Total Views</span>
@@ -233,10 +217,8 @@ if (isUnlocked) {
             </svg>
           </div>
           <div class="metric-card__value">{formatNumber(report.totals.views)}</div>
-          <p class="metric-card__sub">Cumulative visitor impressions</p>
         </div>
 
-        <!-- Card 4: Total RSVPs -->
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Total RSVPs</span>
@@ -246,13 +228,10 @@ if (isUnlocked) {
             </svg>
           </div>
           <div class="metric-card__value">{formatNumber(report.totals.rsvps)}</div>
-          <p class="metric-card__sub">Guest confirmations submitted</p>
         </div>
       </section>
 
-      <!-- Secondary Metric Cards -->
       <section class="metric-grid metric-grid--secondary" aria-label="Detailed statistics">
-        <!-- Card 5: Total Guests (Pax) -->
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Total Guests (Pax)</span>
@@ -264,10 +243,8 @@ if (isUnlocked) {
             </svg>
           </div>
           <div class="metric-card__value">{formatNumber(report.totals.guests)}</div>
-          <p class="metric-card__sub">Estimated attendance count</p>
         </div>
 
-        <!-- Card 6: Wishes -->
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Wishes & Prayers</span>
@@ -276,10 +253,8 @@ if (isUnlocked) {
             </svg>
           </div>
           <div class="metric-card__value">{formatNumber(report.totals.wishes)}</div>
-          <p class="metric-card__sub">Blessings submitted by visitors</p>
         </div>
 
-        <!-- Card 7: Soft Deleted -->
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Archived in Trash</span>
@@ -290,13 +265,10 @@ if (isUnlocked) {
             </svg>
           </div>
           <div class="metric-card__value">{formatNumber(report.totals.deleted)}</div>
-          <p class="metric-card__sub">Soft-deleted items in archive</p>
         </div>
       </section>
 
-      <!-- Active Invitations Card -->
       <section class="shadcn-card" id="invitations-section">
-        <!-- Card Header -->
         <div class="shadcn-card__header">
           <div class="shadcn-card__title-wrap">
             <h2 class="shadcn-card__title">
@@ -319,7 +291,6 @@ if (isUnlocked) {
           </a>
         </div>
 
-        <!-- Interactive Search & Filter Toolbar -->
         <div class="table-toolbar">
           <div class="table-toolbar__left">
             <div class="search-field">
@@ -346,17 +317,15 @@ if (isUnlocked) {
           </div>
         </div>
 
-        <!-- Data Table -->
         <div class="shadcn-table-wrap">
           <table class="shadcn-table" id="invitations-table">
             <thead>
               <tr>
-                <th style="width: 22%;" class="col-slug">Slug & Domain</th>
-                <th style="width: 20%;" class="col-couple">Couple</th>
-                <th style="width: 15%;" class="col-template">Template</th>
-                <th style="width: 13%;" class="col-status">Status</th>
-                <th style="width: 15%;" class="col-date">Wedding Date</th>
-                <th style="width: 15%; text-align: right;" class="col-actions">Actions</th>
+                <th style="width: 28%;" class="col-slug">Slug</th>
+                <th style="width: 16%;" class="col-template">Template</th>
+                <th style="width: 14%;" class="col-status">Status</th>
+                <th style="width: 18%;" class="col-date">Wedding Date</th>
+                <th style="width: 24%; text-align: right;" class="col-actions">Actions</th>
               </tr>
             </thead>
             <tbody id="invitations-tbody">
@@ -367,6 +336,8 @@ if (isUnlocked) {
                   data-couple={item.coupleName.toLowerCase()}
                   data-status={item.status.toLowerCase()}
                   data-template={(item.template || '').toLowerCase()}
+                  data-edit-url={`/dashboard/${item.slug}/edit`}
+                  title={`Click to edit "${item.slug}"`}
                 >
                   <td class="col-slug">
                     <div class="slug-badge">
@@ -382,9 +353,6 @@ if (isUnlocked) {
                         </span>
                       )}
                     </div>
-                  </td>
-                  <td class="col-couple">
-                    <div class="couple-cell">{item.coupleName}</div>
                   </td>
                   <td class="col-template">
                     <span class="template-badge">
@@ -415,13 +383,35 @@ if (isUnlocked) {
                   </td>
                   <td class="col-actions">
                     <div class="row-actions-group">
-                      <a href={`/dashboard/${item.slug}/edit`} class="btn-shadcn btn-shadcn--outline btn-shadcn--sm" title="Edit Invitation">
+                      <!-- Default Action 1: Live Preview -->
+                      <a
+                        href={`/${item.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn-shadcn btn-shadcn--outline btn-shadcn--sm"
+                        title="Live Preview"
+                      >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
                         </svg>
-                        Edit
+                        Preview
                       </a>
 
+                      <!-- Default Action 2: Analytics -->
+                      <a
+                        href={`/dashboard/${item.slug}`}
+                        class="btn-shadcn btn-shadcn--outline btn-shadcn--sm"
+                        title="View Analytics"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 3v18h18"></path>
+                          <path d="m19 9-5 5-4-4-3 3"></path>
+                        </svg>
+                        Analytics
+                      </a>
+
+                      <!-- More Options Dropdown -->
                       <div class="dropdown-wrap">
                         <button
                           type="button"
@@ -438,12 +428,11 @@ if (isUnlocked) {
                         </button>
 
                         <div id={`dropdown-${item.slug}`} class="dropdown-menu">
-                          <a href={`/dashboard/${item.slug}`} class="dropdown-item">
+                          <a href={`/dashboard/${item.slug}/edit`} class="dropdown-item">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M3 3v18h18"></path>
-                              <path d="m19 9-5 5-4-4-3 3"></path>
+                              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                             </svg>
-                            Analytics
+                            Edit Invitation
                           </a>
 
                           <form method="POST" style="margin: 0; width: 100%;">
@@ -457,15 +446,6 @@ if (isUnlocked) {
                               Duplicate
                             </button>
                           </form>
-
-                          <a href={`/${item.slug}`} target="_blank" rel="noopener noreferrer" class="dropdown-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M15 3h6v6"></path>
-                              <path d="M10 14 21 3"></path>
-                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            </svg>
-                            Live Preview
-                          </a>
 
                           <div class="dropdown-separator"></div>
 
@@ -498,7 +478,6 @@ if (isUnlocked) {
             </tbody>
           </table>
 
-          <!-- Empty search results state -->
           <div id="no-search-results" class="empty-state" style="display: none;">
             <div class="empty-state__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -511,14 +490,11 @@ if (isUnlocked) {
           </div>
         </div>
 
-        <!-- Card Footer -->
         <div class="shadcn-card__footer">
           <span id="showing-count">Showing {report.reports.length} of {report.reports.length} invitations</span>
-          <span style="font-size: 11px; color: var(--admin-zinc-400);">Instant search enabled</span>
         </div>
       </section>
 
-      <!-- Deleted Invitations Card -->
       <section class="shadcn-card" id="deleted-section">
         <div class="shadcn-card__header">
           <div class="shadcn-card__title-wrap">
@@ -538,22 +514,20 @@ if (isUnlocked) {
           <table class="shadcn-table">
             <thead>
               <tr>
-                <th style="width: 18%;">Slug</th>
-                <th style="width: 18%;">Couple</th>
+                <th style="width: 22%;" class="col-slug">Slug</th>
                 <th style="width: 12%;">Status</th>
-                <th style="width: 14%;">Wedding Date</th>
-                <th style="width: 16%;">Deleted At</th>
-                <th style="width: 10%;">Deleted By</th>
-                <th style="width: 12%; text-align: right;" class="col-actions">Actions</th>
+                <th style="width: 16%;">Wedding Date</th>
+                <th style="width: 18%;">Deleted At</th>
+                <th style="width: 14%;">Deleted By</th>
+                <th style="width: 18%; text-align: right;" class="col-actions">Actions</th>
               </tr>
             </thead>
             <tbody>
               {report.deletedReports.map((item: any) => (
                 <tr>
-                  <td>
+                  <td class="col-slug">
                     <span class="slug-badge__text">{item.slug}</span>
                   </td>
-                  <td>{item.coupleName}</td>
                   <td>
                     <span class={`shadcn-badge shadcn-badge--${item.status}`}>
                       <span class="shadcn-badge__dot"></span>
@@ -613,7 +587,7 @@ if (isUnlocked) {
 
               {!report.deletedReports.length && (
                 <tr>
-                  <td colspan="7">
+                  <td colspan="6">
                     <div class="empty-state">
                       <div class="empty-state__icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -695,7 +669,41 @@ if (isUnlocked) {
       });
     });
 
-    // Dropdown menu toggle & outside click handler
+    // Row click navigation to Edit
+    rows.forEach(row => {
+      row.addEventListener('click', (e) => {
+        // Ignore if clicking interactive controls
+        if (e.target.closest('a, button, form, input, select, textarea, .dropdown-menu, .dropdown-trigger')) {
+          return;
+        }
+        // Ignore if user is highlighting text
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim().length > 0) {
+          return;
+        }
+        const editUrl = row.getAttribute('data-edit-url');
+        if (editUrl) {
+          if (e.ctrlKey || e.metaKey) {
+            window.open(editUrl, '_blank');
+          } else {
+            window.location.href = editUrl;
+          }
+        }
+      });
+
+      row.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // Middle click
+          if (e.target.closest('a, button, form, input, select, textarea, .dropdown-menu, .dropdown-trigger')) {
+            return;
+          }
+          const editUrl = row.getAttribute('data-edit-url');
+          if (editUrl) {
+            window.open(editUrl, '_blank');
+          }
+        }
+      });
+    });
+
     document.addEventListener('click', (e) => {
       const trigger = e.target.closest('.dropdown-trigger');
       const openMenu = e.target.closest('.dropdown-menu');
@@ -706,7 +714,6 @@ if (isUnlocked) {
         const menu = document.getElementById(menuId);
         const isShown = menu?.classList.contains('show');
 
-        // Close any other open dropdowns first
         document.querySelectorAll('.dropdown-menu.show').forEach(m => {
           if (m !== menu) {
             m.classList.remove('show');

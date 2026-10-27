@@ -100,7 +100,7 @@ function initAirTemplate() {
     };
 
     if (document.getElementById('cinematic-preloader') || document.getElementById('intro-awal')) {
-      setTimeout(startSliders, 5500); // Wait for intro animation to almost finish
+      setTimeout(startSliders, 5500);
     } else {
       startSliders();
     }

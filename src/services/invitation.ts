@@ -31,7 +31,6 @@ export async function getInvitationByDomainOrSlug(
     let weddingId: string | null = null;
 
     if (isDomain) {
-      // 1. Resolve via Custom Domain table
       const { data: domainRecord, error: domainError } = await supabase
         .from('custom_domains')
         .select('wedding_id')
@@ -48,7 +47,6 @@ export async function getInvitationByDomainOrSlug(
       weddingId = domainRecord.wedding_id;
     }
 
-    // 2. Fetch the Wedding record
     let weddingQuery = supabase
       .from('weddings')
       .select('*')
@@ -69,7 +67,6 @@ export async function getInvitationByDomainOrSlug(
       return null;
     }
 
-    // 3. Run all sub-queries in parallel to minimize roundtrips and improve performance
     const [settingsRes, eventsRes, galleryRes, giftsRes, wishesRes] = await Promise.all([
       supabase
         .from('invitation_settings')

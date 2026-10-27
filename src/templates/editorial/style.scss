@@ -1,4 +1,3 @@
-/* Foundation */
 @mixin editorial-kicker {
   display: block;
   font-family: var(--font-heading);
@@ -157,7 +156,6 @@ body.template-editorial {
     }
   }
 
-  /* Desktop shell */
   .section-bg {
     position: absolute;
     inset: 0;
@@ -232,7 +230,6 @@ body.template-editorial {
     color: var(--editorial-white);
     font-family: var(--font-heading);
     font-size: 48px;
-    // font-style: italic;
     line-height: 1;
   }
 
@@ -271,7 +268,6 @@ body.template-editorial {
     min-height: 100svh;
   }
 
-  /* Cover */
   .cover-section {
     position: fixed;
     inset: 0;
@@ -429,7 +425,6 @@ body.template-editorial {
     backdrop-filter: blur(10px);
   }
 
-  /* Intro */
   .intro-section {
     display: flex;
     align-items: stretch;
@@ -464,7 +459,6 @@ body.template-editorial {
     margin-top: 10px;
   }
 
-  /* Couple */
   .couple-section {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -538,7 +532,6 @@ body.template-editorial {
     }
   }
 
-  /* Story */
   .story-section {
     padding: 0 5% 10%;
   }
@@ -565,7 +558,6 @@ body.template-editorial {
     margin: 0;
   }
 
-  /* Events */
   .event-row {
     @include editorial-content-row;
   }
@@ -670,7 +662,6 @@ body.template-editorial {
     }
   }
 
-  /* Countdown */
   .countdown-section {
     display: flex;
     width: 100%;
@@ -801,7 +792,6 @@ body.template-editorial {
     }
   }
 
-  /* Video */
   .video-section {
     width: 100%;
     padding: 0;
@@ -854,7 +844,6 @@ body.template-editorial {
     pointer-events: none;
   }
 
-  /* Gallery */
   .gallery-section {
     padding: 2% 0 10%;
   }
@@ -887,8 +876,10 @@ body.template-editorial {
     transition: transform 800ms ease;
   }
 
-  .gallery-section__item:hover img {
-    transform: scale(1.05);
+  @media (hover: hover) and (pointer: fine) {
+    .gallery-section__item:hover img {
+      transform: scale(1.05);
+    }
   }
 
   .gallery-section__overlay {
@@ -912,8 +903,10 @@ body.template-editorial {
     backdrop-filter: blur(8px);
   }
 
-  .gallery-section__item:hover .gallery-section__overlay {
-    opacity: 1;
+  @media (hover: hover) and (pointer: fine) {
+    .gallery-section__item:hover .gallery-section__overlay {
+      opacity: 1;
+    }
   }
 
   .fancybox__container {
@@ -1030,15 +1023,16 @@ body.template-editorial {
     height: 21px;
   }
 
-  .gallery-item:hover .gallery-item__img {
-    transform: scale(1.06);
+  @media (hover: hover) and (pointer: fine) {
+    .gallery-item:hover .gallery-item__img {
+      transform: scale(1.06);
+    }
+
+    .gallery-item:hover .gallery-item__overlay {
+      opacity: 1;
+    }
   }
 
-  .gallery-item:hover .gallery-item__overlay {
-    opacity: 1;
-  }
-
-  /* Gift */
   .gift-section {
     padding: 10% 10%;
     text-align: center;
@@ -1203,7 +1197,6 @@ body.template-editorial {
     color: #f8f5ef;
   }
 
-  /* RSVP and wishes */
   .rsvp-section {
     width: 100%;
   }
@@ -1620,7 +1613,6 @@ body.template-editorial {
     line-height: 1.72;
   }
 
-  /* Closing */
   .closing-row__content {
     display: grid;
     align-content: start;
@@ -1698,7 +1690,6 @@ body.template-editorial {
     height: 17px;
   }
 
-  
   .audio-toggle {
     position: fixed;
     bottom: 28px;
@@ -1785,7 +1776,6 @@ body.template-editorial {
     opacity: 1;
   }
 
-  /* Mobile composition defaults */
   .page-bg::after {
     background: rgba(0, 0, 0, 0.6);
   }
@@ -1832,7 +1822,7 @@ body.template-editorial {
 
   .closing-row {
     @include editorial-mobile-row;
-    padding: 5% 5% 15%;
+    padding: 5% 5% 10%;
   }
 
   .event-row__media {
@@ -1863,21 +1853,6 @@ body.template-editorial {
     @include editorial-mobile-heading;
   }
 
-  // .gift-section__title {
-  //   font-size: 36px;
-  // }
-
-  // .gift-section__title {
-  //   font-size: 36px;
-  // }
-
-  // .gift-section__title {
-  //   font-size: 36px;
-  // }
-
-  // .gift-section__title {
-  //   font-size: 36px;
-  // }
 
   .closing-row__title {
     @include editorial-mobile-heading;
@@ -1952,7 +1927,6 @@ body.template-editorial {
     height: 40px;
   }
 
-  /* Desktop shell only; section content keeps the mobile composition above. */
   @media (min-width: 1024px) {
     .invitation-layout {
       flex-direction: row;
@@ -2005,7 +1979,6 @@ body.template-editorial {
     }
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
 
     *,

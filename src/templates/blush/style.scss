@@ -48,15 +48,12 @@
   font-display: swap;
 }
 
-// Global Blush Variables
 $blush-bg: #edccbe;
-$blush-dark: #331917; // Text
+$blush-dark: #331917;
 $blush-primary: #331917;
 $blush-secondary: #331917;
-$blush-accent: #331917; // CTA
-$blush-icon: #fc72c4; // Icon and Ornament
-// $font-heading: 'Roller Coaster', serif;
-// $font-script: 'Roller Coaster', cursive;
+$blush-accent: #331917;
+$blush-icon: #fc72c4;
 $font-heading: "La Luxes Serif", Georgia, serif;
 $font-script: "La Luxes Serif", Georgia, serif;
 $font-body: 'Cormorant Garamond', serif;
@@ -100,7 +97,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  // --- Typography Utilities ---
   h1,
   h2,
   h3,
@@ -115,7 +111,6 @@ body.template-blush.template-no-scroll {
     margin: 0;
   }
 
-  // --- Buttons ---
   .rsvp-form__submit,
   .wishes-load-more,
   .gift-btn,
@@ -130,24 +125,23 @@ body.template-blush.template-no-scroll {
     text-transform: uppercase;
     letter-spacing: 2px;
     text-decoration: none;
-    border-radius: 30px; // Rounded for Liquid Glass feel
+    border-radius: 30px;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     background: transparent;
     border: 1px solid $blush-accent;
     color: $blush-accent;
-    backdrop-filter: blur(5px); // Liquid glass effect
+    backdrop-filter: blur(5px);
 
     &.rsvp-form__submit {
       width: 100%;
       background: $blush-accent;
       border-color: $blush-accent;
       color: #fff;
-      // box-shadow: 0 4px 15px rgba($blush-accent, 0.3);
 
       &:hover {
-        background: lighten($blush-accent, 5%);
-        // box-shadow: 0 6px 20px rgba($blush-accent, 0.4);
+        background: #43211e;
+
         transform: translateY(-2px);
       }
     }
@@ -177,7 +171,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  // ADAPTED CSS VARIABLES FOR COVER & SIDEBAR
   .cover-section,
   .sidebar-section-wrap,
   .invitation-layout {
@@ -211,7 +204,6 @@ body.template-blush.template-no-scroll {
     object-position: bottom;
   }
 
-  /* Cover */
   .cover-section {
     position: fixed;
     inset: 0;
@@ -351,7 +343,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  /* Layout */
   .invitation-layout {
     display: flex;
     min-height: 100vh;
@@ -442,8 +433,6 @@ body.template-blush.template-no-scroll {
     color: var(--template-text);
   }
 
-
-  // --- Hero Section (Solstice Style) ---
   .solstice-hero {
     display: block;
     width: 100%;
@@ -471,24 +460,23 @@ body.template-blush.template-no-scroll {
       top: 0;
       left: 0;
       z-index: 2;
-      padding: 0 20px; // Kiri kanan 20px
-      padding-top: 5vh; // Beri jarak sedikit dari atas
+      padding: 0 20px;
+      padding-top: 5vh;
 
       @media (min-width: 1024px) {
-        width: 41.666%; // 5/12
+        width: 41.666%;
       }
     }
 
     &__image-wrap {
       width: 100%;
-      flex: 1; // Mengambil sisa ruang di atas teks
-      max-height: 70vh; // Batasi tinggi agar teks muat
+      flex: 1;
+      max-height: 70vh;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
 
-      // Override default animation for solstice effect
       opacity: 0;
       transform: translateY(150px) rotate(5deg);
       transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -506,14 +494,14 @@ body.template-blush.template-no-scroll {
       flex-wrap: wrap;
       align-items: flex-start;
       justify-content: center;
-      padding-top: 5vh; // Move it slightly upwards
-      overflow: hidden; // Prevent any overlap
-      border-radius: 8px; // Make the 20px gap look nicer
+      padding-top: 5vh;
+      overflow: hidden;
+      border-radius: 8px;
 
       @media (min-width: 1024px) {
         height: 100%;
         margin: 0;
-        padding-top: 10vh; // Move it slightly upwards on desktop
+        padding-top: 10vh;
       }
     }
 
@@ -541,8 +529,8 @@ body.template-blush.template-no-scroll {
       position: absolute;
       bottom: 0;
       left: 0;
-      z-index: 10; // Ensure it covers the image
-      background-color: var(--template-bg); // Solid background prevents overlap transparency
+      z-index: 10;
+      background-color: var(--template-bg);
       border-top-left-radius: 20px;
       border-top-right-radius: 20px;
 
@@ -550,7 +538,7 @@ body.template-blush.template-no-scroll {
         height: 100vh;
         bottom: auto;
         top: calc(50% + 50px);
-        background-color: transparent; // If they want side-by-side on desktop
+        background-color: transparent;
       }
     }
 
@@ -599,7 +587,7 @@ body.template-blush.template-no-scroll {
       line-height: 1.6;
 
       @media (min-width: 1024px) {
-        width: 83.333%; // 5/6
+        width: 83.333%;
       }
     }
   }
@@ -608,7 +596,7 @@ body.template-blush.template-no-scroll {
     &__content {
       width: 100%;
       position: absolute;
-      top: 65vh; // Starts visually below the image
+      top: 65vh;
       left: 0;
       z-index: 3;
       display: flex;
@@ -718,8 +706,6 @@ body.template-blush.template-no-scroll {
     width: 100%;
   }
 
-
-  // --- Intro Section Verse ---
   .intro-section__verse {
     text-align: center;
     font-size: 18px;
@@ -740,7 +726,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  // --- Couple Section ---
   .couple-section {
     background: $blush-primary;
     color: #fff;
@@ -758,7 +743,6 @@ body.template-blush.template-no-scroll {
     &__photo {
       position: absolute;
       object-fit: cover;
-      // box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
       border-radius: 4px;
 
       &--groom {
@@ -813,7 +797,6 @@ body.template-blush.template-no-scroll {
       display: block;
     }
 
-    
     &__social {
       display: inline-flex;
       align-items: center;
@@ -857,7 +840,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  // --- Events Section ---
   .events-section {
     position: relative;
     padding: 120px 30px;
@@ -918,7 +900,6 @@ body.template-blush.template-no-scroll {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 200px 200px 24px 24px;
     padding: 60px 30px 40px;
-    // box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
 
     &::before {
@@ -933,7 +914,6 @@ body.template-blush.template-no-scroll {
 
     &:hover {
       transform: translateY(-5px);
-      // box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
     }
 
     &__name {
@@ -1024,7 +1004,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  // --- Gallery Section ---
   .gallery-section {
     padding: 100px 20px;
     text-align: center;
@@ -1054,8 +1033,10 @@ body.template-blush.template-no-scroll {
         object-fit: cover;
       }
       
-      &:hover .gallery-item__play {
-        background: rgba(0, 0, 0, 0.44);
+      @media (hover: hover) and (pointer: fine) {
+        &:hover .gallery-item__play {
+          background: rgba(0, 0, 0, 0.44);
+        }
       }
     }
   
@@ -1094,8 +1075,10 @@ body.template-blush.template-no-scroll {
         object-fit: cover;
         transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 
-        &:hover {
-          transform: scale(1.08);
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            transform: scale(1.08);
+          }
         }
       }
 
@@ -1116,7 +1099,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  // --- Gifts Section ---
   .gift-section {
     display: flex;
     flex-direction: column;
@@ -1279,7 +1261,6 @@ body.template-blush.template-no-scroll {
     color: #f8f5ef;
   }
 
-  /* QRIS */
   .qris-lightbox {
     position: fixed;
     inset: 0;
@@ -1306,7 +1287,6 @@ body.template-blush.template-no-scroll {
     background-color: #ffffff;
     color: #1e293b;
     text-align: center;
-    // box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
     transform: scale(0.95);
     transition: transform 0.6s ease;
   }
@@ -1369,7 +1349,6 @@ body.template-blush.template-no-scroll {
     line-height: 1.75;
   }
 
-  // --- RSVP & Wishes Section ---
   .rsvp-section {
     padding: 100px 30px;
     background: $blush-bg;
@@ -1500,7 +1479,6 @@ body.template-blush.template-no-scroll {
     outline: none;
     border-color: rgba($blush-accent, 0.5);
     background-color: rgba($blush-dark, 0.05);
-    // box-shadow: 0 0 0 3px rgba($blush-accent, 0.1);
   }
 
   .rsvp-form__textarea {
@@ -1618,7 +1596,6 @@ body.template-blush.template-no-scroll {
     margin: 6px 0 0;
   }
 
-  // --- Closing Section ---
   .thankyou-section {
     position: relative;
     display: flex;
@@ -1718,7 +1695,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  // --- Media Queries for Desktop Sidebar Layout ---
   @media (min-width: 1024px) {
     .cover-section__body {
       max-width: 440px;
@@ -1763,7 +1739,6 @@ body.template-blush.template-no-scroll {
       min-height: 100vh;
       flex-shrink: 0;
       margin-left: auto;
-      // box-shadow: -20px 0 60px rgba($blush-primary, 0.2); // Blush tinted shadow
     }
   }
 
@@ -1779,7 +1754,6 @@ body.template-blush.template-no-scroll {
     }
   }
 
-  /* Audio */
   .audio-toggle {
     position: fixed;
     right: 24px;
@@ -1795,7 +1769,6 @@ body.template-blush.template-no-scroll {
     background-color: rgba(17, 17, 17, 0.9);
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
-    // box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(8px);
     transition: opacity 0.5s ease, border-color 0.5s ease, color 0.5s ease;
   }

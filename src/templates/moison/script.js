@@ -16,7 +16,7 @@ const song = root?.querySelector('[data-template-audio]');
 const audioBtn = root?.querySelector('[data-template-audio-toggle]');
 let isPlaying = false;
 
-// Variabel YouTube Player
+
 let ytPlayer = null;
 let ytReady = false;
 let ytDeferredPlay = false;

@@ -25,7 +25,6 @@ const weddingId = report.summary.weddingId;
 
 <ClientLayout title="Kirim Undangan">
   <div class="kirim-undangan-layout">
-    <!-- Left Column: Template Ucapan -->
     <section class="bento-card fade-in-bottom animate-on-scroll kirim-left kirim-template">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 class="bento-card__title kirim-template__title" style="margin: 0;">Template Pesan</h3>
@@ -53,7 +52,6 @@ const weddingId = report.summary.weddingId;
       </p>
     </section>
 
-    <!-- Right Column: Daftar Tamu -->
     <section class="bento-card fade-in-bottom animate-on-scroll kirim-right">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; flex-wrap: wrap;">
         <h3 class="bento-card__title" style="margin: 0;">Daftar Tamu</h3>
@@ -68,7 +66,6 @@ const weddingId = report.summary.weddingId;
         </div>
       </div>
 
-      <!-- Search Bar -->
       <div class="kirim-search">
         <input class="form-input kirim-search__input" placeholder="Ketik Nama Tamu..." type="text" />
         <input class="form-input kirim-search__input-wa" placeholder="No WA (Opsional)" type="tel" />
@@ -77,19 +74,15 @@ const weddingId = report.summary.weddingId;
         </button>
       </div>
 
-      <!-- Status Filters -->
       <div class="guest-status-filters" id="guest-status-filters" style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
         <button class="filter-btn filter-btn--active" data-status="all">Semua (<span id="count-all">0</span>)</button>
         <button class="filter-btn filter-btn--outline" data-status="opened">Sudah Dibuka (<span id="count-opened">0</span>)</button>
         <button class="filter-btn filter-btn--outline" data-status="unopened">Belum Dibuka (<span id="count-unopened">0</span>)</button>
       </div>
 
-      <!-- Guest List -->
       <div class="kirim-guests" id="kirim-guests-container">
-        <!-- Rendered via JS to support localStorage -->
       </div>
       
-      <!-- Pagination UI -->
       <div class="pagination-wrapper" style="border-top: none; padding: 16px 0 0 0;">
         <button class="pagination-btn" id="kirimPrev" disabled>Prev</button>
         <div class="pagination-numbers" id="kirimPageNumbers"></div>
@@ -207,7 +200,6 @@ const weddingId = report.summary.weddingId;
           guestsContainer.appendChild(newRow);
         });
 
-        // Update Pagination UI
         const prevBtn = document.getElementById('kirimPrev');
         const nextBtn = document.getElementById('kirimNext');
         const pageNumbers = document.getElementById('kirimPageNumbers');
@@ -256,7 +248,6 @@ const weddingId = report.summary.weddingId;
         }
       }
 
-      // --- TEMPLATE LOGIC ---
       const defaultTemplates = {
         "Formal": `Om Swastyastu,
 
@@ -331,7 +322,6 @@ Om Shanti, Shanti, Shanti, Om.`
       if (editBtn) {
         editBtn.addEventListener('click', () => {
           if (isEditingTemplate) {
-            // Save
             templates[currentCategory] = templateEditor.value;
             saveTemplates();
             renderTemplate();
@@ -342,7 +332,6 @@ Om Shanti, Shanti, Shanti, Om.`
             filterContainer.style.pointerEvents = 'auto';
             filterContainer.style.opacity = '1';
           } else {
-            // Edit
             templateEditor.value = templates[currentCategory];
             templateEditor.style.display = 'block';
             templateP.style.display = 'none';
@@ -384,7 +373,6 @@ Om Shanti, Shanti, Shanti, Om.`
         });
       }
 
-      // --- STATUS FILTER EVENTS ---
       const statusFilterContainer = document.getElementById('guest-status-filters');
       if (statusFilterContainer) {
         const sBtns = statusFilterContainer.querySelectorAll('.filter-btn');
@@ -404,12 +392,10 @@ Om Shanti, Shanti, Shanti, Om.`
         });
       }
 
-      // --- TAMBAH & CARI TAMU ---
       const addInput = document.querySelector('.kirim-search__input');
       const addWaInput = document.querySelector('.kirim-search__input-wa');
       const addBtn = document.querySelector('.kirim-search__btn');
 
-      // Fungsi Search Live
       if (addInput) {
         addInput.addEventListener('input', () => {
           applyFilters();
@@ -477,10 +463,8 @@ Om Shanti, Shanti, Shanti, Om.`
         });
       }
 
-      // --- HAPUS & SALIN (Event Delegation) ---
       if (guestsContainer) {
         guestsContainer.addEventListener('click', async (e) => {
-          // Tombol Hapus
           const deleteBtn = e.target.closest('.kirim-guests__btn-delete');
           if (deleteBtn) {
             const row = deleteBtn.closest('.kirim-guests__item');
@@ -513,7 +497,6 @@ Om Shanti, Shanti, Shanti, Om.`
             return;
           }
           
-          // Tombol Salin
           const copyBtn = e.target.closest('.kirim-guests__btn-copy');
           if (copyBtn) {
              const row = copyBtn.closest('.kirim-guests__item');
@@ -536,7 +519,6 @@ Om Shanti, Shanti, Shanti, Om.`
              return;
           }
 
-          // Tombol Kirim WA
           const waBtn = e.target.closest('.kirim-guests__btn-wa');
           if (waBtn) {
              e.preventDefault();
@@ -560,11 +542,9 @@ Om Shanti, Shanti, Shanti, Om.`
         });
       }
 
-      // --- EXPORT TEMPLATE XLSX ---
       const exportTemplateBtn = document.getElementById('export-template-btn');
       if (exportTemplateBtn) {
         exportTemplateBtn.addEventListener('click', async () => {
-          // Load SheetJS on-demand
           if (!window.XLSX) {
             await new Promise((resolve, reject) => {
               const s = document.createElement('script');
@@ -575,7 +555,6 @@ Om Shanti, Shanti, Shanti, Om.`
             });
           }
           const XLSX = window.XLSX;
-          // Template data: header + 3 contoh baris
           const rows = [
             ['Nama', 'No. WA'],
             ['Budi Santoso', '08123456789'],
@@ -583,7 +562,6 @@ Om Shanti, Shanti, Shanti, Om.`
             ['Ahmad Fauzi', '08567891234'],
           ];
           const ws = XLSX.utils.aoa_to_sheet(rows);
-          // Lebar kolom supaya mudah dibaca
           ws['!cols'] = [{ wch: 30 }, { wch: 20 }];
           const wb = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(wb, ws, 'Tamu');
@@ -591,7 +569,6 @@ Om Shanti, Shanti, Shanti, Om.`
         });
       }
 
-      // --- IMPORT CSV / XLSX LOGIC ---
       const importBtn = document.getElementById('import-guest-btn');
       const importInput = document.getElementById('import-guest-input');
 
@@ -618,7 +595,7 @@ Om Shanti, Shanti, Shanti, Om.`
           if (!file) return;
 
           const isXlsx = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
-          let rows = []; // [{name, phone}]
+          let rows = [];
 
           if (isXlsx) {
             const XLSX = await ensureXLSX();
@@ -626,7 +603,6 @@ Om Shanti, Shanti, Shanti, Om.`
             const wb = XLSX.read(buf, { type: 'array' });
             const ws = wb.Sheets[wb.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-            // Cari baris header (ada kata 'nama')
             let startIdx = 0;
             if (data.length > 0 && String(data[0][0]).toLowerCase().includes('nama')) startIdx = 1;
             for (let i = startIdx; i < data.length; i++) {
@@ -635,7 +611,6 @@ Om Shanti, Shanti, Shanti, Om.`
               rows.push({ name, phone: String(data[i][1] ?? '').trim() });
             }
           } else {
-            // CSV path
             const text = await file.text();
             const lines = text.split('\n');
             let startIndex = 0;
@@ -727,7 +702,6 @@ Om Shanti, Shanti, Shanti, Om.`
         });
       }
 
-      // Initialize on load
       applyFilters();
       renderGuests();
     });

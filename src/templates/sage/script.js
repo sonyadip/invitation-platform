@@ -47,7 +47,6 @@ openBtn?.addEventListener('click', () => {
 initBackgroundAudioHandler(song, audioBtn);
 
 if (root) {
-  // Sage has specific staggered animation delays
   const animatedItems = Array.from(root.querySelectorAll('[data-animate]'));
   animatedItems.forEach((item, index) => {
     if (item instanceof HTMLElement && !item.style.getPropertyValue('--animate-delay')) {

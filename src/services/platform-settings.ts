@@ -68,7 +68,7 @@ const defaults: PlatformSettings = {
   home_booking_heading: 'Ceritakan undangan Anda.',
   home_booking_cta: 'Hubungi via WhatsApp',
   home_hero_seal_text: 'SENADDA • DIGITAL STUDIO BALI • UNDANGAN •',
-  home_stat_number: '6+',
+  home_stat_number: '8+',
   home_stat_label: 'Koleksi\nEksklusif',
   home_template_cards: [
     { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000" },
@@ -79,6 +79,7 @@ const defaults: PlatformSettings = {
     { key: "deauville", name: "Deauville", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000" },
     { key: "air", name: "Air", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000" },
     { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000" },
+    { key: "terre", name: "Terre", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000" },
   ],
   meta_title: 'Senadda - Undangan Digital Bali',
   meta_description: 'Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.',
@@ -108,7 +109,6 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
         if (key === 'home_template_cards' && Array.isArray(data[key]) && data[key].length === 0) {
           continue;
         }
-        // @ts-expect-error dynamic assignment
         result[key] = data[key];
       }
     }
@@ -124,7 +124,6 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
 export async function savePlatformSettings(input: Partial<PlatformSettings>): Promise<void> {
   const supabaseAdmin = await getSupabaseAdmin();
 
-  // Check if a row already exists
   const { data: existing } = await supabaseAdmin
     .from(TABLE)
     .select('id')
@@ -169,4 +168,3 @@ export async function savePlatformSettings(input: Partial<PlatformSettings>): Pr
     }
   });
 }
-

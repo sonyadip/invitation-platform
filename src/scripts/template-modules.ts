@@ -86,7 +86,6 @@ export function initGiftInteractions(root: Element | Document = document) {
       giftToggle.closest('.gift-section, [data-gift-section], .gift-container')?.querySelector<HTMLElement>('[data-gift-grid]') ||
       (root instanceof Element ? root.querySelector<HTMLElement>('[data-gift-grid]') : document.querySelector<HTMLElement>('[data-gift-grid]'));
 
-    // Ensure giftToggle first-load reveal matches the template's animation
     if (!giftToggle.dataset.firstLoadInit) {
       giftToggle.dataset.firstLoadInit = 'true';
       if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -123,7 +122,6 @@ export function initGiftInteractions(root: Element | Document = document) {
       const cards = Array.from((giftGrid || giftWrapper)?.querySelectorAll<HTMLElement>('.gift-card') || []);
 
       if (!isOpen) {
-        // --- OPEN ANIMATION: Smooth Height Expansion + Card Entrance ---
         if (closeTimeoutId) {
           clearTimeout(closeTimeoutId);
           closeTimeoutId = undefined;
@@ -132,7 +130,7 @@ export function initGiftInteractions(root: Element | Document = document) {
         if (giftWrapper) {
           giftWrapper.classList.remove('is-closing');
           giftWrapper.classList.add('is-opening');
-          void giftWrapper.offsetHeight; // reflow to commit display: grid
+          void giftWrapper.offsetHeight;
           giftWrapper.classList.add('is-open');
           giftWrapper.classList.remove('is-opening');
         }
@@ -143,17 +141,14 @@ export function initGiftInteractions(root: Element | Document = document) {
           giftGrid.classList.add('is-open');
         }
 
-        // Reset state & assign gentle stagger delay
         cards.forEach((card, index) => {
           card.classList.remove('is-closing');
           card.classList.remove('is-animated');
           card.style.setProperty('--animate-delay', `${index * 140}ms`);
         });
 
-        // Force reflow so template transitions trigger cleanly
         if (giftGrid) void giftGrid.offsetHeight;
 
-        // Trigger the template's native [data-animate] transition
         cards.forEach((card) => {
           card.classList.add('is-animated');
         });
@@ -162,7 +157,6 @@ export function initGiftInteractions(root: Element | Document = document) {
         if (span) span.textContent = hideText;
         else giftToggle.textContent = hideText;
       } else {
-        // --- CLOSE ANIMATION: Smooth Height Collapse + Card Exit ---
         if (giftWrapper) {
           giftWrapper.classList.remove('is-open');
           giftWrapper.classList.add('is-closing');
@@ -184,7 +178,7 @@ export function initGiftInteractions(root: Element | Document = document) {
         if (span) span.textContent = showText;
         else giftToggle.textContent = showText;
 
-        const closeDuration = 700; // matches wrapper's 0.65s transition
+        const closeDuration = 700;
         closeTimeoutId = window.setTimeout(() => {
           if (giftWrapper) {
             giftWrapper.classList.remove('is-closing');
@@ -225,7 +219,7 @@ export function initGiftInteractions(root: Element | Document = document) {
         }
 
         btn.classList.remove('is-copied');
-        void btn.offsetWidth; // force reflow for smooth animation replay
+        void btn.offsetWidth;
         btn.classList.add('is-copied');
 
         if (textSpan) textSpan.textContent = 'Tersalin';
@@ -273,7 +267,7 @@ export async function initGalleryLightbox(root: Element | Document = document, g
       } catch (_) {}
     };
 
-    Fancybox.bind(container, selector, {
+    (Fancybox.bind as any)(container, selector, {
       groupAll: false,
       placeFocusBack: false,
       Fullscreen: false,
@@ -388,7 +382,6 @@ export function initRevealAnimations(root: Element | Document = document) {
   animatedItems.forEach((item, index) => {
     if (item instanceof HTMLElement) {
       if (!item.style.getPropertyValue('--animate-delay')) {
-        // Assign default stagger if not set by template
         item.style.setProperty('--animate-delay', `${Math.min(index % 3, 2) * 150}ms`);
       }
     }
@@ -431,7 +424,6 @@ export function initBackgroundAudioHandler(
     updateUI();
   });
 
-  // Handle direct click on audio toggle button - only manual clicks are tracked as interaction events
   if (audioBtn && !(audioBtn as any).__audioHandlerBound) {
     (audioBtn as any).__audioHandlerBound = true;
     audioBtn.addEventListener('click', (e) => {

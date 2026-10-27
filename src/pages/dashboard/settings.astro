@@ -62,7 +62,6 @@ const settings = await getPlatformSettings();
   activeNav="settings"
   breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Platform Settings" }]}
 >
-  <!-- Page Header -->
   <header class="admin-page-header">
     <div class="admin-page-header__left">
       <h1 class="admin-page-header__title">Platform Settings</h1>
@@ -83,7 +82,6 @@ const settings = await getPlatformSettings();
     </div>
   </header>
 
-  <!-- Alerts -->
   {successMessage && (
     <div class="shadcn-alert shadcn-alert--success" role="alert">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -112,7 +110,6 @@ const settings = await getPlatformSettings();
   )}
 
   <form class="form-panel" method="POST">
-    <!-- SECTION 1: IDENTITY -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">🏢</span>
@@ -151,7 +148,6 @@ const settings = await getPlatformSettings();
       </div>
     </div>
 
-    <!-- SECTION 2: SOCIAL MEDIA & CONTACT -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">📱</span>
@@ -189,7 +185,6 @@ const settings = await getPlatformSettings();
       </div>
     </div>
 
-    <!-- SECTION 3: HOMEPAGE CONTENT -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">🏠</span>
@@ -226,7 +221,6 @@ const settings = await getPlatformSettings();
       </div>
     </div>
 
-    <!-- SECTION 4: HERO STATS -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">📈</span>
@@ -247,7 +241,6 @@ const settings = await getPlatformSettings();
       </div>
     </div>
 
-    <!-- SECTION 5: TEMPLATES COLLECTION -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">🎨</span>
@@ -280,13 +273,12 @@ const settings = await getPlatformSettings();
             </button>
           </div>
           <span class="hint" style="display: block; margin-top: 8px;">
-            Default template keys: lumiere, lumiere-metatah, lumiere-metatah-v2, deauville, air, editorial, noir, atelier, sage, ochre, ivory.
+            Default template keys: lumiere, lumiere-metatah, lumiere-metatah-v2, deauville, air, editorial, noir, atelier, sage, ochre, ivory, terre.
           </span>
         </div>
       </div>
     </div>
 
-    <!-- SECTION 6: BOOKING & CONTACT SECTION -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">💬</span>
@@ -311,7 +303,6 @@ const settings = await getPlatformSettings();
       </div>
     </div>
 
-    <!-- SECTION 7: SEO -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">🔍</span>
@@ -332,7 +323,6 @@ const settings = await getPlatformSettings();
       </div>
     </div>
 
-    <!-- SECTION 8: ANALYTICS & TRACKING -->
     <div class="form-card">
       <div class="form-card__header">
         <span class="section-icon">📊</span>
@@ -355,7 +345,6 @@ const settings = await getPlatformSettings();
       </div>
     </div>
 
-    <!-- Sticky Bottom Actions Bar -->
     <div class="form-actions-bar">
       <a href="/dashboard" class="btn-shadcn btn-shadcn--outline">Cancel</a>
       <button type="submit" class="btn-shadcn btn-shadcn--primary">

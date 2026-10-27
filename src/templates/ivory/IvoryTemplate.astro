@@ -14,7 +14,7 @@ import gallerySix from './assets/gallery-6.jpg';
 import gallerySeven from './assets/gallery-7.jpg';
 import galleryEight from './assets/gallery-8.webp';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import './style.scss';
+import styleUrl from './style.scss?url';
 
 import {
   formatChildPrefix,
@@ -36,7 +36,6 @@ interface Props {
 const { data, guestName } = Astro.props;
 const { wedding, settings, events, gallery, gifts, wishes } = data;
 const sections = settings.sections;
-// Override gallery with custom local images for Ivory template
 const customGallery = [
   { id: '1', image_url: galleryOne, variant: 'full-16x10' },
   { id: '2', image_url: galleryTwo, variant: 'half' },
@@ -53,7 +52,6 @@ const themeConfig = (settings.theme_config || {
   assets: {}
 }) as any;
 
-// Premium ivory visual identity for the Ivory layout.
 const overrideSettings = {
   ...settings,
   theme_config: {
@@ -168,9 +166,9 @@ const activeGifts = gifts && gifts.length > 0
   to={guestName}
   templateClass="template-ivory"
   image={heroImage}
+  styleUrl={styleUrl}
 >
   <div class="invitation-root" data-template-root>
-    <!-- ===================== COVER SCREEN ===================== -->
     <div class="cover-section" data-template-cover>
       <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__body">
@@ -194,10 +192,8 @@ const activeGifts = gifts && gifts.length > 0
       </div>
     </div>
 
-    <!-- ===================== MAIN LAYOUT ===================== -->
     <div class="invitation-layout" data-template-layout>
 
-      <!-- LEFT FIXED SIDEBAR (desktop only) -->
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
           <SmartImage class="section-bg section-bg--sidebar" src={heroImage} alt="" aria-hidden="true" />
@@ -213,10 +209,8 @@ const activeGifts = gifts && gifts.length > 0
         </aside>
       </div>
 
-      <!-- RIGHT SCROLLABLE CONTENT -->
       <main class="invitation-main">
 
-        <!-- Hero (right column top) -->
         <div class="hero-section" data-ivory-hero-slider>
           <div class="hero-section__slides" aria-hidden="true">
             {heroSlides.map((slide, index) => (
@@ -238,7 +232,6 @@ const activeGifts = gifts && gifts.length > 0
           </div>
         </div>
 
-        <!-- Opening verse -->
         <div class="opening-section" data-animate="fade-up">
           <div class="opening-section__ornament"></div>
           <p class="opening-section__verse">
@@ -249,19 +242,10 @@ const activeGifts = gifts && gifts.length > 0
 
         <div id="template-content" class="sections-stack">
 
-          <!-- ===== COUPLE SECTION ===== -->
           {sections.coupleInfo && (
             <section class="couple-section" id="mempelai" data-animate="fade-up">
-              {/* <div class="couple-section__greeting">
-                <p>
-                  <strong>Assalamu'alaikum Warahmatullahi Wabarakatuh</strong><br /><br />
-                  Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan.
-                  Ya Allah semoga ridho-Mu tercurah mengiringi pernikahan kami.
-                </p>
-              </div> */}
 
               <div class="couple-section__row">
-                <!-- Bride card -->
                 <div class="person-card" data-animate="fade-right">
                   <div class="person-card__photo-wrap">
                     <SmartImage
@@ -283,10 +267,8 @@ const activeGifts = gifts && gifts.length > 0
                   </p>
                 </div>
 
-                <!-- Ampersand -->
                 <div class="couple-section__amp" data-animate="zoom-in">&amp;</div>
 
-                <!-- Groom card -->
                 <div class="person-card" data-animate="fade-left">
                   <div class="person-card__photo-wrap">
                     <SmartImage
@@ -311,11 +293,9 @@ const activeGifts = gifts && gifts.length > 0
             </section>
           )}
 
-          <!-- ===== EVENT DETAILS ===== -->
           {sections.eventDetails && (
             <section class="events-section">
               <div class="events-section__header" data-animate="fade-up" data-stagger-heading>
-                {/* <p class="section-eyebrow">Wedding Events</p> */}
                 <h3 class="section-title">Save<br>The Date</h3>
               </div>
 
@@ -358,10 +338,8 @@ const activeGifts = gifts && gifts.length > 0
             </section>
           )}
 
-          <!-- ===== COUNTDOWN ===== -->
         {sections.countdown && (
           <div class="countdown-section" data-animate="fade-up">
-            {/* <h2 class="countdown-section__title">Save The Date</h2> */}
             {settings.countdown_enabled && (
               <div class="countdown-section__timer" data-animate="fade-up">
                 <div class="countdown-card glassmorphism">
@@ -382,7 +360,6 @@ const activeGifts = gifts && gifts.length > 0
           </div>
         )}
 
-          <!-- ===== VIDEO ===== -->
           {sections.video !== false && (
             <section class="video-section" data-animate="blur-up">
               <div class="video-section__frame" data-ivory-video>
@@ -396,7 +373,6 @@ const activeGifts = gifts && gifts.length > 0
             </section>
           )}
 
-          <!-- ===== GALLERY ===== -->
           {sections.gallery && (
             settings.gallery_enabled && activeGallery.length > 0 && (
               <>
@@ -432,14 +408,13 @@ const activeGifts = gifts && gifts.length > 0
             )
           )}
 
-          <!-- ===== RSVP & WISHES ===== -->
           {sections.rsvp && (
             settings.rsvp_enabled && (
               <section class="rsvp-section" data-animate="fade-up" data-rsvp-section>
                 <div class="rsvp-container">
                   <div class="rsvp-header" data-animate="fade-up" data-stagger-heading>
                     <h3 class="section-title">RSVP & Wishes</h3>
-                    <p class="rsvp-subtitle">Mohon konfirmasi kehadiran Anda dan berikan doa restu.</p>
+                    <p class="rsvp-subtitle">Mohon konfirmasi kehadiran Anda dan berikan doa restu untuk kami.</p>
                   </div>
 
                   <div class="rsvp-panel" data-animate="fade-up">
@@ -548,7 +523,6 @@ const activeGifts = gifts && gifts.length > 0
             )
           )}
 
-          <!-- ===== GIFT ===== -->
           {sections.gift && (
             settings.gift_enabled && (
               <>
@@ -574,7 +548,6 @@ const activeGifts = gifts && gifts.length > 0
 
         </div>
 
-        <!-- Thank You -->
         <section class="thankyou-section" data-animate="blur-up">
           <SmartImage class="thankyou-section__bg" src={heroImage} alt="" aria-hidden="true" />
           <div class="thankyou-section__content" data-animate="fade-up">
@@ -614,7 +587,6 @@ const activeGifts = gifts && gifts.length > 0
       </main>
     </div>
 
-    <!-- Floating Audio Player -->
     {sections.music && (
               <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
           <div class="audio-icon-wrapper">
@@ -638,5 +610,3 @@ const activeGifts = gifts && gifts.length > 0
 <script>
   import './script.js';
 </script>
-
-
