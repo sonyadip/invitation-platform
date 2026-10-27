@@ -760,25 +760,6 @@ const activeGifts =
         }
 
         {
-          sections.gift && settings.gift_enabled && (
-            <section
-              class="gift-section snap-section"
-              data-gift-section
-              style={giftImage ? `background-image: linear-gradient(rgba(21, 21, 21, 0.68), rgba(21, 21, 21, 0.72)), url('${typeof giftImage === 'string' ? giftImage : giftImage.src}'); background-size: cover; background-position: center;` : undefined}
-            >
-              <div class="gift-container">
-                <div class="gift-header" data-animate>
-                  <h3 class="gift-section__title">Wedding Gift</h3>
-                  <p class="gift-section__desc">{text.giftDescription}</p>
-                </div>
-
-                <GiftGrid gifts={activeGifts} />
-              </div>
-            </section>
-          )
-        }
-
-        {
           sections.rsvp && settings.rsvp_enabled && (
             <section
               class="rsvp-section snap-section"
@@ -909,6 +890,25 @@ const activeGifts =
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </button>
+              </div>
+            </section>
+          )
+        }
+
+        {
+          sections.gift && settings.gift_enabled && (
+            <section
+              class="gift-section snap-section"
+              data-gift-section
+              style={giftImage ? `background-image: linear-gradient(rgba(21, 21, 21, 0.68), rgba(21, 21, 21, 0.72)), url('${typeof giftImage === 'string' ? giftImage : giftImage.src}'); background-size: cover; background-position: center;` : undefined}
+            >
+              <div class="gift-container">
+                <div class="gift-header" data-animate>
+                  <h3 class="gift-section__title">Wedding Gift</h3>
+                  <p class="gift-section__desc">{text.giftDescription}</p>
+                </div>
+
+                <GiftGrid gifts={activeGifts} />
               </div>
             </section>
           )

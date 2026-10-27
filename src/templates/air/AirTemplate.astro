@@ -287,7 +287,7 @@ const brideParentLines = buildCoupleLines(
           </div>
           <div class="hero-section__top">
             <div class="hero-section__guest-top">
-              <span class="hero-section__guest-label">Kepada Yth. Bapak/Ibu/Saudara/i</span>
+              <span class="hero-section__guest-label">Kepada Yth.</span>
               <span class="hero-section__guest-name">{guestName || 'Nama Tamu'}</span>
             </div>
             <span class="hero-section__date">{formattedDate}</span>
@@ -305,7 +305,7 @@ const brideParentLines = buildCoupleLines(
         </section>
 
         <section class="intro-section template-section" id="intro-section">
-          <p data-animate="fade-up">
+          <p data-animate="fade-up" style="--animate-delay: 100ms;">
             "Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu."
             <br><br><small>(Rgveda : X.85.42)</small>
           </p>
@@ -316,12 +316,12 @@ const brideParentLines = buildCoupleLines(
             <div class="couple-swiss">
               <div class="couple-swiss__wrapper couple-swiss__wrapper--bride">
                 <span class="vertical-role vertical-role--left">The Bride</span>
-                <div class="couple-swiss__item couple-swiss__item--bride-img" data-animate="fade-up">
+                <div class="couple-swiss__item couple-swiss__item--bride-img" data-animate="fade-up" style="--animate-delay: 100ms;">
                   <SmartImage src={brideImage} alt={wedding.bride_name} loading="lazy" />
                 </div>
-                <div class="couple-swiss__item couple-swiss__item--bride-text" data-animate="fade-left">
-                  <h4>{wedding.bride_full_name}</h4>
-                  <p class="parents">
+                <div class="couple-swiss__item couple-swiss__item--bride-text" data-animate="fade-left" style="--animate-delay: 250ms;">
+                  <h4 data-animate="fade-up">{wedding.bride_full_name}</h4>
+                  <p class="parents" data-animate="fade-up">
                     {brideParentLines.map((line) => (
                       <span class="couple-section__parent-line">{line}</span>
                     ))}
@@ -334,6 +334,7 @@ const brideParentLines = buildCoupleLines(
                       rel="noopener noreferrer"
                       aria-label={`${wedding.bride_name} Instagram`}
                       data-track-couple-instagram="bride"
+                      data-animate="fade-up"
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -354,12 +355,12 @@ const brideParentLines = buildCoupleLines(
 
               <div class="couple-swiss__wrapper couple-swiss__wrapper--groom">
                 <span class="vertical-role vertical-role--right">The Groom</span>
-                <div class="couple-swiss__item couple-swiss__item--groom-img" data-animate="fade-up">
+                <div class="couple-swiss__item couple-swiss__item--groom-img" data-animate="fade-up" style="--animate-delay: 100ms;">
                   <SmartImage src={groomImage} alt={wedding.groom_name} loading="lazy" />
                 </div>
-                <div class="couple-swiss__item couple-swiss__item--groom-text" data-animate="fade-right">
-                  <h4>{wedding.groom_full_name}</h4>
-                  <p class="parents">
+                <div class="couple-swiss__item couple-swiss__item--groom-text" data-animate="fade-right" style="--animate-delay: 250ms;">
+                  <h4 data-animate="fade-up">{wedding.groom_full_name}</h4>
+                  <p class="parents" data-animate="fade-up">
                     {groomParentLines.map((line) => (
                       <span class="couple-section__parent-line">{line}</span>
                     ))}
@@ -372,6 +373,7 @@ const brideParentLines = buildCoupleLines(
                       rel="noopener noreferrer"
                       aria-label={`${wedding.groom_name} Instagram`}
                       data-track-couple-instagram="groom"
+                      data-animate="fade-up"
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -395,12 +397,12 @@ const brideParentLines = buildCoupleLines(
 
         {sections.story && (
           <section class="template-section story-section" id="story-section">
-            <div class="template-section__head" data-animate="fade-up">
+            <div class="template-section__head" data-animate="fade-up" style="--animate-delay: 100ms;">
               <h3>Our Story</h3>
             </div>
             <div class="story-timeline">
-              {activeStory.map((item) => (
-                <article class="story-item" data-animate="fade-up">
+              {activeStory.map((item, index) => (
+                <article class="story-item" data-animate="fade-up" style={`--animate-delay: ${180 + index * 120}ms;`}>
                   {item.year && <span class="story-item__year">{item.year}</span>}
                   <h4 class="story-item__title">{item.title}</h4>
                   <p class="story-item__text">{item.description}</p>
@@ -414,18 +416,18 @@ const brideParentLines = buildCoupleLines(
           <section class="template-section events-section" id="events-section">
             <div class="events-section__grid">
               {activeEvents.map((evt) => (
-                <article class="event-card" data-animate="fade-up">
-                  <h4 class="event-card__label">{evt.event_name}</h4>
-                  <span>{formatDate(evt.event_date)}</span>
-                  <p class="event-card__time">
+                <article class="event-card">
+                  <h4 class="event-card__label" data-animate="fade-up">{evt.event_name}</h4>
+                  <span data-animate="fade-up">{formatDate(evt.event_date)}</span>
+                  <p class="event-card__time" data-animate="fade-up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>{evt.start_time} - {evt.end_time}</span>
                   </p>
-                  <strong class="event-card__venue">{evt.venue_name}</strong>
-                  <p class="event-card__address">{evt.venue_address}</p>
-                  <a class="template-btn template-btn--light" href={evt.maps_url} target="_blank" rel="noopener noreferrer">
+                  <strong class="event-card__venue" data-animate="fade-up">{evt.venue_name}</strong>
+                  <p class="event-card__address" data-animate="fade-up">{evt.venue_address}</p>
+                  <a class="template-btn template-btn--light" href={evt.maps_url} target="_blank" rel="noopener noreferrer" data-animate="fade-up">
                     <svg class="template-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -439,7 +441,7 @@ const brideParentLines = buildCoupleLines(
         )}
 
         {sections.countdown && settings.countdown_enabled && (
-          <section class="countdown-section template-section" data-animate="fade-up">
+          <section class="countdown-section template-section" data-animate="fade-up" style="--animate-delay: 100ms;">
             <div class="countdown-section__head">
               <h3>Save The Date</h3>
             </div>
@@ -455,7 +457,7 @@ const brideParentLines = buildCoupleLines(
 
         {sections.gallery && settings.gallery_enabled && (activeGallery.length > 0 || (videoUrl && videoUrl.trim() !== "")) && (
           <section class="template-section gallery-section" id="gallery-section">
-            <div class="template-section__head" data-animate="fade-up">
+            <div class="template-section__head" data-animate="fade-up" style="--animate-delay: 100ms;">
               <h3>Our Gallery</h3>
             </div>
 
@@ -465,6 +467,7 @@ const brideParentLines = buildCoupleLines(
                 href={videoUrl}
                 data-fancybox="gallery-section"
                 data-animate="fade-up"
+                style="--animate-delay: 200ms;"
                 aria-label="Putar Video Pernikahan"
               >
                 <SmartImage src={typeof videoPoster === 'string' ? videoPoster : videoPoster.src} alt="Wedding film poster" loading="lazy" />
@@ -476,8 +479,8 @@ const brideParentLines = buildCoupleLines(
               </a>
             )}
             <div class="gallery-section__grid">
-              {activeGallery.map((image) => (
-                <a class={`gallery-section__item gallery-section__item--${image.variant}`} href={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} data-fancybox="gallery-section" data-animate="fade-up" aria-label="Lihat foto galeri">
+              {activeGallery.map((image, index) => (
+                <a class={`gallery-section__item gallery-section__item--${image.variant}`} href={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} data-fancybox="gallery-section" data-animate="fade-up" style={`--animate-delay: ${(index % 3) * 100}ms;`} aria-label="Lihat foto galeri">
                   <SmartImage src={typeof image.image_url === 'string' ? image.image_url : image.image_url.src} alt="Wedding gallery photo" loading="lazy" />
                   <div class="gallery-section__overlay" aria-hidden="true">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
@@ -492,14 +495,14 @@ const brideParentLines = buildCoupleLines(
 
         {sections.rsvp && settings.rsvp_enabled && (
           <section class="template-section rsvp-section" id="rsvp-section" data-rsvp-section>
-            <div class="template-section__head" data-animate="fade-up">
+            <div class="template-section__head" data-animate="fade-up" style="--animate-delay: 100ms;">
               <h3>RSVP</h3>
             </div>
-            <p class="rsvp-section__intro" data-animate="fade-up" style="margin-bottom: 40px; color: var(--air-muted);">
+            <p class="rsvp-section__intro" data-animate="fade-up" style="margin-bottom: 40px; color: var(--air-muted); --animate-delay: 200ms;">
               Mohon konfirmasi kehadiran Anda dan berikan doa restu untuk kami.
             </p>
             <div class="rsvp-section__grid">
-              <div class="rsvp-section__panel" data-animate="fade-up">
+              <div class="rsvp-section__panel" data-animate="fade-up" style="--animate-delay: 300ms;">
                 <div class="rsvp-success" data-rsvp-success style="display:none;">
                   <h4>Terima Kasih</h4>
                   <p>Pesan dan konfirmasi kehadiran Anda telah kami terima.</p>
@@ -531,10 +534,7 @@ const brideParentLines = buildCoupleLines(
                   </div>
                   <div class="rsvp-form__error" data-rsvp-error style="display:none;"></div>
                   <button class="template-btn template-btn--dark" type="submit" data-rsvp-submit>
-                    <svg class="template-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                    <span>Kirim Konfirmasi</span>
+                    <span>Submit</span>
                   </button>
                 </form>
               </div>
@@ -542,8 +542,8 @@ const brideParentLines = buildCoupleLines(
                 <div class="wishes-empty" data-wishes-empty style={isWishesEmpty ? '' : 'display:none;'}>
                   Belum ada ucapan. Jadilah yang pertama memberikan doa restu.
                 </div>
-                {displayedWishes.map((wish) => (
-                  <article class="wish-card" data-animate="fade-up">
+                {displayedWishes.map((wish, index) => (
+                  <article class="wish-card" data-animate="fade-up" style={`--animate-delay: ${(index % 3) * 100}ms;`}>
                     <div class="wish-card__header">
                       <div class="wish-card__meta">
                         <span class="wish-card__name">{wish.guest_name}</span>
@@ -593,13 +593,13 @@ const brideParentLines = buildCoupleLines(
 
         {sections.gift && settings.gift_enabled && (
           <section class="template-section gift-section" data-gift-section>
-            <div class="template-section__head" data-animate="fade-up">
+            <div class="template-section__head" data-animate="fade-up" style="--animate-delay: 100ms;">
               <h3>Wedding Gift</h3>
             </div>
-            <p class="gift-section__intro" data-animate="fade-up">
+            <p class="gift-section__intro" data-animate="fade-up" style="--animate-delay: 200ms;">
               Tanpa mengurangi rasa hormat, bagi tamu yang ingin mengirimkan hadiah kasih dapat melalui rekening berikut.
             </p>
-            <button class="template-btn template-btn--dark gift-section__toggle gift-toggle-btn" data-gift-toggle data-animate="fade-up" style="--animate-delay: 200ms;" type="button">
+            <button class="template-btn template-btn--dark gift-section__toggle gift-toggle-btn" data-gift-toggle data-animate="fade-up" style="--animate-delay: 300ms;" type="button">
               <svg class="template-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V6a2 2 0 10-2 2h2zm0 13C10.832 21 9.246 20.143 8.5 19c-1.5 0-3-1.5-3-3s1.5-3 3-3c.746-1.143 2.332-2 3.5-2m0 13c1.168 0 2.754-.857 3.5-2 1.5 0 3-1.5 3-3s-1.5-3-3-3c-.746-1.143-2.332-2-3.5-2" />
               </svg>
@@ -611,7 +611,7 @@ const brideParentLines = buildCoupleLines(
 
         <section class="thankyou-section">
           <SmartImage class="thankyou-section__bg" src={closingImage} alt="" aria-hidden="true" />
-          <div class="thankyou-section__inner" data-animate="fade-up" style="--animate-delay: 300ms;">
+          <div class="thankyou-section__inner" data-animate="fade-up">
             <h2 class="thankyou-section__title">{closingTitle || 'Terima Kasih'}</h2>
             <div class="thankyou-section__socials">
               <a

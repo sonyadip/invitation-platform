@@ -379,10 +379,26 @@ export function initRevealAnimations(root: Element | Document = document) {
     rootMargin: '0px 0px -8% 0px'
   });
 
-  animatedItems.forEach((item, index) => {
+  animatedItems.forEach((item) => {
     if (item instanceof HTMLElement) {
       if (!item.style.getPropertyValue('--animate-delay')) {
-        item.style.setProperty('--animate-delay', `${Math.min(index % 3, 2) * 150}ms`);
+        const computedDelay = window.getComputedStyle(item).getPropertyValue('--animate-delay').trim();
+        if (!computedDelay || computedDelay === '0ms' || computedDelay === '0s') {
+          const parent = item.parentElement;
+          if (parent) {
+            const isGrid = parent.classList.contains('gallery-grid') || 
+                           parent.classList.contains('gallery-section__grid') || 
+                           (typeof parent.className === 'string' && parent.className.includes('grid'));
+            const siblings = Array.from(parent.querySelectorAll(':scope > [data-animate]'));
+            if (siblings.length > 1) {
+              const siblingIndex = siblings.indexOf(item);
+              if (siblingIndex > 0) {
+                const delay = isGrid ? (siblingIndex % 4) * 100 : Math.min(siblingIndex * 120, 800);
+                item.style.setProperty('--animate-delay', `${delay}ms`);
+              }
+            }
+          }
+        }
       }
     }
     observer.observe(item);

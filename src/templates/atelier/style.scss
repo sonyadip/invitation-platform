@@ -274,7 +274,7 @@ body.template-atelier {
       align-items: center;
       text-align: center;
       height: 100%;
-      min-height: calc(100vh - 85px);
+      min-height: calc(100svh - 70px);
       width: 100%;
     }
 
@@ -283,7 +283,7 @@ body.template-atelier {
       font-size: 0.8rem;
       letter-spacing: 0.05em;
       color: var(--lm-white);
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       opacity: 0;
       transform: translateY(-16px);
       filter: blur(4px);
@@ -438,7 +438,7 @@ body.template-atelier {
   }
 
   .couple-section {
-    padding-top: 60px;
+    padding-top: 48px;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -561,6 +561,7 @@ body.template-atelier {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
       margin-top: 12px;
       color: var(--lm-white);
       text-decoration: none;
@@ -569,8 +570,20 @@ body.template-atelier {
       font-weight: 400;
       letter-spacing: 0.5px;
       border: 1px solid var(--lm-white);
-      padding: 4px 16px;
+      padding: 6px 16px;
       transition: all 0.3s ease;
+
+      svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        flex-shrink: 0;
+      }
+
+      span {
+        display: inline-block;
+        line-height: 1;
+      }
 
       &:hover {
         background: var(--lm-white);

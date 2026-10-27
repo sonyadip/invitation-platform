@@ -106,13 +106,6 @@ function initAirTemplate() {
     }
   }
 
-  const animatedItems = Array.from(root.querySelectorAll('[data-animate]'));
-  animatedItems.forEach((item, index) => {
-    if (item instanceof HTMLElement && !item.style.getPropertyValue('--animate-delay')) {
-      item.style.setProperty('--animate-delay', `${Math.min(index % 3, 2) * 180}ms`);
-    }
-  });
-
   initCountdown(root);
   initVideoPlayers(root);
   initHeroSlideshows();
