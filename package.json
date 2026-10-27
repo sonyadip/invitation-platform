@@ -10,7 +10,6 @@
     "dev": "astro dev --host",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "wrangler deploy",
     "astro": "astro"
   },
   "dependencies": {
@@ -29,7 +28,6 @@
     "@types/ws": "^8.18.1",
     "playwright": "^1.64.1",
     "sass": "^1.77.2",
-    "typescript": "^5.4.5",
-    "wrangler": "^4.86.0"
+    "typescript": "^5.4.5"
   }
 }
