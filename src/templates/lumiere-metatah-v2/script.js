@@ -31,11 +31,14 @@ openBtn?.addEventListener('click', () => {
     setTimeout(() => {
       cover.style.display = 'none';
       document.body.classList.remove('template-no-scroll', 'template-cover-active');
-    }, 1600);
+    }, 1800);
   }
 
   initSlideshows();
-  if (root) initRevealAnimations(root);
+
+  setTimeout(() => {
+    if (root) initRevealAnimations(root);
+  }, 1000);
 
   if (song instanceof HTMLAudioElement) {
     song.play().catch(() => { });
@@ -79,10 +82,12 @@ function initSlideshows() {
 
 function initParticipantModals(container) {
   const triggerBtns = Array.from(container.querySelectorAll('[data-open-participant-modal]'));
-  const closeBtns = Array.from(container.querySelectorAll('[data-close-participant-modal]'));
-  const dialogs = Array.from(container.querySelectorAll('.participant-modal'));
+  const closeBtns = Array.from(document.querySelectorAll('[data-close-participant-modal]'));
+  const dialogs = Array.from(document.querySelectorAll('.participant-modal'));
 
   if (!triggerBtns.length && !dialogs.length) return;
+
+  let savedScrollY = 0;
 
   const closeDialog = (dialog) => {
     if (!(dialog instanceof HTMLDialogElement) || !dialog.open) return;
@@ -106,8 +111,14 @@ function initParticipantModals(container) {
       const anyOpen = dialogs.some((d) => d instanceof HTMLDialogElement && d.open);
       if (!anyOpen) {
         document.body.classList.remove('participant-modal-active');
+        document.documentElement.classList.remove('participant-modal-active');
+        window.__lenis?.start();
+        if (typeof savedScrollY === 'number') {
+          window.scrollTo(0, savedScrollY);
+          window.__lenis?.scrollTo(savedScrollY, { immediate: true });
+        }
       }
-    }, 480);
+    }, 380);
   };
 
   const openDialog = (dialog) => {
@@ -117,12 +128,32 @@ function initParticipantModals(container) {
       dialog._closeTimeout = null;
     }
     dialog.classList.remove('is-closing');
+
+    // Save exact scroll position
+    savedScrollY = window.scrollY;
+
+    // Pause smooth scrolling and lock document
+    window.__lenis?.stop();
+    document.body.classList.add('participant-modal-active');
+    document.documentElement.classList.add('participant-modal-active');
+
     if (typeof dialog.showModal === 'function') {
       dialog.showModal();
     } else {
       dialog.setAttribute('open', '');
     }
-    document.body.classList.add('participant-modal-active');
+
+    // Reset inner scroll
+    const innerDialog = dialog.querySelector('.participant-modal__dialog');
+    if (innerDialog) {
+      innerDialog.scrollTop = 0;
+    }
+
+    // Prevent showModal focus from scrolling the page
+    if (typeof savedScrollY === 'number' && window.scrollY !== savedScrollY) {
+      window.scrollTo(0, savedScrollY);
+    }
+    window.__lenis?.scrollTo(savedScrollY, { immediate: true });
 
     void dialog.offsetWidth;
 

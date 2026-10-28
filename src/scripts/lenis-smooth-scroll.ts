@@ -22,6 +22,8 @@ function isDocumentScrollLocked(): boolean {
   return (
     document.body.classList.contains('template-no-scroll') ||
     document.body.classList.contains('is-locked') ||
+    document.body.classList.contains('participant-modal-active') ||
+    document.documentElement.classList.contains('participant-modal-active') ||
     document.documentElement.classList.contains('intro-scroll-lock') ||
     document.body.style.overflow === 'hidden'
   );
@@ -35,6 +37,8 @@ function protectScrollContainers() {
   const modalSelectors = [
     'dialog',
     '[role="dialog"]',
+    '.participant-modal',
+    '.participant-modal__dialog',
     '.senadda-modal',
     '.fancybox__container',
     '.fancybox__slide',

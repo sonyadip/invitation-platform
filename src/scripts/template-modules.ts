@@ -382,19 +382,54 @@ export function initRevealAnimations(root: Element | Document = document) {
   animatedItems.forEach((item) => {
     if (item instanceof HTMLElement) {
       if (!item.style.getPropertyValue('--animate-delay')) {
-        const computedDelay = window.getComputedStyle(item).getPropertyValue('--animate-delay').trim();
-        if (!computedDelay || computedDelay === '0ms' || computedDelay === '0s') {
-          const parent = item.parentElement;
-          if (parent) {
-            const isGrid = parent.classList.contains('gallery-grid') || 
-                           parent.classList.contains('gallery-section__grid') || 
-                           (typeof parent.className === 'string' && parent.className.includes('grid'));
-            const siblings = Array.from(parent.querySelectorAll(':scope > [data-animate]'));
-            if (siblings.length > 1) {
-              const siblingIndex = siblings.indexOf(item);
-              if (siblingIndex > 0) {
-                const delay = isGrid ? (siblingIndex % 4) * 100 : Math.min(siblingIndex * 120, 800);
-                item.style.setProperty('--animate-delay', `${delay}ms`);
+        // 1. Wishes list items
+        const wishesList = item.closest('.wishes-list');
+        if (wishesList && wishesList !== item) {
+          const listItems = Array.from(wishesList.querySelectorAll(':scope > [data-animate]'));
+          const idx = listItems.indexOf(item);
+          if (idx >= 0) {
+            item.style.setProperty('--animate-delay', `${Math.min(idx * 140, 800)}ms`);
+          }
+        } else {
+          // 2. Recognized card / component container
+          const container = item.closest(
+            '.event-card, .closing-row, .couple-section__person, .couple-swiss__wrapper, .couple-swiss, .story-section, .countdown-section, .rsvp-section, .gift-section'
+          );
+          if (container && container !== item) {
+            const containerItems = Array.from(container.querySelectorAll('[data-animate]'));
+            const idx = containerItems.indexOf(item);
+            if (idx >= 0) {
+              item.style.setProperty('--animate-delay', `${Math.min(idx * 180, 1200)}ms`);
+            }
+          } else {
+            // 3. Fallback to direct parent / grid
+            const parent = item.parentElement;
+            if (parent) {
+              const computedStyle = window.getComputedStyle(parent);
+              const display = computedStyle.display;
+              const colCount = (display === 'grid' || display === 'inline-grid')
+                ? computedStyle.gridTemplateColumns.split(' ').filter(Boolean).length
+                : 1;
+              const isGrid = colCount > 1 || 
+                             parent.classList.contains('gallery-grid') || 
+                             parent.classList.contains('couple-section__list') ||
+                             parent.classList.contains('gallery-section__grid');
+
+              const siblings = Array.from(parent.querySelectorAll(':scope > [data-animate]'));
+              if (siblings.length > 1) {
+                const siblingIndex = siblings.indexOf(item);
+                if (siblingIndex >= 0) {
+                  let delay = 0;
+                  if (isGrid) {
+                    const cols = colCount > 1 ? colCount : 2;
+                    const col = siblingIndex % cols;
+                    const row = Math.floor(siblingIndex / cols);
+                    delay = Math.min(col * 140 + row * 80, 800);
+                  } else {
+                    delay = Math.min(siblingIndex * 180, 1200);
+                  }
+                  item.style.setProperty('--animate-delay', `${delay}ms`);
+                }
               }
             }
           }
