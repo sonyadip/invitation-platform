@@ -966,7 +966,7 @@ body.template-lumiere-metatah-v2 {
     &__card {
       position: relative;
       background: rgba(14, 14, 16, 0.96);
-      padding: 48px 20px 24px;
+      padding: 40px 20px 28px;
       text-align: center;
       color: var(--lm-white, #ffffff);
       display: flex;
@@ -983,15 +983,15 @@ body.template-lumiere-metatah-v2 {
 
     &__close-btn {
       position: absolute;
-      top: 12px;
-      right: 12px;
+      top: 9px;
+      right: 10px;
       width: 32px;
       height: 32px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: none;
+      border: none;
       border-radius: 50%;
       color: rgba(255, 255, 255, 0.75);
       cursor: pointer;
