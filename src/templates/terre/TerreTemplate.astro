@@ -217,8 +217,7 @@ const totalResponsesCount = wishes ? wishes.length : 12;
 const activeGifts = gifts && gifts.length > 0
   ? gifts
   : [
-      { id: '1', bank_name: 'BCA', account_number: '1234567890', account_name: wedding.groom_name, qris_url: null },
-      { id: '2', bank_name: 'Bank Mandiri', account_number: '0987654321', account_name: wedding.bride_name, qris_url: null }
+      { id: '1', bank_name: 'BCA', account_number: '0123 456 789', account_name: wedding.groom_name || 'Nama Mempelai', qris_url: null }
     ];
 
 const closingTitle = themeContent.thankYouTitle || 'Terima Kasih';

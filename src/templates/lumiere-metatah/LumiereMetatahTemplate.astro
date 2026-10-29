@@ -18,8 +18,8 @@ import {
   generatePaginationItems
 } from '../../utils/template-helpers';
 
-import metatahBg    from './assets/metatah-bg.jpg';
-import sidebarBg    from './assets/sidebar-bg.jpg';
+import metatahBg    from './assets/metatah-bg.webp';
+import sidebarBg    from './assets/sidebar-bg.webp';
 
 import styleUrl from './style.scss?url';
 
@@ -352,8 +352,7 @@ const activeEvents = rawActiveEvents.map((event) => ({
 const activeGifts = gifts && gifts.length > 0
   ? gifts
   : [
-      { id: '1', bank_name: 'BCA', account_number: '0123 456 789', account_name: participantName, qris_url: null },
-      { id: '2', bank_name: 'BPD Bali', account_number: '9876 543 210', account_name: participantName, qris_url: null }
+      { id: '1', bank_name: 'BCA', account_number: '0123 456 789', account_name: participantName || 'Nama Peserta', qris_url: null }
     ];
 
 const displayedWishes = wishes ? wishes.slice(0, 4) : [];
@@ -399,7 +398,7 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
   image={coverImage}
   styleUrl={styleUrl}
   title={text.metaTitle || (isMultipleParticipants ? `${text.ceremonyTitle || 'Upacara Metatah'} - ${participantsNames}` : `Upacara Metatah ${participantsNames}`)}
-  description={text.metaDescription || (text.verse ? text.verse.slice(0, 160) : `Upacara Manusa Yadnya (Metatah / Potong Gigi) ${participantsNames}.`)}
+  description={text.metaDescription || `Undangan ${text.ceremonyTitle || 'Upacara Metatah'} ${participantsNames}.\n${formattedDate}.`}
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (

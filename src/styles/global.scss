@@ -249,6 +249,7 @@ body:has(#intro-awal:not([style*="display: none"])) .floating-audio-wrap {
   position: relative;
   display: inline-block;
   user-select: none;
+  margin-bottom: 2px;
 }
 
 @keyframes giftBtnPop {

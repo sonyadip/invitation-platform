@@ -41,6 +41,13 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
   }
 
   function initClassicIntro() {
+    if ((window as any).__pauseIntro) {
+      window.addEventListener("start-intro", () => {
+        (window as any).__pauseIntro = false;
+        initClassicIntro();
+      }, { once: true });
+      return;
+    }
     const intro = document.getElementById("intro-awal");
     const progresbar = document.querySelector(".progresbar");
     const layout = document.querySelector("[data-template-layout]") as HTMLElement;
