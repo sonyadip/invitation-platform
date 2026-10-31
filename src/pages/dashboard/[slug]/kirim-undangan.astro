@@ -505,7 +505,8 @@ Om Shanti, Shanti, Shanti, Om.`
              
              if (nameEl && templateEl) {
                 const guestNameText = nameEl.innerText.trim();
-                const guestLink = `${window.location.origin}/${slug}?to=${encodeURIComponent(guestNameText)}`;
+                const origin = window.location.hostname === 'www.senadda.id' ? 'https://senadda.id' : window.location.origin;
+                const guestLink = `${origin}/${slug}?to=${encodeURIComponent(guestNameText)}`;
                 let text = templateEl.innerText;
                 text = text.replace(/\[NAMA\]/g, guestNameText);
                 text = text.replace(/\[LINK\]/g, guestLink);
@@ -528,7 +529,8 @@ Om Shanti, Shanti, Shanti, Om.`
              
              if (nameEl && templateEl) {
                 const guestNameText = nameEl.innerText.trim();
-                const guestLink = `${window.location.origin}/${slug}?to=${encodeURIComponent(guestNameText)}`;
+                const origin = window.location.hostname === 'www.senadda.id' ? 'https://senadda.id' : window.location.origin;
+                const guestLink = `${origin}/${slug}?to=${encodeURIComponent(guestNameText)}`;
                 let text = templateEl.innerText;
                 text = text.replace(/\[NAMA\]/g, guestNameText);
                 text = text.replace(/\[LINK\]/g, guestLink);

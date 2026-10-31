@@ -8,6 +8,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.requestId = requestId;
 
   const url = context.url;
+  if (url.hostname === 'www.senadda.id') {
+    return context.redirect(`https://senadda.id${url.pathname}${url.search}`, 301);
+  }
+
   const pathname = url.pathname;
   const acceptHeader = context.request.headers.get('accept') || '';
 

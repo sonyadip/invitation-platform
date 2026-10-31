@@ -9,6 +9,16 @@
     "nodejs_compat_populate_process_env",
     "global_fetch_strictly_public"
   ],
+  "routes": [
+    {
+      "pattern": "senadda.id",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.senadda.id",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist"
