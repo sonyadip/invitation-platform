@@ -46,7 +46,7 @@ const sidebarImage      = themeAssets.sidebarImage     || defaultBg2;
 const participantImage  = themeAssets.participantImage || themeAssets.groomImage || defaultBg1;
 const eventImage        = themeAssets.eventImage       || defaultBg1;
 const rsvpImage         = themeAssets.rsvpImage        || defaultBg2;
-const closingImage      = themeAssets.closingImage     || defaultBg1;
+const closingImage      = themeAssets.closingImage     || (isPreview ? defaultBg1 : undefined);
 const saveDateImage     = themeAssets.countdownImage   || defaultBg2;
 
 const customSliderImages = Array.isArray(themeAssets.sliderImages) && themeAssets.sliderImages.length > 0
@@ -681,7 +681,7 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
         )}
 
         {sections.rsvp && settings.rsvp_enabled && (
-          <section class="rsvp-row" id="rsvp" data-rsvp-section>
+          <section class:list={['rsvp-row', { 'rsvp-row--no-border': !closingImage }]} id="rsvp" data-rsvp-section>
             <div class="rsvp-row__content">
               <section class="rsvp-section" data-animate>
                 <div class="rsvp-container">
@@ -822,10 +822,12 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           </section>
         )}
 
-        <section class="closing-row">
-          <div class="closing-row__media" data-animate>
-            <SmartImage src={closingImage} alt="" loading="lazy" />
-          </div>
+        <section class:list={['closing-row', { 'closing-row--no-media': !closingImage }]}>
+          {closingImage && (
+            <div class="closing-row__media" data-animate>
+              <SmartImage src={closingImage} alt="" loading="lazy" />
+            </div>
+          )}
           <div class="closing-row__content" data-animate>
             <h3 class="closing-row__title">{closingTitle}</h3>
             <p class="closing-row__message">{closingMessage}</p>

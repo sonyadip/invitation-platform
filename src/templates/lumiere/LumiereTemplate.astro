@@ -509,7 +509,7 @@ const activeStory = wedding.story && wedding.story.length > 0
         )}
 
         {sections.rsvp && settings.rsvp_enabled && (
-          <section class="rsvp-row" id="rsvp" data-rsvp-section>
+          <section class:list={['rsvp-row', { 'rsvp-row--no-border': !closingImage }]} id="rsvp" data-rsvp-section>
             <div class="rsvp-row__content">
               <section class="rsvp-section" data-animate>
                 <div class="rsvp-container">
@@ -641,7 +641,7 @@ const activeStory = wedding.story && wedding.story.length > 0
           </section>
         )}
 
-        <section class="closing-row">
+        <section class:list={['closing-row', { 'closing-row--no-media': !closingImage }]}>
           {closingImage && (
             <div class="closing-row__media" data-animate>
               <SmartImage src={closingImage} alt="" loading="lazy" />
