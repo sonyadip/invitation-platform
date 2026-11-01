@@ -184,7 +184,20 @@ body.template-noir {
     gap: 14px;
     margin: 0 auto;
     padding: 45px 0 50px;
-    animation: coverIntro 2.7s cubic-bezier(0.19, 1, 0.22, 1) both;
+  }
+
+  &:has(#intro-awal):not(.is-intro-finished) {
+    .cover-section__body {
+      opacity: 0 !important;
+      animation: none !important;
+    }
+  }
+
+  &.is-intro-finished,
+  &:not(:has(#intro-awal)) {
+    .cover-section__body {
+      animation: coverIntro 2.4s cubic-bezier(0.19, 1, 0.22, 1) both;
+    }
   }
 
   .cover-section__spacer {
@@ -366,7 +379,7 @@ body.template-noir {
   .hero-section {
     position: relative;
     display: flex;
-    height: 60vh;
+    height: 65.5vh;
     min-height: 459px;
     align-items: flex-end;
     justify-content: center;

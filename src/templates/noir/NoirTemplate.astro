@@ -191,7 +191,7 @@ const activeGifts = gifts && gifts.length > 0
   styleUrl={styleUrl}
 >
   <div class="invitation-root" data-template-root>
-    {sections.introAnimation === true && (
+    {sections.introAnimation !== false && (
       <ClassicIntro
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}
@@ -211,8 +211,8 @@ const activeGifts = gifts && gifts.length > 0
         <div class="cover-section__guest">
           <p class="cover-section__guest-label">Kepada Yth.</p>
           <p class="cover-section__guest-name">{guestName || 'Nama Tamu'}</p>
-          <button class="cover-section__btn" data-template-open aria-label="Open Invitation">
-            Open Invitation
+          <button class="cover-section__btn" data-template-open aria-label="Buka Undangan">
+            Buka Undangan
           </button>
         </div>
       </div>
@@ -272,8 +272,8 @@ const activeGifts = gifts && gifts.length > 0
             <section class="couple-section" id="mempelai">
 
               <div class="couple-section__row">
-                <div class="person-card" data-animate="fade-right" style="--animate-delay: 500ms;">
-                  <div class="person-card__photo-wrap">
+                <div class="person-card">
+                  <div class="person-card__photo-wrap" data-animate="fade-right">
                     <SmartImage
                       class="person-card__photo"
                       src={groomImage}
@@ -281,9 +281,9 @@ const activeGifts = gifts && gifts.length > 0
                       loading="lazy"
                     />
                   </div>
-                  <p class="person-card__role">Groom</p>
-                  <p class="person-card__fullname">{wedding.groom_full_name}</p>
-                  <p class="person-card__parents">
+                  <p class="person-card__role" data-animate="fade-right">Groom</p>
+                  <p class="person-card__fullname" data-animate="fade-right">{wedding.groom_full_name}</p>
+                  <p class="person-card__parents" data-animate="fade-right">
                     {groomParentLines.map((line, index) => (
                       <>
                         {index > 0 && <br />}
@@ -292,7 +292,7 @@ const activeGifts = gifts && gifts.length > 0
                     ))}
                   </p>
                   {groomInstagramUrl && (
-                    <a class="person-card__social" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`} data-track-couple-instagram="groom">
+                    <a class="person-card__social" data-animate="fade-right" href={groomInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.groom_name} Instagram`} data-track-couple-instagram="groom">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
                         <rect x="3" y="3" width="18" height="18" rx="5"></rect>
                         <circle cx="12" cy="12" r="4"></circle>
@@ -305,8 +305,8 @@ const activeGifts = gifts && gifts.length > 0
 
                 <div class="couple-section__amp" data-animate="zoom-in" style="--animate-delay: 500ms;">&amp;</div>
 
-                <div class="person-card" data-animate="fade-left" style="--animate-delay: 800ms;">
-                  <div class="person-card__photo-wrap">
+                <div class="person-card">
+                  <div class="person-card__photo-wrap" data-animate="fade-left">
                     <SmartImage
                       class="person-card__photo"
                       src={brideImage}
@@ -314,9 +314,9 @@ const activeGifts = gifts && gifts.length > 0
                       loading="lazy"
                     />
                   </div>
-                  <p class="person-card__role">Bride</p>
-                  <p class="person-card__fullname">{wedding.bride_full_name}</p>
-                  <p class="person-card__parents">
+                  <p class="person-card__role" data-animate="fade-left">Bride</p>
+                  <p class="person-card__fullname" data-animate="fade-left">{wedding.bride_full_name}</p>
+                  <p class="person-card__parents" data-animate="fade-left">
                     {brideParentLines.map((line, index) => (
                       <>
                         {index > 0 && <br />}
@@ -325,7 +325,7 @@ const activeGifts = gifts && gifts.length > 0
                     ))}
                   </p>
                   {brideInstagramUrl && (
-                    <a class="person-card__social" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`} data-track-couple-instagram="bride">
+                    <a class="person-card__social" data-animate="fade-left" href={brideInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`${wedding.bride_name} Instagram`} data-track-couple-instagram="bride">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
                         <rect x="3" y="3" width="18" height="18" rx="5"></rect>
                         <circle cx="12" cy="12" r="4"></circle>

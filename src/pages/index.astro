@@ -30,6 +30,7 @@ const defaultBookingUrl = getWaUrl();
 
 const navItems = [
   ["Koleksi", "#templates"],
+  ["Alur", "#process"],
   ["Fitur", "#features"],
   ["FAQ", "#faq"],
   ["Konsultasi", "#booking"],
@@ -663,6 +664,103 @@ const schemaData = {
         </div>
       </section>
 
+            <section
+        class="process-section section-observe"
+        id="process"
+        data-section
+      >
+        <div class="process-container">
+          <div class="section-heading-centered reveal-blur">
+            <p class="process-eyebrow">Alur Pembuatan</p>
+            <h2 class="process-heading">Tiga Langkah Mudah.</h2>
+            <p class="section-subheading" style="margin: 0 auto; max-width: 600px;">
+              Tanpa repot mendesain sendiri. Cukup siapkan data acara dan gambar terbaik Anda, tim Senadda yang akan merangkainya hingga siap disebarkan.
+            </p>
+          </div>
+
+          <div class="process-grid">
+            <div class="process-card reveal-blur" style="--delay: 100ms">
+              <span class="process-card__number" aria-hidden="true">01</span>
+              <div class="process-card__icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <circle cx="10" cy="9" r="1"></circle>
+                </svg>
+              </div>
+              <div class="process-card__badge">Langkah 01</div>
+              <h3 class="process-card__title">Siapkan Data & Foto</h3>
+              <p class="process-card__desc">
+                Pilih tema yang disukai, lalu kirimkan detail acara (nama mempelai/keluarga, tanggal, waktu, lokasi maps) serta foto atau galeri kenangan melalui WhatsApp atau formulir kami.
+              </p>
+              <div class="process-card__footer">
+                <span class="process-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Kirim via WhatsApp / Form
+                </span>
+              </div>
+            </div>
+
+            <div class="process-card reveal-blur" style="--delay: 200ms">
+              <span class="process-card__number" aria-hidden="true">02</span>
+              <div class="process-card__icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+                  <path d="M5 3v4"></path>
+                  <path d="M19 17v4"></path>
+                  <path d="M3 5h4"></path>
+                  <path d="M17 19h4"></path>
+                </svg>
+              </div>
+              <div class="process-card__badge">Langkah 02</div>
+              <h3 class="process-card__title">Kita Proses & Desain</h3>
+              <p class="process-card__desc">
+                Tim Senadda merangkai undangan Anda secara profesional dengan musik latar, navigasi maps, dan animasi elegan dalam 1–3 hari kerja. Dapatkan revisi minor sepuasnya sampai sempurna.
+              </p>
+              <div class="process-card__footer">
+                <span class="process-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  1–3 Hari & Bebas Revisi
+                </span>
+              </div>
+            </div>
+
+            <div class="process-card reveal-blur" style="--delay: 300ms">
+              <span class="process-card__number" aria-hidden="true">03</span>
+              <div class="process-card__icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </div>
+              <div class="process-card__badge">Langkah 03</div>
+              <h3 class="process-card__title">Undangan Siap Disebarkan</h3>
+              <p class="process-card__desc">
+                Undangan resmi aktif dengan link eksklusif dan akses dashboard. Buat nama tamu otomatis secara personal, lalu sebarkan langsung ke WhatsApp keluarga dan kerabat hanya dalam 1 klik.
+              </p>
+              <div class="process-card__footer">
+                <span class="process-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Link Eksklusif & Dashboard Tamu
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="process-bottom-note reveal-blur" style="--delay: 350ms">
+            <p>
+              Masih bingung dengan persiapan datanya?
+              <a href={defaultBookingUrl} target="_blank" rel="noreferrer">
+                Konsultasikan gratis dengan tim kami
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section
         class="dashboard-showcase section-observe"
         id="dashboard"
@@ -1020,6 +1118,7 @@ const schemaData = {
         <footer class="start-footer reveal-blur" style="--delay: 240ms">
           <div class="start-footer__links">
             <a href="#templates">Koleksi</a>
+            <a href="#process">Alur</a>
             <a href="#features">Fitur</a>
             <a href="#faq">FAQ</a>
             <a href={siteSettings.instagram_url || "https://www.instagram.com/senadda.id"} target="_blank" rel="noopener">Instagram</a>
@@ -3828,6 +3927,234 @@ const schemaData = {
     background: #1f2937;
     transform: translateY(-2px);
   }
+  /* Process / Alur Pembuatan Section */
+  .process-section {
+    position: relative;
+    z-index: 2;
+    padding: 100px 20px 90px;
+    background: var(--white);
+    scroll-margin-top: 84px;
+    border-top: 1px solid rgba(23, 22, 15, 0.06);
+  }
+
+  .process-container {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .process-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted-clay);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .process-heading {
+    color: var(--black) !important;
+    margin-bottom: 12px;
+  }
+
+  .process-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 52px;
+  }
+
+  @media (min-width: 860px) {
+    .process-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+  }
+
+  .process-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 36px 28px 32px;
+    background: #ffffff;
+    border: 1px solid rgba(23, 22, 15, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(23, 22, 15, 0.03);
+    transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
+  }
+
+  .process-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--black);
+    box-shadow: 0 16px 36px rgba(23, 22, 15, 0.08);
+  }
+
+  @media (min-width: 860px) {
+    .process-card:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 60px;
+      right: -18px;
+      width: 10px;
+      height: 10px;
+      border-top: 2px solid var(--warm-taupe);
+      border-right: 2px solid var(--warm-taupe);
+      transform: rotate(45deg);
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+  }
+
+  .process-card__number {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: var(--font-heading);
+    font-size: 42px;
+    line-height: 1;
+    color: var(--warm-taupe);
+    opacity: 0.32;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .process-card__icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--soft-parchment);
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  }
+
+  .process-card__icon-wrap svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .process-card:hover .process-card__icon-wrap {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .process-card__badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted-clay);
+    margin-bottom: 8px;
+  }
+
+  .process-card__title {
+    font-family: var(--font-body);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--black);
+    line-height: 1.35;
+    margin: 0 0 12px;
+  }
+
+  .process-card__desc {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--deep-charcoal);
+    margin: 0 0 24px;
+    flex-grow: 1;
+  }
+
+  .process-card__footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(23, 22, 15, 0.12);
+  }
+
+  .process-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--deep-charcoal);
+    background: var(--soft-parchment);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+
+  .process-tag svg {
+    width: 13px;
+    height: 13px;
+    color: var(--muted-clay);
+    stroke-width: 2.5;
+  }
+
+  .process-bottom-note {
+    text-align: center;
+    margin-top: 48px;
+  }
+
+  .process-bottom-note p {
+    font-size: 13.5px;
+    color: var(--deep-charcoal);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .process-bottom-note a {
+    font-weight: 600;
+    color: var(--black);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s ease;
+  }
+
+  .process-bottom-note a:hover {
+    color: var(--muted-clay);
+  }
+
+  .process-bottom-note a svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s ease;
+  }
+
+  .process-bottom-note a:hover svg {
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 640px) {
+    .process-section {
+      padding: 60px 16px;
+    }
+    .process-grid {
+      margin-top: 36px;
+      gap: 16px;
+    }
+    .process-card {
+      padding: 28px 20px 24px;
+    }
+    .process-card__title {
+      font-size: 18px;
+    }
+    .process-card__desc {
+      font-size: 13.5px;
+      margin-bottom: 20px;
+    }
+    .process-bottom-note {
+      margin-top: 36px;
+    }
+  }
+
 </style>
 
 <script>

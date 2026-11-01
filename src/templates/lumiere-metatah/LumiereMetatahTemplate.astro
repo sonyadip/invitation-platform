@@ -304,9 +304,11 @@ const introAnimationName = text.introAnimationName || text.introAnimationTitle |
 const introAnimationSubtitle = text.introAnimationSubtitle || 'Metatah / Potong Gigi';
 
 const pesertaSectionEyebrow = text.pesertaSectionEyebrow || text.coupleEyebrow || 'Metatah / Potong Gigi';
+const hidePesertaTitle = Boolean(text.hidePesertaTitle || text.hidePesertaSectionTitle || text.pesertaSectionTitle === false);
 const pesertaSectionTitle = text.pesertaSectionTitle || 'Peserta Upacara';
 
-const closingNames = text.closingNames || introName;
+const hideClosingNames = Boolean(text.hideClosingNames || text.closingNames === false || text.closingNames === '');
+const closingNames = hideClosingNames ? '' : (text.closingNames || introName);
 
 const formattedDate = formatDate(wedding.wedding_date);
 const introDateFormatted = formattedDate.includes(',') ? formattedDate.split(',')[1].trim() : formattedDate;
@@ -507,10 +509,14 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
         {sections.coupleInfo && (
           <section class="couple-section couple-section--metatah" id="data-peserta">
             <div class="couple-section__header" data-animate>
-              <p class="couple-section__eyebrow">
-                {pesertaSectionEyebrow}
-              </p>
-              <h2 class="section-title">{pesertaSectionTitle}</h2>
+              {pesertaSectionEyebrow && (
+                <p class="couple-section__eyebrow">
+                  {pesertaSectionEyebrow}
+                </p>
+              )}
+              {!hidePesertaTitle && pesertaSectionTitle && (
+                <h2 class="section-title">{pesertaSectionTitle}</h2>
+              )}
               <div class="section-rule"></div>
             </div>
 
@@ -608,7 +614,9 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
                     <p class="event-card__time">
                       Pukul {event.start_time} {event.end_time ? `- ${event.end_time}` : '- Selesai'}
                     </p>
-                    <p class="event-card__venue">{event.venue_name}</p>
+                    {event.venue_name && (
+                      <p class="event-card__venue">{event.venue_name}</p>
+                    )}
                     <p class="event-card__address">{event.venue_address}</p>
                     {event.maps_url && (
                       <a class="event-card__map-btn" href={event.maps_url} target="_blank" rel="noopener noreferrer">
@@ -831,9 +839,11 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
           <div class="closing-row__content" data-animate>
             <h3 class="closing-row__title">{closingTitle}</h3>
             <p class="closing-row__message">{closingMessage}</p>
-            <h4 class="closing-row__names">
-              {closingNames}
-            </h4>
+            {!hideClosingNames && closingNames && (
+              <h4 class="closing-row__names">
+                {closingNames}
+              </h4>
+            )}
             <footer class="thankyou-section__footer">
               <a href="https://senadda.id" target="_blank" rel="noopener noreferrer" title="Senadda - Undangan Digital Bali" class="thankyou-section__brand-link" data-track-vendor-site style="display: inline-block; line-height: 0;">
                 <SmartImage src="/images/senadda-logo.png" alt="Senadda - Undangan Digital Bali" class="thankyou-section__brand" />
