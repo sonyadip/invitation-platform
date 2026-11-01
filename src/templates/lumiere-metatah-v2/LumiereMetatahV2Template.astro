@@ -456,6 +456,21 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
       { title: 'Makna Upacara Mepandes', description: 'Upacara Mepandes / Metatah (Potong Gigi) merupakan upacara Manusa Yadnya dalam agama Hindu di Bali yang melambangkan pengendalian Sad Ripu (enam musuh dalam diri manusia).' },
       { title: 'Penyucian Diri Menuju Kedewasaan', description: 'Sebagai simbol peralihan menuju kedewasaan, memohon keselamatan, ketenangan batin, serta keharmonisan lahir dan batin kepada Ida Sang Hyang Widhi Wasa.' }
     ];
+const ceremonyTitleText = text.ceremonyTitle || 'Upacara Metatah';
+const isTitleRedundant = Boolean(
+  coverTitle &&
+  ceremonyTitleText &&
+  (
+    coverTitle.trim().toLowerCase() === ceremonyTitleText.trim().toLowerCase() ||
+    ceremonyTitleText.toLowerCase().includes(coverTitle.trim().toLowerCase()) ||
+    /^(metatah|mepandes)$/i.test(coverTitle.trim())
+  )
+);
+
+const metaTitle = text.metaTitle || (isTitleRedundant ? ceremonyTitleText : `${ceremonyTitleText} - ${coverTitle}`);
+const metaDescription = text.metaDescription || (isTitleRedundant
+  ? `Undangan ${ceremonyTitleText}.\n${formattedDate}.`
+  : `Undangan ${ceremonyTitleText} ${coverTitle}.\n${formattedDate}.`);
 ---
 
 <BaseLayout
@@ -465,8 +480,8 @@ const activeStory = wedding.story && wedding.story.length > 0 && wedding.story[0
   templateClass="template-lumiere-metatah-v2"
   image={coverImage}
   styleUrl={styleUrl}
-  title={text.metaTitle || `${text.ceremonyTitle || 'Upacara Metatah'} - ${coverTitle}`}
-  description={text.metaDescription || `Undangan ${text.ceremonyTitle || 'Upacara Metatah'} ${coverTitle}.\n${formattedDate}.`}
+  title={metaTitle}
+  description={metaDescription}
 >
   <div class="invitation-root" data-template-root>
     {sections.introAnimation !== false && (
