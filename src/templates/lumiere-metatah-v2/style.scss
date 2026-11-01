@@ -1987,6 +1987,10 @@ body.template-lumiere-metatah-v2 {
 
     &--no-media {
       padding-top: 0;
+
+      .closing-row__content {
+        padding-top: 0;
+      }
     }
 
     &__media {

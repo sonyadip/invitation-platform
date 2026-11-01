@@ -46,7 +46,9 @@ const sidebarImage      = themeAssets.sidebarImage     || defaultBg2;
 const participantImage  = themeAssets.participantDefaultImage || themeAssets.participantImage || themeAssets.groomImage || defaultBg1;
 const eventImage        = themeAssets.eventImage       || defaultBg1;
 const rsvpImage         = themeAssets.rsvpImage        || defaultBg2;
-const closingImage      = themeAssets.closingImage     || (isPreview ? defaultBg1 : undefined);
+const closingImage      = (themeAssets.closingImage === null || themeAssets.closingImage === false || themeAssets.closingImage === '')
+  ? undefined
+  : (themeAssets.closingImage || (isPreview ? defaultBg1 : undefined));
 const saveDateImage     = themeAssets.countdownImage   || defaultBg2;
 const groupPhotoImage   = themeAssets.groupPhoto       || themeAssets.togetherImage   || themeAssets.mediaImage || defaultBg1;
 
@@ -327,12 +329,59 @@ participantsList.sort((a, b) => getBirthOrderRank(a) - getBirthOrderRank(b));
 
 const isMultipleParticipants = participantsList.length > 1;
 
-const participantsNames = participantsList.map(p => p.nickname || p.name).filter(Boolean).join(' & ') || participantName;
+const participantNicknames = participantsList.map(p => p.nickname || p.name).filter(Boolean);
+const formattedNicknames = participantNicknames.length === 0
+  ? participantName
+  : participantNicknames.length === 1
+    ? participantNicknames[0]
+    : participantNicknames.length === 2
+      ? `${participantNicknames[0]} & ${participantNicknames[1]}`
+      : `${participantNicknames.slice(0, -1).join(', ')} & ${participantNicknames[participantNicknames.length - 1]}`;
 
+const participantsNames = formattedNicknames;
 const participantsFullNames = participantsList.map(p => p.fullName || p.name).filter(Boolean).join(' & ') || participantFullName;
 
+// Title Mode resolution:
+// 1. 'default': Pakai Default (Metatah / Mepandes), otomatis tanpa closing-row__names
+// 2. 'family': Nama keluarga (misal: "Pande Ceria")
+// 3. 'participants': Nama panggilan masing-masing peserta
+const rawTitleMode = (text.titleMode || themeContent.titleMode || themeContent.titleType || '').toString().toLowerCase().trim();
+
+let titleMode: 'default' | 'family' | 'participants' = 'family';
+if (rawTitleMode === 'default' || rawTitleMode === 'ceremony' || rawTitleMode === 'metatah') {
+  titleMode = 'default';
+} else if (rawTitleMode === 'participants' || rawTitleMode === 'peserta') {
+  titleMode = 'participants';
+} else if (rawTitleMode === 'family' || rawTitleMode === 'keluarga') {
+  titleMode = 'family';
+} else if (Boolean(themeContent.useParticipantsAsTitle)) {
+  titleMode = 'participants';
+} else {
+  // Infer mode from title content if not explicitly specified
+  const explicitTitle = (text.coverTitle || text.coverName || text.title || '').trim();
+  if (/^(metatah|mepandes|upacara metatah|upacara mepandes)$/i.test(explicitTitle)) {
+    titleMode = 'default';
+  } else {
+    titleMode = 'family';
+  }
+}
+
+// Resolve coverTitle:
+// Mode 3: Participants nicknames
+// Mode 1 or 2: Respect explicit text.coverTitle / text.coverName / text.title first!
+// Fallbacks: Mode 1 falls back to 'Metatah', Mode 2 falls back to familyName or 'Pande Ceria'
+let coverTitle = '';
+if (titleMode === 'participants') {
+  coverTitle = text.participantsTitle || formattedNicknames;
+} else if (text.coverTitle || text.coverName || text.title) {
+  coverTitle = text.coverTitle || text.coverName || text.title;
+} else if (titleMode === 'default') {
+  coverTitle = text.defaultTitle || text.ceremonyTitle || 'Metatah';
+} else {
+  coverTitle = text.familyName || text.familyTitle || themeContent.ceremonyTitle || 'Pande Ceria';
+}
+
 const coverEyebrow = text.coverEyebrow || text.ceremonyEyebrow || 'Upacara Manusa Yadnya';
-const coverTitle = text.coverTitle || text.coverName || text.title || themeContent.ceremonyTitle || 'Pande Ceria';
 
 const introEyebrow = text.introEyebrow || 'UPACARA MANUSA YADNYA';
 const introName = text.introName || text.introTitle || coverTitle;
@@ -346,8 +395,12 @@ let sidebarBride = text.sidebarBride || '';
 if (!sidebarGroom && !sidebarBride) {
   if (sidebarTitleSource.includes('&')) {
     const parts = sidebarTitleSource.split('&').map((s: string) => s.trim());
-    sidebarGroom = parts[0] || '';
-    sidebarBride = parts[1] || '';
+    if (parts.length === 2) {
+      sidebarGroom = parts[0] || '';
+      sidebarBride = parts[1] || '';
+    } else {
+      sidebarGroom = sidebarTitleSource;
+    }
   } else {
     sidebarGroom = sidebarTitleSource;
   }
@@ -360,8 +413,15 @@ const pesertaSectionEyebrow = text.pesertaSectionEyebrow || text.coupleEyebrow |
 const hidePesertaTitle = Boolean(text.hidePesertaTitle || text.hidePesertaSectionTitle || text.pesertaSectionTitle === false);
 const pesertaSectionTitle = text.pesertaSectionTitle || 'Peserta Upacara';
 
-const hideClosingNames = Boolean(text.hideClosingNames || text.closingNames === false || text.closingNames === '');
-const closingNames = hideClosingNames ? '' : (text.closingNames || introName);
+// Mode 1: Pakai Default (Metatah) otomatis ini tidak ada closing-row__names
+const isDefaultTitle = titleMode === 'default' || /^(metatah|mepandes|upacara metatah|upacara mepandes)$/i.test(coverTitle.trim());
+const hideClosingNames = isDefaultTitle
+  ? true
+  : Boolean(text.hideClosingNames || text.closingNames === false || text.closingNames === '');
+
+const closingNames = hideClosingNames
+  ? ''
+  : (themeContent.closingNames || (titleMode === 'participants' ? formattedNicknames : (text.closingNames || introName)));
 
 const formattedDate = formatDate(wedding.wedding_date);
 const introDateFormatted = formattedDate.includes(',') ? formattedDate.split(',')[1].trim() : formattedDate;

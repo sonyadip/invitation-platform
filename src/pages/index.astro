@@ -78,14 +78,35 @@ const resolveCategory = (c: any): 'pernikahan' | 'metatah' => {
 };
 
 let rawCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
-  ? siteSettings.home_template_cards.map((c: any) => ({
-      ...c,
-      name: c.key === 'lumiere-metatah' ? 'Lumiere' : (c.key === 'lumiere-metatah-v2' ? (c.name || 'Lumiere v2') : (c.name || 'Lumiere')),
-      category: resolveCategory(c),
-      promoPrice: c.promo_price || c.promoPrice || null,
-      image: c.image || imageMap[c.key] || ''
-    }))
-  : defaultTemplateCards;
+  ? siteSettings.home_template_cards.map((c: any) => {
+      const isMetatahCard = c.key === 'lumiere-metatah' || c.key === 'lumiere-metatah-v2';
+      const name = c.key === 'lumiere-metatah' ? 'Lumiere' : (c.key === 'lumiere-metatah-v2' ? (c.name || 'Lumiere v2') : (c.name || 'Lumiere'));
+      const defaultPreview = c.key === 'lumiere-metatah' ? '/preview/lumiere-metatah-v2' : `/preview/${c.key}`;
+      return {
+        ...c,
+        name,
+        category: resolveCategory(c),
+        promoPrice: c.promo_price || c.promoPrice || null,
+        image: c.image || imageMap[c.key] || '',
+        hasVariants: isMetatahCard,
+        variants: isMetatahCard ? [
+          { label: 'Dengan Foto', previewUrl: defaultPreview, waTheme: `${name} (Dengan Foto)` },
+          { label: 'Tanpa Foto', previewUrl: '/preview/lumiere-metatah-tanpa-foto', waTheme: `${name} (Tanpa Foto)` }
+        ] : null
+      };
+    })
+  : defaultTemplateCards.map((c: any) => {
+      const isMetatahCard = c.key === 'lumiere-metatah' || c.key === 'lumiere-metatah-v2';
+      const defaultPreview = c.key === 'lumiere-metatah' ? '/preview/lumiere-metatah-v2' : `/preview/${c.key}`;
+      return {
+        ...c,
+        hasVariants: isMetatahCard,
+        variants: isMetatahCard ? [
+          { label: 'Dengan Foto', previewUrl: defaultPreview, waTheme: `${c.name} (Dengan Foto)` },
+          { label: 'Tanpa Foto', previewUrl: '/preview/lumiere-metatah-tanpa-foto', waTheme: `${c.name} (Tanpa Foto)` }
+        ] : null
+      };
+    });
 
 if (!rawCards.some((c: any) => resolveCategory(c) === 'metatah')) {
   rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.category === 'metatah')];
@@ -641,15 +662,35 @@ const schemaData = {
                       <span class="template-card__price">{template.price}</span>
                     )}
                   </div>
+                  {template.hasVariants && template.variants && (
+                    <div class="template-card__variants" role="group" aria-label="Pilihan varian foto">
+                      {template.variants.map((variant: any, vIdx: number) => (
+                        <button
+                          type="button"
+                          class={`template-card__variant-btn${vIdx === 0 ? ' is-active' : ''}`}
+                          data-preview-url={variant.previewUrl}
+                          data-wa-url={getWaUrl(variant.waTheme)}
+                        >
+                          {variant.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div class="template-card__actions">
                     <a
-                      href={`/preview/${template.key}`}
+                      href={template.variants ? template.variants[0].previewUrl : `/preview/${template.key}`}
                       target="_blank"
                       rel="noreferrer"
+                      class="template-card__btn-preview"
                     >
                       Preview
                     </a>
-                    <a href={getWaUrl(template.name)} target="_blank" rel="noreferrer">
+                    <a
+                      href={template.variants ? getWaUrl(template.variants[0].waTheme) : getWaUrl(template.name)}
+                      target="_blank"
+                      rel="noreferrer"
+                      class="template-card__btn-order"
+                    >
                       Pesan
                     </a>
                   </div>
@@ -1480,6 +1521,33 @@ const schemaData = {
 
       const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
       elementsToObserve.forEach((el) => revealObserver.observe(el));
+
+      // Template Card Variant Switcher
+      document.querySelectorAll('.template-card__variants').forEach((group) => {
+        const card = group.closest('.template-card');
+        if (!card) return;
+        const previewLink = card.querySelector('.template-card__btn-preview');
+        const orderLink = card.querySelector('.template-card__btn-order');
+        const btns = group.querySelectorAll('.template-card__variant-btn');
+
+        btns.forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            btns.forEach((b) => b.classList.remove('is-active'));
+            btn.classList.add('is-active');
+
+            const nextPreviewUrl = btn.getAttribute('data-preview-url');
+            const nextWaUrl = btn.getAttribute('data-wa-url');
+
+            if (previewLink && nextPreviewUrl) {
+              previewLink.setAttribute('href', nextPreviewUrl);
+            }
+            if (orderLink && nextWaUrl) {
+              orderLink.setAttribute('href', nextWaUrl);
+            }
+          });
+        });
+      });
 
       const filterBtns = document.querySelectorAll(".template-filter-btn");
       const templateCardEls = document.querySelectorAll(".template-grid .template-card");
@@ -2856,6 +2924,45 @@ const schemaData = {
     line-height: 1.45;
   }
 
+  .template-card__variants {
+    display: flex;
+    align-items: center;
+    background: #f1efea;
+    padding: 3px;
+    border-radius: 999px;
+    gap: 2px;
+    margin-top: 10px;
+    margin-bottom: 2px;
+  }
+
+  .template-card__variant-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--dark-grey);
+    padding: 5px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .template-card__variant-btn:hover {
+    color: var(--black);
+  }
+
+  .template-card__variant-btn.is-active {
+    background: var(--white);
+    color: var(--black);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
   .template-card__actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3538,6 +3645,14 @@ const schemaData = {
     .template-card__body p {
       font-size: 10px;
       line-height: 1.45;
+    }
+    .template-card__variants {
+      margin-top: 6px;
+      padding: 2px;
+    }
+    .template-card__variant-btn {
+      font-size: 10px;
+      padding: 4px 6px;
     }
     .template-card__actions {
       grid-template-columns: 1fr 1fr;
