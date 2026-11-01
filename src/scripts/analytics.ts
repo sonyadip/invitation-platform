@@ -11,6 +11,7 @@ export type EventType =
   | 'click_wishes'
   | 'click_rsvp'
   | 'view_gallery'
+  | 'click_participant'
   | 'click_couple_instagram'
   | 'click_vendor_whatsapp'
   | 'click_vendor_instagram'
@@ -33,7 +34,8 @@ export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOpti
 
   const guestName = options.guestName ?? document.body.dataset.guestName ?? null;
 
-  const dedupeKey = `${weddingId}:${eventType}:${guestName || ''}`;
+  const dedupeSubKey = options.metadata?.participantName ? `:${options.metadata.participantName}` : '';
+  const dedupeKey = `${weddingId}:${eventType}${dedupeSubKey}:${guestName || ''}`;
   const now = Date.now();
   const lastTime = recentEventCache.get(dedupeKey) || 0;
   if (now - lastTime < 1500) {
@@ -103,6 +105,25 @@ export function initAutomaticInteractionTracking() {
     if (openBtn && !coverOpenedTracked) {
       coverOpenedTracked = true;
       sendAnalyticsEvent('open_cover');
+      return;
+    }
+
+    const participantBtn = target.closest('[data-open-participant-modal], [data-track-participant]');
+    if (participantBtn) {
+      const participantName =
+        participantBtn.getAttribute('data-participant-name') ||
+        participantBtn.querySelector('.couple-section__item-name')?.textContent?.trim() ||
+        participantBtn.textContent?.trim() ||
+        'Peserta';
+      const role = participantBtn.getAttribute('data-participant-role') || '';
+      const modalId = participantBtn.getAttribute('data-open-participant-modal') || '';
+      sendAnalyticsEvent('click_participant', {
+        metadata: {
+          participantName: participantName.slice(0, 100),
+          role: role.slice(0, 50),
+          modalId: modalId.slice(0, 50)
+        }
+      });
       return;
     }
 

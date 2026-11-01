@@ -18,6 +18,7 @@ const eventConfig: Record<string, { label: string; desc: string; icon: string; b
   view_gallery: { label: 'Lihat Galeri Foto', desc: 'Membuka atau melihat preview galeri foto mempelai', icon: 'photo_library', badgeClass: 'act-badge--indigo', iconColor: '#4f46e5' },
   click_rsvp: { label: 'Klik Form RSVP', desc: 'Menavigasi atau membuka form konfirmasi kehadiran', icon: 'how_to_reg', badgeClass: 'act-badge--emerald', iconColor: '#059669' },
   click_wishes: { label: 'Buka Form Ucapan', desc: 'Membuka form doa & ucapan selamat untuk mempelai', icon: 'forum', badgeClass: 'act-badge--amber', iconColor: '#b45309' },
+  click_participant: { label: 'Detail Peserta', desc: 'Membuka popup profil detail peserta upacara', icon: 'person', badgeClass: 'act-badge--purple', iconColor: '#9333ea' },
   click_couple_instagram: { label: 'Instagram Pengantin', desc: 'Membuka tautan profil Instagram mempelai', icon: 'photo_camera', badgeClass: 'act-badge--pink', iconColor: '#db2777' },
   click_vendor_whatsapp: { label: 'Vendor WhatsApp', desc: 'Menghubungi vendor undangan (Senadda) via WhatsApp', icon: 'chat', badgeClass: 'act-badge--success', iconColor: '#16a34a' },
   click_vendor_instagram: { label: 'Vendor Instagram', desc: 'Membuka profil Instagram vendor (Senadda)', icon: 'camera_alt', badgeClass: 'act-badge--pink', iconColor: '#e1306c' },
@@ -166,6 +167,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
         maps: number;
         calendar: number;
         gift: number;
+        participant: number;
         coupleIg: number;
         vendorWa: number;
         vendorIg: number;
@@ -211,6 +213,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
             maps: 0,
             calendar: 0,
             gift: 0,
+            participant: 0,
             coupleIg: 0,
             vendorWa: 0,
             vendorIg: 0,
@@ -247,6 +250,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       else if (item.event_type === 'click_maps') g.counts.maps++;
       else if (item.event_type === 'click_calendar') g.counts.calendar++;
       else if (item.event_type === 'copy_gift') g.counts.gift++;
+      else if (item.event_type === 'click_participant') g.counts.participant++;
       else if (item.event_type === 'click_couple_instagram') g.counts.coupleIg++;
       else if (item.event_type === 'click_vendor_whatsapp') g.counts.vendorWa++;
       else if (item.event_type === 'click_vendor_instagram') g.counts.vendorIg++;

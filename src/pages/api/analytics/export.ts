@@ -74,6 +74,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       view_gallery: 'Lihat Galeri',
       click_rsvp: 'Klik RSVP',
       click_wishes: 'Buka Doa / Ucapan',
+      click_participant: 'Detail Peserta',
       click_couple_instagram: 'Instagram Pengantin',
       click_vendor_whatsapp: 'WhatsApp Senadda',
       click_vendor_instagram: 'Instagram Senadda',

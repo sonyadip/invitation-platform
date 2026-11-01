@@ -443,6 +443,7 @@ const originUrl = Astro.url.origin;
               {showRsvpStat && <option value="click_rsvp">Klik Form RSVP</option>}
               {showWishesStat && <option value="click_wishes">Buka Doa / Ucapan</option>}
               {showCoupleIgStat && <option value="click_couple_instagram">Instagram Pengantin</option>}
+              <option value="click_participant">Detail Peserta (Popup)</option>
               <option value="click_vendor_whatsapp">WhatsApp Senadda</option>
               <option value="click_vendor_instagram">Instagram Senadda</option>
               <option value="click_vendor_site">Website Senadda</option>
@@ -1143,6 +1144,15 @@ const originUrl = Astro.url.origin;
             <div class="act-meta-box act-meta-box--pink">
               <span class="material-symbols-outlined meta-icon">photo_camera</span>
               <span>Instagram Mempelai: ${linkOrRole}</span>
+            </div>
+          `;
+        } else if (item.eventType === 'click_participant') {
+          const pName = item.metadata?.participantName ? escapeHtml(item.metadata.participantName) : 'Peserta';
+          const pRole = item.metadata?.role ? ` <span style="font-weight: normal; opacity: 0.85;">(${escapeHtml(item.metadata.role)})</span>` : '';
+          metaBoxHtml = `
+            <div class="act-meta-box act-meta-box--purple">
+              <span class="material-symbols-outlined meta-icon">person</span>
+              <span>Peserta: <strong>${pName}</strong>${pRole}</span>
             </div>
           `;
         }
@@ -3049,6 +3059,12 @@ const originUrl = Astro.url.origin;
       background: #fdf2f8;
       color: #831843;
       border: 1px solid #f472b6;
+    }
+
+    &--purple {
+      background: #faf5ff;
+      color: #581c87;
+      border: 1px solid #d8b4fe;
     }
   }
 

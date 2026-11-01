@@ -638,6 +638,9 @@ const metaDescription = text.metaDescription || (isTitleRedundant
                       type="button"
                       class="couple-section__item-btn"
                       data-open-participant-modal={`participant-modal-${index}`}
+                      data-track-participant
+                      data-participant-name={displayName}
+                      data-participant-role={person.role || ''}
                       aria-haspopup="dialog"
                       aria-controls={`participant-modal-${index}`}
                       aria-label={`Lihat detail profil ${displayName}`}

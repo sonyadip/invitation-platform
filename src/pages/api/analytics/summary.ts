@@ -133,6 +133,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
     let viewGalleryCount = 0;
     let clickRsvpCount = 0;
     let clickWishesCount = 0;
+    let clickParticipantCount = 0;
     let clickCoupleInstagramCount = 0;
     let clickVendorWhatsAppCount = 0;
     let clickVendorInstagramCount = 0;
@@ -159,6 +160,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       else if (ev.event_type === 'view_gallery') viewGalleryCount++;
       else if (ev.event_type === 'click_rsvp') clickRsvpCount++;
       else if (ev.event_type === 'click_wishes') clickWishesCount++;
+      else if (ev.event_type === 'click_participant') clickParticipantCount++;
       else if (ev.event_type === 'click_couple_instagram') clickCoupleInstagramCount++;
       else if (ev.event_type === 'click_vendor_whatsapp') clickVendorWhatsAppCount++;
       else if (ev.event_type === 'click_vendor_instagram') clickVendorInstagramCount++;
@@ -241,6 +243,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
         viewGallery: viewGalleryCount,
         clickRsvp: clickRsvpCount,
         clickWishes: clickWishesCount,
+        clickParticipant: clickParticipantCount,
         clickCoupleInstagram: clickCoupleInstagramCount,
         clickVendorWhatsApp: clickVendorWhatsAppCount,
         clickVendorInstagram: clickVendorInstagramCount,

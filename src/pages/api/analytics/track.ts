@@ -17,6 +17,7 @@ const ALLOWED_EVENTS = new Set([
   'click_wishes',
   'click_rsvp',
   'view_gallery',
+  'click_participant',
   'click_couple_instagram',
   'click_vendor_whatsapp',
   'click_vendor_instagram',
@@ -62,7 +63,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 
     let checkQuery = adminSupabase
       .from('invitation_events')
-      .select('id')
+      .select('id, metadata')
       .eq('wedding_id', weddingId)
       .eq('event_type', eventType)
       .gte('created_at', twoSecondsAgo);
@@ -73,9 +74,19 @@ export const POST: APIRoute = async ({ request, url }) => {
       checkQuery = checkQuery.is('guest_name', null);
     }
 
-    const { data: recentEvents } = await checkQuery.limit(1);
+    const { data: recentEvents } = await checkQuery.limit(5);
     if (recentEvents && recentEvents.length > 0) {
-      return jsonResponse({ success: true, deduped: true });
+      const currentTarget = metadata?.participantName || metadata?.target || null;
+      if (currentTarget) {
+        const isDuplicate = recentEvents.some(
+          (re: any) => (re.metadata?.participantName || re.metadata?.target) === currentTarget
+        );
+        if (isDuplicate) {
+          return jsonResponse({ success: true, deduped: true });
+        }
+      } else {
+        return jsonResponse({ success: true, deduped: true });
+      }
     }
 
     const { error } = await adminSupabase.from('invitation_events').insert({
