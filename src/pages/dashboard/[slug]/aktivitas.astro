@@ -59,7 +59,7 @@ const originUrl = Astro.url.origin;
 
         <div class="stats-grid" style="margin-top: 16px;">
           <div class="stat-card">
-            <div class="stat-card__icon" style="background: rgba(166, 137, 102, 0.12); color: var(--color-primary);">
+            <div class="stat-card__icon" style="background: #f4f4f5; color: #111827;">
               <span class="material-symbols-outlined">visibility</span>
             </div>
             <div class="stat-card__label">TOTAL KUNJUNGAN</div>
@@ -151,7 +151,7 @@ const originUrl = Astro.url.origin;
           <div class="graph-card-header">
             <div class="graph-card-title-group">
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="material-symbols-outlined" style="font-size: 20px; color: var(--color-primary, #a68966);">monitoring</span>
+                <span class="material-symbols-outlined" style="font-size: 20px; color: var(--color-primary, #111827);">monitoring</span>
                 <h4 class="graph-card-title">Grafik & Tren Aktivitas Pengunjung</h4>
               </div>
               <p class="graph-card-subtitle">Visualisasi interaktif pola kunjungan, respon amplop, dan interaksi tamu secara real-time</p>
@@ -219,20 +219,20 @@ const originUrl = Astro.url.origin;
               <svg class="graph-svg" id="activityGraphSvg" viewBox="0 0 800 220" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#a68966" stop-opacity="0.32" />
-                    <stop offset="100%" stop-color="#a68966" stop-opacity="0.01" />
+                    <stop offset="0%" stop-color="#111827" stop-opacity="0.25" />
+                    <stop offset="100%" stop-color="#111827" stop-opacity="0.01" />
                   </linearGradient>
                 </defs>
                 <g id="graphGridGroup"></g>
                 <g id="graphBarsGroup" style="display: none;"></g>
                 <g id="graphAreaGroup">
                   <path id="graphAreaPath" class="graph-area-path" d="" fill="url(#areaGradient)" />
-                  <path id="graphLinePath" class="graph-line-path" d="" fill="none" stroke="var(--color-primary, #a68966)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path id="graphLinePath" class="graph-line-path" d="" fill="none" stroke="var(--color-primary, #111827)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
                   <g id="graphPointsGroup"></g>
                 </g>
                 <g id="graphTrackerGroup" style="display: none;">
                   <line id="graphTrackerLine" x1="0" y1="25" x2="0" y2="190" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3,3" />
-                  <circle id="graphTrackerCircle" cx="0" cy="0" r="5.5" fill="#a68966" stroke="#ffffff" stroke-width="2.5" />
+                  <circle id="graphTrackerCircle" cx="0" cy="0" r="5.5" fill="#111827" stroke="#ffffff" stroke-width="2.5" />
                 </g>
               </svg>
             </div>
@@ -252,67 +252,84 @@ const originUrl = Astro.url.origin;
         <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
           <div class="analytics-subcard" style="margin-bottom: 0;">
             <h4 class="analytics-section-title" style="margin-bottom: 12px;">
-              <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">touch_app</span>
               Interaksi Tamu pada Undangan
             </h4>
             <div class="interaction-grid">
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon">drafts</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">drafts</span>
+                </div>
                 <span class="interaction-card__label">Buka Undangan</span>
                 <span class="interaction-card__value" id="cardStatCover">-</span>
               </div>
               {showMapsStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #2563eb;">location_on</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">location_on</span>
+                  </div>
                   <span class="interaction-card__label">Petunjuk Maps</span>
                   <span class="interaction-card__value" id="cardStatMaps">-</span>
                 </div>
               )}
               {showCalendarStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #9333ea;">calendar_month</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
+                  </div>
                   <span class="interaction-card__label">Simpan Kalender</span>
                   <span class="interaction-card__value" id="cardStatCalendar">-</span>
                 </div>
               )}
               {showGiftStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #d97706;">content_copy</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
+                  </div>
                   <span class="interaction-card__label">Salin Rekening</span>
                   <span class="interaction-card__value" id="cardStatGift">-</span>
                 </div>
               )}
               {showMusicStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #0d9488;">music_note</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">music_note</span>
+                  </div>
                   <span class="interaction-card__label">Putar Musik</span>
                   <span class="interaction-card__value" id="cardStatMusic">-</span>
                 </div>
               )}
               {showVideoStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #7c3aed;">smart_display</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">play_circle</span>
+                  </div>
                   <span class="interaction-card__label">Putar Video</span>
                   <span class="interaction-card__value" id="cardStatVideo">-</span>
                 </div>
               )}
               {showGalleryStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #4f46e5;">photo_library</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">photo_library</span>
+                  </div>
                   <span class="interaction-card__label">Lihat Galeri</span>
                   <span class="interaction-card__value" id="cardStatGallery">-</span>
                 </div>
               )}
               {showRsvpStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #059669;">how_to_reg</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">how_to_reg</span>
+                  </div>
                   <span class="interaction-card__label">Klik Form RSVP</span>
                   <span class="interaction-card__value" id="cardStatRsvp">-</span>
                 </div>
               )}
               {showCoupleIgStat && (
                 <div class="interaction-card">
-                  <span class="material-symbols-outlined interaction-card__icon" style="color: #db2777;">photo_camera</span>
+                  <div class="interaction-card__icon-box">
+                    <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+                  </div>
                   <span class="interaction-card__label">Instagram Mempelai</span>
                   <span class="interaction-card__value" id="cardStatCoupleIg">-</span>
                 </div>
@@ -322,22 +339,27 @@ const originUrl = Astro.url.origin;
 
           <div class="analytics-subcard" style="margin-bottom: 0;">
             <h4 class="analytics-section-title" style="margin-bottom: 12px;">
-              <span class="material-symbols-outlined" style="font-size: 18px; color: #16a34a;">storefront</span>
               Leads & Branding Pemilik Jasa (Senadda)
             </h4>
             <div class="interaction-grid">
-              <div class="interaction-card" style="border-left: 3px solid #16a34a;">
-                <span class="material-symbols-outlined interaction-card__icon" style="color: #16a34a;">chat</span>
+              <div class="interaction-card">
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">chat</span>
+                </div>
                 <span class="interaction-card__label">Pesan WhatsApp Senadda</span>
                 <span class="interaction-card__value" id="cardStatVendorWa">-</span>
               </div>
-              <div class="interaction-card" style="border-left: 3px solid #db2777;">
-                <span class="material-symbols-outlined interaction-card__icon" style="color: #db2777;">photo_camera</span>
+              <div class="interaction-card">
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+                </div>
                 <span class="interaction-card__label">Instagram Senadda</span>
                 <span class="interaction-card__value" id="cardStatVendorIg">-</span>
               </div>
-              <div class="interaction-card" style="border-left: 3px solid #2563eb;">
-                <span class="material-symbols-outlined interaction-card__icon" style="color: #2563eb;">language</span>
+              <div class="interaction-card">
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">language</span>
+                </div>
                 <span class="interaction-card__label">Website Senadda</span>
                 <span class="interaction-card__value" id="cardStatVendorSite">-</span>
               </div>
@@ -946,7 +968,7 @@ const originUrl = Astro.url.origin;
             let ptsHtml = '';
             pts.forEach((p, idx) => {
               if (p.bucket.count > 0 || pts.length <= 12) {
-                ptsHtml += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#a68966" stroke="#ffffff" stroke-width="1.5" />`;
+                ptsHtml += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#111827" stroke="#ffffff" stroke-width="1.5" />`;
               }
             });
             if (pointsGroup) pointsGroup.innerHTML = ptsHtml;
@@ -967,7 +989,7 @@ const originUrl = Astro.url.origin;
                     width="${barWidth.toFixed(1)}"
                     height="${bh.toFixed(1)}"
                     rx="3"
-                    fill="var(--color-primary, #a68966)"
+                    fill="var(--color-primary, #111827)"
                     opacity="0.85"
                   />
                 `;
@@ -2057,8 +2079,8 @@ const originUrl = Astro.url.origin;
   }
 
   .conversion-funnel-card {
-    background: linear-gradient(135deg, rgba(251, 244, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 100%);
-    border: 1px solid var(--color-outline-variant, #e2e8f0);
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 14px 16px;
     margin-top: 18px;
@@ -2319,7 +2341,7 @@ const originUrl = Astro.url.origin;
 
     &--active {
       background: #ffffff;
-      color: var(--color-primary, #a68966);
+      color: var(--color-primary, #111827);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
   }
@@ -2401,12 +2423,12 @@ const originUrl = Astro.url.origin;
   }
 
   :global(.graph-svg-bar--active) {
-    fill: var(--color-primary, #a68966) !important;
-    filter: drop-shadow(0 2px 4px rgba(166, 137, 102, 0.45));
+    fill: var(--color-primary, #111827) !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
   }
 
   :global(.graph-svg-bar-col:hover .graph-svg-bar) {
-    fill: var(--color-primary, #a68966) !important;
+    fill: var(--color-primary, #111827) !important;
   }
 
   :global(.graph-svg-bar-col:hover .graph-svg-bar-track) {
@@ -2604,7 +2626,7 @@ const originUrl = Astro.url.origin;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 
       .view-switch-badge {
-        background: var(--color-primary, #a68966);
+        background: var(--color-primary, #111827);
         color: #ffffff;
       }
     }
@@ -2757,7 +2779,7 @@ const originUrl = Astro.url.origin;
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    background: rgba(166, 137, 102, 0.08);
+    background: #f3f4f6;
     border: 1px dashed var(--color-primary-container);
     border-radius: 8px;
     margin-bottom: 14px;
@@ -3215,8 +3237,8 @@ const originUrl = Astro.url.origin;
     }
 
     &--expanded {
-      border-color: var(--color-primary, #a68966);
-      box-shadow: 0 4px 16px rgba(166, 137, 102, 0.12);
+      border-color: var(--color-primary, #111827);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     }
 
     @media (max-width: 640px) {
@@ -3594,7 +3616,7 @@ const originUrl = Astro.url.origin;
       gap: 4px;
       font-size: 11.5px;
       font-weight: 700;
-      color: var(--color-primary, #a68966);
+      color: var(--color-primary, #111827);
       background: transparent;
       border: none;
       cursor: pointer;
@@ -3746,11 +3768,11 @@ const originUrl = Astro.url.origin;
   }
 
   :global(.pagination-num--active) {
-    background-color: var(--color-primary, #a68966) !important;
+    background-color: var(--color-primary, #111827) !important;
     color: #ffffff !important;
     font-weight: 800 !important;
-    border-color: var(--color-primary, #a68966) !important;
-    box-shadow: 0 2px 6px rgba(166, 137, 102, 0.35);
+    border-color: var(--color-primary, #111827) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   }
 
   :global(.pagination-ellipsis) {

@@ -116,12 +116,13 @@ export const buildGoogleCalendarUrl = (wedding: Wedding, event: WeddingEvent): s
   if (!event || !wedding) return '#';
   const startTime = /^\d{1,2}:\d{2}$/.test(event.start_time) ? event.start_time : '09:00';
   const endTime = /^\d{1,2}:\d{2}$/.test(event.end_time) ? event.end_time : '11:00';
+  const location = [event.venue_name, event.venue_address].filter(Boolean).join(', ');
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: `Wedding of ${wedding.groom_name} & ${wedding.bride_name}`,
     dates: `${buildCalendarDate(event.event_date, startTime)}/${buildCalendarDate(event.event_date, endTime)}`,
     details: `Wedding invitation for ${wedding.groom_name} and ${wedding.bride_name}.`,
-    location: `${event.venue_name}, ${event.venue_address}`,
+    location,
     ctz: 'Asia/Makassar'
   });
 
@@ -201,4 +202,63 @@ export const decodeHtmlEntities = (str: string | undefined | null): string => {
     decoded = next;
   }
   return decoded;
+};
+
+/**
+ * Detects vector logo URL for Indonesian banks, digital banks, e-wallets, and payment channels.
+ * Returns customLogo if explicitly provided, or auto-detects from bankName.
+ */
+export const getBankLogoUrl = (bankName?: string | null, customLogo?: string | null): string | null => {
+  if (customLogo) return customLogo;
+  if (!bankName) return null;
+
+  const s = bankName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!s) return null;
+
+  // 1. Compound / specific brand names first to avoid false substring matches
+  if (s.includes('btnsyariah') || (s.includes('btn') && s.includes('syariah'))) return '/images/banks/btn_syariah.svg';
+  if (s.includes('blu') || s.includes('bcadigital')) return '/images/banks/blu.svg';
+  if (s.includes('jenius')) return '/images/banks/jenius.svg';
+  if (s.includes('raya') || s.includes('briagro')) return '/images/banks/raya.svg';
+  if (s.includes('cimb')) return '/images/banks/cimb_niaga.svg';
+  if (s.includes('danamon')) return '/images/banks/danamon.svg';
+  if (s.includes('seabank')) return '/images/banks/seabank.svg';
+  if (s.includes('superbank')) return '/images/banks/superbank.svg';
+  if (s.includes('linebank') || s.includes('line')) return '/images/banks/linebank.svg';
+  if (s.includes('neobank') || s.includes('bnc') || s.includes('neocommerce')) return '/images/banks/neobank.svg';
+  if (s.includes('shopee')) return '/images/banks/shopeepay.svg';
+  if (s.includes('linkaja')) return '/images/banks/linkaja.svg';
+  if (s.includes('gopay') || s.includes('go-pay')) return '/images/banks/gopay.svg';
+  if (s.includes('dana')) return '/images/banks/dana.svg';
+  if (s.includes('mandiri') || s.includes('livin')) return '/images/banks/mandiri.svg';
+  if (s.includes('permata')) return '/images/banks/permata_bank.svg';
+  if (s.includes('aladin')) return '/images/banks/aladin.svg';
+  if (s.includes('allo')) return '/images/banks/allo.svg';
+  if (s.includes('bjb') || s.includes('jabarbanten')) return '/images/banks/bjb.svg';
+  if (s.includes('dki')) return '/images/banks/dki.svg';
+  if (s.includes('jago') || s.includes('artos')) return '/images/banks/jago.svg';
+  if (s.includes('jateng')) return '/images/banks/jateng.svg';
+  if (s.includes('jatim')) return '/images/banks/jatim.svg';
+  if (s.includes('maspion')) return '/images/banks/maspion.svg';
+  if (s.includes('maybank') || s.includes('bii')) return '/images/banks/maybank.svg';
+  if (s.includes('mega')) return '/images/banks/mega.svg';
+  if (s.includes('muamalat')) return '/images/banks/muamalat.svg';
+  if (s.includes('ocbc') || s.includes('nisp')) return '/images/banks/ocbc.svg';
+  if (s.includes('panin')) return '/images/banks/panin.svg';
+  if (s.includes('saqu')) return '/images/banks/saqu.svg';
+  if (s.includes('sinarmas')) return '/images/banks/sinarmas.svg';
+  if (s.includes('paypal')) return '/images/banks/paypal.svg';
+  if (s.includes('wise') || s.includes('transferwise')) return '/images/banks/wise.svg';
+  if (s.includes('qris')) return '/images/banks/qris.svg';
+  if (s.includes('ovo')) return '/images/banks/ovo.svg';
+
+  // 2. Acronyms & core banks
+  if (s.includes('btn')) return '/images/banks/btn.svg';
+  if (s.includes('btpn')) return '/images/banks/btpn.svg';
+  if (s.includes('bca') || s.includes('centralasia')) return '/images/banks/bca.svg';
+  if (s.includes('bri') || s.includes('rakyatindonesia')) return '/images/banks/bri.svg';
+  if (s.includes('bni') || s.includes('negaraindonesia')) return '/images/banks/bni.svg';
+  if (s.includes('bsi') || s.includes('syariahindonesia')) return '/images/banks/bsi.svg';
+
+  return null;
 };

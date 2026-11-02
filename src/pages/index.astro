@@ -768,69 +768,76 @@ const schemaData = {
         <div class="dashboard-tabs">
           <div class="dashboard-tabs__nav">
             <span class="dashboard-tabs__indicator"></span>
-            <button class="dashboard-tabs__btn is-active" data-tab="home">
+            <button class="dashboard-tabs__btn is-active" data-tab="home" type="button">
               <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               Dashboard
             </button>
-            <button class="dashboard-tabs__btn" data-tab="kirim">
+            <button class="dashboard-tabs__btn" data-tab="kirim" type="button">
               <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               Kirim Undangan
             </button>
-            <button class="dashboard-tabs__btn" data-tab="rsvp">
+            <button class="dashboard-tabs__btn" data-tab="rsvp" type="button">
               <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               RSVP
             </button>
           </div>
 
-          <div class="dashboard-tabs__panels">
-            <div class="dashboard-tabs__panel is-active" data-panel="home">
-              <div class="dashboard-tabs__screenshot">
-                <img
-                  src="/images/dashboard/dashboard-home.png"
-                  alt="Dashboard Manajemen Undangan Digital Senadda"
-                  loading="lazy"
-                  decoding="async"
-                  width="976"
-                  height="686"
-                />
-              </div>
-              <div class="dashboard-tabs__info">
+          <div class="dashboard-tabs__layout">
+            <div class="dashboard-tabs__info-list">
+              <div class="dashboard-tabs__info-item is-active" data-tab="home" role="button" tabindex="0">
                 <h3>Pantau Semuanya</h3>
                 <p>Lihat ringkasan lengkap undangan: statistik RSVP, jumlah tamu, countdown hari H, rangkaian acara, dan ucapan terbaru dalam satu halaman.</p>
               </div>
-            </div>
 
-            <div class="dashboard-tabs__panel" data-panel="kirim">
-              <div class="dashboard-tabs__screenshot">
-                <img
-                  src="/images/dashboard/dashboard-kirim.png"
-                  alt="Kirim Undangan Digital WhatsApp - Senadda"
-                  loading="lazy"
-                  decoding="async"
-                  width="976"
-                  height="686"
-                />
-              </div>
-              <div class="dashboard-tabs__info">
+              <div class="dashboard-tabs__info-item" data-tab="kirim" role="button" tabindex="0">
                 <h3>Kirim dengan Mudah</h3>
                 <p>Pilih template pesan sesuai nada (Formal, Teman, Keluarga), kelola daftar tamu, dan kirim undangan langsung via WhatsApp. Satu klik, langsung terkirim.</p>
               </div>
-            </div>
 
-            <div class="dashboard-tabs__panel" data-panel="rsvp">
-              <div class="dashboard-tabs__screenshot">
-                <img
-                  src="/images/dashboard/dashboard-rsvp.png"
-                  alt="Lacak RSVP & Buku Tamu Undangan Digital - Senadda"
-                  loading="lazy"
-                  decoding="async"
-                  width="976"
-                  height="686"
-                />
-              </div>
-              <div class="dashboard-tabs__info">
+              <div class="dashboard-tabs__info-item" data-tab="rsvp" role="button" tabindex="0">
                 <h3>Lacak Kehadiran</h3>
                 <p>Ringkasan RSVP real-time: siapa yang hadir, berapa total pax, filter berdasarkan status, dan export data tamu kapan saja.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-tabs__panels">
+              <div class="dashboard-tabs__panel is-active" data-panel="home">
+                <div class="dashboard-tabs__screenshot">
+                  <img
+                    src="/images/dashboard/dashboard-home.png"
+                    alt="Dashboard Manajemen Undangan Digital Senadda"
+                    loading="lazy"
+                    decoding="async"
+                    width="976"
+                    height="686"
+                  />
+                </div>
+              </div>
+
+              <div class="dashboard-tabs__panel" data-panel="kirim">
+                <div class="dashboard-tabs__screenshot">
+                  <img
+                    src="/images/dashboard/dashboard-kirim.png"
+                    alt="Kirim Undangan Digital WhatsApp - Senadda"
+                    loading="lazy"
+                    decoding="async"
+                    width="976"
+                    height="686"
+                  />
+                </div>
+              </div>
+
+              <div class="dashboard-tabs__panel" data-panel="rsvp">
+                <div class="dashboard-tabs__screenshot">
+                  <img
+                    src="/images/dashboard/dashboard-rsvp.png"
+                    alt="Lacak RSVP & Buku Tamu Undangan Digital - Senadda"
+                    loading="lazy"
+                    decoding="async"
+                    width="976"
+                    height="686"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1179,7 +1186,7 @@ const schemaData = {
     <script>
       import { initLenis, getLenis } from "../scripts/lenis-smooth-scroll";
 
-      initLenis({ duration: 1.1, lerp: 0.08, offset: -84 });
+      initLenis({ lerp: 0.1, wheelMultiplier: 1.15, offset: -84 });
 
       const loginBtn = document.getElementById("login-btn");
       const loginModal = document.getElementById("login-modal");
@@ -1810,35 +1817,61 @@ const schemaData = {
       });
 
       (() => {
-        const nav = document.querySelector('.dashboard-tabs__nav');
-        if (!nav) return;
-        const indicator = nav.querySelector('.dashboard-tabs__indicator');
-        const btns = nav.querySelectorAll('.dashboard-tabs__btn');
+        const tabsContainer = document.querySelector('.dashboard-tabs');
+        if (!tabsContainer) return;
+        const nav = tabsContainer.querySelector('.dashboard-tabs__nav');
+        const indicator = nav?.querySelector('.dashboard-tabs__indicator');
+        const btns = tabsContainer.querySelectorAll('.dashboard-tabs__btn');
+        const infoItems = tabsContainer.querySelectorAll('.dashboard-tabs__info-item');
+        const panels = tabsContainer.querySelectorAll('.dashboard-tabs__panel');
 
         const moveIndicator = (btn) => {
-          const navPad = parseFloat(getComputedStyle(nav).paddingLeft);
+          if (!indicator || !btn || btn.offsetWidth === 0) return;
           indicator.style.width = btn.offsetWidth + 'px';
-          indicator.style.left = (btn.offsetLeft) + 'px';
+          indicator.style.left = btn.offsetLeft + 'px';
+        };
+
+        const setActiveTab = (tab) => {
+          btns.forEach(b => {
+            const isActive = b.dataset.tab === tab;
+            b.classList.toggle('is-active', isActive);
+            if (isActive) moveIndicator(b);
+          });
+
+          infoItems.forEach(item => {
+            item.classList.toggle('is-active', item.dataset.tab === tab);
+          });
+
+          panels.forEach(p => {
+            p.classList.toggle('is-active', p.dataset.panel === tab);
+          });
         };
 
         requestAnimationFrame(() => {
-          const activeBtn = nav.querySelector('.dashboard-tabs__btn.is-active');
+          const activeBtn = tabsContainer.querySelector('.dashboard-tabs__btn.is-active');
           if (activeBtn) moveIndicator(activeBtn);
         });
 
         btns.forEach(btn => {
           btn.addEventListener('click', () => {
-            const tab = btn.dataset.tab;
-            btns.forEach(b => b.classList.remove('is-active'));
-            document.querySelectorAll('.dashboard-tabs__panel').forEach(p => p.classList.remove('is-active'));
-            btn.classList.add('is-active');
-            document.querySelector(`[data-panel="${tab}"]`).classList.add('is-active');
-            moveIndicator(btn);
+            setActiveTab(btn.dataset.tab);
+          });
+        });
+
+        infoItems.forEach(item => {
+          item.addEventListener('click', () => {
+            setActiveTab(item.dataset.tab);
+          });
+          item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setActiveTab(item.dataset.tab);
+            }
           });
         });
 
         window.addEventListener('resize', () => {
-          const cur = nav.querySelector('.dashboard-tabs__btn.is-active');
+          const cur = tabsContainer.querySelector('.dashboard-tabs__btn.is-active');
           if (cur) moveIndicator(cur);
         });
 
@@ -1940,9 +1973,12 @@ const schemaData = {
     font-display: swap;
   }
 
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+
   :root {
     color-scheme: light;
-    scroll-behavior: smooth;
 
     --ink-charcoal: #17160f;
     --deep-charcoal: #2f2e25;
@@ -3866,6 +3902,13 @@ const schemaData = {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+  }
+
+  .dashboard-tabs__layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 
   .dashboard-tabs__nav {
@@ -3939,6 +3982,7 @@ const schemaData = {
   .dashboard-tabs__panels {
     display: grid;
     grid-template-areas: "panel";
+    width: 100%;
   }
 
   .dashboard-tabs__panel {
@@ -3948,9 +3992,7 @@ const schemaData = {
     visibility: hidden;
     transform: translateY(12px) scale(0.99);
     transition: opacity 0.4s var(--ease), transform 0.4s var(--ease), visibility 0.4s;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 32px;
+    display: block;
   }
   .dashboard-tabs__panel.is-active {
     opacity: 1;
@@ -3968,6 +4010,7 @@ const schemaData = {
       0 4px 24px rgba(0, 0, 0, 0.08),
       0 1px 3px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
+    background: #ffffff;
   }
   .dashboard-tabs__screenshot img {
     width: 100%;
@@ -3975,26 +4018,106 @@ const schemaData = {
     display: block;
   }
 
-  .dashboard-tabs__info {
-    text-align: center;
-    max-width: 540px;
-    margin: 0 auto;
+  .dashboard-tabs__info-list {
+    width: 100%;
   }
-  .dashboard-tabs__info h3 {
-    font-family: var(--font-heading);
-    font-weight: 400;
-    font-size: clamp(22px, 3vw, 32px);
-    letter-spacing: -0.02em;
-    margin-bottom: 10px;
-    
-    @media (max-width: 768px) {
+
+  /* Mobile Layout (< 1024px) */
+  @media (max-width: 1023px) {
+    .dashboard-tabs__panels {
+      order: 1;
+    }
+    .dashboard-tabs__info-list {
+      order: 2;
+      margin-top: 32px;
+    }
+    .dashboard-tabs__info-item {
+      display: none;
+      text-align: center;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    .dashboard-tabs__info-item.is-active {
+      display: block;
+    }
+    .dashboard-tabs__info-item h3 {
+      font-family: var(--font-heading);
+      font-weight: 400;
+      font-size: clamp(22px, 3vw, 32px);
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
       margin-top: 0;
+      color: var(--black);
+    }
+    .dashboard-tabs__info-item p {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--dark-grey);
+      margin: 0;
     }
   }
-  .dashboard-tabs__info p {
-    font-size: 13px;
-    line-height: 1.65;
-    color: var(--dark-grey);
+
+  /* Desktop Layout (>= 1024px) */
+  @media (min-width: 1024px) {
+    .dashboard-tabs__nav {
+      display: none;
+    }
+    .dashboard-tabs__layout {
+      display: grid;
+      grid-template-columns: clamp(320px, 32vw, 390px) 1fr;
+      gap: clamp(40px, 4.5vw, 64px);
+      align-items: center;
+      margin-top: 16px;
+    }
+    .dashboard-tabs__info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dashboard-tabs__info-item {
+      display: block;
+      padding: 24px 28px;
+      border-radius: 14px;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-align: left;
+      opacity: 0.45;
+      transition: background 0.3s var(--ease), border-color 0.3s var(--ease), opacity 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+    .dashboard-tabs__info-item:hover {
+      opacity: 0.8;
+      background: rgba(0, 0, 0, 0.02);
+    }
+    .dashboard-tabs__info-item:focus-visible {
+      outline: 2px solid var(--black);
+      outline-offset: 2px;
+    }
+    .dashboard-tabs__info-item.is-active {
+      opacity: 1;
+      background: var(--soft-parchment);
+      border-color: rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      transform: translateX(4px);
+    }
+    .dashboard-tabs__info-item h3 {
+      font-family: var(--font-heading);
+      font-weight: 400;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+      margin-top: 0;
+      margin-bottom: 8px;
+      color: var(--black);
+    }
+    .dashboard-tabs__info-item p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--dark-grey);
+      margin: 0;
+    }
   }
 
   @media (max-width: 640px) {

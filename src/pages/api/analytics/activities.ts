@@ -8,7 +8,7 @@ import { getSessionFromCookies } from '../../../utils/session';
 export const prerender = false;
 
 const eventConfig: Record<string, { label: string; desc: string; icon: string; category: string; categoryLabel: string; badgeClass: string; iconBg: string; iconColor: string }> = {
-  open_cover: { label: 'Buka Undangan', desc: 'Membuka cover / amplop undangan digital', icon: 'drafts', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--primary', iconBg: '#fbf4eb', iconColor: '#a68966' },
+  open_cover: { label: 'Buka Undangan', desc: 'Membuka cover / amplop undangan digital', icon: 'drafts', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--primary', iconBg: '#f3f4f6', iconColor: '#111827' },
   click_maps: { label: 'Petunjuk Maps', desc: 'Membuka tautan rute peta lokasi / Google Maps', icon: 'location_on', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--info', iconBg: '#eff6ff', iconColor: '#2563eb' },
   click_calendar: { label: 'Simpan Kalender', desc: 'Menyimpan jadwal resepsi ke Google Calendar', icon: 'calendar_month', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--purple', iconBg: '#faf5ff', iconColor: '#9333ea' },
   copy_gift: { label: 'Salin Rekening', desc: 'Menyalin nomor rekening / informasi hadiah digital', icon: 'content_copy', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--warning', iconBg: '#fffbeb', iconColor: '#d97706' },

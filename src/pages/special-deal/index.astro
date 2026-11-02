@@ -1211,7 +1211,7 @@ const schemaData = {
     <script>
       import { initLenis, getLenis } from "../../scripts/lenis-smooth-scroll";
 
-      initLenis({ duration: 1.1, lerp: 0.08, offset: -84 });
+      initLenis({ lerp: 0.1, wheelMultiplier: 1.15, offset: -84 });
 
       const loginBtn = document.getElementById("login-btn");
       const loginModal = document.getElementById("login-modal");
@@ -1926,9 +1926,12 @@ const schemaData = {
     font-display: swap;
   }
 
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+
   :root {
     color-scheme: light;
-    scroll-behavior: smooth;
 
     --ink-charcoal: #17160f;
     --deep-charcoal: #2f2e25;

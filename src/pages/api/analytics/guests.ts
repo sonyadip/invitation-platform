@@ -8,7 +8,7 @@ import { getSessionFromCookies } from '../../../utils/session';
 export const prerender = false;
 
 const eventConfig: Record<string, { label: string; desc: string; icon: string; badgeClass: string; iconColor: string }> = {
-  open_cover: { label: 'Buka Undangan', desc: 'Membuka cover / amplop undangan digital', icon: 'drafts', badgeClass: 'act-badge--primary', iconColor: '#a68966' },
+  open_cover: { label: 'Buka Undangan', desc: 'Membuka cover / amplop undangan digital', icon: 'drafts', badgeClass: 'act-badge--primary', iconColor: '#111827' },
   click_maps: { label: 'Petunjuk Maps', desc: 'Membuka tautan rute peta lokasi / Google Maps', icon: 'location_on', badgeClass: 'act-badge--info', iconColor: '#2563eb' },
   click_calendar: { label: 'Simpan Kalender', desc: 'Menyimpan jadwal resepsi ke Google Calendar', icon: 'calendar_month', badgeClass: 'act-badge--purple', iconColor: '#9333ea' },
   copy_gift: { label: 'Salin Rekening', desc: 'Menyalin nomor rekening / informasi hadiah digital', icon: 'content_copy', badgeClass: 'act-badge--warning', iconColor: '#d97706' },

@@ -87,7 +87,7 @@ const defaultText = {
   mediaTitle: '',
   mediaCaption: '',
   pesertaSectionTitle: 'Peserta Upacara',
-  pesertaSectionEyebrow: 'Metatah / Potong Gigi',
+  pesertaSectionEyebrow: 'Mepandes / Metatah',
   closingNames: 'Pande Ceria',
   verse: 'Om Swastyastu, Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa / Tuhan Yang Maha Esa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya (Mepandes / Metatah / Potong Gigi) putra-putri kami.',
   verseSource: 'Doa Restu Keluarga',
@@ -97,7 +97,7 @@ const defaultText = {
   groomParents: 'Putra dari Bapak & Ibu',
   familyLabel: 'Keluarga yang Mengundang',
   giftTitle: 'Tanda Kasih',
-  giftDescription: 'Bagi keluarga dan kerabat yang ingin memberikan tanda kasih atau kado doa restu, dapat mengirimkannya melalui :',
+  giftDescription: 'Tanpa mengurangi rasa hormat, bagi tamu yang ingin mengirimkan hadiah kasih dapat melalui rekening berikut.',
   rsvpTitle: 'RSVP & Ucapan Doa',
   rsvpDescription: 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu :',
   closingTitle: 'Om Shanti, Shanti, Shanti, Om',
@@ -409,9 +409,10 @@ if (!sidebarGroom && !sidebarBride) {
 const introAnimationName = text.introAnimationName || text.introAnimationTitle || introName;
 const introAnimationSubtitle = text.introAnimationSubtitle || 'Metatah / Potong Gigi';
 
-const pesertaSectionEyebrow = text.pesertaSectionEyebrow || text.coupleEyebrow || 'Metatah / Potong Gigi';
+const pesertaSectionEyebrow = text.pesertaSectionEyebrow || text.coupleEyebrow || 'Mepandes / Metatah';
 const hidePesertaTitle = Boolean(text.hidePesertaTitle || text.hidePesertaSectionTitle || text.pesertaSectionTitle === false);
 const pesertaSectionTitle = text.pesertaSectionTitle || 'Peserta Upacara';
+const isDirectList = wedding.slug === 'pande-ceria' || themeConfig.layout?.participantLayout === 'direct';
 
 // Mode 1: Pakai Default (Metatah) otomatis ini tidak ada closing-row__names
 const isDefaultTitle = titleMode === 'default' || /^(metatah|mepandes|upacara metatah|upacara mepandes)$/i.test(coverTitle.trim());
@@ -474,7 +475,7 @@ const rawActiveEvents = events && events.length > 0
 
 const activeEvents = rawActiveEvents.map((event) => ({
   ...event,
-  event_name: event.event_name === 'Metatah / Potong Gigi' ? 'Metatah' : event.event_name
+  event_name: (event.event_name === 'Metatah / Potong Gigi' || event.event_name === 'Resepsi Upacara Metatah') ? 'Metatah' : event.event_name
 }));
 
 const activeGifts = gifts && gifts.length > 0
@@ -671,7 +672,7 @@ const metaDescription = text.metaDescription || (isTitleRedundant
         )}
 
         {sections.coupleInfo && (
-          <section class="couple-section couple-section--metatah couple-section--no-image" id="data-peserta">
+          <section class:list={['couple-section couple-section--metatah couple-section--no-image', { 'couple-section--direct-list': isDirectList }]} id="data-peserta">
             <div class="couple-section__header" data-animate>
               {pesertaSectionEyebrow && (
                 <p class="couple-section__eyebrow">
@@ -684,126 +685,174 @@ const metaDescription = text.metaDescription || (isTitleRedundant
               <div class="section-rule"></div>
             </div>
 
-            <div class="couple-section__list">
-              {participantsList.map((person, index) => {
-                const displayName = person.nickname || person.name;
+            {isDirectList ? (
+              <div class="couple-section__list couple-section__list--simple">
+                {participantsList.map((person, index) => {
+                  const hasInstagram = person.instagram && person.instagram !== '#';
+                  const displayName = person.nickname || person.name;
+                  const fullName = person.fullName || person.name;
 
-                return (
-                  <article
-                    class="couple-section__item"
-                    data-animate
-
-                  >
-                    <button
-                      type="button"
-                      class="couple-section__item-btn"
-                      data-open-participant-modal={`participant-modal-${index}`}
-                      data-track-participant
-                      data-participant-name={displayName}
-                      data-participant-role={person.role || ''}
-                      aria-haspopup="dialog"
-                      aria-controls={`participant-modal-${index}`}
-                      aria-label={`Lihat detail profil ${displayName}`}
+                  return (
+                    <article
+                      class="couple-section__item"
+                      data-animate
                     >
-                      <span class="couple-section__item-name">{displayName}</span>
-                      <span class="couple-section__item-arrow-box" aria-hidden="true">
-                        <svg class="couple-section__item-arrow couple-section__item-arrow--1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="7" y1="17" x2="17" y2="7"></line>
-                          <polyline points="7 7 17 7 17 17"></polyline>
-                        </svg>
-                        <svg class="couple-section__item-arrow couple-section__item-arrow--2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="7" y1="17" x2="17" y2="7"></line>
-                          <polyline points="7 7 17 7 17 17"></polyline>
-                        </svg>
-                      </span>
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
+                      <div class="couple-section__row">
+                        <div class="couple-section__body">
+                          {person.role && <span class="couple-section__role">{person.role}</span>}
+                          <h3 class="couple-section__name">{fullName}</h3>
+                          {person.parents && person.parents.length > 0 && (
+                            <p class="couple-section__parents">{person.parents.join(' & ')}</p>
+                          )}
+                          {person.description && (
+                            <p class="couple-section__desc">{person.description}</p>
+                          )}
+                          {hasInstagram && (
+                            <a
+                              class="couple-section__social"
+                              href={person.instagram}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`${displayName} Instagram`}
+                              data-track-couple-instagram="participant"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                              </svg>
+                              <span>{getInstagramUsername(person.instagram)}</span>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <>
+                <div class="couple-section__list">
+                  {participantsList.map((person, index) => {
+                    const displayName = person.nickname || person.name;
 
-            <div class="participant-modals-wrap">
-              {participantsList.map((person, index) => {
-                const hasInstagram = person.instagram && person.instagram !== '#';
-                const displayName = person.nickname || person.name;
-                const fullName = person.fullName || person.name;
-
-                return (
-                  <dialog
-                    id={`participant-modal-${index}`}
-                    class="participant-modal"
-                    aria-labelledby={`participant-modal-title-${index}`}
-                  >
-                    <div class="participant-modal__overlay" data-close-participant-modal={`participant-modal-${index}`}></div>
-                    <div class="participant-modal__dialog" role="document">
-                      <div class="participant-modal__card">
+                    return (
+                      <article
+                        class="couple-section__item"
+                        data-animate
+                      >
                         <button
                           type="button"
-                          class="participant-modal__close-btn"
-                          data-close-participant-modal={`participant-modal-${index}`}
-                          aria-label="Tutup detail"
+                          class="couple-section__item-btn"
+                          data-open-participant-modal={`participant-modal-${index}`}
+                          data-track-participant
+                          data-participant-name={displayName}
+                          data-participant-role={person.role || ''}
+                          aria-haspopup="dialog"
+                          aria-controls={`participant-modal-${index}`}
+                          aria-label={`Lihat detail profil ${displayName}`}
                         >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-
-                        {person.hasPhoto && person.photo && (
-                          <div class="participant-modal__image-wrap">
-                            <SmartImage
-                              class="participant-modal__image"
-                              src={person.photo}
-                              alt={fullName}
-                            />
-                          </div>
-                        )}
-
-                        {person.role && (
-                          <div class="participant-modal__divider">
-                            <span class="participant-modal__role">{person.role}</span>
-                          </div>
-                        )}
-
-                        <h3 class="participant-modal__name" id={`participant-modal-title-${index}`}>
-                          {fullName}
-                        </h3>
-
-                        {person.parents && person.parents.length > 0 && (
-                          <div class="participant-modal__parents">
-                            {person.parents.map((line: string) => (
-                              <span class="participant-modal__parent-line">{line}</span>
-                            ))}
-                          </div>
-                        )}
-
-                        {person.description && (
-                          <p class="participant-modal__desc">{person.description}</p>
-                        )}
-
-                        {hasInstagram && (
-                          <a
-                            class="participant-modal__social"
-                            href={person.instagram}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`${displayName} Instagram`}
-                            data-track-couple-instagram="participant"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                          <span class="couple-section__item-name">{displayName}</span>
+                          <span class="couple-section__item-arrow-box" aria-hidden="true">
+                            <svg class="couple-section__item-arrow couple-section__item-arrow--1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <line x1="7" y1="17" x2="17" y2="7"></line>
+                              <polyline points="7 7 17 7 17 17"></polyline>
                             </svg>
-                            <span>{getInstagramUsername(person.instagram)}</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </dialog>
-                );
-              })}
-            </div>
+                            <svg class="couple-section__item-arrow couple-section__item-arrow--2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <line x1="7" y1="17" x2="17" y2="7"></line>
+                              <polyline points="7 7 17 7 17 17"></polyline>
+                            </svg>
+                          </span>
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
+
+                <div class="participant-modals-wrap">
+                  {participantsList.map((person, index) => {
+                    const hasInstagram = person.instagram && person.instagram !== '#';
+                    const displayName = person.nickname || person.name;
+                    const fullName = person.fullName || person.name;
+
+                    return (
+                      <dialog
+                        id={`participant-modal-${index}`}
+                        class="participant-modal"
+                        aria-labelledby={`participant-modal-title-${index}`}
+                      >
+                        <div class="participant-modal__overlay" data-close-participant-modal={`participant-modal-${index}`}></div>
+                        <div class="participant-modal__dialog" role="document">
+                          <div class="participant-modal__card">
+                            <button
+                              type="button"
+                              class="participant-modal__close-btn"
+                              data-close-participant-modal={`participant-modal-${index}`}
+                              aria-label="Tutup detail"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </button>
+
+                            {person.hasPhoto && person.photo && (
+                              <div class="participant-modal__image-wrap">
+                                <SmartImage
+                                  class="participant-modal__image"
+                                  src={person.photo}
+                                  alt={fullName}
+                                />
+                              </div>
+                            )}
+
+                            {person.role && (
+                              <div class="participant-modal__divider">
+                                <span class="participant-modal__role">{person.role}</span>
+                              </div>
+                            )}
+
+                            <h3 class="participant-modal__name" id={`participant-modal-title-${index}`}>
+                              {fullName}
+                            </h3>
+
+                            {person.parents && person.parents.length > 0 && (
+                              <div class="participant-modal__parents">
+                                {person.parents.map((line: string) => (
+                                  <span class="participant-modal__parent-line">{line}</span>
+                                ))}
+                              </div>
+                            )}
+
+                            {person.description && (
+                              <p class="participant-modal__desc">{person.description}</p>
+                            )}
+
+                            {hasInstagram && (
+                              <a
+                                class="participant-modal__social"
+                                href={person.instagram}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`${displayName} Instagram`}
+                                data-track-couple-instagram="participant"
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                </svg>
+                                <span>{getInstagramUsername(person.instagram)}</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </dialog>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </section>
         )}
 
@@ -860,7 +909,7 @@ const metaDescription = text.metaDescription || (isTitleRedundant
                     <p class="event-card__time" data-animate>
                       {formatEventTime(event.start_time, event.end_time)}
                     </p>
-                    {event.venue_name && (
+                    {event.venue_name && event.venue_name.trim() !== '' && (
                       <p class="event-card__venue" data-animate>{event.venue_name}</p>
                     )}
                     <p class="event-card__address" data-animate>{event.venue_address}</p>
@@ -1066,10 +1115,10 @@ const metaDescription = text.metaDescription || (isTitleRedundant
 
                 type="button"
                 aria-expanded="false"
-                data-show-text="Lihat Hadiah"
-                data-hide-text="Sembunyikan Hadiah"
+                data-show-text={text.giftBtnShow || "Lihat Rekening"}
+                data-hide-text={text.giftBtnHide || "Sembunyikan rekening"}
               >
-                Lihat Hadiah
+                {text.giftBtnShow || "Lihat Rekening"}
               </button>
               <GiftGrid gifts={activeGifts} hidden />
             </div>

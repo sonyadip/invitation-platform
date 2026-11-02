@@ -81,7 +81,7 @@ const defaultText = {
   introAnimationName: '',
   introAnimationSubtitle: '',
   pesertaSectionTitle: '',
-  pesertaSectionEyebrow: 'Metatah / Potong Gigi',
+  pesertaSectionEyebrow: 'Mepandes / Metatah',
   closingNames: '',
   verse: 'Om Swastyastu, Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa / Tuhan Yang Maha Esa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya (Mepandes / Metatah / Potong Gigi) putra-putri kami.',
   verseSource: 'Doa Restu Keluarga',
@@ -91,7 +91,7 @@ const defaultText = {
   groomParents: 'Putra dari Bapak & Ibu',
   familyLabel: 'Keluarga yang Mengundang',
   giftTitle: 'Tanda Kasih',
-  giftDescription: 'Bagi keluarga dan kerabat yang ingin memberikan tanda kasih atau kado doa restu, dapat mengirimkannya melalui :',
+  giftDescription: 'Tanpa mengurangi rasa hormat, bagi tamu yang ingin mengirimkan hadiah kasih dapat melalui rekening berikut.',
   rsvpTitle: 'RSVP & Ucapan Doa',
   rsvpDescription: 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu :',
   closingTitle: 'Om Shanti, Shanti, Shanti, Om',
@@ -303,7 +303,7 @@ if (!sidebarGroom && !sidebarBride) {
 const introAnimationName = text.introAnimationName || text.introAnimationTitle || introName;
 const introAnimationSubtitle = text.introAnimationSubtitle || 'Metatah / Potong Gigi';
 
-const pesertaSectionEyebrow = text.pesertaSectionEyebrow || text.coupleEyebrow || 'Metatah / Potong Gigi';
+const pesertaSectionEyebrow = text.pesertaSectionEyebrow || text.coupleEyebrow || 'Mepandes / Metatah';
 const hidePesertaTitle = Boolean(text.hidePesertaTitle || text.hidePesertaSectionTitle || text.pesertaSectionTitle === false);
 const pesertaSectionTitle = text.pesertaSectionTitle || 'Peserta Upacara';
 
@@ -348,7 +348,7 @@ const rawActiveEvents = events && events.length > 0
 
 const activeEvents = rawActiveEvents.map((event) => ({
   ...event,
-  event_name: event.event_name === 'Metatah / Potong Gigi' ? 'Metatah' : event.event_name
+  event_name: (event.event_name === 'Metatah / Potong Gigi' || event.event_name === 'Resepsi Upacara Metatah') ? 'Metatah' : event.event_name
 }));
 
 const activeGifts = gifts && gifts.length > 0
@@ -629,7 +629,7 @@ const metaDescription = text.metaDescription || (isTitleRedundant
                     <p class="event-card__time">
                       Pukul {event.start_time} {event.end_time ? `- ${event.end_time}` : '- Selesai'}
                     </p>
-                    {event.venue_name && (
+                    {event.venue_name && event.venue_name.trim() !== '' && (
                       <p class="event-card__venue">{event.venue_name}</p>
                     )}
                     <p class="event-card__address">{event.venue_address}</p>
@@ -835,10 +835,10 @@ const metaDescription = text.metaDescription || (isTitleRedundant
                 style="--animate-delay: 200ms;"
                 type="button"
                 aria-expanded="false"
-                data-show-text="Lihat Hadiah"
-                data-hide-text="Sembunyikan Hadiah"
+                data-show-text={text.giftBtnShow || "Lihat Rekening"}
+                data-hide-text={text.giftBtnHide || "Sembunyikan rekening"}
               >
-                Lihat Hadiah
+                {text.giftBtnShow || "Lihat Rekening"}
               </button>
               <GiftGrid gifts={activeGifts} hidden />
             </div>

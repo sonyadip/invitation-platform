@@ -6,6 +6,9 @@ export interface LenisOptionsConfig {
   lerp?: number;
   offset?: number;
   anchors?: boolean | object;
+  wheelMultiplier?: number;
+  touchMultiplier?: number;
+  smoothWheel?: boolean;
 }
 
 declare global {
@@ -71,15 +74,28 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
     return window.__lenis;
   }
 
-  const offset = config.offset ?? -70;
+  // Ensure native CSS scroll-behavior: smooth does not fight with Lenis RAF interpolation
+  if (typeof document !== 'undefined' && !document.getElementById('lenis-override-css')) {
+    const style = document.createElement('style');
+    style.id = 'lenis-override-css';
+    style.textContent = `
+      html.lenis,
+      html.lenis body {
+        scroll-behavior: auto !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   // Initialize Lenis
   // Note: syncTouch is false to preserve native iOS/Android 120Hz hardware momentum scrolling.
-  // Smooth scroll applies to desktop pointer wheel / trackpad gestures.
+  // Wheel scroll uses lerp damping and wheelMultiplier for responsive, lightweight mouse wheel feel.
   const lenis = new Lenis({
-    duration: config.duration ?? 1.1,
-    lerp: config.lerp ?? 0.09,
-    smoothWheel: true,
+    ...(config.duration !== undefined ? { duration: config.duration } : {}),
+    lerp: config.lerp ?? 0.1,
+    wheelMultiplier: config.wheelMultiplier ?? 1.15,
+    touchMultiplier: config.touchMultiplier ?? 1,
+    smoothWheel: config.smoothWheel ?? true,
     syncTouch: false,
     autoRaf: true,
     anchors: config.anchors ?? false,
@@ -136,6 +152,8 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
     domObserver.disconnect();
     document.removeEventListener('fullscreenchange', onFullscreenChange);
     document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+    const overrideStyle = document.getElementById('lenis-override-css');
+    if (overrideStyle) overrideStyle.remove();
     lenis.destroy();
     delete window.__lenis;
     delete window.__lenisDestroy;

@@ -144,7 +144,7 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
       import { initLenis } from "../scripts/lenis-smooth-scroll";
 
       initAutomaticInteractionTracking();
-      initLenis({ duration: 1.1, lerp: 0.08 });
+      initLenis();
 
       const isLocal = Boolean(import.meta.env.DEV) || isLocalHost(window.location.hostname);
       if (!isLocal) {

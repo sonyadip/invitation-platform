@@ -72,7 +72,10 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
       <div class="hero-card__bg" style={`background-image: url('${coverImage}')`}></div>
       <div class="hero-card__content">
         <h1 class="hero-card__title">{coupleName}</h1>
-        <a href={link} target="_blank" rel="noopener noreferrer" class="hero-card__link">{link.replace('https://', '')}</a>
+        <a href={link} target="_blank" rel="noopener noreferrer" class="hero-card__link">
+          <span>{link.replace('https://', '')}</span>
+          <span class="material-symbols-outlined" style="font-size: 14px;">open_in_new</span>
+        </a>
       </div>
     </div>
   </section>
@@ -82,34 +85,34 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
       <h3 class="bento-card__title">Overview</h3>
       <div class="stats-grid stats-grid--dashboard">
         <div class="stat-card">
-          <div class="stat-card__icon">
-            <span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+          <div class="stat-card__icon-box">
+            <span class="material-symbols-outlined">event_available</span>
           </div>
-          <div class="stat-card__label">TOTAL RSVP</div>
+          <div class="stat-card__label">Total RSVP</div>
           <div class="stat-card__number">{report.summary.rsvpCount}</div>
         </div>
         
         <div class="stat-card">
-          <div class="stat-card__icon">
-            <span class="material-symbols-outlined" data-icon="group">group</span>
+          <div class="stat-card__icon-box">
+            <span class="material-symbols-outlined">groups</span>
           </div>
-          <div class="stat-card__label">TOTAL PAX</div>
+          <div class="stat-card__label">Total Tamu (Pax)</div>
           <div class="stat-card__number">{report.summary.guestCount}</div>
         </div>
         
         <div class="stat-card">
-          <div class="stat-card__icon">
-            <span class="material-symbols-outlined" data-icon="forum">forum</span>
+          <div class="stat-card__icon-box">
+            <span class="material-symbols-outlined">chat_bubble</span>
           </div>
-          <div class="stat-card__label">UCAPAN</div>
+          <div class="stat-card__label">Ucapan & Doa</div>
           <div class="stat-card__number">{report.summary.wishesCount}</div>
         </div>
         
         <div class="stat-card">
-          <div class="stat-card__icon">
-            <span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+          <div class="stat-card__icon-box">
+            <span class="material-symbols-outlined">visibility</span>
           </div>
-          <div class="stat-card__label">PAGE VIEWS</div>
+          <div class="stat-card__label">Total Dilihat</div>
           <div class="stat-card__number">{report.summary.viewCount}</div>
         </div>
       </div>
@@ -119,28 +122,28 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
   <section class="fade-in-bottom animate-on-scroll">
     <div class="bento-card">
       <div class="countdown-header-row">
-        <span class="countdown-label">Countdown:</span>
+        <span class="countdown-label">Countdown Acara</span>
         <span class="countdown-date">{new Date(weddingDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
       </div>
       <div class="countdown-grid">
         <div class="countdown-item">
           <div class="countdown-item__number" id="cd-days">00</div>
-          <div class="countdown-item__label">HARI</div>
+          <div class="countdown-item__label">Hari</div>
         </div>
         <div class="countdown-separator">:</div>
         <div class="countdown-item">
           <div class="countdown-item__number" id="cd-hours">00</div>
-          <div class="countdown-item__label">JAM</div>
+          <div class="countdown-item__label">Jam</div>
         </div>
         <div class="countdown-separator">:</div>
         <div class="countdown-item">
           <div class="countdown-item__number" id="cd-minutes">00</div>
-          <div class="countdown-item__label">MENIT</div>
+          <div class="countdown-item__label">Menit</div>
         </div>
         <div class="countdown-separator">:</div>
         <div class="countdown-item">
           <div class="countdown-item__number" id="cd-seconds">00</div>
-          <div class="countdown-item__label">DETIK</div>
+          <div class="countdown-item__label">Detik</div>
         </div>
       </div>
     </div>
@@ -167,7 +170,10 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
               <p class="event-item__name">{event.name}</p>
               {event.venueAddress && <p class="event-item__address">{event.venueAddress}</p>}
               {event.mapsUrl && (
-                <a href={event.mapsUrl} target="_blank" rel="noopener noreferrer" class="event-item__btn">Lihat Lokasi</a>
+                <a href={event.mapsUrl} target="_blank" rel="noopener noreferrer" class="event-item__btn">
+                  <span class="material-symbols-outlined" style="font-size: 15px;">near_me</span>
+                  <span>Lihat Petunjuk Lokasi</span>
+                </a>
               )}
             </div>
             {index < report.events.length - 1 && <div class="event-item__divider"></div>}
@@ -185,23 +191,23 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
           <div class="guest-stats__donut" style={`--hadir-deg: ${hadirDeg}deg; --tidak-hadir-deg: ${tidakHadirDeg}deg;`}>
             <div class="guest-stats__donut-inner">
               <span class="guest-stats__total-val">{totalTamu}</span>
-              <span class="guest-stats__total-lbl">TOTAL</span>
+              <span class="guest-stats__total-lbl">Total</span>
             </div>
           </div>
         </div>
         <div class="guest-stats__legend">
           <div class="guest-stats__legend-item">
-            <div class="guest-stats__dot" style="background-color: #22c55e;"></div>
+            <div class="guest-stats__dot guest-stats__dot--hadir"></div>
             <span class="guest-stats__label">Hadir</span>
             <span class="guest-stats__value">{hadir}</span>
           </div>
           <div class="guest-stats__legend-item">
-            <div class="guest-stats__dot" style="background-color: #ef4444;"></div>
+            <div class="guest-stats__dot guest-stats__dot--tidak"></div>
             <span class="guest-stats__label">Tidak Hadir</span>
             <span class="guest-stats__value">{tidakHadir}</span>
           </div>
           <div class="guest-stats__legend-item">
-            <div class="guest-stats__dot" style="background-color: #9ca3af;"></div>
+            <div class="guest-stats__dot guest-stats__dot--ragu"></div>
             <span class="guest-stats__label">Ragu</span>
             <span class="guest-stats__value">{ragu}</span>
           </div>
@@ -213,19 +219,19 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
   {session?.role === 'admin' && (
     <section class="fade-in-bottom animate-on-scroll">
       <div class="bento-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-          <h3 class="bento-card__title" style="margin: 0;">
+        <div class="analytics-card-header">
+          <h3 class="bento-card__title bento-card__title--no-margin">
             Analitik Pengunjung & Interaksi
-            <span style="font-size: 11px; font-weight: 500; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 9999px; margin-left: 8px;">Admin Only</span>
+            <span class="admin-only-badge">Admin Only</span>
           </h3>
-        <a href={`/dashboard/${slug}/aktivitas`} style="font-size: 12px; font-weight: 700; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: rgba(166, 137, 102, 0.1); padding: 4px 10px; border-radius: 6px;">
-          Lihat Log Lengkap <span class="material-symbols-outlined" style="font-size: 15px;">arrow_forward</span>
-        </a>
-      </div>
+          <a href={`/dashboard/${slug}/aktivitas`} class="analytics-log-link">
+            <span>Log Lengkap</span>
+            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+          </a>
+        </div>
         
         <div class="analytics-subcard">
           <h4 class="analytics-section-title">
-            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">devices</span>
             Perangkat Pengunjung
           </h4>
           
@@ -237,22 +243,22 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
           
           <div class="analytics-legend">
             <div class="analytics-legend-item">
-              <span class="analytics-legend-dot" style="background-color: var(--color-primary, #6366f1);"></span>
+              <span class="analytics-legend-dot analytics-legend-dot--mobile"></span>
               <span>Mobile: <strong>{analytics.deviceStats.mobilePercent || (report.summary.viewCount ? 100 : 0)}%</strong> ({analytics.deviceStats.mobile})</span>
             </div>
             <div class="analytics-legend-item">
-              <span class="analytics-legend-dot" style="background-color: #06b6d4;"></span>
+              <span class="analytics-legend-dot analytics-legend-dot--desktop"></span>
               <span>Desktop: <strong>{analytics.deviceStats.desktopPercent}%</strong> ({analytics.deviceStats.desktop})</span>
             </div>
             <div class="analytics-legend-item">
-              <span class="analytics-legend-dot" style="background-color: #f59e0b;"></span>
+              <span class="analytics-legend-dot analytics-legend-dot--tablet"></span>
               <span>Tablet: <strong>{analytics.deviceStats.tabletPercent}%</strong> ({analytics.deviceStats.tablet})</span>
             </div>
           </div>
 
           {analytics.browserStats.length > 0 && (
-            <div style="margin-top: 14px; border-top: 1px dashed var(--color-outline-variant); padding-top: 10px;">
-              <span style="font-size: 11px; color: var(--color-outline); font-weight: 500;">Browser / WebView Terpopuler:</span>
+            <div class="analytics-browser-section">
+              <span class="analytics-browser-label">Browser / WebView Terpopuler:</span>
               <div class="browser-tag-list">
                 {analytics.browserStats.slice(0, 8).map(b => (
                   <span class="browser-tag">
@@ -266,67 +272,84 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
 
         <div class="analytics-subcard">
           <h4 class="analytics-section-title">
-            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">touch_app</span>
             Interaksi Tamu pada Undangan
           </h4>
           <div class="interaction-grid">
             <div class="interaction-card">
-              <span class="material-symbols-outlined interaction-card__icon">drafts</span>
+              <div class="interaction-card__icon-box">
+                <span class="material-symbols-outlined interaction-card__icon">drafts</span>
+              </div>
               <span class="interaction-card__label">Buka Undangan</span>
               <span class="interaction-card__value">{analytics.interactionStats?.openCover || 0}</span>
             </div>
             {showMapsStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon">location_on</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">location_on</span>
+                </div>
                 <span class="interaction-card__label">Petunjuk Maps</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.clickMaps || 0}</span>
               </div>
             )}
             {showCalendarStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
+                </div>
                 <span class="interaction-card__label">Simpan Kalender</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.clickCalendar || 0}</span>
               </div>
             )}
             {showGiftStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
+                </div>
                 <span class="interaction-card__label">Salin Rekening</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.copyGift || 0}</span>
               </div>
             )}
             {showMusicStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon" style="color: #0d9488;">music_note</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">music_note</span>
+                </div>
                 <span class="interaction-card__label">Putar Musik</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.playMusic || 0}</span>
               </div>
             )}
             {showVideoStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon" style="color: #7c3aed;">smart_display</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">play_circle</span>
+                </div>
                 <span class="interaction-card__label">Putar Video</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.playVideo || 0}</span>
               </div>
             )}
             {showGalleryStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon" style="color: #4f46e5;">photo_library</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">photo_library</span>
+                </div>
                 <span class="interaction-card__label">Lihat Galeri</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.viewGallery || 0}</span>
               </div>
             )}
             {showRsvpStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon" style="color: #059669;">how_to_reg</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">how_to_reg</span>
+                </div>
                 <span class="interaction-card__label">Klik Form RSVP</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.clickRsvp || 0}</span>
               </div>
             )}
             {showCoupleIgStat && (
               <div class="interaction-card">
-                <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+                <div class="interaction-card__icon-box">
+                  <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+                </div>
                 <span class="interaction-card__label">Instagram Pengantin</span>
                 <span class="interaction-card__value">{analytics.interactionStats?.clickCoupleInstagram || 0}</span>
               </div>
@@ -336,22 +359,27 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
 
         <div class="analytics-subcard">
           <h4 class="analytics-section-title">
-            <span class="material-symbols-outlined" style="font-size: 18px; color: #10b981;">storefront</span>
             Leads & Branding Pemilik Jasa (Senadda)
           </h4>
           <div class="interaction-grid">
-            <div class="interaction-card" style="border-left: 3px solid #22c55e;">
-              <span class="material-symbols-outlined interaction-card__icon" style="color: #22c55e;">chat</span>
-              <span class="interaction-card__label">Klik Chat WhatsApp</span>
+            <div class="interaction-card">
+              <div class="interaction-card__icon-box">
+                <span class="material-symbols-outlined interaction-card__icon">chat</span>
+              </div>
+              <span class="interaction-card__label">Klik WhatsApp</span>
               <span class="interaction-card__value">{analytics.interactionStats.clickVendorWhatsApp || 0}</span>
             </div>
-            <div class="interaction-card" style="border-left: 3px solid #e1306c;">
-              <span class="material-symbols-outlined interaction-card__icon" style="color: #e1306c;">photo_camera</span>
+            <div class="interaction-card">
+              <div class="interaction-card__icon-box">
+                <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+              </div>
               <span class="interaction-card__label">Klik Instagram Jasa</span>
               <span class="interaction-card__value">{analytics.interactionStats.clickVendorInstagram || 0}</span>
             </div>
-            <div class="interaction-card" style="border-left: 3px solid #3b82f6;">
-              <span class="material-symbols-outlined interaction-card__icon" style="color: #3b82f6;">language</span>
+            <div class="interaction-card">
+              <div class="interaction-card__icon-box">
+                <span class="material-symbols-outlined interaction-card__icon">language</span>
+              </div>
               <span class="interaction-card__label">Klik Website Jasa</span>
               <span class="interaction-card__value">{analytics.interactionStats.clickVendorSite || 0}</span>
             </div>
@@ -361,16 +389,17 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
         {analytics.recentVisitors.length > 0 && (
           <div class="analytics-subcard">
             <h4 class="analytics-section-title">
-              <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">history</span>
               Kunjungan Terbaru
             </h4>
             <div class="recent-visitors-list">
               {analytics.recentVisitors.slice(0, 5).map(v => (
                 <div class="recent-visitor-item">
                   <div class="recent-visitor-item__left">
-                    <span class="material-symbols-outlined" style="font-size: 16px; color: var(--color-primary);">
-                      {v.deviceType === 'desktop' ? 'computer' : v.deviceType === 'tablet' ? 'tablet' : 'smartphone'}
-                    </span>
+                    <div class="recent-visitor-item__icon-box">
+                      <span class="material-symbols-outlined" style="font-size: 15px;">
+                        {v.deviceType === 'desktop' ? 'laptop' : v.deviceType === 'tablet' ? 'tablet_mac' : 'smartphone'}
+                      </span>
+                    </div>
                     <div>
                       <div class="recent-visitor-item__name">
                         {v.guestName || 'Pengunjung Umum'}
@@ -384,9 +413,10 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
                 </div>
               ))}
             </div>
-            <div style="margin-top: 10px; text-align: center;">
-              <a href={`/dashboard/${slug}/aktivitas`} style="font-size: 12px; font-weight: 600; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                Buka Semua Riwayat Aktivitas & Perangkat <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            <div class="analytics-footer-link-wrap">
+              <a href={`/dashboard/${slug}/aktivitas`} class="analytics-more-link">
+                <span>Buka Semua Riwayat Aktivitas & Perangkat</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
               </a>
             </div>
           </div>
@@ -398,9 +428,9 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
   <section class="fade-in-bottom animate-on-scroll">
     <div class="bento-card">
       <div class="wish-header">
-        <h3 class="bento-card__title bento-card__title--no-margin">Ucapan</h3>
+        <h3 class="bento-card__title bento-card__title--no-margin">Ucapan & Doa</h3>
         {newWishesCount > 0 && (
-          <span class="wish-new-badge">{newWishesCount} New</span>
+          <span class="wish-new-badge">{newWishesCount} Baru</span>
         )}
       </div>
       <div class="wishes-list">
@@ -410,7 +440,7 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
               <div class="wish-item__left">
                 <span class="wish-item__name">{rsvp.guestName}</span>
                 <span class={`wish-item__status wish-item__status--${rsvp.attendanceStatus}`}>
-                  {rsvp.attendanceStatus === 'attending' ? 'HADIR' : rsvp.attendanceStatus === 'declined' ? 'TIDAK' : 'RAGU'}
+                  {rsvp.attendanceStatus === 'attending' ? 'Hadir' : rsvp.attendanceStatus === 'declined' ? 'Tidak Hadir' : 'Ragu'}
                 </span>
               </div>
               <span class="wish-item__ago">{timeAgo(rsvp.createdAt)}</span>
@@ -420,12 +450,13 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
           </div>
         ))}
         {wishesWithMessage.length === 0 && (
-          <p class="empty-state">Belum ada ucapan.</p>
+          <p class="empty-state">Belum ada ucapan dari tamu.</p>
         )}
       </div>
       {wishesWithMessage.length > 0 && (
         <a href={`/dashboard/${slug}/rsvp`} class="wish-see-all">
-          LIHAT SEMUA {report.summary.wishesCount} UCAPAN
+          <span>Lihat Semua {report.summary.wishesCount} Ucapan</span>
+          <span class="material-symbols-outlined" style="font-size: 15px;">arrow_forward</span>
         </a>
       )}
     </div>

@@ -140,13 +140,13 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
         </div>
       </div>
       
-      <h2 class="profile-name" style="font-size: 20px; font-weight: 700; line-height: 1.35; margin-top: 4px;">
+      <h2 class="profile-name" style="font-size: 20px; font-weight: 600; line-height: 1.35; margin-top: 4px; color: var(--color-on-surface, #111827);">
         {profileData.name}
       </h2>
       
       <div style="margin-top: 10px;">
         <span class="profile-badge-category">
-          <span class="material-symbols-outlined" style="font-size: 15px;">{isMetatah ? 'auto_awesome' : 'favorite'}</span>
+          <span class="material-symbols-outlined" style="font-size: 15px;">{isMetatah ? 'temple_hindu' : 'celebration'}</span>
           {isMetatah ? 'Upacara Metatah / Mepandes' : 'Undangan Pernikahan'}
         </span>
       </div>
@@ -271,7 +271,7 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
             {venueName && <strong style="font-size: 14px;">{venueName}</strong>}
             <span style="font-size: 13px; color: var(--color-on-surface-variant);">{venueAddress || '-'}</span>
             {mapsUrl && (
-              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 13px; font-weight: 500; color: #2563eb; text-decoration: none;">
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 13px; font-weight: 500; color: #111827; text-decoration: underline; text-underline-offset: 3px;">
                 <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
                 Buka di Google Maps
               </a>
@@ -425,8 +425,9 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       border-radius: 9999px;
       font-size: 12px;
       font-weight: 500;
-      background: rgba(166, 137, 102, 0.12);
-      color: #8c6d48;
+      background: #f4f4f5;
+      color: #111827;
+      border: 1px solid #e4e4e7;
     }
 
     .participant-item-card {
@@ -434,10 +435,10 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       align-items: flex-start;
       gap: 14px;
       padding: 12px 14px;
-      background-color: var(--color-surface-container-low, #fcfbf9);
-      border: 1px solid rgba(166, 137, 102, 0.12);
+      background-color: #ffffff;
+      border: 1px solid #e5e7eb;
       border-radius: 10px;
-      transition: background-color 0.2s ease;
+      transition: border-color 0.15s ease;
     }
 
     .participant-item-num {
@@ -448,11 +449,12 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      background: rgba(166, 137, 102, 0.15);
-      color: #8c6d48;
+      background: #f4f4f5;
+      color: #111827;
+      border: 1px solid #e4e4e7;
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
 
     .participant-item-details {
@@ -465,59 +467,60 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
     .participant-item-name {
       font-size: 14px;
       font-weight: 600;
-      color: var(--color-on-surface, #1e1e1e);
+      color: #111827;
     }
 
     .participant-item-nickname {
       font-size: 13px;
       font-weight: 500;
-      color: #8c6d48;
+      color: #71717a;
     }
 
     .participant-item-role {
       font-size: 12px;
       font-weight: 500;
-      color: #8c6d48;
+      color: #71717a;
       display: inline-block;
     }
 
     .participant-item-parents {
       font-size: 12px;
-      color: var(--color-outline, #757575);
+      color: #71717a;
       line-height: 1.4;
       margin-top: 2px;
     }
 
     .gift-account-card {
       padding: 14px 16px;
-      background-color: var(--color-surface-container-low, #fcfbf9);
-      border: 1px solid rgba(166, 137, 102, 0.15);
+      background-color: #ffffff;
+      border: 1px solid #e5e7eb;
       border-radius: 10px;
     }
 
     .gift-bank-badge {
       display: inline-block;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: 0.5px;
       padding: 2px 8px;
       border-radius: 4px;
-      background: rgba(166, 137, 102, 0.15);
-      color: #8c6d48;
+      background: #f4f4f5;
+      color: #111827;
+      border: 1px solid #e4e4e7;
       margin-bottom: 4px;
     }
 
     .gift-account-number {
       font-family: monospace;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: 1px;
-      color: var(--color-on-surface, #1e1e1e);
+      color: #111827;
     }
 
     .gift-account-holder {
       font-size: 12px;
-      color: var(--color-outline, #757575);
+      color: #71717a;
       margin-top: 2px;
     }
   </style>

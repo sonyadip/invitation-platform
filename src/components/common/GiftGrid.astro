@@ -1,5 +1,6 @@
 ---
 import type { GiftAccount } from '../../types';
+import { getBankLogoUrl } from '../../utils/template-helpers';
 
 interface Props {
   gifts: GiftAccount[];
@@ -15,18 +16,7 @@ const { gifts, hidden = false } = Astro.props;
   <div class="gift-collapse-inner">
     <div class="gift-grid" data-gift-grid>
       {gifts.map((gift) => {
-        let logoUrl = gift.bank_logo;
-        if (!logoUrl) {
-          const b = gift.bank_name.toLowerCase();
-          if (b.includes("bca")) logoUrl = "/images/banks/bca.svg";
-          else if (b.includes("bni")) logoUrl = "/images/banks/bni.svg";
-          else if (b.includes("bri")) logoUrl = "/images/banks/bri.svg";
-          else if (b.includes("bsi")) logoUrl = "/images/banks/bsi.svg";
-          else if (b.includes("cimb")) logoUrl = "/images/banks/cimb_niaga.svg";
-          else if (b.includes("danamon")) logoUrl = "/images/banks/danamon.svg";
-          else if (b.includes("mandiri")) logoUrl = "/images/banks/mandiri.svg";
-          else if (b.includes("permata")) logoUrl = "/images/banks/permata_bank.svg";
-        }
+        const logoUrl = getBankLogoUrl(gift.bank_name, gift.bank_logo);
         
         return (
         <article class="gift-card" data-animate>
