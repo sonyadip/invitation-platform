@@ -30,6 +30,7 @@ const defaultBookingUrl = getWaUrl();
 
 const navItems = [
   ["Koleksi", "#templates"],
+  ["Alur", "#process"],
   ["Fitur", "#features"],
   ["FAQ", "#faq"],
   ["Konsultasi", "#booking"],
@@ -77,17 +78,49 @@ const resolveCategory = (c: any): 'pernikahan' | 'metatah' => {
 };
 
 let rawCards = (siteSettings.home_template_cards && siteSettings.home_template_cards.length > 0)
-  ? siteSettings.home_template_cards.map((c: any) => ({
-      ...c,
-      name: c.key === 'lumiere-metatah' ? 'Lumiere' : (c.key === 'lumiere-metatah-v2' ? (c.name || 'Lumiere v2') : (c.name || 'Lumiere')),
-      category: resolveCategory(c),
-      promoPrice: c.promo_price || c.promoPrice || null,
-      image: c.image || imageMap[c.key] || ''
-    }))
-  : defaultTemplateCards;
+  ? siteSettings.home_template_cards.map((c: any) => {
+      const isMetatahCard = c.key === 'lumiere-metatah' || c.key === 'lumiere-metatah-v2';
+      const name = c.key === 'lumiere-metatah' ? 'Lumiere' : (c.key === 'lumiere-metatah-v2' ? (c.name || 'Lumiere v2') : (c.name || 'Lumiere'));
+      const defaultPreview = c.key === 'lumiere-metatah' ? '/preview/lumiere-metatah-v2' : `/preview/${c.key}`;
+      return {
+        ...c,
+        name,
+        category: resolveCategory(c),
+        promoPrice: c.promo_price || c.promoPrice || null,
+        image: c.image || imageMap[c.key] || '',
+        hasVariants: isMetatahCard,
+        variants: isMetatahCard ? [
+          { label: 'Dengan Foto', previewUrl: defaultPreview, waTheme: `${name} (Dengan Foto)`, price: 'Rp 450.000', promoPrice: 'Rp 300.000' },
+          { label: 'Tanpa Foto', previewUrl: '/preview/lumiere-metatah-tanpa-foto', waTheme: `${name} (Tanpa Foto)`, price: 'Rp 350.000', promoPrice: 'Rp 250.000' }
+        ] : null
+      };
+    })
+  : defaultTemplateCards.map((c: any) => {
+      const isMetatahCard = c.key === 'lumiere-metatah' || c.key === 'lumiere-metatah-v2';
+      const defaultPreview = c.key === 'lumiere-metatah' ? '/preview/lumiere-metatah-v2' : `/preview/${c.key}`;
+      return {
+        ...c,
+        hasVariants: isMetatahCard,
+        variants: isMetatahCard ? [
+          { label: 'Dengan Foto', previewUrl: defaultPreview, waTheme: `${c.name} (Dengan Foto)`, price: 'Rp 450.000', promoPrice: 'Rp 300.000' },
+          { label: 'Tanpa Foto', previewUrl: '/preview/lumiere-metatah-tanpa-foto', waTheme: `${c.name} (Tanpa Foto)`, price: 'Rp 350.000', promoPrice: 'Rp 250.000' }
+        ] : null
+      };
+    });
 
 if (!rawCards.some((c: any) => resolveCategory(c) === 'metatah')) {
-  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.category === 'metatah')];
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.category === 'metatah').map((c: any) => {
+    const isMetatahCard = c.key === 'lumiere-metatah' || c.key === 'lumiere-metatah-v2';
+    const defaultPreview = c.key === 'lumiere-metatah' ? '/preview/lumiere-metatah-v2' : `/preview/${c.key}`;
+    return {
+      ...c,
+      hasVariants: isMetatahCard,
+      variants: isMetatahCard ? [
+        { label: 'Dengan Foto', previewUrl: defaultPreview, waTheme: `${c.name} (Dengan Foto)`, price: 'Rp 450.000', promoPrice: 'Rp 300.000' },
+        { label: 'Tanpa Foto', previewUrl: '/preview/lumiere-metatah-tanpa-foto', waTheme: `${c.name} (Tanpa Foto)`, price: 'Rp 350.000', promoPrice: 'Rp 250.000' }
+      ] : null
+    };
+  })];
 }
 
 if (!rawCards.some((c: any) => c.key === 'terre')) {
@@ -100,10 +133,22 @@ const formatRupiah = (val: number) => 'Rp ' + val.toLocaleString('id-ID');
 rawCards = rawCards.map((c: any) => {
   const homePromoVal = parsePrice(c.promoPrice || c.price);
   const halfVal = Math.round(homePromoVal / 2);
+
+  const mappedVariants = c.variants ? c.variants.map((v: any) => {
+    const vHomePromoVal = parsePrice(v.promoPrice || v.price);
+    const vHalfVal = Math.round(vHomePromoVal / 2);
+    return {
+      ...v,
+      price: v.promoPrice || v.price,
+      promoPrice: formatRupiah(vHalfVal)
+    };
+  }) : null;
+
   return {
     ...c,
     price: c.promoPrice || c.price,
-    promoPrice: formatRupiah(halfVal)
+    promoPrice: formatRupiah(halfVal),
+    variants: mappedVariants
   };
 });
 
@@ -145,42 +190,45 @@ const addons = [
 ];
 
 const faqs = [
-
   {
-    q: "Waktu Pengerjaan Undangan",
-    a: "Proses pembuatan biasanya memakan waktu 1 hingga 3 hari kerja setelah semua data acara dan foto kami terima dengan lengkap. Tersedia juga fasilitas prioritas 24 jam."
+    q: "Bagaimana cara mengisi nama tamu dan membagikan undangan?",
+    a: "Tambahkan <code>?to=Nama+Tamu</code> di akhir link undangan (ganti spasi dengan tanda +). Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code>. Link langsung siap disalin dan dikirim.<br><br>Selain cara manual, Anda juga mendapat akses <strong>Dashboard Tamu</strong> jika ingin memasukkan daftar nama sekaligus agar sistem menghasilkan link unik tiap tamu secara otomatis."
   },
   {
-    q: "Pengganti Video Background",
-    a: "Jika template memiliki background video tapi Anda tidak punya video, kami bisa menggantinya dengan fitur image slider (slideshow) yang akan memutar foto-foto Anda secara bergantian."
+    q: "Berapa lama proses pembuatan undangan digital?",
+    a: "Pembuatan standar memakan waktu <strong>1 hingga 3 hari kerja</strong> setelah data acara dan materi foto kami terima lengkap. Butuh mendesak? Tersedia fasilitas <strong>Prioritas 24 Jam</strong> agar undangan siap disebar keesokan harinya."
   },
   {
-    q: "Fasilitas Revisi Minor",
-    a: "Kami memberikan fasilitas revisi minor sepuasnya. Ini berlaku untuk perbaikan typo nama, ganti lagu, ganti foto, ganti quotes, penyesuaian lokasi, hingga menghapus section tertentu."
+    q: "Bagaimana jika kami belum memiliki video prewedding?",
+    a: "Tidak masalah. Untuk tema yang memiliki latar video, kami dapat menggantinya dengan fitur <strong>galeri foto dinamis (photo slider)</strong> yang memutar foto-foto Anda secara bergantian dengan transisi yang halus dan tetap elegan."
   },
   {
-    q: "Fasilitas Revisi Mayor",
-    a: "Untuk revisi mayor, kami sediakan jatah satu kali. Perlu dicatat, Anda tidak bisa mengganti tema undangan, tapi Anda diperbolehkan merombak ulang posisi atau susunan section-nya."
+    q: "Apakah ada batasan revisi jika ada kesalahan data atau perubahan?",
+    a: "Untuk perbaikan data teks (seperti ejaan nama, gelar adat, jam, penyesuaian lokasi, dan kutipan) maupun penyesuaian foto dan lagu latar, kami berikan <strong>revisi sepuasnya</strong>. Anda juga mendapatkan kesempatan merombak susunan section sebelum undangan disebarkan."
   },
   {
-    q: "Masa Aktif Tautan Undangan",
-    a: "Link undangan akan tetap aktif sampai satu bulan setelah acara selesai, jadi Anda masih punya banyak waktu untuk membaca ulang ucapan-ucapan dari para tamu."
+    q: "Berapa lama link undangan akan tetap aktif?",
+    a: "Tautan undangan akan tetap aktif hingga <strong>1 bulan setelah acara selesai</strong>. Seluruh rekapan doa restu, ucapan selamat, dan konfirmasi kehadiran dari para tamu tetap tersimpan aman dan dapat Anda akses kapan saja."
   },
   {
-    q: "Cara Membagikan Undangan",
-    a: "Anda akan mendapat akses dashboard khusus untuk memasukkan daftar nama tamu. Dari situ, sistem bisa langsung men-generate link unik per orang untuk Anda sebar via WhatsApp."
+    q: "Bagaimana jika ada perubahan jadwal atau lokasi setelah undangan disebar?",
+    a: "Cukup kabari tim kami perubahannya. Data undangan akan langsung diperbarui di sistem secara <em>real-time</em>, sehingga tamu yang membuka tautan yang sudah disebar akan otomatis melihat informasi terbaru tanpa perlu mengganti link."
   },
   {
-    q: "Cara Menulis Nama Tamu Manual",
-    a: "Selain lewat dashboard, Anda bisa menulis nama tamu manual dengan menambahkan <code>?to=Nama+Tamu</code> di akhir link undangan. Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code> (ganti spasi dengan tanda +)."
+    q: "Bagaimana cara memantau konfirmasi kehadiran (RSVP) dan ucapan tamu?",
+    a: "Setiap tamu dapat mengisi form konfirmasi kehadiran dan doa restu langsung di halaman undangan. Seluruh respons terekap otomatis di dashboard Anda secara rapi untuk memudahkan perkiraan kehadiran tamu dan porsi katering."
   },
   {
-    q: "Perubahan Setelah Undangan Dibagikan",
-    a: "Kalau ada perubahan jadwal atau lokasi mendadak, infokan saja ke kami. Nanti link undangan yang sudah disebar akan otomatis ter-update mengikuti info yang baru."
+    q: "Apakah Senadda melayani undangan untuk acara adat Bali seperti Metatah / Mepandes?",
+    a: "Ya, tentu. Selain Pawiwahan (pernikahan), kami menyediakan template khusus <strong>Upacara Metatah / Mepandes</strong> dengan tata susunan upacara adat Bali, teks doa/mantra, serta pilihan varian desain dengan foto maupun tanpa foto."
   },
   {
-    q: "Konfirmasi Kehadiran & Ucapan",
-    a: "Di undangan ada form khusus agar tamu bisa mengirim ucapan dan mengonfirmasi kehadiran (RSVP). Semua datanya akan terekap otomatis dan bisa Anda pantau dari dashboard."
+    q: "Apakah kami bisa menggunakan lagu pilihan sendiri sebagai musik latar?",
+    a: "Bisa. Anda bebas memilih lagu favorit, lagu pop romantis, instrumen akustik, maupun instrumen tradisional Bali sebagai musik latar otomatis saat undangan dibuka oleh tamu."
+  },
+  {
+    q: "Bagaimana alur pemesanan dan pembayarannya?",
+    a: "Pilih tema favorit Anda di katalog, lalu hubungi kami via WhatsApp. Tim kami akan mengirimkan formulir data acara serta instruksi pembayaran. Begitu data lengkap, undangan langsung kami proses."
   }
 ];
 
@@ -638,6 +686,22 @@ const schemaData = {
                   />
                 </div>
                 <div class="template-card__body">
+                  {template.hasVariants && template.variants && (
+                    <div class="template-card__variants" role="group" aria-label="Pilihan varian foto">
+                      {template.variants.map((variant: any, vIdx: number) => (
+                        <button
+                          type="button"
+                          class={`template-card__variant-btn${vIdx === 0 ? ' is-active' : ''}`}
+                          data-preview-url={variant.previewUrl}
+                          data-wa-url={getWaUrl(variant.waTheme, variant.promoPrice)}
+                          data-price={variant.price}
+                          data-promo-price={variant.promoPrice}
+                        >
+                          {variant.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div class="template-card__meta">
                     <strong>{template.name}</strong>
                     {template.promoPrice ? (
@@ -651,13 +715,19 @@ const schemaData = {
                   </div>
                   <div class="template-card__actions">
                     <a
-                      href={`/preview/${template.key}`}
+                      href={template.variants ? template.variants[0].previewUrl : `/preview/${template.key}`}
                       target="_blank"
                       rel="noreferrer"
+                      class="template-card__btn-preview"
                     >
                       Preview
                     </a>
-                    <a href={getWaUrl(template.name, template.promoPrice)} target="_blank" rel="noreferrer">
+                    <a
+                      href={template.variants ? getWaUrl(template.variants[0].waTheme, template.variants[0].promoPrice) : getWaUrl(template.name, template.promoPrice)}
+                      target="_blank"
+                      rel="noreferrer"
+                      class="template-card__btn-order"
+                    >
                       Pesan
                     </a>
                   </div>
@@ -669,6 +739,51 @@ const schemaData = {
 
         <div class="template-empty hidden" id="template-empty">
           <p>Belum ada template pada kategori ini.</p>
+        </div>
+      </section>
+
+      <section
+        class="process-section section-observe"
+        id="process"
+        data-section
+      >
+        <div class="process-container">
+          <div class="section-heading reveal-blur">
+            <p>Alur Pembuatan</p>
+            <h2>Tiga Langkah Mudah.</h2>
+          </div>
+
+          <div class="process-cols">
+            <div class="process-col reveal-blur" style="--delay: 100ms">
+              <div class="process-col__header">
+                <h3 class="process-col__title">Siapkan Data Acara</h3>
+                <span class="process-col__num">01</span>
+              </div>
+              <p class="process-col__desc">
+                Kirimkan detail acara dan foto Anda melalui WhatsApp atau formulir pemesanan.
+              </p>
+            </div>
+
+            <div class="process-col reveal-blur" style="--delay: 200ms">
+              <div class="process-col__header">
+                <h3 class="process-col__title">Kita Proses</h3>
+                <span class="process-col__num">02</span>
+              </div>
+              <p class="process-col__desc">
+                Tim kami merangkai dan menyesuaikan undangan Anda hingga rapi dan siap ditinjau.
+              </p>
+            </div>
+
+            <div class="process-col reveal-blur" style="--delay: 300ms">
+              <div class="process-col__header">
+                <h3 class="process-col__title">Undangan Siap Disebarkan</h3>
+                <span class="process-col__num">03</span>
+              </div>
+              <p class="process-col__desc">
+                Tautan undangan aktif dan siap Anda bagikan langsung ke keluarga serta para tamu.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -805,7 +920,8 @@ const schemaData = {
       <section class="faq-section section-observe" id="faq" data-section>
         <div class="faq-section-inner">
           <div class="section-heading-centered reveal-blur" style="margin-bottom: 50px;">
-            <h2 style="color: var(--black);">FAQ</h2>
+            <p class="faq-eyebrow">Pertanyaan Umum</p>
+            <h2 style="color: var(--black);">Hal yang Sering Ditanyakan</h2>
           </div>
         
         <style>
@@ -815,18 +931,37 @@ const schemaData = {
             z-index: 2;
             padding: 110px 20px;
         }
+        .faq-eyebrow {
+            font-family: var(--font-body);
+            font-size: 11px;
+            line-height: 1.3;
+            color: var(--black);
+            margin: 0 0 10px 0;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        @media (max-width: 960px) {
+            .faq-eyebrow {
+                font-size: 12px;
+                line-height: 1.25;
+            }
+        }
         .faq-section-inner {
-            max-width: 1000px;
             margin: 0 auto;
         }
         @media (min-width: 768px) {
             .faq-section {
-                padding: 120px 48px;
+                padding: 100px 48px;
             }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 767px) {
             .faq-section {
                 padding: 60px 16px;
+            }
+        }
+        @media (min-width: 480px) and (max-width: 767px) {
+            .faq-section {
+                padding-inline: 32px;
             }
         }
 .faq-container,
@@ -947,6 +1082,14 @@ const schemaData = {
             margin: 0 !important;
             padding: 0 24px 24px 24px !important; 
         }
+        .faq-answer code {
+            font-family: inherit;
+            background: rgba(23, 22, 15, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            word-break: break-all;
+        }
 @media (max-width: 767px) {
             .faq-btn { padding: 20px 16px; }
             .faq-question { font-size: 16px !important; line-height: 1.5 !important; }
@@ -1029,10 +1172,10 @@ const schemaData = {
         <footer class="start-footer reveal-blur" style="--delay: 240ms">
           <div class="start-footer__links">
             <a href="#templates">Koleksi</a>
+            <a href="#process">Alur</a>
             <a href="#features">Fitur</a>
             <a href="#faq">FAQ</a>
             <a href={siteSettings.instagram_url || "https://www.instagram.com/senadda.id"} target="_blank" rel="noopener">Instagram</a>
-            <a href={siteSettings.whatsapp_url || "https://wa.me/088236262247"} target="_blank" rel="noopener">WhatsApp</a>
           </div>
           <div class="start-footer__copy">
             <span>&copy; {new Date().getFullYear()} Senadda</span>
@@ -1356,6 +1499,48 @@ const schemaData = {
       const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
       elementsToObserve.forEach((el) => revealObserver.observe(el));
 
+      // Template Card Variant Switcher
+      document.querySelectorAll('.template-card__variants').forEach((group) => {
+        const card = group.closest('.template-card');
+        if (!card) return;
+        const previewLink = card.querySelector('.template-card__btn-preview');
+        const orderLink = card.querySelector('.template-card__btn-order');
+        const btns = group.querySelectorAll('.template-card__variant-btn');
+
+        btns.forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            btns.forEach((b) => b.classList.remove('is-active'));
+            btn.classList.add('is-active');
+
+            const nextPreviewUrl = btn.getAttribute('data-preview-url');
+            const nextWaUrl = btn.getAttribute('data-wa-url');
+            const nextPrice = btn.getAttribute('data-price');
+            const nextPromoPrice = btn.getAttribute('data-promo-price');
+
+            if (previewLink && nextPreviewUrl) {
+              previewLink.setAttribute('href', nextPreviewUrl);
+            }
+            if (orderLink && nextWaUrl) {
+              orderLink.setAttribute('href', nextWaUrl);
+            }
+
+            const priceOriginalEl = card.querySelector('.template-card__price--original s');
+            const pricePromoEl = card.querySelector('.template-card__price--promo');
+            const regularPriceEl = card.querySelector('.template-card__price:not(.template-card__price--original):not(.template-card__price--promo)');
+
+            if (nextPromoPrice && pricePromoEl) {
+              pricePromoEl.textContent = nextPromoPrice;
+            }
+            if (nextPrice && priceOriginalEl) {
+              priceOriginalEl.textContent = nextPrice;
+            } else if (nextPrice && regularPriceEl) {
+              regularPriceEl.textContent = nextPrice;
+            }
+          });
+        });
+      });
+
       const filterBtns = document.querySelectorAll(".template-filter-btn");
       const templateCardEls = document.querySelectorAll(".template-grid .template-card");
       const emptyStateEl = document.getElementById("template-empty");
@@ -1418,43 +1603,61 @@ const schemaData = {
         }
       } catch {}
 
-      const scrollToTarget = (targetId) => {
+      const scrollToTarget = (targetId: string, immediate = false) => {
         document.body.classList.remove("nav-hidden");
         
         if (targetId === "#booking") {
-          window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: "smooth"
-          });
+          updateReveal();
           const target = document.querySelector(targetId);
-          if (target) target.classList.add("is-visible");
+          if (target) {
+            target.classList.add("is-visible");
+            target.querySelectorAll(".reveal-blur").forEach((el) => el.classList.add("is-visible"));
+          }
+
+          const maxScroll = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+          const lenis = getLenis();
+          if (lenis) {
+            lenis.scrollTo(maxScroll, {
+              duration: immediate ? 0 : 1.2,
+              immediate,
+            });
+          } else {
+            window.scrollTo({
+              top: maxScroll,
+              behavior: immediate ? "auto" : "smooth",
+            });
+          }
           return;
         }
 
         const target = document.querySelector(targetId);
         if (!target) return;
         target.classList.add("is-visible");
+        target.querySelectorAll(".reveal-blur").forEach((el) => el.classList.add("is-visible"));
 
         const lenis = getLenis();
         if (lenis) {
           lenis.scrollTo(target as HTMLElement, {
             offset: -84,
-            duration: 1.2,
+            duration: immediate ? 0 : 1.2,
+            immediate,
           });
         } else {
           requestAnimationFrame(() => {
             target.scrollIntoView({
-              behavior: "smooth",
+              behavior: immediate ? "auto" : "smooth",
               block: "start",
             });
-            window.setTimeout(
-              () =>
-                target.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                }),
-              1000,
-            );
+            if (!immediate) {
+              window.setTimeout(
+                () =>
+                  target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  }),
+                1000,
+              );
+            }
           });
         }
       };
@@ -1464,6 +1667,7 @@ const schemaData = {
           const targetId = link.getAttribute("href");
           if (!targetId || targetId === "#") return;
           event.preventDefault();
+          event.stopPropagation();
           history.pushState(null, "", targetId);
           scrollToTarget(targetId);
         });
@@ -1536,6 +1740,7 @@ const schemaData = {
       setScrollState();
 
       const scrollToTemplates = () => {
+        if (window.location.hash) return;
         const target = document.getElementById("templates");
         if (target) {
           const heading = target.querySelector(".section-heading");
@@ -1552,6 +1757,36 @@ const schemaData = {
       };
       scrollToTemplates();
       window.addEventListener("load", scrollToTemplates);
+
+      const handleHashNavigation = (immediate = false) => {
+        const hash = window.location.hash;
+        if (hash && hash !== "#" && hash !== "#top") {
+          updateReveal();
+          scrollToTarget(hash, immediate);
+        } else if (hash === "#top") {
+          const lenis = getLenis();
+          if (lenis) {
+            lenis.scrollTo(0, { duration: immediate ? 0 : 1.2, immediate });
+          } else {
+            window.scrollTo({ top: 0, behavior: immediate ? "auto" : "smooth" });
+          }
+        }
+      };
+
+      if (window.location.hash) {
+        requestAnimationFrame(() => {
+          handleHashNavigation(true);
+          window.setTimeout(() => handleHashNavigation(true), 150);
+          window.setTimeout(() => handleHashNavigation(true), 400);
+        });
+      }
+
+      window.addEventListener("hashchange", () => {
+        handleHashNavigation(false);
+      });
+      window.addEventListener("popstate", () => {
+        handleHashNavigation(false);
+      });
       window.addEventListener("scroll", setScrollState, {
         passive: true,
       });
@@ -1921,7 +2156,7 @@ const schemaData = {
     z-index: 220;
   }
 
-  .section-observe:not(.hero-shell):not(.start) {
+  .section-observe:not(.hero-shell):not(.start):not(.process-section) {
     position: relative;
     background: var(--white);
   }
@@ -2456,7 +2691,7 @@ const schemaData = {
     display: grid;
     justify-items: end;
     font-family: var(--font-heading);
-    font-size: clamp(42px, 7vw, 110px);
+    font-size: clamp(42px, 6.5vw, 110px);
     font-weight: 400;
     letter-spacing: -0.04em;
     line-height: 1.0;
@@ -2512,7 +2747,6 @@ const schemaData = {
   .section-heading {
     display: grid;
     gap: 10px;
-    max-width: 1120px;
     opacity: 0;
     transform: translateY(34px);
     transition:
@@ -2634,9 +2868,11 @@ const schemaData = {
       opacity 1s var(--ease);
     will-change: transform;
   }
-  .template-card:hover {
-    --template-hover-y: -3px;
-    transition-duration: 0.3s;
+  @media (hover: hover) and (pointer: fine) {
+    .template-card:hover {
+      --template-hover-y: -3px;
+      transition-duration: 0.3s;
+    }
   }
   .template-card.is-visible {
     opacity: 1;
@@ -2665,12 +2901,14 @@ const schemaData = {
     will-change: transform;
   }
 
-  .template-card:hover .template-card__media img {
-    transform: translate3d(0, 0, 0) scale(1.05);
-  }
-  .template-card:hover .template-card__media {
-    box-shadow: 0 30px 84px rgba(44, 18, 85, 0.18);
-    transform: translateY(-2px);
+  @media (hover: hover) and (pointer: fine) {
+    .template-card:hover .template-card__media img {
+      transform: translate3d(0, 0, 0) scale(1.05);
+    }
+    .template-card:hover .template-card__media {
+      box-shadow: 0 30px 84px rgba(44, 18, 85, 0.18);
+      transform: translateY(-2px);
+    }
   }
 
   .template-card__body {
@@ -2725,6 +2963,47 @@ const schemaData = {
     line-height: 1.45;
   }
 
+  .template-card__variants {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid rgba(23, 22, 15, 0.14);
+    padding: 3px;
+    border-radius: 999px;
+    gap: 3px;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .template-card__variant-btn {
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #4a4841;
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .template-card__variant-btn:hover:not(.is-active) {
+    color: var(--black);
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  .template-card__variant-btn.is-active {
+    background: var(--black);
+    color: var(--white);
+    font-weight: 600;
+  }
+
   .template-card__actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2772,7 +3051,7 @@ const schemaData = {
     min-height: 74svh;
     place-items: center;
     gap: 18px;
-    padding: 120px 48px;
+    padding: 100px 48px 64px;
     background: #414238 !important;
     scroll-margin-top: 84px;
     text-align: center;
@@ -2818,7 +3097,7 @@ const schemaData = {
 
   .start-footer {
     width: 100%;
-    max-width: 760px;
+    max-width: 1120px;
     margin-top: 48px;
     padding-top: 28px;
     border-top: 1px solid rgba(239, 237, 223, 0.12);
@@ -2842,7 +3121,6 @@ const schemaData = {
         font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        font-weight: 500;
         opacity: 0.72;
         transition: opacity 0.2s ease, color 0.2s ease;
 
@@ -2877,11 +3155,8 @@ const schemaData = {
       gap: 12px;
 
       &__links {
-        gap: 16px;
-
         a {
           font-size: 10.5px;
-          letter-spacing: 0.06em;
         }
       }
 
@@ -2915,13 +3190,16 @@ const schemaData = {
   }
 
   .features-container {
-    max-width: 800px;
     margin: 0 auto;
   }
 
   .section-heading-centered {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
+
+    @media (max-width: 768px) {
+      margin-bottom: 40px;
+    }
   }
 
   .section-heading-centered h2 {
@@ -3049,7 +3327,12 @@ const schemaData = {
     .description {
       width: 180px;
     }
-    .template-list, .features-list {
+    .template-list,
+    .features-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase,
+    .faq-section {
       padding-inline: 32px;
     }
   }
@@ -3110,6 +3393,10 @@ const schemaData = {
     .bottom-content {
       gap: 48px;
       padding: 0 48px 48px;
+
+      @media (min-width: 768px) and (max-height: 750px) {
+        gap: 0px;
+      }
     }
     .hero-cta {
       font-size: 24px;
@@ -3123,8 +3410,18 @@ const schemaData = {
     .template-list {
       padding: 120px 48px 100px;
     }
+    #process.process-section,
+    .process-section {
+      padding: 120px 48px 100px;
+    }
+    .dashboard-showcase {
+      padding: 120px 48px 100px;
+    }
     .features-list {
       padding: 120px 48px;
+    }
+    .faq-section {
+      padding: 100px 48px;
     }
   }
 
@@ -3314,12 +3611,26 @@ const schemaData = {
       font-size: clamp(32px, 11vw, 48px);
       line-height: 1.0;
     }
-    .template-list {
+    .template-list,
+    .process-section,
+    .dashboard-showcase,
+    .features-list,
+    .faq-section
+     {
       gap: 24px;
-      padding: 58px 16px 70px;
-
+      padding: 58px 16px 70px !important;
+    }
+    #process.process-section,
+    .process-section {
+      padding: 60px 16px 70px;
+    }
+    .dashboard-showcase {
+      padding: 56px 16px 56px;
     }
     .features-list {
+      padding: 60px 16px;
+    }
+    .faq-section {
       padding: 60px 16px;
     }
     .section-heading {
@@ -3330,7 +3641,6 @@ const schemaData = {
       line-height: 1.25;
     }
     .section-heading h2 {
-      max-width: 94%;
       font-size: clamp(32px, 9vw, 51px);
       line-height: 0.96;
     }
@@ -3374,10 +3684,23 @@ const schemaData = {
       --template-offset-y: 0px;
       min-height: 0;
     }
+    /* Disable card hover effects on mobile */
+    .template-card:hover {
+      --template-hover-y: 0px !important;
+      transform: translate3d(0, calc(var(--template-offset-y) + var(--template-reveal-y)), 0) !important;
+      transition: none !important;
+    }
     .template-card__media {
       aspect-ratio: 4 / 5;
       border-radius: 5px;
       box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
+    }
+    .template-card:hover .template-card__media {
+      box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1) !important;
+      transform: none !important;
+    }
+    .template-card:hover .template-card__media img {
+      transform: none !important;
     }
     .template-card__body {
       gap: 5px;
@@ -3415,6 +3738,21 @@ const schemaData = {
     .template-card__body p {
       font-size: 10px;
       line-height: 1.45;
+    }
+    .template-card__variants {
+      margin-top: 0;
+      margin-bottom: 8px;
+      padding: 2.5px;
+      gap: 2px;
+      border: 1px solid rgba(23, 22, 15, 0.14);
+    }
+    .template-card__variant-btn {
+      font-size: 10px;
+      padding: 5px 2px;
+      font-weight: 500;
+    }
+    .template-card__variant-btn.is-active {
+      font-weight: 600;
     }
     .template-card__actions {
       grid-template-columns: 1fr 1fr;
@@ -3456,7 +3794,7 @@ const schemaData = {
     .start {
       min-height: 42svh;
       gap: 14px;
-      padding: 60px 16px;
+      padding: 60px 16px 32px;
     }
     .start p {
       font-size: 12px;
@@ -3513,13 +3851,12 @@ const schemaData = {
   }
 
   .dashboard-showcase {
-    padding: 100px 20px 90px;
+    padding: 110px 20px 90px;
     background: var(--white);
     scroll-margin-top: 84px;
   }
 
   .dashboard-tabs {
-    max-width: 960px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -3656,9 +3993,6 @@ const schemaData = {
   }
 
   @media (max-width: 640px) {
-    .dashboard-showcase {
-      padding: 24px 16px 56px;
-    }
     .dashboard-tabs__nav {
       gap: 4px;
     }
@@ -3803,6 +4137,198 @@ const schemaData = {
   .promo-popup__cta:hover {
     background: #1f2937;
     transform: translateY(-2px);
+  }
+
+  /* Process / Alur Pembuatan Section - Minimalist Editorial Dark Palette */
+  #process.process-section,
+  .process-section {
+    position: relative;
+    z-index: 2;
+    padding: 110px 20px 90px;
+    background: #414238;
+    color: #ffffff;
+    scroll-margin-top: 84px;
+  }
+
+  .process-container {
+    margin: 0 auto;
+  }
+
+  .process-section .section-heading h2 {
+    color: #ffffff;
+    font-size: clamp(36px, 7vw, 64px);
+
+    @media (max-width: 768px) {
+      font-size: clamp(32px, 11vw, 42px);
+    }
+  }
+
+  .process-cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+    margin-top: 48px;
+  }
+
+  @media (min-width: 860px) {
+    .process-cols {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .process-col {
+    display: flex;
+    flex-direction: column;
+    padding: 40px 30px;
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    position: relative;
+    justify-content: space-between;
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(6px);
+    min-height: 250px;
+    transition:
+      opacity 0.85s var(--ease),
+      transform 0.85s var(--ease),
+      filter 0.85s var(--ease),
+      background-color 0.35s var(--ease);
+    transition-delay: var(--delay, 0ms), var(--delay, 0ms), var(--delay, 0ms), 0ms;
+    will-change: opacity, transform, filter;
+
+    @media (max-width: 767px) {
+      min-height: 160px;
+    }
+  }
+
+  .process-col.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+  @media (min-width: 860px) {
+    .process-col {
+      border-bottom: none;
+      border-right: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 40px;
+    }
+
+    .process-col:last-child {
+      border-right: none;
+    }
+
+    .process-col:hover {
+      background-color: #ffffff;
+    }
+
+    .process-col:hover .process-col__num,
+    .process-col:hover .process-col__title {
+      color: var(--black);
+    }
+
+    .process-col:hover .process-col__desc {
+      color: var(--deep-charcoal);
+    }
+  }
+
+  .process-col__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .process-col__title {
+    font-family: var(--font-body);
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.01em;
+    transition: color 0.3s var(--ease);
+    flex: 1;
+  }
+
+  .process-col__num {
+    font-family: var(--font-heading);
+    font-size: clamp(40px, 3vw, 54px);
+    line-height: 0.85;
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    color: #ffffff;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    transition: color 0.3s var(--ease);
+  }
+
+  .process-col__desc {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.78);
+    margin: 0;
+    transition: color 0.3s var(--ease);
+  }
+
+  @media (max-width: 640px) {
+    .process-col {
+      padding: 28px 4px;
+    }
+    .process-col__header {
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+    .process-col__num {
+      font-size: 38px;
+    }
+    .process-col__title {
+      font-size: 16px;
+    }
+    .process-col__desc {
+      font-size: 13px;
+    }
+  }
+
+  /* ========================================================
+     Unified Section Layout (Container & Padding Synchronization)
+     Matches .template-list across all viewports
+     ======================================================== */
+  @media (min-width: 768px) {
+    .template-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase {
+      padding: 100px 48px 100px;
+    }
+    .features-list,
+    .faq-section {
+      padding: 100px 48px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .template-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase,
+    .features-list,
+    .faq-section {
+      padding-inline: 16px;
+    }
+  }
+
+  @media (min-width: 480px) and (max-width: 767px) {
+    .template-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase,
+    .features-list,
+    .faq-section {
+      padding-inline: 32px;
+    }
   }
 </style>
 

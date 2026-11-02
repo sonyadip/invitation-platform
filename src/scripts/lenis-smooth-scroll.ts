@@ -5,6 +5,7 @@ export interface LenisOptionsConfig {
   duration?: number;
   lerp?: number;
   offset?: number;
+  anchors?: boolean | object;
 }
 
 declare global {
@@ -81,9 +82,7 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
     smoothWheel: true,
     syncTouch: false,
     autoRaf: true,
-    anchors: {
-      offset,
-    },
+    anchors: config.anchors ?? false,
     respectReducedMotion: true,
   });
 

@@ -309,10 +309,18 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
     const bucket = bucketByWedding.get(wedding.id) || emptyBucket();
     const isExpired = Boolean(settings?.expiration_date && new Date(settings.expiration_date) < now);
 
+    const isMetatah = Boolean(wedding.template?.includes('metatah'));
+    let coupleName = `${wedding.groom_name} & ${wedding.bride_name}`;
+    if (wedding.groom_name === wedding.bride_name) {
+      coupleName = wedding.groom_full_name || wedding.groom_name;
+    } else if (isMetatah && (wedding.groom_name?.toLowerCase() === 'metatah' || wedding.groom_name?.toLowerCase() === 'mepandes')) {
+      coupleName = `Upacara ${wedding.groom_name} ${wedding.bride_name}`;
+    }
+
     return {
       weddingId: wedding.id,
       slug: wedding.slug,
-      coupleName: `${wedding.groom_name} & ${wedding.bride_name}`,
+      coupleName,
       weddingDate: wedding.wedding_date,
       status: wedding.status,
       template: wedding.template,
@@ -523,10 +531,18 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
 
   const dailyViews: { date: string; count: number }[] = [];
 
+  const isMetatah = Boolean(wedding.template?.includes('metatah'));
+  let coupleName = `${wedding.groom_name} & ${wedding.bride_name}`;
+  if (wedding.groom_name === wedding.bride_name) {
+    coupleName = wedding.groom_full_name || wedding.groom_name;
+  } else if (isMetatah && (wedding.groom_name?.toLowerCase() === 'metatah' || wedding.groom_name?.toLowerCase() === 'mepandes')) {
+    coupleName = `Upacara ${wedding.groom_name} ${wedding.bride_name}`;
+  }
+
   const summary: SlugReport = {
     weddingId: wedding.id,
     slug: wedding.slug,
-    coupleName: `${wedding.groom_name} & ${wedding.bride_name}`,
+    coupleName,
     weddingDate: wedding.wedding_date,
     status: wedding.status,
     template: wedding.template,
@@ -597,6 +613,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
         sliderImages: Array.isArray(assets.sliderImages) ? assets.sliderImages : []
       },
       content: {
+        ...content,
         instagramUrl: content.instagramUrl || '',
         groomInstagramUrl: content.groomInstagramUrl || '',
         brideInstagramUrl: content.brideInstagramUrl || '',

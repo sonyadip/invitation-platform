@@ -21,6 +21,7 @@ const categories = ["Formal", "Teman", "Keluarga"];
 const initialGuests = report.sentInvitations || [];
 const initialTemplates = report.waTemplates || {};
 const weddingId = report.summary.weddingId;
+const isMetatah = Boolean(report.summary.template?.includes('metatah'));
 ---
 
 <ClientLayout title="Kirim Undangan">
@@ -91,7 +92,7 @@ const weddingId = report.summary.weddingId;
     </section>
   </div>
   
-  <script is:inline define:vars={{ initialGuests, initialTemplates, weddingId, slug }}>
+  <script is:inline define:vars={{ initialGuests, initialTemplates, weddingId, slug, isMetatah }}>
     document.addEventListener('DOMContentLoaded', () => {
       const guestsContainer = document.querySelector('.kirim-guests');
       let guestsData = initialGuests.map(g => ({
@@ -248,7 +249,44 @@ const weddingId = report.summary.weddingId;
         }
       }
 
-      const defaultTemplates = {
+      const defaultTemplates = isMetatah ? {
+        "Formal": `Om Swastyastu,
+
+Kepada Yth. *[NAMA]*,
+
+Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa/Tuhan Yang Maha Esa, kami sekeluarga bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada Upacara Manusa Yadnya (Mepandes / Metatah / Potong Gigi) putra-putri kami.
+
+Detail acara dan lokasi dapat dilihat melalui tautan undangan berikut:
+[LINK]
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga apabila Bapak/Ibu/Saudara/i berkenan hadir.
+
+Om Shanti, Shanti, Shanti, Om.`,
+        "Teman": `Om Swastyastu,
+
+Halo *[NAMA]*!
+
+Semoga kabarmu baik ya. Kami sekeluarga ingin mengundang kamu untuk hadir dan memberikan doa restu pada Upacara Mepandes / Metatah (Potong Gigi) putra-putri kami.
+
+Cek detail acaranya melalui tautan ini:
+[LINK]
+
+Kehadiran dan doa restumu sangat berarti bagi kami. Ditunggu kedatangannya ya!
+
+Om Shanti, Shanti, Shanti, Om.`,
+        "Keluarga": `Om Swastyastu,
+
+Kepada Yth. *[NAMA]*, keluarga besar yang kami cintai.
+
+Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa, kami sekeluarga bermaksud mengundang Bapak/Ibu/Keluarga untuk hadir dan memberikan doa restu pada Upacara Manusa Yadnya (Mepandes / Metatah) putra-putri kami.
+
+Detail acara dapat dilihat melalui tautan undangan berikut:
+[LINK]
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga apabila Bapak/Ibu/Keluarga berkenan hadir untuk memberikan doa restu.
+
+Om Shanti, Shanti, Shanti, Om.`
+      } : {
         "Formal": `Om Swastyastu,
 
 Kepada Yth. *[NAMA]*,
@@ -291,7 +329,9 @@ Om Shanti, Shanti, Shanti, Om.`
       try {
         templates = { ...initialTemplates };
         for (const key in defaultTemplates) {
-            if (!templates[key]) templates[key] = defaultTemplates[key];
+            if (!templates[key] || (isMetatah && templates[key].includes('pawiwahan (pernikahan)'))) {
+              templates[key] = defaultTemplates[key];
+            }
         }
       } catch(e) {
         templates = { ...defaultTemplates };

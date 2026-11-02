@@ -77,6 +77,16 @@ if (Astro.request.method === 'POST') {
   }
 }
 
+const isMetatah = Boolean(report.summary.template?.includes('metatah'));
+const templateName = report.summary.template || 'noir';
+
+const coverModules = import.meta.glob('../../../templates/*/assets/cover.{jpg,png,webp,jpeg}', { eager: true }) as Record<string, { default: { src: string } }>;
+const defaultCoverKey = Object.keys(coverModules).find(key => key.includes(`/${templateName}/assets/cover.`));
+const defaultWeddingCover = defaultCoverKey ? coverModules[defaultCoverKey].default.src : 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+const defaultMetatahCover = '/images/metatah-bg.jpg';
+
+const coverImage = report.settings?.assets?.heroImage || report.settings?.assets?.coverImage || (isMetatah ? defaultMetatahCover : defaultWeddingCover);
+
 const profileData = {
   name: report.summary.coupleName,
   template: report.summary.template,
@@ -84,139 +94,478 @@ const profileData = {
   status: report.summary.status,
 };
 
-const templateName = report.summary.template || 'noir';
-const coverModules = import.meta.glob('../../../templates/*/assets/cover.{jpg,png,webp,jpeg}', { eager: true }) as Record<string, { default: { src: string } }>;
-const defaultCoverKey = Object.keys(coverModules).find(key => key.includes(`/${templateName}/assets/cover.`));
-const defaultCoverSrc = defaultCoverKey ? coverModules[defaultCoverKey].default.src : 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+const categoryLabel = isMetatah
+  ? 'Upacara Manusa Yadnya (Metatah / Mepandes)'
+  : 'Undangan Pernikahan (Pawiwahan / Wedding)';
 
-const coverImage = report.settings?.assets?.heroImage || report.settings?.assets?.coverImage || defaultCoverSrc;
+const mainEvent = report.events && report.events.length > 0 ? report.events[0] : null;
+const eventDateFormatted = report.wedding.weddingDate ? new Date(report.wedding.weddingDate).toLocaleDateString('id-ID', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+}) : null;
+
+const eventTimeFormatted = mainEvent?.startTime
+  ? `${mainEvent.startTime}${mainEvent.endTime ? ` - ${mainEvent.endTime}` : ''} WITA`
+  : '13:00 - Selesai WITA';
+
+const venueName = mainEvent?.venueName || report.wedding.venueName || '';
+const venueAddress = mainEvent?.venueAddress || report.wedding.venueAddress || '';
+const mapsUrl = mainEvent?.mapsUrl || report.wedding.mapsUrl || '';
+
+const expirationDateFormatted = report.settings?.expirationDate ? new Date(report.settings.expirationDate).toLocaleDateString('id-ID', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+}) : null;
+
+const familyInviting = report.settings?.content?.familyInviting || (isMetatah ? 'Keluarga Besar' : '');
+const participants = Array.isArray(report.settings?.content?.participants) ? report.settings.content.participants : [];
+const gifts = report.gifts || [];
+const invitationUrl = `${Astro.url.origin}/${slug}`;
 ---
 
 <ClientLayout title="Profil">
   <div class="profile-layout">
   
+  <!-- Left Side: Profile Summary Card -->
   <div class="profile-left">
-  <section class="bento-card bento-card--center profile-header fade-in-bottom">
-    <div class="profile-avatar-wrapper">
-      <div class="profile-avatar-ring">
-        <div class="profile-avatar">
-          <img src={coverImage} alt="Profile" />
+    <section class="bento-card bento-card--center profile-header fade-in-bottom">
+      <div class="profile-avatar-wrapper">
+        <div class="profile-avatar-ring">
+          <div class="profile-avatar">
+            <img src={coverImage} alt={profileData.name} />
+          </div>
         </div>
       </div>
-    </div>
-    <h2 class="profile-name">{profileData.name}</h2>
-    <p class="profile-date">Dibuat pada {profileData.activeSince}</p>
-  </section>
+      
+      <h2 class="profile-name" style="font-size: 20px; font-weight: 700; line-height: 1.35; margin-top: 4px;">
+        {profileData.name}
+      </h2>
+      
+      <div style="margin-top: 10px;">
+        <span class="profile-badge-category">
+          <span class="material-symbols-outlined" style="font-size: 15px;">{isMetatah ? 'auto_awesome' : 'favorite'}</span>
+          {isMetatah ? 'Upacara Metatah / Mepandes' : 'Undangan Pernikahan'}
+        </span>
+      </div>
+
+      <p class="profile-date" style="margin-top: 12px; font-size: 13px; color: var(--color-outline);">
+        Dibuat pada {profileData.activeSince}
+      </p>
+
+      <div class="profile-actions-wrap" style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 20px;">
+        <a href={invitationUrl} target="_blank" rel="noopener noreferrer" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 42px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+          <span class="material-symbols-outlined" style="font-size: 17px;">open_in_new</span>
+          Buka Undangan
+        </a>
+        <button id="btn-copy-invitation" data-url={invitationUrl} class="filter-btn filter-btn--outline" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 40px; font-size: 13px; font-weight: 500; border-radius: 8px; margin: 0; cursor: pointer;">
+          <span class="material-symbols-outlined" style="font-size: 17px;">link</span>
+          <span id="btn-copy-text">Salin Tautan Undangan</span>
+        </button>
+      </div>
+    </section>
   </div>
 
+  <!-- Right Side: Detailed Information Sections -->
   <div class="profile-right">
-  {successMessage && (
-    <div class="alert alert--success fade-in-bottom" style="margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2); font-size: 14px; font-weight: 500;">
-      ✓ {successMessage}
-    </div>
-  )}
-
-  {errorMessage && (
-    <div class="alert alert--danger fade-in-bottom" style="margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px; font-weight: 500;">
-      ⚠ {errorMessage}
-    </div>
-  )}
-
-  <section class="fade-in-bottom animate-on-scroll">
-    <div class="bento-card">
-      <h3 class="bento-card__title">Informasi Undangan</h3>
-      
-      <div class="info-field">
-        <label class="info-field__label">Nama Pasangan</label>
-        <div class="info-field__value">
-          {profileData.name}
-        </div>
+    {successMessage && (
+      <div class="alert alert--success fade-in-bottom" style="margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2); font-size: 14px; font-weight: 500;">
+        ✓ {successMessage}
       </div>
-      
-      <div class="info-field">
-        <label class="info-field__label">Tema Undangan</label>
-        <div class="info-field__value">
-          <span>{profileData.template.toUpperCase()}</span>
-          <span class="material-symbols-outlined info-field__icon">palette</span>
-        </div>
-      </div>
-      
-      <div class="info-field">
-        <label class="info-field__label">Status Undangan</label>
-        <div>
-          {profileData.status === 'published' ? (
-            <span class="status-tag status-tag--published">
-              <span class="status-tag__dot"></span>
-              PUBLISHED
-            </span>
-          ) : (
-            <span class="status-tag status-tag--draft">
-              <span class="status-tag__dot"></span>
-              DRAFT
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  </section>
+    )}
 
-  <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
-    <div class="bento-card">
-      <h3 class="bento-card__title">Keamanan Akun (Ganti Password)</h3>
-      <form method="POST" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
-        <input type="hidden" name="action" value="change-password" />
+    {errorMessage && (
+      <div class="alert alert--danger fade-in-bottom" style="margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px; font-weight: 500;">
+        ⚠ {errorMessage}
+      </div>
+    )}
+
+    <!-- 1. Informasi Undangan -->
+    <section class="fade-in-bottom animate-on-scroll">
+      <div class="bento-card">
+        <h3 class="bento-card__title">Informasi Undangan</h3>
         
-        <div>
-          <label class="info-field__label" for="currentPassword" style="display: block; margin-bottom: 6px;">Kata Sandi Saat Ini</label>
-          <input
-            type="password"
-            id="currentPassword"
-            name="currentPassword"
-            required
-            class="form-input"
-            style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant); font-size: 14px;"
-            placeholder="Masukkan kata sandi saat ini..."
-          />
+        <div class="info-field">
+          <label class="info-field__label">{isMetatah ? 'Judul Undangan / Acara' : 'Nama Pasangan'}</label>
+          <div class="info-field__value">
+            <strong>{profileData.name}</strong>
+          </div>
         </div>
 
-        <div>
-          <label class="info-field__label" for="newPassword" style="display: block; margin-bottom: 6px;">Kata Sandi Baru (Min. 6 karakter)</label>
-          <input
-            type="password"
-            id="newPassword"
-            name="newPassword"
-            required
-            minlength="6"
-            class="form-input"
-            style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant); font-size: 14px;"
-            placeholder="Masukkan kata sandi baru..."
-          />
+        {familyInviting && (
+          <div class="info-field">
+            <label class="info-field__label">{isMetatah ? 'Keluarga Penyelenggara' : 'Pihak Keluarga'}</label>
+            <div class="info-field__value">
+              {familyInviting}
+            </div>
+          </div>
+        )}
+
+        <div class="info-field">
+          <label class="info-field__label">Kategori Acara</label>
+          <div class="info-field__value">
+            <span>{categoryLabel}</span>
+          </div>
+        </div>
+        
+        <div class="info-field">
+          <label class="info-field__label">Tema Undangan</label>
+          <div class="info-field__value">
+            <span>{profileData.template.toUpperCase()}</span>
+            <span class="material-symbols-outlined info-field__icon">palette</span>
+          </div>
+        </div>
+        
+        <div class="info-field">
+          <label class="info-field__label">Status Undangan</label>
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; width: 100%;">
+            <div>
+              {profileData.status === 'published' ? (
+                <span class="status-tag status-tag--published">
+                  <span class="status-tag__dot"></span>
+                  PUBLISHED
+                </span>
+              ) : (
+                <span class="status-tag status-tag--draft">
+                  <span class="status-tag__dot"></span>
+                  DRAFT
+                </span>
+              )}
+            </div>
+            {expirationDateFormatted && (
+              <span style="font-size: 13px; color: var(--color-outline);">
+                Masa aktif s/d {expirationDateFormatted}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Jadwal & Lokasi Acara -->
+    <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
+      <div class="bento-card">
+        <h3 class="bento-card__title">Jadwal & Lokasi Acara</h3>
+        
+        <div class="info-field">
+          <label class="info-field__label">{isMetatah ? 'Tanggal Upacara' : 'Tanggal Pernikahan'}</label>
+          <div class="info-field__value">
+            <span>{eventDateFormatted || '-'}</span>
+            <span class="material-symbols-outlined info-field__icon">calendar_month</span>
+          </div>
         </div>
 
-        <div>
-          <label class="info-field__label" for="confirmPassword" style="display: block; margin-bottom: 6px;">Konfirmasi Kata Sandi Baru</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            required
-            minlength="6"
-            class="form-input"
-            style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant); font-size: 14px;"
-            placeholder="Ulangi kata sandi baru..."
-          />
+        <div class="info-field">
+          <label class="info-field__label">Waktu Pelaksanaan</label>
+          <div class="info-field__value">
+            <span>{eventTimeFormatted}</span>
+            <span class="material-symbols-outlined info-field__icon">schedule</span>
+          </div>
         </div>
 
-        <div style="margin-top: 4px;">
-          <button type="submit" class="btn-primary" style="height: 38px; padding: 0 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px;">
-            Simpan Kata Sandi Baru
-          </button>
+        <div class="info-field">
+          <label class="info-field__label">Tempat & Lokasi</label>
+          <div class="info-field__value" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+            {venueName && <strong style="font-size: 14px;">{venueName}</strong>}
+            <span style="font-size: 13px; color: var(--color-on-surface-variant);">{venueAddress || '-'}</span>
+            {mapsUrl && (
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 13px; font-weight: 500; color: #2563eb; text-decoration: none;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
+                Buka di Google Maps
+              </a>
+            )}
+          </div>
         </div>
-      </form>
-    </div>
-  </section>
+      </div>
+    </section>
+
+    <!-- 3. Daftar Peserta Upacara (Khusus Upacara Metatah) -->
+    {isMetatah && participants.length > 0 && (
+      <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
+        <div class="bento-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="bento-card__title" style="margin: 0;">Peserta Upacara</h3>
+            <span class="badge" style="padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--color-surface-container-high); color: var(--color-on-surface-variant);">
+              {participants.length} Peserta
+            </span>
+          </div>
+
+          <div class="participants-list" style="display: flex; flex-direction: column; gap: 10px;">
+            {participants.map((p: any, idx: number) => {
+              const fullName = p.fullName || p.name || `Peserta ${idx + 1}`;
+              const nickname = p.nickname || p.nickName || p.name || '';
+              const role = p.role || `Peserta ${idx + 1}`;
+              const parentsStr = Array.isArray(p.parents) && p.parents.length > 0
+                ? p.parents.join(' & ')
+                : (p.parents || '-');
+
+              return (
+                <div class="participant-item-card">
+                  <div class="participant-item-num">
+                    {(idx + 1).toString().padStart(2, '0')}
+                  </div>
+                  <div class="participant-item-details">
+                    <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+                      <span class="participant-item-name">{fullName}</span>
+                      {nickname && nickname !== fullName && (
+                        <span class="participant-item-nickname">({nickname})</span>
+                      )}
+                    </div>
+                    <div class="participant-item-role">{role}</div>
+                    {parentsStr !== '-' && (
+                      <div class="participant-item-parents">
+                        Orang Tua: {parentsStr}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- 4. Rekening Tanda Kasih -->
+    {gifts.length > 0 && (
+      <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
+        <div class="bento-card">
+          <h3 class="bento-card__title">Rekening Tanda Kasih</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            {gifts.map((gift: any) => (
+              <div class="gift-account-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                  <div>
+                    <span class="gift-bank-badge">{gift.bankName}</span>
+                    <div class="gift-account-number">{gift.accountNumber}</div>
+                    <div class="gift-account-holder">a.n. {gift.accountName}</div>
+                  </div>
+                  <button class="btn-copy-account filter-btn filter-btn--outline" data-account={gift.accountNumber} style="height: 36px; padding: 0 14px; font-size: 12px; margin: 0; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined" style="font-size: 15px;">content_copy</span>
+                    <span>Salin</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- 5. Keamanan Akun (Ganti Password) -->
+    <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
+      <div class="bento-card">
+        <h3 class="bento-card__title">Keamanan Akun (Ganti Password)</h3>
+        <form method="POST" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+          <input type="hidden" name="action" value="change-password" />
+          
+          <div>
+            <label class="info-field__label" for="currentPassword" style="display: block; margin-bottom: 6px;">Kata Sandi Saat Ini</label>
+            <input
+              type="password"
+              id="currentPassword"
+              name="currentPassword"
+              required
+              class="form-input"
+              style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant); font-size: 14px;"
+              placeholder="Masukkan kata sandi saat ini..."
+            />
+          </div>
+
+          <div>
+            <label class="info-field__label" for="newPassword" style="display: block; margin-bottom: 6px;">Kata Sandi Baru (Min. 6 karakter)</label>
+            <input
+              type="password"
+              id="newPassword"
+              name="newPassword"
+              required
+              minlength="6"
+              class="form-input"
+              style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant); font-size: 14px;"
+              placeholder="Masukkan kata sandi baru..."
+            />
+          </div>
+
+          <div>
+            <label class="info-field__label" for="confirmPassword" style="display: block; margin-bottom: 6px;">Konfirmasi Kata Sandi Baru</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              minlength="6"
+              class="form-input"
+              style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant); font-size: 14px;"
+              placeholder="Ulangi kata sandi baru..."
+            />
+          </div>
+
+          <div style="margin-top: 4px;">
+            <button type="submit" class="btn-primary" style="height: 38px; padding: 0 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px;">
+              Simpan Kata Sandi Baru
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
 
   </div>
   
   </div>
+
+  <style>
+    .profile-badge-category {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(166, 137, 102, 0.12);
+      color: #8c6d48;
+    }
+
+    .participant-item-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 14px;
+      background-color: var(--color-surface-container-low, #fcfbf9);
+      border: 1px solid rgba(166, 137, 102, 0.12);
+      border-radius: 10px;
+      transition: background-color 0.2s ease;
+    }
+
+    .participant-item-num {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(166, 137, 102, 0.15);
+      color: #8c6d48;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .participant-item-details {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .participant-item-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-on-surface, #1e1e1e);
+    }
+
+    .participant-item-nickname {
+      font-size: 13px;
+      font-weight: 500;
+      color: #8c6d48;
+    }
+
+    .participant-item-role {
+      font-size: 12px;
+      font-weight: 500;
+      color: #8c6d48;
+      display: inline-block;
+    }
+
+    .participant-item-parents {
+      font-size: 12px;
+      color: var(--color-outline, #757575);
+      line-height: 1.4;
+      margin-top: 2px;
+    }
+
+    .gift-account-card {
+      padding: 14px 16px;
+      background-color: var(--color-surface-container-low, #fcfbf9);
+      border: 1px solid rgba(166, 137, 102, 0.15);
+      border-radius: 10px;
+    }
+
+    .gift-bank-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(166, 137, 102, 0.15);
+      color: #8c6d48;
+      margin-bottom: 4px;
+    }
+
+    .gift-account-number {
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--color-on-surface, #1e1e1e);
+    }
+
+    .gift-account-holder {
+      font-size: 12px;
+      color: var(--color-outline, #757575);
+      margin-top: 2px;
+    }
+  </style>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Copy invitation link
+      const copyBtn = document.getElementById('btn-copy-invitation');
+      const copyText = document.getElementById('btn-copy-text');
+      if (copyBtn && copyText) {
+        copyBtn.addEventListener('click', async () => {
+          const url = copyBtn.getAttribute('data-url');
+          if (url) {
+            try {
+              await navigator.clipboard.writeText(url);
+              const original = copyText.textContent;
+              copyText.textContent = '✓ Tautan Tersalin!';
+              setTimeout(() => {
+                copyText.textContent = original;
+              }, 2500);
+            } catch (err) {
+              console.error('Failed to copy URL:', err);
+            }
+          }
+        });
+      }
+
+      // 2. Copy bank account
+      document.querySelectorAll('.btn-copy-account').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const account = btn.getAttribute('data-account');
+          if (account) {
+            try {
+              await navigator.clipboard.writeText(account);
+              const span = btn.querySelector('span:last-child');
+              if (span) {
+                const orig = span.textContent;
+                span.textContent = 'Tersalin!';
+                setTimeout(() => {
+                  span.textContent = orig;
+                }, 2000);
+              }
+            } catch (err) {
+              console.error('Failed to copy account number:', err);
+            }
+          }
+        });
+      });
+    });
+  </script>
 </ClientLayout>

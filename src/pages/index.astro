@@ -155,42 +155,45 @@ const addons = [
 ];
 
 const faqs = [
-
   {
-    q: "Waktu Pengerjaan Undangan",
-    a: "Proses pembuatan biasanya memakan waktu 1 hingga 3 hari kerja setelah semua data acara dan foto kami terima dengan lengkap. Tersedia juga fasilitas prioritas 24 jam."
+    q: "Bagaimana cara mengisi nama tamu dan membagikan undangan?",
+    a: "Tambahkan <code>?to=Nama+Tamu</code> di akhir link undangan (ganti spasi dengan tanda +). Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code>. Link langsung siap disalin dan dikirim.<br><br>Selain cara manual, Anda juga mendapat akses <strong>Dashboard Tamu</strong> jika ingin memasukkan daftar nama sekaligus agar sistem menghasilkan link unik tiap tamu secara otomatis."
   },
   {
-    q: "Pengganti Video Background",
-    a: "Jika template memiliki background video tapi Anda tidak punya video, kami bisa menggantinya dengan fitur image slider (slideshow) yang akan memutar foto-foto Anda secara bergantian."
+    q: "Berapa lama proses pembuatan undangan digital?",
+    a: "Pembuatan standar memakan waktu <strong>1 hingga 3 hari kerja</strong> setelah data acara dan materi foto kami terima lengkap. Butuh mendesak? Tersedia fasilitas <strong>Prioritas 24 Jam</strong> agar undangan siap disebar keesokan harinya."
   },
   {
-    q: "Fasilitas Revisi Minor",
-    a: "Kami memberikan fasilitas revisi minor sepuasnya. Ini berlaku untuk perbaikan typo nama, ganti lagu, ganti foto, ganti quotes, penyesuaian lokasi, hingga menghapus section tertentu."
+    q: "Bagaimana jika kami belum memiliki video prewedding?",
+    a: "Tidak masalah. Untuk tema yang memiliki latar video, kami dapat menggantinya dengan fitur <strong>galeri foto dinamis (photo slider)</strong> yang memutar foto-foto Anda secara bergantian dengan transisi yang halus dan tetap elegan."
   },
   {
-    q: "Fasilitas Revisi Mayor",
-    a: "Untuk revisi mayor, kami sediakan jatah satu kali. Perlu dicatat, Anda tidak bisa mengganti tema undangan, tapi Anda diperbolehkan merombak ulang posisi atau susunan section-nya."
+    q: "Apakah ada batasan revisi jika ada kesalahan data atau perubahan?",
+    a: "Untuk perbaikan data teks (seperti ejaan nama, gelar adat, jam, penyesuaian lokasi, dan kutipan) maupun penyesuaian foto dan lagu latar, kami berikan <strong>revisi sepuasnya</strong>. Anda juga mendapatkan kesempatan merombak susunan section sebelum undangan disebarkan."
   },
   {
-    q: "Masa Aktif Tautan Undangan",
-    a: "Link undangan akan tetap aktif sampai satu bulan setelah acara selesai, jadi Anda masih punya banyak waktu untuk membaca ulang ucapan-ucapan dari para tamu."
+    q: "Berapa lama link undangan akan tetap aktif?",
+    a: "Tautan undangan akan tetap aktif hingga <strong>1 bulan setelah acara selesai</strong>. Seluruh rekapan doa restu, ucapan selamat, dan konfirmasi kehadiran dari para tamu tetap tersimpan aman dan dapat Anda akses kapan saja."
   },
   {
-    q: "Cara Membagikan Undangan",
-    a: "Anda akan mendapat akses dashboard khusus untuk memasukkan daftar nama tamu. Dari situ, sistem bisa langsung men-generate link unik per orang untuk Anda sebar via WhatsApp."
+    q: "Bagaimana jika ada perubahan jadwal atau lokasi setelah undangan disebar?",
+    a: "Cukup kabari tim kami perubahannya. Data undangan akan langsung diperbarui di sistem secara <em>real-time</em>, sehingga tamu yang membuka tautan yang sudah disebar akan otomatis melihat informasi terbaru tanpa perlu mengganti link."
   },
   {
-    q: "Cara Menulis Nama Tamu Manual",
-    a: "Selain lewat dashboard, Anda bisa menulis nama tamu manual dengan menambahkan <code>?to=Nama+Tamu</code> di akhir link undangan. Contoh: <code>senadda.id/rama-ayu?to=Putu+Putra</code> (ganti spasi dengan tanda +)."
+    q: "Bagaimana cara memantau konfirmasi kehadiran (RSVP) dan ucapan tamu?",
+    a: "Setiap tamu dapat mengisi form konfirmasi kehadiran dan doa restu langsung di halaman undangan. Seluruh respons terekap otomatis di dashboard Anda secara rapi untuk memudahkan perkiraan kehadiran tamu dan porsi katering."
   },
   {
-    q: "Perubahan Setelah Undangan Dibagikan",
-    a: "Kalau ada perubahan jadwal atau lokasi mendadak, infokan saja ke kami. Nanti link undangan yang sudah disebar akan otomatis ter-update mengikuti info yang baru."
+    q: "Apakah Senadda melayani undangan untuk acara adat Bali seperti Metatah / Mepandes?",
+    a: "Ya, tentu. Selain Pawiwahan (pernikahan), kami menyediakan template khusus <strong>Upacara Metatah / Mepandes</strong> dengan tata susunan upacara adat Bali, teks doa/mantra, serta pilihan varian desain dengan foto maupun tanpa foto."
   },
   {
-    q: "Konfirmasi Kehadiran & Ucapan",
-    a: "Di undangan ada form khusus agar tamu bisa mengirim ucapan dan mengonfirmasi kehadiran (RSVP). Semua datanya akan terekap otomatis dan bisa Anda pantau dari dashboard."
+    q: "Apakah kami bisa menggunakan lagu pilihan sendiri sebagai musik latar?",
+    a: "Bisa. Anda bebas memilih lagu favorit, lagu pop romantis, instrumen akustik, maupun instrumen tradisional Bali sebagai musik latar otomatis saat undangan dibuka oleh tamu."
+  },
+  {
+    q: "Bagaimana alur pemesanan dan pembayarannya?",
+    a: "Pilih tema favorit Anda di katalog, lalu hubungi kami via WhatsApp. Tim kami akan mengirimkan formulir data acara serta instruksi pembayaran. Begitu data lengkap, undangan langsung kami proses."
   }
 ];
 
@@ -885,7 +888,8 @@ const schemaData = {
       <section class="faq-section section-observe" id="faq" data-section>
         <div class="faq-section-inner">
           <div class="section-heading-centered reveal-blur" style="margin-bottom: 50px;">
-            <h2 style="color: var(--black);">FAQ</h2>
+            <p class="faq-eyebrow">Pertanyaan Umum</p>
+            <h2 style="color: var(--black);">Hal yang Sering Ditanyakan</h2>
           </div>
         
         <style>
@@ -895,18 +899,37 @@ const schemaData = {
             z-index: 2;
             padding: 110px 20px;
         }
+        .faq-eyebrow {
+            font-family: var(--font-body);
+            font-size: 11px;
+            line-height: 1.3;
+            color: var(--black);
+            margin: 0 0 10px 0;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        @media (max-width: 960px) {
+            .faq-eyebrow {
+                font-size: 12px;
+                line-height: 1.25;
+            }
+        }
         .faq-section-inner {
-            max-width: 1000px;
             margin: 0 auto;
         }
         @media (min-width: 768px) {
             .faq-section {
-                padding: 120px 48px;
+                padding: 100px 48px;
             }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 767px) {
             .faq-section {
                 padding: 60px 16px;
+            }
+        }
+        @media (min-width: 480px) and (max-width: 767px) {
+            .faq-section {
+                padding-inline: 32px;
             }
         }
 .faq-container,
@@ -1027,6 +1050,14 @@ const schemaData = {
             margin: 0 !important;
             padding: 0 24px 24px 24px !important; 
         }
+        .faq-answer code {
+            font-family: inherit;
+            background: rgba(23, 22, 15, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            word-break: break-all;
+        }
 @media (max-width: 767px) {
             .faq-btn { padding: 20px 16px; }
             .faq-question { font-size: 16px !important; line-height: 1.5 !important; }
@@ -1113,7 +1144,6 @@ const schemaData = {
             <a href="#features">Fitur</a>
             <a href="#faq">FAQ</a>
             <a href={siteSettings.instagram_url || "https://www.instagram.com/senadda.id"} target="_blank" rel="noopener">Instagram</a>
-            <a href={siteSettings.whatsapp_url || "https://wa.me/088236262247"} target="_blank" rel="noopener">WhatsApp</a>
           </div>
           <div class="start-footer__copy">
             <span>&copy; {new Date().getFullYear()} Senadda</span>
@@ -1259,7 +1289,9 @@ const schemaData = {
       if ("scrollRestoration" in history) {
         history.scrollRestoration = "manual";
       }
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      if (!window.location.hash) {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
 
       const updateReveal = () => {
         const main = document.querySelector("main");
@@ -1311,7 +1343,7 @@ const schemaData = {
         document.documentElement.classList.contains("intro-scroll-lock");
 
       const keepIntroAtTop = (event) => {
-        if (!isIntroScrollLocked()) return;
+        if (!isIntroScrollLocked() || window.location.hash) return;
         event?.preventDefault();
         window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       };
@@ -1352,8 +1384,10 @@ const schemaData = {
         );
         document.body.classList.add("intro-complete");
         document.documentElement.classList.remove("intro-scroll-lock");
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        lastScrollY = 0;
+        if (!window.location.hash) {
+          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+          lastScrollY = 0;
+        }
         setScrollState();
       };
 
@@ -1576,43 +1610,61 @@ const schemaData = {
         }
       } catch {}
 
-      const scrollToTarget = (targetId) => {
+      const scrollToTarget = (targetId: string, immediate = false) => {
         document.body.classList.remove("nav-hidden");
         
         if (targetId === "#booking") {
-          window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: "smooth"
-          });
+          updateReveal();
           const target = document.querySelector(targetId);
-          if (target) target.classList.add("is-visible");
+          if (target) {
+            target.classList.add("is-visible");
+            target.querySelectorAll(".reveal-blur").forEach((el) => el.classList.add("is-visible"));
+          }
+
+          const maxScroll = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+          const lenis = getLenis();
+          if (lenis) {
+            lenis.scrollTo(maxScroll, {
+              duration: immediate ? 0 : 1.2,
+              immediate,
+            });
+          } else {
+            window.scrollTo({
+              top: maxScroll,
+              behavior: immediate ? "auto" : "smooth",
+            });
+          }
           return;
         }
 
         const target = document.querySelector(targetId);
         if (!target) return;
         target.classList.add("is-visible");
+        target.querySelectorAll(".reveal-blur").forEach((el) => el.classList.add("is-visible"));
 
         const lenis = getLenis();
         if (lenis) {
           lenis.scrollTo(target as HTMLElement, {
             offset: -84,
-            duration: 1.2,
+            duration: immediate ? 0 : 1.2,
+            immediate,
           });
         } else {
           requestAnimationFrame(() => {
             target.scrollIntoView({
-              behavior: "smooth",
+              behavior: immediate ? "auto" : "smooth",
               block: "start",
             });
-            window.setTimeout(
-              () =>
-                target.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                }),
-              1000,
-            );
+            if (!immediate) {
+              window.setTimeout(
+                () =>
+                  target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  }),
+                1000,
+              );
+            }
           });
         }
       };
@@ -1622,6 +1674,7 @@ const schemaData = {
           const targetId = link.getAttribute("href");
           if (!targetId || targetId === "#") return;
           event.preventDefault();
+          event.stopPropagation();
           history.pushState(null, "", targetId);
           scrollToTarget(targetId);
         });
@@ -1689,7 +1742,7 @@ const schemaData = {
 
       sections.forEach((section) => revealObserver.observe(section));
 
-      if (reduceMotion) {
+      if (reduceMotion || window.location.hash) {
         completeIntro();
       } else {
         window.setTimeout(() => {
@@ -1717,6 +1770,37 @@ const schemaData = {
 
       syncHeroFixed();
       setScrollState();
+
+      const handleHashNavigation = (immediate = false) => {
+        const hash = window.location.hash;
+        if (hash && hash !== "#" && hash !== "#top") {
+          updateReveal();
+          scrollToTarget(hash, immediate);
+        } else if (hash === "#top") {
+          const lenis = getLenis();
+          if (lenis) {
+            lenis.scrollTo(0, { duration: immediate ? 0 : 1.2, immediate });
+          } else {
+            window.scrollTo({ top: 0, behavior: immediate ? "auto" : "smooth" });
+          }
+        }
+      };
+
+      if (window.location.hash) {
+        requestAnimationFrame(() => {
+          handleHashNavigation(true);
+          window.setTimeout(() => handleHashNavigation(true), 150);
+          window.setTimeout(() => handleHashNavigation(true), 400);
+        });
+      }
+
+      window.addEventListener("hashchange", () => {
+        handleHashNavigation(false);
+      });
+      window.addEventListener("popstate", () => {
+        handleHashNavigation(false);
+      });
+
       window.addEventListener("scroll", setScrollState, {
         passive: true,
       });
@@ -2676,7 +2760,6 @@ const schemaData = {
   .section-heading {
     display: grid;
     gap: 10px;
-    max-width: 1120px;
     opacity: 0;
     transform: translateY(34px);
     transition:
@@ -2981,7 +3064,7 @@ const schemaData = {
     min-height: 74svh;
     place-items: center;
     gap: 18px;
-    padding: 120px 48px;
+    padding: 100px 48px 64px;
     background: #414238 !important;
     scroll-margin-top: 84px;
     text-align: center;
@@ -3027,7 +3110,7 @@ const schemaData = {
 
   .start-footer {
     width: 100%;
-    max-width: 760px;
+    max-width: 1120px;
     margin-top: 48px;
     padding-top: 28px;
     border-top: 1px solid rgba(239, 237, 223, 0.12);
@@ -3051,7 +3134,6 @@ const schemaData = {
         font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        font-weight: 500;
         opacity: 0.72;
         transition: opacity 0.2s ease, color 0.2s ease;
 
@@ -3086,11 +3168,8 @@ const schemaData = {
       gap: 12px;
 
       &__links {
-        gap: 16px;
-
         a {
           font-size: 10.5px;
-          letter-spacing: 0.06em;
         }
       }
 
@@ -3124,13 +3203,16 @@ const schemaData = {
   }
 
   .features-container {
-    max-width: 800px;
     margin: 0 auto;
   }
 
   .section-heading-centered {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
+
+    @media (max-width: 768px) {
+      margin-bottom: 40px;
+    }
   }
 
   .section-heading-centered h2 {
@@ -3258,7 +3340,12 @@ const schemaData = {
     .description {
       width: 180px;
     }
-    .template-list, .features-list {
+    .template-list,
+    .features-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase,
+    .faq-section {
       padding-inline: 32px;
     }
   }
@@ -3336,8 +3423,18 @@ const schemaData = {
     .template-list {
       padding: 120px 48px 100px;
     }
+    #process.process-section,
+    .process-section {
+      padding: 120px 48px 100px;
+    }
+    .dashboard-showcase {
+      padding: 120px 48px 100px;
+    }
     .features-list {
       padding: 120px 48px;
+    }
+    .faq-section {
+      padding: 100px 48px;
     }
   }
 
@@ -3519,12 +3616,26 @@ const schemaData = {
       font-size: clamp(32px, 11vw, 48px);
       line-height: 1.0;
     }
-    .template-list {
+    .template-list,
+    .process-section,
+    .dashboard-showcase,
+    .features-list,
+    .faq-section
+     {
       gap: 24px;
-      padding: 58px 16px 70px;
-
+      padding: 58px 16px 70px !important;
+    }
+    #process.process-section,
+    .process-section {
+      padding: 60px 16px 70px;
+    }
+    .dashboard-showcase {
+      padding: 56px 16px 56px;
     }
     .features-list {
+      padding: 60px 16px;
+    }
+    .faq-section {
       padding: 60px 16px;
     }
     .section-heading {
@@ -3535,7 +3646,6 @@ const schemaData = {
       line-height: 1.25;
     }
     .section-heading h2 {
-      max-width: 94%;
       font-size: clamp(32px, 9vw, 51px);
       line-height: 0.96;
     }
@@ -3689,7 +3799,7 @@ const schemaData = {
     .start {
       min-height: 42svh;
       gap: 14px;
-      padding: 60px 16px;
+      padding: 60px 16px 32px;
     }
     .start p {
       font-size: 12px;
@@ -3746,13 +3856,12 @@ const schemaData = {
   }
 
   .dashboard-showcase {
-    padding: 100px 20px 90px;
+    padding: 110px 20px 90px;
     background: var(--white);
     scroll-margin-top: 84px;
   }
 
   .dashboard-tabs {
-    max-width: 960px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -3889,9 +3998,6 @@ const schemaData = {
   }
 
   @media (max-width: 640px) {
-    .dashboard-showcase {
-      padding: 56px 16px 56px;
-    }
     .dashboard-tabs__nav {
       gap: 4px;
     }
@@ -4037,19 +4143,17 @@ const schemaData = {
     background: #1f2937;
     transform: translateY(-2px);
   }
-  /* Process / Alur Pembuatan Section - Minimalist Editorial Dark Palette */
   #process.process-section,
   .process-section {
     position: relative;
     z-index: 2;
-    padding: clamp(60px, 7vw, 100px) 20px;
+    padding: 110px 20px 90px;
     background: #414238;
     color: #ffffff;
     scroll-margin-top: 84px;
   }
 
   .process-container {
-    max-width: 1120px;
     margin: 0 auto;
   }
 
@@ -4083,9 +4187,11 @@ const schemaData = {
     background: transparent;
     border-bottom: 1px solid rgba(255, 255, 255, 0.16);
     position: relative;
+    justify-content: space-between;
     opacity: 0;
     transform: translateY(30px);
     filter: blur(6px);
+    min-height: 250px;
     transition:
       opacity 0.85s var(--ease),
       transform 0.85s var(--ease),
@@ -4093,6 +4199,10 @@ const schemaData = {
       background-color 0.35s var(--ease);
     transition-delay: var(--delay, 0ms), var(--delay, 0ms), var(--delay, 0ms), 0ms;
     will-change: opacity, transform, filter;
+
+    @media (max-width: 767px) {
+      min-height: 160px;
+    }
   }
 
   .process-col.is-visible {
@@ -4105,7 +4215,7 @@ const schemaData = {
     .process-col {
       border-bottom: none;
       border-right: 1px solid rgba(255, 255, 255, 0.16);
-      padding: 44px 34px;
+      padding: 40px;
     }
 
     .process-col:last-child {
@@ -4131,7 +4241,7 @@ const schemaData = {
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 22px;
+    margin-bottom: 40px;
   }
 
   .process-col__title {
@@ -4167,12 +4277,6 @@ const schemaData = {
   }
 
   @media (max-width: 640px) {
-    .process-section {
-      padding: 60px 16px 70px;
-    }
-    .process-cols {
-      margin-top: 32px;
-    }
     .process-col {
       padding: 28px 4px;
     }
@@ -4191,6 +4295,44 @@ const schemaData = {
     }
   }
 
+  /* ========================================================
+     Unified Section Layout (Container & Padding Synchronization)
+     Matches .template-list across all viewports
+     ======================================================== */
+  @media (min-width: 768px) {
+    .template-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase {
+      padding: 100px 48px 100px;
+    }
+    .features-list,
+    .faq-section {
+      padding: 100px 48px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .template-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase,
+    .features-list,
+    .faq-section {
+      padding-inline: 16px;
+    }
+  }
+
+  @media (min-width: 480px) and (max-width: 767px) {
+    .template-list,
+    #process.process-section,
+    .process-section,
+    .dashboard-showcase,
+    .features-list,
+    .faq-section {
+      padding-inline: 32px;
+    }
+  }
 </style>
 
 <script>
