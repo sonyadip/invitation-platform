@@ -852,11 +852,6 @@ body.template-lumiere-metatah-v2 {
         box-sizing: border-box;
         text-align: left;
         transition: background 0.2s ease, border-color 0.2s ease;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.02);
-          border-color: rgba(255, 255, 255, 0.16);
-        }
       }
 
       .couple-section__body {
@@ -894,6 +889,7 @@ body.template-lumiere-metatah-v2 {
         margin: 0 0 8px;
         word-break: break-word;
         overflow: visible;
+        text-align: center;
         -webkit-line-clamp: unset;
         -webkit-box-orient: unset;
 
