@@ -511,7 +511,6 @@ button, input, textarea, select {
     font-size: 26px;
     color: #111827;
     line-height: 1.1;
-    font-variant-numeric: tabular-nums;
   }
 
   &__label {
@@ -577,7 +576,6 @@ button, input, textarea, select {
     font-size: 26px;
     color: #111827;
     line-height: 1;
-    font-variant-numeric: tabular-nums;
   }
 
   &__label {
@@ -1727,7 +1725,6 @@ button, input, textarea, select {
   font-weight: 600;
   color: #111827;
   line-height: 1;
-  font-variant-numeric: tabular-nums;
 }
 
 .guest-stats__total-lbl {
@@ -1788,7 +1785,6 @@ button, input, textarea, select {
   font-weight: 600;
   font-size: 13.5px;
   color: #111827;
-  font-variant-numeric: tabular-nums;
 }
 
 @media (min-width: 640px) {
@@ -2557,60 +2553,166 @@ button, input, textarea, select {
 
 .interaction-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
   margin-top: 8px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
 }
 
 .interaction-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.15s ease;
 
   &:hover {
-    border-color: #d4d4d8;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    border-color: #d1d5db;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  &--clickable,
+  &[data-filter] {
+    cursor: pointer;
+    text-decoration: none;
+    user-select: none;
+
+    &:hover {
+      border-color: var(--color-primary, #6366f1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &.is-active {
+      border-color: var(--color-primary, #6366f1);
+      background: #f8fafc;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
   }
 
   &__icon-box {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
     background: #f4f4f5;
     color: #111827;
     border: 1px solid #e4e4e7;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 
     .material-symbols-outlined {
-      font-size: 16px;
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    &--wa,
-    &--ig,
+    &--cover {
+      background: #eef2ff;
+      color: #4f46e5;
+      border-color: #e0e7ff;
+    }
+
+    &--maps {
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: #dbeafe;
+    }
+
+    &--calendar {
+      background: #faf5ff;
+      color: #9333ea;
+      border-color: #f3e8ff;
+    }
+
+    &--gift {
+      background: #fffbeb;
+      color: #d97706;
+      border-color: #fef3c7;
+    }
+
+    &--music {
+      background: #f0fdfa;
+      color: #0d9488;
+      border-color: #ccfbf1;
+    }
+
+    &--video {
+      background: #fef2f2;
+      color: #dc2626;
+      border-color: #fee2e2;
+    }
+
+    &--gallery {
+      background: #ecfeff;
+      color: #0891b2;
+      border-color: #cffafe;
+    }
+
+    &--rsvp {
+      background: #ecfdf5;
+      color: #059669;
+      border-color: #d1fae5;
+    }
+
+    &--participant {
+      background: #faf5ff;
+      color: #9333ea;
+      border-color: #f3e8ff;
+    }
+
+    &--couple-ig {
+      background: #fdf2f8;
+      color: #db2777;
+      border-color: #fce7f3;
+    }
+
+    &--wa {
+      background: #f0fdf4;
+      color: #16a34a;
+      border-color: #dcfce7;
+    }
+
+    &--ig {
+      background: #fdf2f8;
+      color: #db2777;
+      border-color: #fce7f3;
+    }
+
     &--web {
-      background: #f4f4f5;
-      color: #111827;
-      border: 1px solid #e4e4e7;
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: #dbeafe;
     }
   }
 
-  &__icon {
-    align-self: flex-start;
-    font-size: 16px;
+  &__content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 2px;
   }
 
   &__label {
     font-size: 11.5px;
-    color: #71717a;
+    color: #4b5563;
     font-weight: 500;
+    line-height: 1.3;
     text-align: left;
   }
 
@@ -2618,8 +2720,7 @@ button, input, textarea, select {
     font-size: 19px;
     font-weight: 600;
     color: #111827;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
+    line-height: 1.2;
     text-align: left;
   }
 }

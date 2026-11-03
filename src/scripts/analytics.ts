@@ -146,8 +146,23 @@ export function initAutomaticInteractionTracking() {
     const copyBtn = target.closest('[data-copy-btn]');
     if (copyBtn) {
       const value = copyBtn.getAttribute('data-value') || '';
+      const giftCard = copyBtn.closest('.gift-card');
+      const accountName =
+        copyBtn.getAttribute('data-account-name') ||
+        giftCard?.querySelector('.gift-card__holder')?.textContent?.replace(/^a\.n\.\s*/i, '').trim() ||
+        '';
+      const bankName =
+        copyBtn.getAttribute('data-bank-name') ||
+        giftCard?.querySelector('.gift-card__bank, .gift-card__bank-logo')?.getAttribute('alt') ||
+        giftCard?.querySelector('.gift-card__bank')?.textContent?.trim() ||
+        '';
+
       sendAnalyticsEvent('copy_gift', {
-        metadata: { target: value.slice(0, 50) }
+        metadata: {
+          target: value.slice(0, 50),
+          accountName: accountName.slice(0, 100),
+          bankName: bankName.slice(0, 50)
+        }
       });
       return;
     }

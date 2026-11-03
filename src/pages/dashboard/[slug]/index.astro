@@ -50,9 +50,15 @@ const newWishesCount = wishesWithMessage.filter(r => {
 const analytics = report.analytics || {
   deviceStats: { mobile: 0, desktop: 0, tablet: 0, mobilePercent: 0, desktopPercent: 0, tabletPercent: 0 },
   browserStats: [],
-  interactionStats: { openCover: 0, clickMaps: 0, clickCalendar: 0, copyGift: 0, playMusic: 0, playVideo: 0, viewGallery: 0, clickRsvp: 0, clickCoupleInstagram: 0, clickVendorWhatsApp: 0, clickVendorInstagram: 0, clickVendorSite: 0, totalInteractions: 0 },
+  interactionStats: { openCover: 0, clickMaps: 0, clickCalendar: 0, copyGift: 0, playMusic: 0, playVideo: 0, viewGallery: 0, clickRsvp: 0, clickParticipant: 0, clickCoupleInstagram: 0, clickVendorWhatsApp: 0, clickVendorInstagram: 0, clickVendorSite: 0, totalInteractions: 0 },
   recentVisitors: []
 };
+
+const hasParticipants = Boolean(
+  (Array.isArray(report.settings?.content?.participants) && report.settings.content.participants.length > 0) ||
+  report.wedding.template?.includes('metatah')
+);
+const showParticipantStat = hasParticipants || (analytics.interactionStats?.clickParticipant || 0) > 0;
 
 const showMapsStat = Boolean(report.wedding.mapsUrl || report.events?.some((e: any) => e.maps_url)) || (analytics.interactionStats?.clickMaps || 0) > 0;
 const showCalendarStat = Boolean(report.wedding.weddingDate || report.events?.length > 0) || (analytics.interactionStats?.clickCalendar || 0) > 0;
@@ -275,84 +281,113 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
             Interaksi Tamu pada Undangan
           </h4>
           <div class="interaction-grid">
-            <div class="interaction-card">
-              <div class="interaction-card__icon-box">
+            <a href={`/dashboard/${slug}/aktivitas?filter=open_cover#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Buka Undangan">
+              <div class="interaction-card__icon-box interaction-card__icon-box--cover">
                 <span class="material-symbols-outlined interaction-card__icon">drafts</span>
               </div>
-              <span class="interaction-card__label">Buka Undangan</span>
-              <span class="interaction-card__value">{analytics.interactionStats?.openCover || 0}</span>
-            </div>
+              <div class="interaction-card__content">
+                <span class="interaction-card__label">Buka Undangan</span>
+                <span class="interaction-card__value">{analytics.interactionStats?.openCover || 0}</span>
+              </div>
+            </a>
             {showMapsStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=click_maps#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Petunjuk Maps">
+                <div class="interaction-card__icon-box interaction-card__icon-box--maps">
                   <span class="material-symbols-outlined interaction-card__icon">location_on</span>
                 </div>
-                <span class="interaction-card__label">Petunjuk Maps</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.clickMaps || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Petunjuk Maps</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickMaps || 0}</span>
+                </div>
+              </a>
             )}
             {showCalendarStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=click_calendar#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Simpan Kalender">
+                <div class="interaction-card__icon-box interaction-card__icon-box--calendar">
                   <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
                 </div>
-                <span class="interaction-card__label">Simpan Kalender</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.clickCalendar || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Simpan Kalender</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickCalendar || 0}</span>
+                </div>
+              </a>
             )}
             {showGiftStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=copy_gift#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Salin Rekening">
+                <div class="interaction-card__icon-box interaction-card__icon-box--gift">
                   <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
                 </div>
-                <span class="interaction-card__label">Salin Rekening</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.copyGift || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Salin Rekening</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.copyGift || 0}</span>
+                </div>
+              </a>
             )}
             {showMusicStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=play_music#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Putar Musik">
+                <div class="interaction-card__icon-box interaction-card__icon-box--music">
                   <span class="material-symbols-outlined interaction-card__icon">music_note</span>
                 </div>
-                <span class="interaction-card__label">Putar Musik</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.playMusic || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Putar Musik</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.playMusic || 0}</span>
+                </div>
+              </a>
             )}
             {showVideoStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=play_video#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Putar Video">
+                <div class="interaction-card__icon-box interaction-card__icon-box--video">
                   <span class="material-symbols-outlined interaction-card__icon">play_circle</span>
                 </div>
-                <span class="interaction-card__label">Putar Video</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.playVideo || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Putar Video</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.playVideo || 0}</span>
+                </div>
+              </a>
             )}
             {showGalleryStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=view_gallery#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Lihat Galeri">
+                <div class="interaction-card__icon-box interaction-card__icon-box--gallery">
                   <span class="material-symbols-outlined interaction-card__icon">photo_library</span>
                 </div>
-                <span class="interaction-card__label">Lihat Galeri</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.viewGallery || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Lihat Galeri</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.viewGallery || 0}</span>
+                </div>
+              </a>
             )}
             {showRsvpStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=click_rsvp#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Klik Form RSVP">
+                <div class="interaction-card__icon-box interaction-card__icon-box--rsvp">
                   <span class="material-symbols-outlined interaction-card__icon">how_to_reg</span>
                 </div>
-                <span class="interaction-card__label">Klik Form RSVP</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.clickRsvp || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Klik Form RSVP</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickRsvp || 0}</span>
+                </div>
+              </a>
+            )}
+            {showParticipantStat && (
+              <a href={`/dashboard/${slug}/aktivitas?filter=click_participant#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Detail Peserta">
+                <div class="interaction-card__icon-box interaction-card__icon-box--participant">
+                  <span class="material-symbols-outlined interaction-card__icon">person</span>
+                </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Detail Peserta</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickParticipant || 0}</span>
+                </div>
+              </a>
             )}
             {showCoupleIgStat && (
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <a href={`/dashboard/${slug}/aktivitas?filter=click_couple_instagram#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Instagram Pengantin">
+                <div class="interaction-card__icon-box interaction-card__icon-box--couple-ig">
                   <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
                 </div>
-                <span class="interaction-card__label">Instagram Pengantin</span>
-                <span class="interaction-card__value">{analytics.interactionStats?.clickCoupleInstagram || 0}</span>
-              </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Instagram Pengantin</span>
+                  <span class="interaction-card__value">{analytics.interactionStats?.clickCoupleInstagram || 0}</span>
+                </div>
+              </a>
             )}
           </div>
         </div>
@@ -362,27 +397,33 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
             Leads & Branding Pemilik Jasa (Senadda)
           </h4>
           <div class="interaction-grid">
-            <div class="interaction-card">
-              <div class="interaction-card__icon-box">
+            <a href={`/dashboard/${slug}/aktivitas?filter=click_vendor_whatsapp#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log WhatsApp Senadda">
+              <div class="interaction-card__icon-box interaction-card__icon-box--wa">
                 <span class="material-symbols-outlined interaction-card__icon">chat</span>
               </div>
-              <span class="interaction-card__label">Klik WhatsApp</span>
-              <span class="interaction-card__value">{analytics.interactionStats.clickVendorWhatsApp || 0}</span>
-            </div>
-            <div class="interaction-card">
-              <div class="interaction-card__icon-box">
+              <div class="interaction-card__content">
+                <span class="interaction-card__label">Klik WhatsApp</span>
+                <span class="interaction-card__value">{analytics.interactionStats.clickVendorWhatsApp || 0}</span>
+              </div>
+            </a>
+            <a href={`/dashboard/${slug}/aktivitas?filter=click_vendor_instagram#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Instagram Senadda">
+              <div class="interaction-card__icon-box interaction-card__icon-box--ig">
                 <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
               </div>
-              <span class="interaction-card__label">Klik Instagram Jasa</span>
-              <span class="interaction-card__value">{analytics.interactionStats.clickVendorInstagram || 0}</span>
-            </div>
-            <div class="interaction-card">
-              <div class="interaction-card__icon-box">
+              <div class="interaction-card__content">
+                <span class="interaction-card__label">Klik Instagram Jasa</span>
+                <span class="interaction-card__value">{analytics.interactionStats.clickVendorInstagram || 0}</span>
+              </div>
+            </a>
+            <a href={`/dashboard/${slug}/aktivitas?filter=click_vendor_site#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Website Senadda">
+              <div class="interaction-card__icon-box interaction-card__icon-box--web">
                 <span class="material-symbols-outlined interaction-card__icon">language</span>
               </div>
-              <span class="interaction-card__label">Klik Website Jasa</span>
-              <span class="interaction-card__value">{analytics.interactionStats.clickVendorSite || 0}</span>
-            </div>
+              <div class="interaction-card__content">
+                <span class="interaction-card__label">Klik Website Jasa</span>
+                <span class="interaction-card__value">{analytics.interactionStats.clickVendorSite || 0}</span>
+              </div>
+            </a>
           </div>
         </div>
 

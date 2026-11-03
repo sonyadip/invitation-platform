@@ -180,6 +180,7 @@ export interface SlugReportDetail {
       playMusic?: number;
       playVideo?: number;
       clickWishes?: number;
+      clickParticipant?: number;
       clickRsvp?: number;
       viewGallery?: number;
       clickCoupleInstagram: number;
@@ -436,7 +437,9 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   const [
     viewsRes,
     trackedEventsCountRes,
-    rawGuestsRes
+    rawGuestsRes,
+    trackedEventsRes,
+    viewsBreakdownRes
   ] = await Promise.all([
     adminSupabase
       .from('invitation_views')
@@ -454,13 +457,25 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
       .eq('wedding_id', wedding.id)
       .order('created_at', { ascending: false })
-      .limit(500)
+      .limit(500),
+    adminSupabase
+      .from('invitation_events')
+      .select('event_type')
+      .eq('wedding_id', wedding.id)
+      .limit(5000),
+    adminSupabase
+      .from('invitation_views')
+      .select('device_type, browser')
+      .eq('wedding_id', wedding.id)
+      .limit(5000)
   ]);
 
   const recentViews = viewsRes.data || [];
   const rawGuests = rawGuestsRes.data || [];
   const totalViewsCount = viewsRes.count ?? recentViews.length;
   const totalEventsCount = trackedEventsCountRes.count ?? 0;
+  const trackedEvents = trackedEventsRes.data || [];
+  const viewsBreakdown = viewsBreakdownRes.data || [];
 
   if (settingsRes.error) throw settingsRes.error;
   if (domainsRes.error) throw domainsRes.error;
@@ -499,29 +514,98 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     createdAt: v.created_at
   }));
 
+  let openCoverCount = 0;
+  let clickMapsCount = 0;
+  let clickCalendarCount = 0;
+  let copyGiftCount = 0;
+  let playMusicCount = 0;
+  let pauseMusicCount = 0;
+  let playVideoCount = 0;
+  let viewGalleryCount = 0;
+  let clickRsvpCount = 0;
+  let clickWishesCount = 0;
+  let clickParticipantCount = 0;
+  let clickCoupleInstagramCount = 0;
+  let clickVendorWhatsAppCount = 0;
+  let clickVendorInstagramCount = 0;
+  let clickVendorSiteCount = 0;
+
+  for (const ev of trackedEvents) {
+    if (ev.event_type === 'open_cover') openCoverCount++;
+    else if (ev.event_type === 'click_maps') clickMapsCount++;
+    else if (ev.event_type === 'click_calendar') clickCalendarCount++;
+    else if (ev.event_type === 'copy_gift') copyGiftCount++;
+    else if (ev.event_type === 'play_music') playMusicCount++;
+    else if (ev.event_type === 'pause_music') pauseMusicCount++;
+    else if (ev.event_type === 'play_video') playVideoCount++;
+    else if (ev.event_type === 'view_gallery') viewGalleryCount++;
+    else if (ev.event_type === 'click_rsvp') clickRsvpCount++;
+    else if (ev.event_type === 'click_wishes') clickWishesCount++;
+    else if (ev.event_type === 'click_participant') clickParticipantCount++;
+    else if (ev.event_type === 'click_couple_instagram') clickCoupleInstagramCount++;
+    else if (ev.event_type === 'click_vendor_whatsapp') clickVendorWhatsAppCount++;
+    else if (ev.event_type === 'click_vendor_instagram') clickVendorInstagramCount++;
+    else if (ev.event_type === 'click_vendor_site') clickVendorSiteCount++;
+  }
+
+  let mobileCount = 0;
+  let desktopCount = 0;
+  let tabletCount = 0;
+  const browserMap = new Map<string, number>();
+
+  for (const v of viewsBreakdown) {
+    const dt = (v.device_type || 'mobile').toLowerCase();
+    if (dt === 'desktop') desktopCount++;
+    else if (dt === 'tablet') tabletCount++;
+    else mobileCount++;
+
+    const b = (v.browser && v.browser !== 'Other' ? v.browser : null) || 'Other';
+    browserMap.set(b, (browserMap.get(b) || 0) + 1);
+  }
+
+  const deviceStats = {
+    mobile: mobileCount,
+    desktop: desktopCount,
+    tablet: tabletCount,
+    mobilePercent: totalViewsCount > 0 ? Math.round((mobileCount / totalViewsCount) * 100) : 0,
+    desktopPercent: totalViewsCount > 0 ? Math.round((desktopCount / totalViewsCount) * 100) : 0,
+    tabletPercent: totalViewsCount > 0 ? Math.round((tabletCount / totalViewsCount) * 100) : 0
+  };
+
+  const browserStats = Array.from(browserMap.entries())
+    .map(([browser, count]) => ({
+      browser,
+      count,
+      percent: totalViewsCount > 0 ? Math.round((count / totalViewsCount) * 100) : 0
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const vendorLeads = clickVendorWhatsAppCount + clickVendorInstagramCount + clickVendorSiteCount;
+
   const analytics = {
     totalViews: totalViewsCount,
     totalEvents: totalEventsCount,
     totalActivities: totalViewsCount + totalEventsCount,
     totalIdentifiedGuests: 0,
-    deviceStats: { mobile: 0, desktop: 0, tablet: 0, mobilePercent: 0, desktopPercent: 0, tabletPercent: 0 },
-    browserStats: [],
+    deviceStats,
+    browserStats,
     interactionStats: {
-      openCover: 0,
-      clickMaps: 0,
-      clickCalendar: 0,
-      copyGift: 0,
-      playMusic: 0,
-      pauseMusic: 0,
-      playVideo: 0,
-      viewGallery: 0,
-      clickRsvp: 0,
-      clickWishes: 0,
-      clickCoupleInstagram: 0,
-      clickVendorWhatsApp: 0,
-      clickVendorInstagram: 0,
-      clickVendorSite: 0,
-      vendorLeads: 0,
+      openCover: openCoverCount,
+      clickMaps: clickMapsCount,
+      clickCalendar: clickCalendarCount,
+      copyGift: copyGiftCount,
+      playMusic: playMusicCount,
+      pauseMusic: pauseMusicCount,
+      playVideo: playVideoCount,
+      viewGallery: viewGalleryCount,
+      clickRsvp: clickRsvpCount,
+      clickWishes: clickWishesCount,
+      clickParticipant: clickParticipantCount,
+      clickCoupleInstagram: clickCoupleInstagramCount,
+      clickVendorWhatsApp: clickVendorWhatsAppCount,
+      clickVendorInstagram: clickVendorInstagramCount,
+      clickVendorSite: clickVendorSiteCount,
+      vendorLeads,
       totalInteractions: totalEventsCount
     },
     recentVisitors,

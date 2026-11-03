@@ -33,11 +33,23 @@ const showRsvpStat = Boolean(settings.rsvpEnabled || report.rsvps?.length > 0);
 const showWishesStat = Boolean(settings.wishesEnabled || report.summary?.wishesCount > 0);
 const showCoupleIgStat = Boolean(settings.content?.groomInstagramUrl || settings.content?.brideInstagramUrl || settings.content?.instagramUrl);
 
+const hasParticipants = Boolean(
+  (Array.isArray(settings?.content?.participants) && settings.content.participants.length > 0) ||
+  wedding.template?.includes('metatah')
+);
+const showParticipantStat = hasParticipants || (report.analytics?.interactionStats?.clickParticipant || 0) > 0;
+
+const weddingGifts = (report.gifts || []).map((g: any) => ({
+  accountNumber: g.accountNumber || '',
+  accountName: g.accountName || '',
+  bankName: g.bankName || ''
+}));
+
 const originUrl = Astro.url.origin;
 ---
 
 <ClientLayout title="Aktivitas Tamu">
-  <div class="activity-page-layout" id="activityPageRoot" data-slug={slug} data-origin={originUrl}>
+  <div class="activity-page-layout" id="activityPageRoot" data-slug={slug} data-origin={originUrl} data-wedding-gifts={JSON.stringify(weddingGifts)}>
     <div class="activity-top fade-in-bottom animate-on-scroll">
       <div class="bento-card" style="width: 100%;">
         <div class="activity-card-header">
@@ -255,83 +267,118 @@ const originUrl = Astro.url.origin;
               Interaksi Tamu pada Undangan
             </h4>
             <div class="interaction-grid">
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <div class="interaction-card" data-filter="open_cover" tabindex="0" role="button" title="Klik untuk filter log Buka Undangan">
+                <div class="interaction-card__icon-box interaction-card__icon-box--cover">
                   <span class="material-symbols-outlined interaction-card__icon">drafts</span>
                 </div>
-                <span class="interaction-card__label">Buka Undangan</span>
-                <span class="interaction-card__value" id="cardStatCover">-</span>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Buka Undangan</span>
+                  <span class="interaction-card__value" id="cardStatCover">-</span>
+                </div>
               </div>
               {showMapsStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="click_maps" tabindex="0" role="button" title="Klik untuk filter log Petunjuk Maps">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--maps">
                     <span class="material-symbols-outlined interaction-card__icon">location_on</span>
                   </div>
-                  <span class="interaction-card__label">Petunjuk Maps</span>
-                  <span class="interaction-card__value" id="cardStatMaps">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Petunjuk Maps</span>
+                    <span class="interaction-card__value" id="cardStatMaps">-</span>
+                  </div>
                 </div>
               )}
               {showCalendarStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="click_calendar" tabindex="0" role="button" title="Klik untuk filter log Simpan Kalender">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--calendar">
                     <span class="material-symbols-outlined interaction-card__icon">calendar_month</span>
                   </div>
-                  <span class="interaction-card__label">Simpan Kalender</span>
-                  <span class="interaction-card__value" id="cardStatCalendar">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Simpan Kalender</span>
+                    <span class="interaction-card__value" id="cardStatCalendar">-</span>
+                  </div>
                 </div>
               )}
               {showGiftStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="copy_gift" tabindex="0" role="button" title="Klik untuk filter log Salin Rekening">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--gift">
                     <span class="material-symbols-outlined interaction-card__icon">content_copy</span>
                   </div>
-                  <span class="interaction-card__label">Salin Rekening</span>
-                  <span class="interaction-card__value" id="cardStatGift">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Salin Rekening</span>
+                    <span class="interaction-card__value" id="cardStatGift">-</span>
+                  </div>
                 </div>
               )}
               {showMusicStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="play_music" tabindex="0" role="button" title="Klik untuk filter log Putar Musik">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--music">
                     <span class="material-symbols-outlined interaction-card__icon">music_note</span>
                   </div>
-                  <span class="interaction-card__label">Putar Musik</span>
-                  <span class="interaction-card__value" id="cardStatMusic">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Putar Musik</span>
+                    <span class="interaction-card__value" id="cardStatMusic">-</span>
+                  </div>
                 </div>
               )}
               {showVideoStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="play_video" tabindex="0" role="button" title="Klik untuk filter log Putar Video">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--video">
                     <span class="material-symbols-outlined interaction-card__icon">play_circle</span>
                   </div>
-                  <span class="interaction-card__label">Putar Video</span>
-                  <span class="interaction-card__value" id="cardStatVideo">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Putar Video</span>
+                    <span class="interaction-card__value" id="cardStatVideo">-</span>
+                  </div>
                 </div>
               )}
               {showGalleryStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="view_gallery" tabindex="0" role="button" title="Klik untuk filter log Lihat Galeri">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--gallery">
                     <span class="material-symbols-outlined interaction-card__icon">photo_library</span>
                   </div>
-                  <span class="interaction-card__label">Lihat Galeri</span>
-                  <span class="interaction-card__value" id="cardStatGallery">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Lihat Galeri</span>
+                    <span class="interaction-card__value" id="cardStatGallery">-</span>
+                  </div>
                 </div>
               )}
               {showRsvpStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="click_rsvp" tabindex="0" role="button" title="Klik untuk filter log Klik Form RSVP">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--rsvp">
                     <span class="material-symbols-outlined interaction-card__icon">how_to_reg</span>
                   </div>
-                  <span class="interaction-card__label">Klik Form RSVP</span>
-                  <span class="interaction-card__value" id="cardStatRsvp">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Klik Form RSVP</span>
+                    <span class="interaction-card__value" id="cardStatRsvp">-</span>
+                  </div>
                 </div>
               )}
+              <div
+                class="interaction-card"
+                id="cardParticipantWrapper"
+                style={showParticipantStat ? '' : 'display: none;'}
+                data-filter="click_participant"
+                tabindex="0"
+                role="button"
+                title="Klik untuk filter log Detail Peserta"
+              >
+                <div class="interaction-card__icon-box interaction-card__icon-box--participant">
+                  <span class="material-symbols-outlined interaction-card__icon">person</span>
+                </div>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Detail Peserta</span>
+                  <span class="interaction-card__value" id="cardStatParticipant">-</span>
+                </div>
+              </div>
               {showCoupleIgStat && (
-                <div class="interaction-card">
-                  <div class="interaction-card__icon-box">
+                <div class="interaction-card" data-filter="click_couple_instagram" tabindex="0" role="button" title="Klik untuk filter log Instagram Mempelai">
+                  <div class="interaction-card__icon-box interaction-card__icon-box--couple-ig">
                     <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
                   </div>
-                  <span class="interaction-card__label">Instagram Mempelai</span>
-                  <span class="interaction-card__value" id="cardStatCoupleIg">-</span>
+                  <div class="interaction-card__content">
+                    <span class="interaction-card__label">Instagram Mempelai</span>
+                    <span class="interaction-card__value" id="cardStatCoupleIg">-</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -342,26 +389,32 @@ const originUrl = Astro.url.origin;
               Leads & Branding Pemilik Jasa (Senadda)
             </h4>
             <div class="interaction-grid">
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <div class="interaction-card" data-filter="click_vendor_whatsapp" tabindex="0" role="button" title="Klik untuk filter log WhatsApp Senadda">
+                <div class="interaction-card__icon-box interaction-card__icon-box--wa">
                   <span class="material-symbols-outlined interaction-card__icon">chat</span>
                 </div>
-                <span class="interaction-card__label">Pesan WhatsApp Senadda</span>
-                <span class="interaction-card__value" id="cardStatVendorWa">-</span>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Pesan WhatsApp Senadda</span>
+                  <span class="interaction-card__value" id="cardStatVendorWa">-</span>
+                </div>
               </div>
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <div class="interaction-card" data-filter="click_vendor_instagram" tabindex="0" role="button" title="Klik untuk filter log Instagram Senadda">
+                <div class="interaction-card__icon-box interaction-card__icon-box--ig">
                   <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
                 </div>
-                <span class="interaction-card__label">Instagram Senadda</span>
-                <span class="interaction-card__value" id="cardStatVendorIg">-</span>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Instagram Senadda</span>
+                  <span class="interaction-card__value" id="cardStatVendorIg">-</span>
+                </div>
               </div>
-              <div class="interaction-card">
-                <div class="interaction-card__icon-box">
+              <div class="interaction-card" data-filter="click_vendor_site" tabindex="0" role="button" title="Klik untuk filter log Website Senadda">
+                <div class="interaction-card__icon-box interaction-card__icon-box--web">
                   <span class="material-symbols-outlined interaction-card__icon">language</span>
                 </div>
-                <span class="interaction-card__label">Website Senadda</span>
-                <span class="interaction-card__value" id="cardStatVendorSite">-</span>
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Website Senadda</span>
+                  <span class="interaction-card__value" id="cardStatVendorSite">-</span>
+                </div>
               </div>
             </div>
           </div>
@@ -565,6 +618,21 @@ const originUrl = Astro.url.origin;
       let searchQuery = '';
       let searchTimeout = null;
 
+      const rootEl = document.getElementById('activityPageRoot');
+      let weddingGifts = [];
+      try {
+        weddingGifts = JSON.parse(rootEl?.getAttribute('data-wedding-gifts') || '[]');
+      } catch (_) {}
+
+      function getGiftDetails(metadata) {
+        const accNum = (metadata?.target || '').trim();
+        const cleanAccNum = accNum.replace(/[\s-]+/g, '');
+        const matched = weddingGifts.find(g => (g.accountNumber || '').replace(/[\s-]+/g, '') === cleanAccNum);
+        const accountName = metadata?.accountName || matched?.accountName || '';
+        const bankName = metadata?.bankName || matched?.bankName || '';
+        return { accNum, accountName, bankName };
+      }
+
       const daysArr = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
       const monthsArr = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
@@ -685,11 +753,17 @@ const originUrl = Astro.url.origin;
             cardStatVideo: data.interactionStats?.playVideo,
             cardStatGallery: data.interactionStats?.viewGallery,
             cardStatRsvp: data.interactionStats?.clickRsvp,
+            cardStatParticipant: data.interactionStats?.clickParticipant,
             cardStatCoupleIg: data.interactionStats?.clickCoupleInstagram,
             cardStatVendorWa: data.interactionStats?.clickVendorWhatsApp,
             cardStatVendorIg: data.interactionStats?.clickVendorInstagram,
             cardStatVendorSite: data.interactionStats?.clickVendorSite
           };
+
+          if (data.interactionStats?.clickParticipant > 0) {
+            const pWrap = document.getElementById('cardParticipantWrapper');
+            if (pWrap) pWrap.style.display = 'flex';
+          }
 
           for (const [id, val] of Object.entries(statsMap)) {
             const el = document.getElementById(id);
@@ -1133,7 +1207,8 @@ const originUrl = Astro.url.origin;
         const isGuest = !!item.guestName;
         const guestDisplay = isGuest ? item.guestName : 'Pengunjung Umum (Anonim)';
         const guestRsvp = item.guestRsvp;
-        const searchIndex = `${item.guestName || ''} ${guestRsvp?.message || ''} ${item.label} ${item.desc} ${item.browser || ''} ${item.deviceModel || ''} ${item.os || ''} ${item.source || ''} ${item.city || ''} ${item.metadata?.target || ''} ${item.metadata?.href || ''}`.toLowerCase();
+        const giftInfo = item.eventType === 'copy_gift' ? getGiftDetails(item.metadata) : null;
+        const searchIndex = `${item.guestName || ''} ${guestRsvp?.message || ''} ${item.label} ${item.desc} ${item.browser || ''} ${item.deviceModel || ''} ${item.os || ''} ${item.source || ''} ${item.city || ''} ${item.metadata?.target || ''} ${item.metadata?.accountName || ''} ${giftInfo?.accountName || ''} ${giftInfo?.bankName || ''} ${item.metadata?.href || ''}`.toLowerCase();
 
         let rsvpBadgeHtml = '';
         if (guestRsvp) {
@@ -1144,11 +1219,17 @@ const originUrl = Astro.url.origin;
         }
 
         let metaBoxHtml = '';
-        if (item.eventType === 'copy_gift' && item.metadata?.target) {
+        if (item.eventType === 'copy_gift' && (item.metadata?.target || item.metadata?.accountName)) {
+          const { accNum, accountName, bankName } = getGiftDetails(item.metadata);
+          let parts = [];
+          if (bankName) parts.push(`Bank <strong>${escapeHtml(bankName)}</strong>`);
+          if (accNum) parts.push(`No. Rek: <code>${escapeHtml(accNum)}</code>`);
+          if (accountName) parts.push(`a.n. <strong>${escapeHtml(accountName)}</strong>`);
+
           metaBoxHtml = `
             <div class="act-meta-box act-meta-box--warning">
               <span class="material-symbols-outlined meta-icon">content_copy</span>
-              <span>Nomor Rekening: <strong>${escapeHtml(item.metadata.target)}</strong></span>
+              <span>${parts.join(' &bull; ') || 'Rekening Hadir / Digital'}</span>
             </div>
           `;
         } else if (item.eventType === 'click_maps' && item.metadata?.href) {
@@ -1376,6 +1457,13 @@ const originUrl = Astro.url.origin;
             </span>
           `;
         }
+        if (guest.counts.participant > 0) {
+          milestonesHtml += `
+            <span class="milestone-badge milestone-badge--purple" title="Membuka profil detail peserta">
+              <span class="material-symbols-outlined">person</span> Detail Peserta (${guest.counts.participant}x)
+            </span>
+          `;
+        }
         if (guest.counts.gallery > 0) {
           milestonesHtml += `
             <span class="milestone-badge milestone-badge--indigo" title="Melihat galeri foto">
@@ -1448,6 +1536,21 @@ const originUrl = Astro.url.origin;
 
         let timelineItemsHtml = '';
         (guest.items || []).forEach(it => {
+          let extraGiftHtml = '';
+          if (it.eventType === 'copy_gift' || it.label === 'Salin Rekening') {
+            const { accNum, accountName, bankName } = getGiftDetails(it.metadata);
+            const parts = [];
+            if (bankName) parts.push(`Bank <strong>${escapeHtml(bankName)}</strong>`);
+            if (accNum) parts.push(`No. Rek: <code>${escapeHtml(accNum)}</code>`);
+            if (accountName) parts.push(`a.n. <strong>${escapeHtml(accountName)}</strong>`);
+            if (parts.length > 0) {
+              extraGiftHtml = `<div style="font-size: 11px; color: #b45309; margin-top: 4px; background: #fffbeb; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #fef3c7;">
+                <span class="material-symbols-outlined" style="font-size: 13px;">content_copy</span>
+                <span>${parts.join(' &bull; ')}</span>
+              </div>`;
+            }
+          }
+
           timelineItemsHtml += `
             <div class="guest-timeline-item">
               <div class="guest-timeline-item__icon" style="color: ${it.iconColor || '#64748b'};">
@@ -1459,6 +1562,7 @@ const originUrl = Astro.url.origin;
                   <span class="guest-timeline-item__time">${formatFullDate(it.createdAt)}</span>
                 </div>
                 <p class="guest-timeline-item__desc">${escapeHtml(it.desc || '')}</p>
+                ${extraGiftHtml}
               </div>
             </div>
           `;
@@ -1867,8 +1971,54 @@ const originUrl = Astro.url.origin;
         });
       });
 
+      function syncActiveCardState(selectedEvent) {
+        document.querySelectorAll('.interaction-card[data-filter]').forEach(card => {
+          const filter = card.getAttribute('data-filter');
+          if (selectedEvent && filter === selectedEvent && selectedEvent !== 'all') {
+            card.classList.add('is-active');
+          } else {
+            card.classList.remove('is-active');
+          }
+        });
+      }
+
+      document.querySelectorAll('.interaction-card[data-filter]').forEach(card => {
+        const handleFilterClick = () => {
+          const filterVal = card.getAttribute('data-filter');
+          if (!filterVal || !eventSelect) return;
+
+          if (eventSelect.value === filterVal) {
+            eventSelect.value = 'all';
+          } else {
+            eventSelect.value = filterVal;
+          }
+
+          syncActiveCardState(eventSelect.value);
+
+          if (viewMode !== 'timeline') {
+            switchViewMode('timeline');
+          } else {
+            fetchActivities(1);
+          }
+
+          const targetCard = document.getElementById('activityListCard');
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        };
+
+        card.addEventListener('click', handleFilterClick);
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleFilterClick();
+          }
+        });
+      });
+
       if (eventSelect) {
         eventSelect.addEventListener('change', () => {
+          syncActiveCardState(eventSelect.value);
           fetchActivities(1);
         });
       }
@@ -1914,6 +2064,7 @@ const originUrl = Astro.url.origin;
           if (clearSearchBtn) clearSearchBtn.style.display = 'none';
           if (timeRangeSelect) timeRangeSelect.value = 'all';
           if (eventSelect) eventSelect.value = 'all';
+          syncActiveCardState('all');
           activeTag = 'all';
           tagButtons.forEach(b => b.classList.remove('activity-tag--active'));
           document.getElementById('tagAll')?.classList.add('activity-tag--active');
@@ -1998,8 +2149,27 @@ const originUrl = Astro.url.origin;
         });
       }
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialEvent = urlParams.get('filter') || urlParams.get('event') || urlParams.get('eventType');
+      if (initialEvent && eventSelect) {
+        const optionExists = Array.from(eventSelect.options).some(opt => opt.value === initialEvent);
+        if (optionExists) {
+          eventSelect.value = initialEvent;
+          syncActiveCardState(initialEvent);
+        }
+      }
+
       fetchSummary();
       fetchActivities(1);
+
+      if (initialEvent || window.location.hash === '#activityListCard') {
+        setTimeout(() => {
+          const targetCard = document.getElementById('activityListCard');
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 200);
+      }
     });
   </script>
 </ClientLayout>

@@ -76,10 +76,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 
     const { data: recentEvents } = await checkQuery.limit(5);
     if (recentEvents && recentEvents.length > 0) {
-      const currentTarget = metadata?.participantName || metadata?.target || null;
+      const currentTarget = metadata?.participantName || metadata?.accountName || metadata?.target || null;
       if (currentTarget) {
         const isDuplicate = recentEvents.some(
-          (re: any) => (re.metadata?.participantName || re.metadata?.target) === currentTarget
+          (re: any) => (re.metadata?.participantName || re.metadata?.accountName || re.metadata?.target) === currentTarget
         );
         if (isDuplicate) {
           return jsonResponse({ success: true, deduped: true });
