@@ -587,7 +587,7 @@ const metaDescription = text.metaDescription || (isTitleRedundant
         <div class="cover-section__title-block">
           <span class="cover-section__eyebrow">{coverEyebrow}</span>
           <h1 class="cover-section__title">
-            <span class="cover-section__name">{coverTitle}</span>
+            <span class="cover-section__name" set:html={coverTitle}></span>
           </h1>
           <time class="cover-section__date">{text.coverDate || coverDateFormatted}</time>
         </div>
