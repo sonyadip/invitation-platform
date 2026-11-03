@@ -232,9 +232,9 @@ if (isMetatahFamily) {
     const requestedTitle = Astro.url.searchParams.get('title')?.toLowerCase() || (isMetatahTanpaFoto ? 'default' : 'family');
 
     let previewTitleMode = 'family';
-    let previewCoverTitle = 'Pande Ceria';
-    let previewIntroTitle = 'Pande Ceria';
-    let previewIntroAnimationName = 'Pande Ceria';
+    let previewCoverTitle = 'Keluarga Pande Ceria';
+    let previewIntroTitle = 'Keluarga Pande Ceria';
+    let previewIntroAnimationName = 'Keluarga Pande Ceria';
 
     if (requestedTitle === 'default' || requestedTitle === 'ceremony' || requestedTitle === 'metatah') {
       previewTitleMode = 'default';
@@ -248,9 +248,9 @@ if (isMetatahFamily) {
       previewIntroAnimationName = '';
     } else {
       previewTitleMode = 'family';
-      previewCoverTitle = 'Pande Ceria';
-      previewIntroTitle = 'Pande Ceria';
-      previewIntroAnimationName = 'Pande Ceria';
+      previewCoverTitle = 'Keluarga Pande Ceria';
+      previewIntroTitle = 'Keluarga Pande Ceria';
+      previewIntroAnimationName = 'Keluarga Pande Ceria';
     }
 
     defaultData.settings.theme_config.content = {

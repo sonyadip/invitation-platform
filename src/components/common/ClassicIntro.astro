@@ -21,7 +21,7 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
 <div id="intro-awal" style={`color: ${textColor};`}>
   <div class="intro-container">
     <h2 class="subtitle intro-element">{subtitle}</h2>
-    <h2 class="names intro-element">{displayName}</h2>
+    <h2 class="names intro-element" set:html={displayName}></h2>
     <h2 class="progresbar intro-element">0%</h2>
   </div>
 </div>
@@ -196,7 +196,9 @@ const displayName = brideName ? `${groomName} & ${brideName}` : groomName;
     text-transform: uppercase !important;
     letter-spacing: 0.2em !important;
     font-weight: normal !important;
-    line-height: normal !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+    white-space: pre-line;
   }
 
   #intro-awal .progresbar {

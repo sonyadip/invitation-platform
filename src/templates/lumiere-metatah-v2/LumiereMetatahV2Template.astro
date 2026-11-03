@@ -69,7 +69,7 @@ const heroSlides = (customSliderImages && customSliderImages.length > 0
 const defaultText = {
   ceremonyTitle: 'Mepandes / Metatah',
   ceremonyEyebrow: 'Upacara Manusa Yadnya',
-  coverTitle: 'Pande Ceria',
+  coverTitle: 'Keluarga Pande Ceria',
   coverName: '',
   coverEyebrow: '',
   sidebarTitle: '',
@@ -78,17 +78,17 @@ const defaultText = {
   sidebarBride: '',
   sidebarDate: '',
   sidebarEyebrow: '',
-  introTitle: 'Pande Ceria',
+  introTitle: 'Keluarga Pande Ceria',
   introName: '',
   introEyebrow: 'UPACARA MANUSA YADNYA',
-  introAnimationName: 'Pande Ceria',
+  introAnimationName: 'Keluarga Pande Ceria',
   introAnimationSubtitle: 'Metatah / Potong Gigi',
   mediaEyebrow: '',
   mediaTitle: '',
   mediaCaption: '',
   pesertaSectionTitle: 'Peserta Upacara',
   pesertaSectionEyebrow: 'Mepandes / Metatah',
-  closingNames: 'Pande Ceria',
+  closingNames: 'Keluarga Pande Ceria',
   verse: 'Om Swastyastu, Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa / Tuhan Yang Maha Esa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya (Mepandes / Metatah / Potong Gigi) putra-putri kami.',
   verseSource: 'Doa Restu Keluarga',
   participantRole: 'Putra',
@@ -378,7 +378,7 @@ if (titleMode === 'participants') {
 } else if (titleMode === 'default') {
   coverTitle = text.defaultTitle || text.ceremonyTitle || 'Metatah';
 } else {
-  coverTitle = text.familyName || text.familyTitle || themeContent.ceremonyTitle || 'Pande Ceria';
+  coverTitle = text.familyName || text.familyTitle || themeContent.ceremonyTitle || 'Keluarga Pande Ceria';
 }
 
 const coverEyebrow = text.coverEyebrow || text.ceremonyEyebrow || 'Upacara Manusa Yadnya';
@@ -629,7 +629,7 @@ const metaDescription = text.metaDescription || (isTitleRedundant
           <div class="intro-section__inner" data-animate>
             <span class="intro-section__eyebrow">{introEyebrow}</span>
             <h1 class="intro-section__title">
-              <span class="intro-section__name">{introName}</span>
+              <span class="intro-section__name" set:html={introName}></span>
             </h1>
             <time class="intro-section__date">{text.introDate || introDateFormatted}</time>
             <div class="intro-section__scroll-indicator" aria-hidden="true">
