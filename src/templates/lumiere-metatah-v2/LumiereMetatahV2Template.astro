@@ -5,6 +5,7 @@ import CountdownTimer from "../../components/common/CountdownTimer.astro";
 import GiftGrid from "../../components/common/GiftGrid.astro";
 import ClassicIntro from "../../components/common/ClassicIntro.astro";
 import type { FullInvitationData } from '../../types';
+import { COMMON_ASSETS } from '../../utils/cdn';
 import { getPlatformSettings } from '../../services/platform-settings';
 import {
   formatChildPrefix,
@@ -1180,8 +1181,8 @@ const metaDescription = text.metaDescription || (isTitleRedundant
               <rect x="14" y="4" width="4" height="16"></rect>
             </svg>
           </div>
-          {settings.music_enabled && (wedding.music_url || '/audio/metatah-music.mp3') && (
-            <audio data-template-audio loop preload="none" src={wedding.music_url || '/audio/metatah-music.mp3'}></audio>
+          {settings.music_enabled && (wedding.music_url || COMMON_ASSETS.METATAH_MUSIC) && (
+            <audio data-template-audio loop preload="none" src={wedding.music_url || COMMON_ASSETS.METATAH_MUSIC}></audio>
           )}
         </button>
       )}

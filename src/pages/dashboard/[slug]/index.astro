@@ -67,7 +67,13 @@ const showMusicStat = (Boolean(report.settings.musicEnabled) && Boolean(report.w
 const showVideoStat = (Boolean(report.settings.videoEnabled) && Boolean(report.settings.assets?.heroVideo)) || (analytics.interactionStats?.playVideo || 0) > 0;
 const showGalleryStat = Boolean(report.settings.galleryEnabled) || (analytics.interactionStats?.viewGallery || 0) > 0;
 const showRsvpStat = Boolean(report.settings.rsvpEnabled) || (analytics.interactionStats?.clickRsvp || 0) > 0 || (report.rsvps?.length > 0);
-const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || report.settings.content?.brideInstagramUrl || report.settings.content?.instagramUrl) || (analytics.interactionStats?.clickCoupleInstagram || 0) > 0;
+const showCoupleIgStat = Boolean(
+  report.settings?.content?.groomInstagramUrl || 
+  report.settings?.content?.brideInstagramUrl || 
+  report.settings?.content?.instagramUrl ||
+  report.wedding?.groomInstagram ||
+  report.wedding?.brideInstagram
+) || (analytics.interactionStats?.clickCoupleInstagram || 0) > 0;
 ---
 
 <ClientLayout title="Dashboard">
@@ -367,28 +373,36 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
                 </div>
               </a>
             )}
-            {showParticipantStat && (
-              <a href={`/dashboard/${slug}/aktivitas?filter=click_participant#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Detail Peserta">
-                <div class="interaction-card__icon-box interaction-card__icon-box--participant">
-                  <span class="material-symbols-outlined interaction-card__icon">person</span>
-                </div>
-                <div class="interaction-card__content">
-                  <span class="interaction-card__label">Detail Peserta</span>
-                  <span class="interaction-card__value">{analytics.interactionStats?.clickParticipant || 0}</span>
-                </div>
-              </a>
-            )}
-            {showCoupleIgStat && (
-              <a href={`/dashboard/${slug}/aktivitas?filter=click_couple_instagram#activityListCard`} class="interaction-card interaction-card--clickable" title="Klik untuk filter log Instagram Pengantin">
-                <div class="interaction-card__icon-box interaction-card__icon-box--couple-ig">
-                  <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
-                </div>
-                <div class="interaction-card__content">
-                  <span class="interaction-card__label">Instagram Pengantin</span>
-                  <span class="interaction-card__value">{analytics.interactionStats?.clickCoupleInstagram || 0}</span>
-                </div>
-              </a>
-            )}
+            <a
+              href={`/dashboard/${slug}/aktivitas?filter=click_participant#activityListCard`}
+              class="interaction-card interaction-card--clickable"
+              id="cardParticipantIndex"
+              style={showParticipantStat ? '' : 'display: none;'}
+              title="Klik untuk filter log Detail Peserta"
+            >
+              <div class="interaction-card__icon-box interaction-card__icon-box--participant">
+                <span class="material-symbols-outlined interaction-card__icon">person</span>
+              </div>
+              <div class="interaction-card__content">
+                <span class="interaction-card__label">Detail Peserta</span>
+                <span class="interaction-card__value" id="cardStatParticipantVal">{analytics.interactionStats?.clickParticipant || 0}</span>
+              </div>
+            </a>
+            <a
+              href={`/dashboard/${slug}/aktivitas?filter=click_couple_instagram#activityListCard`}
+              class="interaction-card interaction-card--clickable"
+              id="cardCoupleIgIndex"
+              style={showCoupleIgStat ? '' : 'display: none;'}
+              title="Klik untuk filter log Membuka tautan profil Instagram mempelai"
+            >
+              <div class="interaction-card__icon-box interaction-card__icon-box--couple-ig">
+                <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
+              </div>
+              <div class="interaction-card__content">
+                <span class="interaction-card__label">Instagram Mempelai</span>
+                <span class="interaction-card__value" id="cardStatCoupleIgVal">{analytics.interactionStats?.clickCoupleInstagram || 0}</span>
+              </div>
+            </a>
           </div>
         </div>
 
@@ -505,7 +519,7 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
 
   </div>
   
-  <script define:vars={{ weddingDate }}>
+  <script define:vars={{ slug, weddingDate }}>
     function updateCountdown() {
       if (!weddingDate) return;
       const target = new Date(weddingDate).getTime();
@@ -527,5 +541,26 @@ const showCoupleIgStat = Boolean(report.settings.content?.groomInstagramUrl || r
     
     setInterval(updateCountdown, 1000);
     updateCountdown();
+
+    if (slug) {
+      fetch(`/api/analytics/summary?slug=${slug}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data || !data.interactionStats) return;
+          if (data.interactionStats.clickCoupleInstagram > 0) {
+            const igCard = document.getElementById('cardCoupleIgIndex');
+            if (igCard) igCard.style.display = 'flex';
+            const igVal = document.getElementById('cardStatCoupleIgVal');
+            if (igVal) igVal.textContent = data.interactionStats.clickCoupleInstagram;
+          }
+          if (data.interactionStats.clickParticipant > 0) {
+            const partCard = document.getElementById('cardParticipantIndex');
+            if (partCard) partCard.style.display = 'flex';
+            const partVal = document.getElementById('cardStatParticipantVal');
+            if (partVal) partVal.textContent = data.interactionStats.clickParticipant;
+          }
+        })
+        .catch(() => {});
+    }
   </script>
 </ClientLayout>

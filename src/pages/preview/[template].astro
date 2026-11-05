@@ -2,6 +2,7 @@
 import { loadTemplate } from '../../templates/registry';
 import { getInvitationByDomainOrSlug } from '../../services/invitation';
 import type { FullInvitationData } from '../../types';
+import { COMMON_ASSETS } from '../../utils/cdn';
 import metatahPreviewBg from '../../templates/lumiere-metatah-v2/assets/metatah-bg.webp';
 import sidebarPreviewBg from '../../templates/lumiere-metatah-v2/assets/sidebar-bg.webp';
 
@@ -96,7 +97,7 @@ const defaultData: FullInvitationData = {
         galleryColumns: 3
       },
       assets: {
-        heroVideo: ['lumiere', 'editorial', 'atelier'].includes(templateKey) ? '/images/preview-video.mp4' : undefined,
+        heroVideo: ['lumiere', 'editorial', 'atelier'].includes(templateKey) ? COMMON_ASSETS.PREVIEW_VIDEO : undefined,
         videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm'
       },
       content: {
@@ -180,7 +181,7 @@ const defaultData: FullInvitationData = {
 };
 
 if (isMetatahFamily) {
-  defaultData.wedding.music_url = '/audio/metatah-music.mp3';
+  defaultData.wedding.music_url = COMMON_ASSETS.METATAH_MUSIC;
   defaultData.wedding.groom_name = 'Rama';
   defaultData.wedding.bride_name = 'Ayu';
   defaultData.wedding.groom_full_name = 'I Made Rama Pratama';

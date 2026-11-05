@@ -19,15 +19,40 @@ function getSupabaseHost(): string {
   }
 }
 
+const R2_PUBLIC_URL = (
+  (typeof process !== 'undefined' ? process.env.R2_PUBLIC_URL : '') ||
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.R2_PUBLIC_URL ? (import.meta as any).env.R2_PUBLIC_URL : '') ||
+  'https://media.senadda.id'
+).replace(/\/$/, '');
+
+const USE_R2 =
+  (typeof process !== 'undefined' ? process.env.USE_R2_STORAGE : '') ||
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.USE_R2_STORAGE ? (import.meta as any).env.USE_R2_STORAGE : '') ||
+  'true';
+
+export const COMMON_ASSETS = {
+  PREVIEW_VIDEO: USE_R2 === 'true' ? `${R2_PUBLIC_URL}/common/preview-video.mp4` : '/images/preview-video.mp4',
+  METATAH_MUSIC: USE_R2 === 'true' ? `${R2_PUBLIC_URL}/common/metatah-music.mp3` : '/audio/metatah-music.mp3'
+};
+
 /**
- * Converts a Supabase Storage public URL to a relative Cloudflare-cached route.
- * Non-Supabase URLs (e.g. local assets /images/..., external videos) are left intact.
+ * Converts a Supabase Storage public URL to a relative Cloudflare-cached route,
+ * and seamlessly routes known heavy media assets to high-speed R2 CDN edge.
  */
 export function toCdnUrl(url: string | null | undefined): string {
   if (!url || typeof url !== 'string') return '';
 
   const trimmed = url.trim();
   if (!trimmed) return '';
+
+  if (USE_R2 === 'true') {
+    if (trimmed === '/images/preview-video.mp4') {
+      return COMMON_ASSETS.PREVIEW_VIDEO;
+    }
+    if (trimmed === '/audio/metatah-music.mp3') {
+      return COMMON_ASSETS.METATAH_MUSIC;
+    }
+  }
 
   const supabasePattern = /^https?:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/(.+)$/i;
   const match = trimmed.match(supabasePattern);

@@ -23,15 +23,21 @@ const totalSent = report.sentInvitations?.length || 0;
 const totalOpenedSent = report.sentInvitations?.filter((s: any) => (s.openCount || 0) > 0 || s.openedAt).length || 0;
 const openRate = totalSent > 0 ? Math.round((totalOpenedSent / totalSent) * 100) : null;
 
-const showMapsStat = Boolean(wedding.mapsUrl || report.events?.some((e: any) => e.maps_url));
-const showCalendarStat = Boolean(wedding.weddingDate || report.events?.length > 0);
-const showGiftStat = Boolean(settings.giftEnabled && report.gifts?.length > 0);
-const showMusicStat = Boolean(settings.musicEnabled && wedding.musicUrl);
-const showVideoStat = Boolean(settings.videoEnabled && settings.assets?.heroVideo);
-const showGalleryStat = Boolean(settings.galleryEnabled);
-const showRsvpStat = Boolean(settings.rsvpEnabled || report.rsvps?.length > 0);
-const showWishesStat = Boolean(settings.wishesEnabled || report.summary?.wishesCount > 0);
-const showCoupleIgStat = Boolean(settings.content?.groomInstagramUrl || settings.content?.brideInstagramUrl || settings.content?.instagramUrl);
+const showMapsStat = Boolean(wedding.mapsUrl || report.events?.some((e: any) => e.maps_url)) || (report.analytics?.interactionStats?.clickMaps || 0) > 0;
+const showCalendarStat = Boolean(wedding.weddingDate || report.events?.length > 0) || (report.analytics?.interactionStats?.clickCalendar || 0) > 0;
+const showGiftStat = Boolean(settings.giftEnabled && report.gifts?.length > 0) || (report.analytics?.interactionStats?.copyGift || 0) > 0;
+const showMusicStat = Boolean(settings.musicEnabled && wedding.musicUrl) || (report.analytics?.interactionStats?.playMusic || 0) > 0;
+const showVideoStat = Boolean(settings.videoEnabled && settings.assets?.heroVideo) || (report.analytics?.interactionStats?.playVideo || 0) > 0;
+const showGalleryStat = Boolean(settings.galleryEnabled) || (report.analytics?.interactionStats?.viewGallery || 0) > 0;
+const showRsvpStat = Boolean(settings.rsvpEnabled || report.rsvps?.length > 0) || (report.analytics?.interactionStats?.clickRsvp || 0) > 0;
+const showWishesStat = Boolean(settings.wishesEnabled || report.summary?.wishesCount > 0) || (report.analytics?.interactionStats?.clickWishes || 0) > 0;
+const showCoupleIgStat = Boolean(
+  settings.content?.groomInstagramUrl || 
+  settings.content?.brideInstagramUrl || 
+  settings.content?.instagramUrl ||
+  wedding.groom_instagram ||
+  wedding.bride_instagram
+) || (report.analytics?.interactionStats?.clickCoupleInstagram || 0) > 0;
 
 const hasParticipants = Boolean(
   (Array.isArray(settings?.content?.participants) && settings.content.participants.length > 0) ||
@@ -370,17 +376,23 @@ const originUrl = Astro.url.origin;
                   <span class="interaction-card__value" id="cardStatParticipant">-</span>
                 </div>
               </div>
-              {showCoupleIgStat && (
-                <div class="interaction-card" data-filter="click_couple_instagram" tabindex="0" role="button" title="Klik untuk filter log Instagram Mempelai">
-                  <div class="interaction-card__icon-box interaction-card__icon-box--couple-ig">
-                    <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
-                  </div>
-                  <div class="interaction-card__content">
-                    <span class="interaction-card__label">Instagram Mempelai</span>
-                    <span class="interaction-card__value" id="cardStatCoupleIg">-</span>
-                  </div>
+              <div
+                class="interaction-card"
+                id="cardCoupleIgWrapper"
+                style={showCoupleIgStat ? '' : 'display: none;'}
+                data-filter="click_couple_instagram"
+                tabindex="0"
+                role="button"
+                title="Klik untuk filter log Membuka tautan profil Instagram mempelai"
+              >
+                <div class="interaction-card__icon-box interaction-card__icon-box--couple-ig">
+                  <span class="material-symbols-outlined interaction-card__icon">photo_camera</span>
                 </div>
-              )}
+                <div class="interaction-card__content">
+                  <span class="interaction-card__label">Instagram Mempelai</span>
+                  <span class="interaction-card__value" id="cardStatCoupleIg">-</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -508,16 +520,16 @@ const originUrl = Astro.url.origin;
             <select id="eventFilter" class="form-input activity-select">
               <option value="all">Semua Jenis Aksi</option>
               <option value="open_cover">Buka Undangan (Cover)</option>
-              {showMapsStat && <option value="click_maps">Klik Google Maps</option>}
-              {showCalendarStat && <option value="click_calendar">Simpan ke Kalender</option>}
-              {showGiftStat && <option value="copy_gift">Salin No. Rekening</option>}
-              {showMusicStat && <option value="play_music">Putar Musik Latar</option>}
-              {showMusicStat && <option value="pause_music">Jeda Musik Latar</option>}
-              {showVideoStat && <option value="play_video">Putar Video Momen</option>}
-              {showGalleryStat && <option value="view_gallery">Lihat Galeri Foto</option>}
-              {showRsvpStat && <option value="click_rsvp">Klik Form RSVP</option>}
-              {showWishesStat && <option value="click_wishes">Buka Doa / Ucapan</option>}
-              {showCoupleIgStat && <option value="click_couple_instagram">Instagram Pengantin</option>}
+              <option value="click_maps">Klik Google Maps</option>
+              <option value="click_calendar">Simpan ke Kalender</option>
+              <option value="copy_gift">Salin No. Rekening</option>
+              <option value="play_music">Putar Musik Latar</option>
+              <option value="pause_music">Jeda Musik Latar</option>
+              <option value="play_video">Putar Video Momen</option>
+              <option value="view_gallery">Lihat Galeri Foto</option>
+              <option value="click_rsvp">Klik Form RSVP</option>
+              <option value="click_wishes">Buka Doa / Ucapan</option>
+              <option value="click_couple_instagram">Instagram Pengantin / Mempelai</option>
               <option value="click_participant">Detail Peserta (Popup)</option>
               <option value="click_vendor_whatsapp">WhatsApp Senadda</option>
               <option value="click_vendor_instagram">Instagram Senadda</option>
@@ -763,6 +775,11 @@ const originUrl = Astro.url.origin;
           if (data.interactionStats?.clickParticipant > 0) {
             const pWrap = document.getElementById('cardParticipantWrapper');
             if (pWrap) pWrap.style.display = 'flex';
+          }
+
+          if (data.interactionStats?.clickCoupleInstagram > 0) {
+            const igWrap = document.getElementById('cardCoupleIgWrapper');
+            if (igWrap) igWrap.style.display = 'flex';
           }
 
           for (const [id, val] of Object.entries(statsMap)) {
