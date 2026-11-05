@@ -14,6 +14,7 @@ import lumiereMetatahCover from "../templates/lumiere-metatah/assets/cover.webp"
 import lumiereMetatahV2Cover from "../templates/lumiere-metatah-v2/assets/cover.webp";
 import atelierCover from "../templates/atelier/assets/cover.webp";
 import terreCover from "../templates/terre/assets/cover.webp";
+import allureCover from "../templates/allure/assets/cover.webp";
 import GoogleAnalytics from "../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../services/platform-settings";
 
@@ -43,6 +44,7 @@ const headingWords = [
 ];
 
 const imageMap: Record<string, string> = {
+  allure: allureCover.src,
   lumiere: lumiereCover.src,
   "lumiere-metatah": lumiereMetatahCover.src,
   "lumiere-metatah-v2": lumiereMetatahV2Cover.src,
@@ -58,6 +60,7 @@ const imageMap: Record<string, string> = {
 };
 
 const defaultTemplateCards = [
+  { key: "allure", name: "Allure", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000", image: allureCover.src },
   { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereCover.src },
   { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahCover.src },
   { key: "lumiere-metatah-v2", name: "Lumiere v2", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahV2Cover.src },
@@ -116,12 +119,17 @@ if (!rawCards.some((c: any) => c.key === 'terre')) {
   rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.key === 'terre')];
 }
 
+if (!rawCards.some((c: any) => c.key === 'allure')) {
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.key === 'allure')];
+}
+
 const parsePrice = (p?: string | null) => parseInt((p || '').replace(/\D/g, ''), 10) || 0;
 rawCards.sort((a: any, b: any) => parsePrice(b.price) - parsePrice(a.price) || parsePrice(b.promoPrice) - parsePrice(a.promoPrice));
 
 const templateCards = rawCards;
 
-const statNumber = (siteSettings.home_stat_number && siteSettings.home_stat_number !== '6+')
+const parsedStat = parseInt((siteSettings.home_stat_number || '').replace(/\D/g, ''), 10) || 0;
+const statNumber = (parsedStat >= templateCards.length)
   ? siteSettings.home_stat_number
   : `${templateCards.length}+`;
 
@@ -562,7 +570,7 @@ const schemaData = {
                   <div class="stat-item motion-up" style={`--i: ${index + 2}`}>
                     <strong>
                       <span>+</span>
-                      {number}
+                      {`${number}`.replace('+', '').trim()}
                     </strong>
                     <p>{label}</p>
                   </div>
@@ -783,20 +791,20 @@ const schemaData = {
           </div>
 
           <div class="dashboard-tabs__layout">
-            <div class="dashboard-tabs__info-list">
-              <div class="dashboard-tabs__info-item is-active" data-tab="home" role="button" tabindex="0">
-                <h3>Pantau Semuanya</h3>
-                <p>Lihat ringkasan lengkap undangan: statistik RSVP, jumlah tamu, countdown hari H, rangkaian acara, dan ucapan terbaru dalam satu halaman.</p>
+            <div class="dashboard-tabs__info-list" role="tablist" aria-label="Fitur Dashboard">
+              <div class="dashboard-tabs__info-item is-active" data-tab="home" role="tab" aria-selected="true" tabindex="0">
+                <h3 class="dashboard-tabs__info-title">Pantau Semuanya</h3>
+                <p class="dashboard-tabs__info-desc">Lihat ringkasan lengkap undangan: statistik RSVP, jumlah tamu, countdown hari H, rangkaian acara, dan ucapan terbaru dalam satu halaman.</p>
               </div>
 
-              <div class="dashboard-tabs__info-item" data-tab="kirim" role="button" tabindex="0">
-                <h3>Kirim dengan Mudah</h3>
-                <p>Pilih template pesan sesuai nada (Formal, Teman, Keluarga), kelola daftar tamu, dan kirim undangan langsung via WhatsApp. Satu klik, langsung terkirim.</p>
+              <div class="dashboard-tabs__info-item" data-tab="kirim" role="tab" aria-selected="false" tabindex="0">
+                <h3 class="dashboard-tabs__info-title">Kirim dengan Mudah</h3>
+                <p class="dashboard-tabs__info-desc">Pilih template pesan sesuai nada (Formal, Teman, Keluarga), kelola daftar tamu, dan kirim undangan langsung via WhatsApp. Satu klik, langsung terkirim.</p>
               </div>
 
-              <div class="dashboard-tabs__info-item" data-tab="rsvp" role="button" tabindex="0">
-                <h3>Lacak Kehadiran</h3>
-                <p>Ringkasan RSVP real-time: siapa yang hadir, berapa total pax, filter berdasarkan status, dan export data tamu kapan saja.</p>
+              <div class="dashboard-tabs__info-item" data-tab="rsvp" role="tab" aria-selected="false" tabindex="0">
+                <h3 class="dashboard-tabs__info-title">Lacak Kehadiran</h3>
+                <p class="dashboard-tabs__info-desc">Ringkasan RSVP real-time: siapa yang hadir, berapa total pax, filter berdasarkan status, dan export data tamu kapan saja.</p>
               </div>
             </div>
 
@@ -895,8 +903,7 @@ const schemaData = {
       <section class="faq-section section-observe" id="faq" data-section>
         <div class="faq-section-inner">
           <div class="section-heading-centered reveal-blur" style="margin-bottom: 50px;">
-            <p class="faq-eyebrow">Pertanyaan Umum</p>
-            <h2 style="color: var(--black);">Hal yang Sering Ditanyakan</h2>
+            <h2 style="color: var(--black);">FAQ</h2>
           </div>
         
         <style>
@@ -1839,7 +1846,9 @@ const schemaData = {
           });
 
           infoItems.forEach(item => {
-            item.classList.toggle('is-active', item.dataset.tab === tab);
+            const isActive = item.dataset.tab === tab;
+            item.classList.toggle('is-active', isActive);
+            item.setAttribute('aria-selected', isActive ? 'true' : 'false');
           });
 
           panels.forEach(p => {
@@ -3115,7 +3124,7 @@ const schemaData = {
     font-weight: 400;
     font-size: clamp(42px, 8vw, 110px);
     line-height: 0.95;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.02em;
     color: var(--white);
     margin-bottom: 32px;
   }
@@ -3256,7 +3265,7 @@ const schemaData = {
     font-weight: 400;
     font-size: clamp(36px, 7vw, 64px);
     line-height: 1.1;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     color: var(--white);
   }
 
@@ -3682,8 +3691,7 @@ const schemaData = {
       line-height: 1.25;
     }
     .section-heading h2 {
-      font-size: clamp(32px, 9vw, 51px);
-      line-height: 0.96;
+      font-size: clamp(32px, 11vw, 42px);
     }
     .template-filter-bar {
       gap: 8px;
@@ -3892,9 +3900,34 @@ const schemaData = {
   }
 
   .dashboard-showcase {
-    padding: 110px 20px 90px;
     background: var(--white);
     scroll-margin-top: 84px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .dashboard-eyebrow {
+    font-family: var(--font-body);
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--dark-grey);
+    margin: 0 0 10px 0;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .dashboard-showcase .section-heading-centered h2 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--black);
+
+    @media (max-width: 768px) {
+      font-size: clamp(32px, 11vw, 42px);
+    }
   }
 
   .dashboard-tabs {
@@ -4007,10 +4040,11 @@ const schemaData = {
     border-radius: 8px;
     overflow: hidden;
     box-shadow:
-      0 4px 24px rgba(0, 0, 0, 0.08),
+      0 26px 70px rgba(33, 21, 48, 0.12),
       0 1px 3px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     background: #ffffff;
+    transition: box-shadow 0.35s ease, transform 0.35s ease;
   }
   .dashboard-tabs__screenshot img {
     width: 100%;
@@ -4030,6 +4064,7 @@ const schemaData = {
     .dashboard-tabs__info-list {
       order: 2;
       margin-top: 32px;
+      width: 100%;
     }
     .dashboard-tabs__info-item {
       display: none;
@@ -4040,7 +4075,7 @@ const schemaData = {
     .dashboard-tabs__info-item.is-active {
       display: block;
     }
-    .dashboard-tabs__info-item h3 {
+    .dashboard-tabs__info-title {
       font-family: var(--font-heading);
       font-weight: 400;
       font-size: clamp(22px, 3vw, 32px);
@@ -4049,7 +4084,7 @@ const schemaData = {
       margin-top: 0;
       color: var(--black);
     }
-    .dashboard-tabs__info-item p {
+    .dashboard-tabs__info-desc {
       font-size: 13px;
       line-height: 1.65;
       color: var(--dark-grey);
@@ -4064,57 +4099,55 @@ const schemaData = {
     }
     .dashboard-tabs__layout {
       display: grid;
-      grid-template-columns: clamp(320px, 32vw, 390px) 1fr;
-      gap: clamp(40px, 4.5vw, 64px);
+      grid-template-columns: minmax(320px, 400px) 1fr;
+      gap: clamp(48px, 6vw, 80px);
       align-items: center;
       margin-top: 16px;
     }
     .dashboard-tabs__info-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     }
     .dashboard-tabs__info-item {
-      display: block;
-      padding: 24px 28px;
-      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      padding: 30px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.5);
       background: transparent;
-      border: 1px solid transparent;
       cursor: pointer;
       text-align: left;
-      opacity: 0.45;
-      transition: background 0.3s var(--ease), border-color 0.3s var(--ease), opacity 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+      opacity: 0.35;
+      transition: opacity 0.35s var(--ease);
       user-select: none;
       -webkit-tap-highlight-color: transparent;
       outline: none;
     }
+    .dashboard-tabs__info-item:last-child {
+      border-bottom: none;
+    }
     .dashboard-tabs__info-item:hover {
-      opacity: 0.8;
-      background: rgba(0, 0, 0, 0.02);
+      opacity: 0.75;
     }
     .dashboard-tabs__info-item:focus-visible {
       outline: 2px solid var(--black);
-      outline-offset: 2px;
+      outline-offset: 4px;
     }
     .dashboard-tabs__info-item.is-active {
       opacity: 1;
-      background: var(--soft-parchment);
-      border-color: rgba(0, 0, 0, 0.06);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      transform: translateX(4px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+      border-top: 1px solid rgba(0, 0, 0, 0.5);
     }
-    .dashboard-tabs__info-item h3 {
-      font-family: var(--font-heading);
-      font-weight: 400;
-      font-size: 24px;
-      letter-spacing: -0.02em;
-      margin-top: 0;
-      margin-bottom: 8px;
+    .dashboard-tabs__info-title {
+      font-size: clamp(18px, 2.2vw, 22px);
+      line-height: 1.15;
+      margin: 0 0 10px 0;
       color: var(--black);
     }
-    .dashboard-tabs__info-item p {
-      font-size: 13px;
-      line-height: 1.6;
+    .dashboard-tabs__info-desc {
+      font-size: 13.5px;
+      line-height: 1.65;
       color: var(--dark-grey);
       margin: 0;
     }
@@ -4286,6 +4319,7 @@ const schemaData = {
 
     @media (max-width: 768px) {
       font-size: clamp(32px, 11vw, 42px);
+      line-height: 1.05;
     }
   }
 
@@ -4470,7 +4504,7 @@ const schemaData = {
             description: "Get a list of available wedding invitation templates",
             inputSchema: { type: "object", properties: {} },
             execute: async () => {
-              return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
+              return { success: true, templates: ["Allure", "Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
             }
           }
         ]
@@ -4481,7 +4515,7 @@ const schemaData = {
         description: "Get a list of available wedding invitation templates",
         inputSchema: { type: "object", properties: {} },
         execute: async () => {
-          return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
+          return { success: true, templates: ["Allure", "Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
         }
       }, { signal: controller.signal });
     }

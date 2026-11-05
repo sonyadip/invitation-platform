@@ -68,9 +68,10 @@ const defaults: PlatformSettings = {
   home_booking_heading: 'Ceritakan undangan Anda.',
   home_booking_cta: 'Hubungi via WhatsApp',
   home_hero_seal_text: 'SENADDA • DIGITAL STUDIO BALI • UNDANGAN •',
-  home_stat_number: '8+',
+  home_stat_number: '9+',
   home_stat_label: 'Koleksi\nEksklusif',
   home_template_cards: [
+    { key: "allure", name: "Allure", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000" },
     { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000" },
     { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000" },
     { key: "lumiere-metatah-v2", name: "Lumiere v2", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000" },
