@@ -95,12 +95,14 @@ const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, activeEvents[0]
 
 const isPreview = wedding.id.startsWith('preview-');
 const themeAssets = themeConfig.assets || {};
-const heroImage = themeAssets.heroImage || (isPreview ? bgHero.src : undefined);
+const coverImage = themeAssets.coverImage || themeAssets.heroImage || (isPreview ? bgHero.src : undefined);
+const heroImage = themeAssets.heroImage || themeAssets.coverImage || (isPreview ? bgHero.src : undefined);
 const rawHeroSlides = [
-  themeAssets.coverImage,
-  themeAssets.heroImage,
+  heroImage,
   themeAssets.heroImageTwo,
   themeAssets.heroImageThree,
+  themeAssets.heroImageFour,
+  ...(Array.isArray(themeAssets.heroSlides) ? themeAssets.heroSlides : []),
   ...(isPreview ? [bgHero, galleryOne, gallerySix.src] : [])
 ].filter(Boolean);
 
@@ -187,7 +189,7 @@ const activeGifts = gifts && gifts.length > 0
   settings={overrideSettings}
   to={guestName}
   templateClass="template-noir"
-  image={heroImage}
+  image={coverImage || heroImage}
   styleUrl={styleUrl}
 >
   <div class="invitation-root" data-template-root>
@@ -199,7 +201,7 @@ const activeGifts = gifts && gifts.length > 0
       />
     )}
     <div class="cover-section" data-template-cover>
-      <SmartImage class="section-bg section-bg--cover" src={heroImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
+      <SmartImage class="section-bg section-bg--cover" src={coverImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover-section__body">
         <p class="cover-section__eyebrow">The Wedding Of</p>
         <h2 class="cover-section__names">
@@ -222,7 +224,7 @@ const activeGifts = gifts && gifts.length > 0
 
       <div class="sidebar-section-wrap">
         <aside class="sidebar-section">
-          <SmartImage class="section-bg section-bg--sidebar" src={heroImage} alt="" aria-hidden="true" />
+          <SmartImage class="section-bg section-bg--sidebar" src={coverImage} alt="" aria-hidden="true" />
           <div class="sidebar-section__inner" data-animate="fade-up" style="--animate-delay: 300ms;">
             <p class="sidebar-section__eyebrow">The Wedding Of</p>
             <h2 class="sidebar-section__groom">{wedding.groom_name}</h2>
