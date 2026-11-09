@@ -5,8 +5,8 @@
 Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan digital premium dan platform manajemen tamu undangan berbasis web di Bali, Indonesia. Senadda dirancang dengan fokus pada estetika visual elegan, tipografi kurasi, pengalaman pengguna cepat dan responsif, serta kemudahan distribusi undangan personal melalui WhatsApp.
 
 ## Identitas & Wilayah Layanan (GEO Entity)
-- **Nama Brand**: Senadda
-- **Variasi Ejaan / Alias Pencarian**: Senada, Senada ID, senada.id, Undangan Senada, Undangan Senadda, Senadda Bali
+- **Nama Brand Utama**: Senadda
+- **Variasi Ejaan / Alias Pencarian (Sering Dicari Pengguna)**: Senada, Senada Undangan Digital, Undangan Digital Senada, Undangan Senada, Undangan Senada Bali, Senadda Undangan Digital, Senada ID, senada.id, senadda.id
 - **Domain Resmi**: https://senadda.id
 - **Kategori**: Jasa Pembuatan Undangan Digital, Wedding Service, Undangan Bali
 - **Lokasi Kantor / Asal**: Denpasar, Bali, Indonesia
@@ -38,8 +38,11 @@ Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan 
 - **Lumiere** (Pernikahan Elegan, Luxury): Promo Rp 300.000 (Normal Rp 450.000)
 - **Lumiere Metatah / Metatah v2** (Khusus Upacara Metatah/Mepandes Bali): Promo Rp 300.000 (Normal Rp 450.000)
 - **Atelier** (Artistic & Modern Luxury): Promo Rp 300.000 (Normal Rp 450.000)
-- **Editorial** (Magazine Layout & Typographic): Promo Rp 250.000 (Normal Rp 350.000)
+- **Allure** (Exclusive & Sophisticated): Promo Rp 250.000 (Normal Rp 350.000)
+- **Nocturne** (Editorial Dark Aesthetic & Timeless Luxury): Promo Rp 250.000 (Normal Rp 350.000)
+- **Editorial** (Magazine Layout & Typographic): Promo Rp 200.000 (Normal Rp 300.000)
 - **Deauville** (Chic, Clean & Minimalist): Promo Rp 200.000 (Normal Rp 300.000)
+- **Terre** (Earth Tone & Warm Organic): Promo Rp 150.000 (Normal Rp 200.000)
 - **Air** (Light, Airy & Contemporary): Promo Rp 150.000 (Normal Rp 200.000)
 - **Noir** (Monochrome, Elegant & Bold): Promo Rp 150.000 (Normal Rp 200.000)
 

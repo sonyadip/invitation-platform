@@ -22,8 +22,12 @@ Selamat datang di Senadda, platform pembuatan undangan digital yang premium, ele
 
 ## Koleksi Template
 - Lumiere (Rp 300.000)
-- Editorial (Rp 250.000)
+- Atelier (Rp 300.000)
+- Allure (Rp 250.000)
+- Nocturne (Rp 250.000)
+- Editorial (Rp 200.000)
 - Deauville (Rp 200.000)
+- Terre (Rp 150.000)
 - Air (Rp 150.000)
 - Noir (Rp 150.000)
 

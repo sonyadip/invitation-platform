@@ -15,6 +15,7 @@ import lumiereMetatahV2Cover from "../../templates/lumiere-metatah-v2/assets/cov
 import atelierCover from "../../templates/atelier/assets/cover.webp";
 import terreCover from "../../templates/terre/assets/cover.webp";
 import allureCover from "../../templates/allure/assets/cover.webp";
+import nocturneCover from "../../templates/nocturne/assets/cover.webp";
 import GoogleAnalytics from "../../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../../services/platform-settings";
 
@@ -57,19 +58,22 @@ const imageMap: Record<string, string> = {
   ochre: ochreMotionCover.src,
   ivory: ivoryCover.src,
   allure: allureCover.src,
+  nocturne: nocturneCover.src,
   blush: deauvilleCover.src
 };
 
 const defaultTemplateCards = [
+  { key: "allure", name: "Allure", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000", image: allureCover.src },
+  { key: "nocturne", name: "Nocturne", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000", image: nocturneCover.src },
   { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereCover.src },
   { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahCover.src },
   { key: "lumiere-metatah-v2", name: "Lumiere v2", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000", image: lumiereMetatahV2Cover.src },
   { key: "atelier", name: "Atelier", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000", image: atelierCover.src },
-  { key: "editorial", name: "Editorial", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000", image: editorialCover.src },
+  { key: "editorial", name: "Editorial", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: editorialCover.src },
   { key: "deauville", name: "Deauville", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: deauvilleCover.src },
+  { key: "terre", name: "Terre", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: terreCover.src },
   { key: "air", name: "Air", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: airCover.src },
   { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000", image: noirCover.src },
-  { key: "terre", name: "Terre", category: "pernikahan", price: "Rp 300.000", promoPrice: "Rp 200.000", image: terreCover.src },
 ];
 
 const resolveCategory = (c: any): 'pernikahan' | 'metatah' => {
@@ -124,6 +128,14 @@ if (!rawCards.some((c: any) => resolveCategory(c) === 'metatah')) {
       ] : null
     };
   })];
+}
+
+if (!rawCards.some((c: any) => c.key === 'allure')) {
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.key === 'allure')];
+}
+
+if (!rawCards.some((c: any) => c.key === 'nocturne')) {
+  rawCards = [...rawCards, ...defaultTemplateCards.filter((c: any) => c.key === 'nocturne')];
 }
 
 if (!rawCards.some((c: any) => c.key === 'terre')) {
@@ -4344,7 +4356,7 @@ const schemaData = {
             description: "Get a list of available wedding invitation templates",
             inputSchema: { type: "object", properties: {} },
             execute: async () => {
-              return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
+              return { success: true, templates: ["Allure", "Nocturne", "Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
             }
           }
         ]
@@ -4355,7 +4367,7 @@ const schemaData = {
         description: "Get a list of available wedding invitation templates",
         inputSchema: { type: "object", properties: {} },
         execute: async () => {
-          return { success: true, templates: ["Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
+          return { success: true, templates: ["Allure", "Nocturne", "Lumiere", "Atelier", "Editorial", "Deauville", "Terre", "Air", "Noir"] };
         }
       }, { signal: controller.signal });
     }

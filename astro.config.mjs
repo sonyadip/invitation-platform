@@ -10,6 +10,9 @@ export default defineConfig({
     enabled: false
   },
   vite: {
+    server: {
+      allowedHosts: true
+    },
     css: {
       preprocessorOptions: {
         scss: {
