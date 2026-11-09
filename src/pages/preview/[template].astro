@@ -432,6 +432,14 @@ if (clientSlug) {
             closingImage: templateKey === 'allure'
               ? 'https://media.senadda.id/yudi-meita/gallery/1787747006762-gallery-3.webp'
               : (clientData.settings.theme_config?.assets?.closingImage || defaultData.settings.theme_config?.assets?.closingImage),
+            bgSliderImages: templateKey === 'nocturne'
+              ? [
+                  'https://media.senadda.id/rah-agus-komala/closing/closing.webp',
+                  ...(clientData.gallery && clientData.gallery.length > 0
+                    ? clientData.gallery.map((g: any) => typeof g.image_url === 'string' ? g.image_url : g.image_url?.src).filter(Boolean)
+                    : [])
+                ]
+              : (clientData.settings.theme_config?.assets?.bgSliderImages || clientData.settings.theme_config?.assets?.sliderImages),
             heroVideo: clientData.settings.theme_config?.assets?.heroVideo || defaultData.settings.theme_config?.assets?.heroVideo,
             videoUrl: clientData.settings.theme_config?.assets?.videoUrl || defaultData.settings.theme_config?.assets?.videoUrl
           },

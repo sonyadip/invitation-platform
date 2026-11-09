@@ -184,12 +184,25 @@ const activeGallery = gallery && gallery.length > 0
 
 const _themeName = 'Nocturne';
 
-const rawSliderImages = themeAssets.bgSliderImages && themeAssets.bgSliderImages.length > 0
-  ? themeAssets.bgSliderImages
-  : (activeGallery && activeGallery.length > 0
-      ? activeGallery.map((g: any) => g.image_url).filter(Boolean)
-      : [heroImage, brideImage, groomImage, galleryOne.src, galleryTwo.src]);
-const sliderImages = rawSliderImages.length > 0 ? rawSliderImages : [heroImage];
+const rawSliderImages = [
+  coverImage,
+  ...(themeAssets.bgSliderImages && themeAssets.bgSliderImages.length > 0
+    ? themeAssets.bgSliderImages
+    : (themeAssets.sliderImages && themeAssets.sliderImages.length > 0
+        ? themeAssets.sliderImages
+        : (activeGallery && activeGallery.length > 0
+            ? activeGallery.map((g: any) => g.image_url).filter(Boolean)
+            : [heroImage, brideImage, groomImage, galleryOne.src, galleryTwo.src])))
+].filter(Boolean);
+
+const seenSliderUrls = new Set<string>();
+const sliderImages = rawSliderImages.filter((url) => {
+  const key = typeof url === 'string' ? url : (url as any)?.src || '';
+  if (!key || seenSliderUrls.has(key)) return false;
+  seenSliderUrls.add(key);
+  return true;
+});
+if (sliderImages.length === 0 && coverImage) sliderImages.push(coverImage);
 
 const brideFather = themeContent.brideFatherName || 'Bapak Mempelai';
 const brideMother = themeContent.brideMotherName || 'Ibu Mempelai';
