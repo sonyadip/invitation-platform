@@ -120,10 +120,6 @@ body.template-allure {
     text-decoration: none;
   }
 
-  /* =========================================================
-     COVER SECTION (FULLSCREEN FIXED OVERLAY)
-     Matches luxury-06 #sec & #kolom / Deauville sliding popup
-     ========================================================= */
   .cover {
     position: fixed;
     inset: 0;
@@ -265,10 +261,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     LAYOUT: SPLIT SCREEN (DESKTOP) & SINGLE COLUMN (MOBILE)
-     Container content-width is strictly 450px matching luxury-06
-     ========================================================= */
   .layout {
     display: flex;
     min-height: 100vh;
@@ -276,7 +268,6 @@ body.template-allure {
     background-color: var(--allure-bg);
   }
 
-  /* DESKTOP FIXED SIDEBAR */
   .sidebar {
     position: fixed;
     top: 0;
@@ -348,7 +339,6 @@ body.template-allure {
     }
   }
 
-  /* MAIN INVITATION COLUMN */
   .main-content {
     margin-left: calc(100% - 450px);
     width: 450px;
@@ -382,7 +372,6 @@ body.template-allure {
     }
   }
 
-  /* COMMON SECTION TYPOGRAPHY & BUTTONS */
   .section-title,
   .section-title {
     font-family: var(--allure-font-heading);
@@ -444,8 +433,7 @@ body.template-allure {
       color: #272727;
       font-family: 'Poppins', sans-serif;
       font-size: 11px;
-      border-radius: 0px; /* Sharp corners matching luxury-06 */
-      padding: 9px 20px 9px 16px;
+      border-radius: 0px;      padding: 9px 20px 9px 16px;
       box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.5);
 
       &:hover {
@@ -490,11 +478,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     SECTION 1: HERO
-     Matches luxury-06 elementor-element-7e365b04
-     Left aligned top, right aligned bottom verse + divider
-     ========================================================= */
   .hero {
     position: relative;
     width: 100%;
@@ -551,7 +534,6 @@ body.template-allure {
 
       &::before {
         top: 0;
-        // background: linear-gradient(to bottom, #202020, transparent);
       }
 
       &::after {
@@ -652,11 +634,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     SECTION 3: THE BRIDE & THE GROOM
-     Matches luxury-06 elementor-element-17e0d48e & #date
-     Polaroid border 6px 6px 24px 6px #e7e7e7, floating script name
-     ========================================================= */
   .couple {
     padding: 48px 20px 48px;
     text-align: center;
@@ -871,10 +848,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     SECTION: SAVE THE DATE
-     Countdown Timer & Google Calendar Integration
-     ========================================================= */
   .save-date {
     display: flex;
     flex-direction: column;
@@ -989,13 +962,9 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     SECTION 4: WEDDING EVENT
-     Single Arch Card Layout (Proportional Black & White Arch)
-     ========================================================= */
   .events {
     position: relative;
-    padding: 40px 16px 24px;
+    padding: 40px 20px 24px;
     text-align: center;
     background-color: var(--allure-bg);
     overflow: hidden;
@@ -1209,9 +1178,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     SECTION 6: LOVE STORY (TERRE COMPATIBLE TIMELINE)
-     ========================================================= */
   .story-section,
   .story {
     position: relative;
@@ -1313,10 +1279,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     SECTION 7: GALLERY & VIDEO
-     Matches luxury-06 elementor-element-7af533e
-     ========================================================= */
   .gallery {
     padding: 30px 20px 48px;
     text-align: center;
@@ -1390,7 +1352,6 @@ body.template-allure {
     }
   }
 
-  /* VIDEO PLAYER (INSIDE GALLERY ITEM) */
   .video-section__frame {
     position: relative;
     width: 100%;
@@ -1441,9 +1402,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     RSVP & WISHES SECTION (NOIR COMPATIBLE)
-     ========================================================= */
   .rsvp-section {
     display: flex;
     width: 100%;
@@ -1770,9 +1728,6 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     WEDDING GIFT SECTION (NOIR COMPATIBLE)
-     ========================================================= */
   .gift-section {
     display: flex;
     flex-direction: column;
@@ -2037,118 +1992,125 @@ body.template-allure {
     }
   }
 
-  /* =========================================================
-     CLOSING / THANK YOU SECTION (NOIR COMPATIBLE)
-     ========================================================= */
-  .thankyou-section {
+  .closing-row {
     position: relative;
-    display: flex;
-    min-height: 680px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    overflow: hidden;
-    padding: 0 32px 40px;
-    background-color: var(--template-bg);
-    text-align: center;
+    z-index: 2;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 5% 5% 10%;
+    box-sizing: border-box;
+    background-color: var(--template-bg, #202020);
 
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      background: rgba(49, 49, 49, 0.42);
-      pointer-events: none;
+    &--no-media {
+      padding-top: 0;
+
+      .closing-row__content {
+        padding-top: 0;
+      }
     }
 
-    &__bg {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
+    &__media {
       width: 100%;
-      height: 100%;
-      opacity: 1;
-      object-fit: cover;
-      object-position: center top;
+      min-height: 60vh;
+      overflow: hidden;
+
+      img, picture img {
+        width: 100%;
+        height: 100%;
+        min-height: 60vh;
+        object-fit: cover;
+        display: block;
+      }
     }
 
-    &__inner {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      width: 100%;
+    &__content {
+      display: grid;
+      align-content: start;
+      padding: 10% 0 0;
+      text-align: left;
     }
 
     &__title {
-      margin: 0;
-      color: var(--template-text);
-      font-family: 'Billion Miracles', cursive;
-      font-size: 55px;
+      font-family: var(--allure-font-serif, 'Playfair Display', serif);
+      font-size: 24px;
+      font-style: italic;
       font-weight: 400;
-      line-height: 0.9;
-      letter-spacing: 1px;
-      text-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+      line-height: 1.1;
+      margin: 0 0 18px;
+      color: #ffffff;
     }
 
-    &__socials {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 0;
-    }
-
-    .social-link {
-      display: inline-flex;
-      width: 32px;
-      height: 32px;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.07);
-      color: var(--template-text);
-      cursor: pointer;
-      transition: background 0.5s ease, border-color 0.5s ease;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
-
-      svg {
-        width: 16px;
-        height: 16px;
-      }
-    }
-
-    &__brand-text {
+    &__message {
+      font-family: var(--allure-font-sans, 'Poppins', sans-serif);
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.78;
+      color: rgba(255, 255, 255, 0.78);
       margin: 0;
-      color: rgba(255, 255, 255, 0.4);
-      font-family: var(--allure-font-sans);
-      font-size: 9px;
+    }
+
+    &__names {
+      font-family: var(--allure-font-serif, 'Playfair Display', serif);
+      font-size: 22px;
       font-weight: 400;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      line-height: 1.5;
-      width: 150px;
-
-      a {
-        color: inherit;
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
-
-      span {
-        color: rgba(255, 255, 255, 0.68);
-      }
+      line-height: 1.15;
+      color: #ffffff;
+      margin: 18px 0 8px;
+      letter-spacing: 0.5px;
     }
   }
 
-  /* =========================================================
-     FLOATING AUDIO BUTTON (MATCHES DEAUVILLE & NOIR)
-     ========================================================= */
+  .thankyou-section__footer {
+    display: grid;
+    gap: 12px;
+    margin-top: 32px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .thankyou-section__brand {
+    height: 11px;
+    width: auto;
+    filter: brightness(0) invert(1);
+  }
+
+  .thankyou-section__copyright {
+    margin: 0;
+    font-family: var(--allure-font-sans, 'Poppins', sans-serif);
+    font-size: 11.2px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .thankyou-section__socials {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .social-link {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 999px;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+
+    svg {
+      width: 17px;
+      height: 17px;
+      display: block;
+    }
+
+    &:hover, &:focus-visible {
+      background: #ffffff;
+      color: #202020;
+    }
+  }
+
   .audio-toggle {
     position: fixed;
     bottom: 28px;
@@ -2226,10 +2188,6 @@ body.template-allure {
     to { transform: rotate(360deg); }
   }
 
-  /* =========================================================
-     ANIMATION SYSTEM (ALLURE ULTRA-SMOOTH REVEALS)
-     Extended 2800ms / 3200ms duration with soft quint ease-out
-     ========================================================= */
   [data-animate] {
     opacity: 0;
     transition: 

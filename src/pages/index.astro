@@ -1520,7 +1520,6 @@ const schemaData = {
       const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
       elementsToObserve.forEach((el) => revealObserver.observe(el));
 
-      // Template Card Variant Switcher
       document.querySelectorAll('.template-card__variants').forEach((group) => {
         const card = group.closest('.template-card');
         if (!card) return;
@@ -4056,7 +4055,6 @@ const schemaData = {
     width: 100%;
   }
 
-  /* Mobile Layout (< 1024px) */
   @media (max-width: 1023px) {
     .dashboard-tabs__panels {
       order: 1;
@@ -4092,7 +4090,6 @@ const schemaData = {
     }
   }
 
-  /* Desktop Layout (>= 1024px) */
   @media (min-width: 1024px) {
     .dashboard-tabs__nav {
       display: none;
@@ -4452,10 +4449,6 @@ const schemaData = {
     }
   }
 
-  /* ========================================================
-     Unified Section Layout (Container & Padding Synchronization)
-     Matches .template-list across all viewports
-     ======================================================== */
   @media (min-width: 768px) {
     .template-list,
     #process.process-section,

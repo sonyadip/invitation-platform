@@ -383,7 +383,6 @@ if (isUnlocked) {
                   </td>
                   <td class="col-actions">
                     <div class="row-actions-group">
-                      <!-- Default Action 1: Live Preview -->
                       <a
                         href={`/${item.slug}`}
                         target="_blank"
@@ -398,7 +397,6 @@ if (isUnlocked) {
                         Preview
                       </a>
 
-                      <!-- Default Action 2: Analytics -->
                       <a
                         href={`/dashboard/${item.slug}`}
                         class="btn-shadcn btn-shadcn--outline btn-shadcn--sm"
@@ -411,7 +409,6 @@ if (isUnlocked) {
                         Analytics
                       </a>
 
-                      <!-- More Options Dropdown -->
                       <div class="dropdown-wrap">
                         <button
                           type="button"
@@ -669,7 +666,6 @@ if (isUnlocked) {
       });
     });
 
-    // Row click navigation to Edit
     rows.forEach(row => {
       row.addEventListener('click', (e) => {
         // Ignore if clicking interactive controls

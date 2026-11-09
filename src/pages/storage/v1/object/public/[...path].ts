@@ -56,7 +56,7 @@ async function handleProxyRequest(request: Request, path: string | undefined, is
 
     if (!upstreamResponse.ok && upstreamResponse.status !== 206) {
       const errorHeaders = new Headers(upstreamResponse.headers);
-      errorHeaders.set('Cache-Control', 'public, max-age=300');
+      errorHeaders.set('Cache-Control', 'public, max-age=300, s-maxage=300');
       return new Response(upstreamResponse.body, {
         status: upstreamResponse.status,
         statusText: upstreamResponse.statusText,
@@ -94,7 +94,12 @@ async function handleProxyRequest(request: Request, path: string | undefined, is
     });
   } catch (error: any) {
     console.error('Storage CDN proxy error:', error);
-    return new Response('Failed to retrieve asset from storage proxy', { status: 502 });
+    return new Response('Failed to retrieve asset from storage proxy', {
+      status: 502,
+      headers: {
+        'Cache-Control': 'public, max-age=300, s-maxage=300'
+      }
+    });
   }
 }
 

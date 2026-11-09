@@ -25,16 +25,26 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     if (weddingId.startsWith('preview-')) {
+      const isMetatah = weddingId.includes('metatah');
       const mockWishes = Array.from({ length: 40 }, (_, i) => ({
         id: `wish-${i + 1}`,
         wedding_id: weddingId,
         guest_name: ['Sahabat', 'Budi Santoso', 'Siti Rahma', 'Dimas Anggara', 'Rina Wulandari', 'Andi Pratama', 'Maya Putri', 'Eko Prasetyo', 'Dewi Lestari', 'Fajar Ramadhan'][i % 10] + ` #${i + 1}`,
         attendance_status: i % 3 === 0 ? 'attending' : (i % 3 === 1 ? 'tentative' : 'declined'),
         guest_count: (i % 3) + 1,
-        message: [
-          'Selamat menempuh hidup baru, semoga bahagia selalu!',
-          'Selamat ya! Semoga lancar sampai hari H dan langgeng selamanya.',
-        ][i % 4],
+        message: isMetatah
+          ? [
+              'Selamat melaksanakan upacara Metatah / Potong Gigi. Semoga senantiasa diberkahi kerahayuan dan kedamaian.',
+              'Rahajeng nyanggra Upacara Metatah. Dumogi rahayu sareng sami lan mamargi antar.',
+              'Selamat dan sukses atas upacara Metatah putra-putri tercinta. Semoga menjadi pribadi yang berbudi luhur.',
+              'Dumogi asung kertha wara nugraha Ida Sang Hyang Widhi Wasa menyertai seluruh rangkaian upacara.'
+            ][i % 4]
+          : [
+              'Selamat menempuh hidup baru, semoga bahagia selalu!',
+              'Selamat ya! Semoga lancar sampai hari H dan langgeng selamanya.',
+              'Doa terbaik untuk kedua mempelai',
+              'Selamat berbahagia! Semoga cinta kasih senantiasa menyertai perjalanan hidup kalian.'
+            ][i % 4],
         created_at: new Date(Date.now() - i * 3600000).toISOString()
       }));
 

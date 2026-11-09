@@ -150,6 +150,40 @@ button {
   margin-right: auto !important;
 }
 
+.wish-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wish-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wish-card__name {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.wish-card__badge {
+  flex-shrink: 0;
+}
+
+.wish-card__date {
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
+  line-height: 1.4;
+}
+
 .audio-toggle,
 .floating-audio-wrap {
   transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, border-color 0.3s ease;

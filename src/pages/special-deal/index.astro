@@ -14,6 +14,7 @@ import lumiereMetatahCover from "../../templates/lumiere-metatah/assets/cover.we
 import lumiereMetatahV2Cover from "../../templates/lumiere-metatah-v2/assets/cover.webp";
 import atelierCover from "../../templates/atelier/assets/cover.webp";
 import terreCover from "../../templates/terre/assets/cover.webp";
+import allureCover from "../../templates/allure/assets/cover.webp";
 import GoogleAnalytics from "../../components/common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../../services/platform-settings";
 
@@ -54,7 +55,9 @@ const imageMap: Record<string, string> = {
   terre: terreCover.src,
   sage: sageCover.src,
   ochre: ochreMotionCover.src,
-  ivory: ivoryCover.src
+  ivory: ivoryCover.src,
+  allure: allureCover.src,
+  blush: deauvilleCover.src
 };
 
 const defaultTemplateCards = [
@@ -87,7 +90,7 @@ let rawCards = (siteSettings.home_template_cards && siteSettings.home_template_c
         name,
         category: resolveCategory(c),
         promoPrice: c.promo_price || c.promoPrice || null,
-        image: c.image || imageMap[c.key] || '',
+        image: c.image || imageMap[c.key] || imageMap['lumiere'] || '',
         hasVariants: isMetatahCard,
         variants: isMetatahCard ? [
           { label: 'Dengan Foto', previewUrl: defaultPreview, waTheme: `${name} (Dengan Foto)`, price: 'Rp 450.000', promoPrice: 'Rp 300.000' },
@@ -1499,7 +1502,6 @@ const schemaData = {
       const elementsToObserve = document.querySelectorAll(".section-observe, .reveal-blur, .template-card, .feature-item");
       elementsToObserve.forEach((el) => revealObserver.observe(el));
 
-      // Template Card Variant Switcher
       document.querySelectorAll('.template-card__variants').forEach((group) => {
         const card = group.closest('.template-card');
         if (!card) return;
@@ -4142,7 +4144,6 @@ const schemaData = {
     transform: translateY(-2px);
   }
 
-  /* Process / Alur Pembuatan Section - Minimalist Editorial Dark Palette */
   #process.process-section,
   .process-section {
     position: relative;
@@ -4295,10 +4296,6 @@ const schemaData = {
     }
   }
 
-  /* ========================================================
-     Unified Section Layout (Container & Padding Synchronization)
-     Matches .template-list across all viewports
-     ======================================================== */
   @media (min-width: 768px) {
     .template-list,
     #process.process-section,

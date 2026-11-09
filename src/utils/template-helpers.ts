@@ -44,7 +44,7 @@ export const buildCoupleLines = (
   if (prefix) lines.push(prefix);
 
   const cleanParent = (val?: string | null, defaultHonorific?: 'Bapak' | 'Ibu') => {
-    if (!val) return '';
+    if (!val || typeof val !== 'string') return '';
     const trimmed = val.trim();
     if (/^Bapak\s+Mempelai$/i.test(trimmed)) return 'Bapak Mempelai';
     if (/^Ibu\s+Mempelai$/i.test(trimmed)) return 'Ibu Mempelai';

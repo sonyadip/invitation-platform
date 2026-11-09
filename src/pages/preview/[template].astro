@@ -11,7 +11,7 @@ export const prerender = false;
 const { template } = Astro.params;
 const templateKey = (template || 'noir').toLowerCase();
 const now = new Date().toISOString();
-const weddingDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 45).toISOString();
+const weddingDate = '2026-12-22T08:00:00+08:00';
 
 const isMetatahTanpaFoto = templateKey === 'lumiere-metatah-tanpa-foto' || templateKey === 'lumiere-metatah-v2-tanpa-foto';
 const isMetatahV2 = templateKey === 'lumiere-metatah-v2' || isMetatahTanpaFoto;
@@ -24,6 +24,8 @@ const CLIENT_PREVIEW_MAP: Record<string, string> = {
   noir: 'yudi-meita',
   lumiere: 'abdi-eka',
   allure: 'yudi-meita',
+  nocturne: 'rah-agus-komala',
+  solenne: 'yudi-meita',
   velvet: 'yudi-meita'
 };
 
@@ -174,7 +176,9 @@ const defaultData: FullInvitationData = {
     guest_count: (i % 3) + 1,
     message: [
       'Selamat menempuh hidup baru, semoga bahagia selalu!',
-      'Selamat ya! Semoga lancar sampai hari H dan langgeng selamanya.'
+      'Selamat ya! Semoga lancar sampai hari H dan langgeng selamanya.',
+      'Doa terbaik untuk kedua mempelai',
+      'Selamat berbahagia! Semoga cinta kasih senantiasa menyertai perjalanan hidup kalian.'
     ][i % 4],
     created_at: new Date(Date.now() - i * 3600000).toISOString()
   }))
@@ -369,8 +373,12 @@ if (clientSlug) {
       const wedding = {
         ...defaultData.wedding,
         ...clientData.wedding,
+        groom_name: templateKey === 'nocturne' && clientData.wedding.groom_name === 'Rah Agus'
+          ? 'Agus'
+          : (clientData.wedding.groom_name || defaultData.wedding.groom_name),
         id: `preview-${templateKey}`,
         slug: `preview-${templateKey}`,
+        wedding_date: weddingDate,
         venue_name: defaultData.wedding.venue_name,
         venue_address: defaultData.wedding.venue_address,
         maps_url: defaultData.wedding.maps_url,
@@ -413,12 +421,17 @@ if (clientSlug) {
           assets: {
             ...defaultData.settings.theme_config?.assets,
             ...(clientData.settings.theme_config?.assets || {}),
-            coverImage: (templateKey === 'allure' || templateKey === 'velvet')
-              ? (clientData.gallery?.find(g => typeof g.image_url === 'string' && g.image_url.includes('gallery-6.webp'))?.image_url || clientData.settings.theme_config?.assets?.coverImage)
-              : clientData.settings.theme_config?.assets?.coverImage,
+            coverImage: templateKey === 'nocturne'
+              ? 'https://media.senadda.id/rah-agus-komala/closing/closing.webp'
+              : (templateKey === 'allure' || templateKey === 'velvet')
+                ? (clientData.gallery?.find(g => typeof g.image_url === 'string' && g.image_url.includes('gallery-6.webp'))?.image_url || clientData.settings.theme_config?.assets?.coverImage)
+                : clientData.settings.theme_config?.assets?.coverImage,
             eventImage: (templateKey === 'allure' || templateKey === 'velvet')
               ? (clientData.settings.theme_config?.assets?.coverImage || clientData.settings.theme_config?.assets?.heroImage)
               : clientData.settings.theme_config?.assets?.eventImage,
+            closingImage: templateKey === 'allure'
+              ? 'https://media.senadda.id/yudi-meita/gallery/1787747006762-gallery-3.webp'
+              : (clientData.settings.theme_config?.assets?.closingImage || defaultData.settings.theme_config?.assets?.closingImage),
             heroVideo: clientData.settings.theme_config?.assets?.heroVideo || defaultData.settings.theme_config?.assets?.heroVideo,
             videoUrl: clientData.settings.theme_config?.assets?.videoUrl || defaultData.settings.theme_config?.assets?.videoUrl
           },
@@ -453,6 +466,7 @@ if (clientSlug) {
       let events = (clientData.events && clientData.events.length > 0)
         ? clientData.events.map((evt, idx) => ({
             ...evt,
+            event_date: weddingDate,
             start_time: (evt.start_time && evt.start_time.trim() !== '')
               ? evt.start_time
               : (idx === 0 && clientData.events.length > 1 ? '09:00' : '18:00'),
@@ -471,12 +485,12 @@ if (clientSlug) {
         const isHindu = /rgveda|veda|hindu|om swastyastu/i.test(
           `${clientData.settings.theme_config?.content?.verse || ''} ${clientData.settings.theme_config?.content?.verseSource || ''}`
         );
-        const ceremonyName = (templateKey === 'allure' || templateKey === 'velvet') ? 'Akad Nikah' : (isHindu ? 'Pawiwahan' : 'Akad Nikah');
+        const ceremonyName = (templateKey === 'allure' || templateKey === 'velvet') ? 'Akad Nikah' : (isHindu || templateKey === 'nocturne' ? 'Pawiwahan' : 'Akad Nikah');
         const complementaryEvent = {
           id: 'event-complementary',
           wedding_id: `preview-${templateKey}`,
           event_name: isFirstResepsi ? ceremonyName : 'Resepsi',
-          event_date: firstEvt.event_date || clientData.wedding.wedding_date,
+          event_date: weddingDate,
           start_time: (templateKey === 'allure' || templateKey === 'velvet') ? '08:00' : (isFirstResepsi ? '09:00' : '18:00'),
           end_time: isFirstResepsi ? '11:00' : 'Selesai',
           venue_name: (templateKey === 'allure' || templateKey === 'velvet') ? 'KEDIAMAN MEMPELAI WANITA' : defaultData.wedding.venue_name,
@@ -485,6 +499,19 @@ if (clientSlug) {
           sort_order: isFirstResepsi ? 0 : 2,
           created_at: now
         };
+        if (templateKey === 'nocturne') {
+          complementaryEvent.event_date = weddingDate;
+          complementaryEvent.start_time = '08:00';
+          complementaryEvent.end_time = '12:00 WITA';
+          complementaryEvent.venue_name = 'The Royal Garden';
+          complementaryEvent.venue_address = 'Jl. Pantai Indah No. 8, Bali';
+
+          firstEvt.event_date = weddingDate;
+          firstEvt.start_time = '13:00 WITA';
+          firstEvt.end_time = 'Selesai';
+          firstEvt.venue_name = 'The Royal Garden';
+          firstEvt.venue_address = 'Jl. Pantai Indah No. 8, Bali';
+        }
         events = isFirstResepsi ? [complementaryEvent, firstEvt] : [firstEvt, complementaryEvent];
       }
       if (['blush', 'deauville', 'allure', 'velvet'].includes(templateKey)) {
@@ -503,6 +530,9 @@ if (clientSlug) {
         velvet: [
           'gallery-11.webp',
           'gallery-13.webp'
+        ],
+        nocturne: [
+          'DMS09996.webp'
         ]
       };
       const excludedImages = EXCLUDED_PREVIEW_IMAGES[templateKey] || [];
@@ -529,9 +559,7 @@ if (clientSlug) {
         }
       ];
 
-      const wishes = (clientData.wishes && clientData.wishes.length > 0)
-        ? clientData.wishes
-        : defaultData.wishes;
+      const wishes = defaultData.wishes;
 
       data = {
         wedding,

@@ -129,7 +129,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
 <ClientLayout title="Profil">
   <div class="profile-layout">
   
-  <!-- Left Side: Profile Summary Card -->
   <div class="profile-left">
     <section class="bento-card bento-card--center profile-header fade-in-bottom">
       <div class="profile-avatar-wrapper">
@@ -168,7 +167,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
     </section>
   </div>
 
-  <!-- Right Side: Detailed Information Sections -->
   <div class="profile-right">
     {successMessage && (
       <div class="alert alert--success fade-in-bottom" style="margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2); font-size: 14px; font-weight: 500;">
@@ -182,7 +180,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       </div>
     )}
 
-    <!-- 1. Informasi Undangan -->
     <section class="fade-in-bottom animate-on-scroll">
       <div class="bento-card">
         <h3 class="bento-card__title">Informasi Undangan</h3>
@@ -244,7 +241,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       </div>
     </section>
 
-    <!-- 2. Jadwal & Lokasi Acara -->
     <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
       <div class="bento-card">
         <h3 class="bento-card__title">Jadwal & Lokasi Acara</h3>
@@ -281,7 +277,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       </div>
     </section>
 
-    <!-- 3. Daftar Peserta Upacara (Khusus Upacara Metatah) -->
     {isMetatah && participants.length > 0 && (
       <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
         <div class="bento-card">
@@ -328,7 +323,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       </section>
     )}
 
-    <!-- 4. Rekening Tanda Kasih -->
     {gifts.length > 0 && (
       <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
         <div class="bento-card">
@@ -355,7 +349,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
       </section>
     )}
 
-    <!-- 5. Keamanan Akun (Ganti Password) -->
     <section class="fade-in-bottom animate-on-scroll" style="margin-top: 16px;">
       <div class="bento-card">
         <h3 class="bento-card__title">Keamanan Akun (Ganti Password)</h3>
@@ -526,7 +519,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
 
   <script is:inline>
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. Copy invitation link
       const copyBtn = document.getElementById('btn-copy-invitation');
       const copyText = document.getElementById('btn-copy-text');
       if (copyBtn && copyText) {
@@ -547,7 +539,6 @@ const invitationUrl = `${Astro.url.origin}/${slug}`;
         });
       }
 
-      // 2. Copy bank account
       document.querySelectorAll('.btn-copy-account').forEach(btn => {
         btn.addEventListener('click', async () => {
           const account = btn.getAttribute('data-account');

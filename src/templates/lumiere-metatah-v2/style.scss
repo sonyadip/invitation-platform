@@ -1862,14 +1862,18 @@ body.template-lumiere-metatah-v2 {
 
     &__header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
+      gap: 12px;
     }
 
     &__meta {
       display: flex;
       align-items: center;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      min-width: 0;
+      flex: 1;
     }
 
     &__name {
@@ -1877,6 +1881,10 @@ body.template-lumiere-metatah-v2 {
       font-size: 0.8rem;
       font-weight: 600;
       color: var(--lm-white);
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      min-width: 0;
+      line-height: 1.35;
     }
 
     &__badge {
@@ -1886,6 +1894,7 @@ body.template-lumiere-metatah-v2 {
       letter-spacing: 0.05em;
       padding: 2px 6px;
       border-radius: 20px;
+      flex-shrink: 0;
 
       &--attend { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.2); }
       &--tentative { background: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); }
@@ -1895,6 +1904,11 @@ body.template-lumiere-metatah-v2 {
     &__date {
       font-family: 'Inter', sans-serif;
       font-size: 0.62rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-align: right;
+      line-height: 1.4;
+      padding-top: 1px;
     }
 
     &__message {

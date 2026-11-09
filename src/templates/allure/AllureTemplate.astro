@@ -89,7 +89,7 @@ const activeEvents = events && events.length > 0
       {
         id: 'event-resepsi',
         event_name: 'Resepsi',
-        event_date: wedding.wedding_date || '2026-09-05',
+        event_date: wedding.wedding_date || '2026-12-22',
         start_time: '18:00',
         end_time: '21:00',
         venue_name: wedding.venue_name || (isPreview ? 'The Royal Garden' : 'The Royal Garden'),
@@ -125,7 +125,7 @@ if (heroSlides.length === 0 && heroImage) heroSlides.push(heroImage);
 
 const resepsiEvent = activeEvents.find(e => e.event_name.toLowerCase().includes('resepsi')) || activeEvents[0];
 const mainEvent = resepsiEvent;
-const mainEventDate = mainEvent ? formatDate(mainEvent.event_date) : 'Sabtu, 5 September 2026';
+const mainEventDate = mainEvent ? formatDate(mainEvent.event_date) : 'Selasa, 22 Desember 2026';
 const mainEventTime = isPreview
   ? '13:00 WITA - Selesai'
   : (mainEvent?.start_time
@@ -144,7 +144,7 @@ const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || (isPreview ? '
 const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || heroImage;
 const brideImage = themeAssets.brideImage || (isPreview ? coupleBride.src : undefined);
 const groomImage = themeAssets.groomImage || (isPreview ? coupleGroom.src : undefined);
-const closingImage = themeAssets.closingImage || heroImage;
+const closingImage = themeAssets.closingImage || (isPreview ? 'https://media.senadda.id/yudi-meita/gallery/1787747006762-gallery-3.webp' : heroImage);
 const instagramUrl = themeContent.instagramUrl || platformSettings.instagram_url || 'https://instagram.com';
 const _baseWa = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
 const _themeName = 'Allure';
@@ -163,6 +163,8 @@ const brideInstagramUrl = brideRawIg && brideRawIg !== '#' && brideRawIg !== '-'
 
 const giftDescription = themeContent.giftDescription || 'Bagi Bapak/Ibu/Saudara/i yang ingin memberikan tanda kasih, dapat melalui transfer ke rekening berikut:';
 const thankYouMessage = themeContent.closingMessage || 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.';
+const closingTitle = themeContent.thankYouTitle || themeContent.closingTitle || 'Terima Kasih';
+const closingMessage = themeContent.thankYouMessage || thankYouMessage;
 const openingVerse = themeContent.quoteText || themeContent.openingVerse || `"Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu."`;
 const openingVerseSource = themeContent.quoteSource || themeContent.verseSource || '(Rgveda : X.85.42)';
 const cleanQuoteText = openingVerse.replace(/^["“”]/, '').replace(/["“”]$/, '');
@@ -226,7 +228,6 @@ const activeStory = (wedding.story && wedding.story.length > 0)
     ];
 const loveStories = activeStory;
 
-// Format date into spaced numeric form e.g. "28 . 12 . 2026"
 const wDate = new Date(wedding.wedding_date);
 const dayStr = String(wDate.getDate()).padStart(2, '0');
 const monthStr = String(wDate.getMonth() + 1).padStart(2, '0');
@@ -252,7 +253,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
       />
     )}
     
-    <!-- COVER OVERLAY -->
     <div class="cover" data-template-cover id="sec">
       <SmartImage class="cover__bg" src={coverImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
       <div class="cover__overlay"></div>
@@ -274,10 +274,8 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
       </div>
     </div>
 
-    <!-- MAIN SPLIT LAYOUT -->
     <div class="layout" data-template-layout>
 
-      <!-- DESKTOP FIXED SIDEBAR -->
       <aside class="sidebar" id="desk_cov">
         <SmartImage class="sidebar__bg" src={coverImage} alt="" aria-hidden="true" />
         <div class="sidebar__overlay"></div>
@@ -294,10 +292,8 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
         </div>
       </aside>
 
-      <!-- SCROLLING CONTENT COLUMN -->
       <main class="main-content" id="isi">
 
-        <!-- SECTION 1: HERO -->
         <section class="hero" data-hero-slider>
           <div class="hero__slides">
             {heroSlides.map((slide, index) => (
@@ -331,17 +327,14 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </div>
         </section>
 
-        <!-- SECTION 3: THE BRIDE & THE GROOM -->
         {sections.coupleInfo !== false && (
           <section class="couple" id="mempelai">
             <div class="couple__cards">
-              <!-- THE GROOM DIVIDER -->
               <div class="couple__header-divider couple__header-divider--groom" data-animate="fade" style="--animate-delay: 150ms;">
                 <h2 class="couple__eyebrow">The Groom</h2>
                 <span class="divider-line"></span>
               </div>
 
-              <!-- GROOM -->
               <div class="person">
                 <div class="person__photo-wrap" data-animate="slide-right" style="--animate-delay: 300ms;">
                   <div class="person__photo-frame">
@@ -380,13 +373,11 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
                 )}
               </div>
 
-              <!-- THE BRIDE DIVIDER -->
               <div class="couple__header-divider couple__header-divider--bride" data-animate="fade" style="--animate-delay: 150ms;">
                 <span class="divider-line"></span>
                 <h2 class="couple__eyebrow">The Bride</h2>
               </div>
 
-              <!-- BRIDE -->
               <div class="person">
                 <div class="person__photo-wrap" data-animate="slide-left" style="--animate-delay: 300ms;">
                   <div class="person__photo-frame">
@@ -428,12 +419,10 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </section>
         )}
 
-        <!-- SECTION 4: WEDDING EVENT -->
         {sections.eventDetails !== false && mainEvent && (
           <section class="events" id="acara">
             <div class="events__container">
               <div class="event-card" data-animate="fade" style="--animate-delay: 150ms;">
-                <!-- ARCHED PHOTO -->
                 <div class="event-card__photo-frame" data-animate="zoom-center" style="--animate-delay: 300ms;">
                   <SmartImage
                     class="event-card__photo"
@@ -444,7 +433,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
                   <div class="event-card__photo-fade"></div>
                 </div>
 
-                <!-- SCRIPT EVENT TITLE (CREATTIION FONT) -->
                 <h3 class="event-card__script-title" data-animate="handwriting" style="--animate-delay: 550ms;">
                   <span class="event-card__script-wrap">
                     <span class="event-card__script-text">{mainEvent.event_name || 'Resepsi'}</span>
@@ -452,22 +440,17 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
                   </span>
                 </h3>
 
-                <!-- EVENT DATE -->
                 <p class="event-card__date" data-animate="fade-up" style="--animate-delay: 750ms;">{mainEventDate}</p>
 
-                <!-- HORIZONTAL DIVIDER -->
                 <div class="event-card__divider" data-animate="expand-x" style="--animate-delay: 950ms;"></div>
 
-                <!-- TIME -->
                 <p class="event-card__time" data-animate="fade-up" style="--animate-delay: 1150ms;">{mainEventTime}</p>
 
-                <!-- VENUE & ADDRESS -->
                 <p class="event-card__venue" data-animate="fade-up" style="--animate-delay: 1350ms;">
                   <strong>{mainEvent.venue_name || 'The Royal Garden'}</strong>
                   {mainEventAddress}
                 </p>
 
-                <!-- LOCATION BUTTON -->
                 {mainEvent.maps_url && (
                   <a
                     href={mainEvent.maps_url}
@@ -489,7 +472,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </section>
         )}
 
-        <!-- SECTION: SAVE THE DATE -->
         {sections.countdown !== false && settings.countdown_enabled && (
           <section class="save-date" id="save-date">
 
@@ -520,7 +502,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </section>
         )}
 
-        <!-- SECTION 6: LOVE STORY (TERRE COMPATIBLE TIMELINE) -->
         {sections.story !== false && activeStory.length > 0 && (
           <section class="story-section story" id="story">
             <div class="story-container">
@@ -554,7 +535,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </section>
         )}
 
-        <!-- SECTION 7: GALLERY -->
         {sections.gallery !== false && settings.gallery_enabled && activeGallery.length > 0 && (
           <section class="gallery">
             <div class="gallery-header" data-animate="fade-up" style="--animate-delay: 200ms;">
@@ -613,7 +593,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </section>
         )}
 
-        <!-- RSVP & WISHES SECTION (NOIR COMPATIBLE) -->
         {sections.rsvp !== false && settings.rsvp_enabled && (
           <section class="rsvp-section" data-rsvp-section id="rsvp">
             <div class="rsvp-container">
@@ -737,7 +716,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </section>
         )}
 
-        <!-- WEDDING GIFT SECTION (NOIR COMPATIBLE) -->
         {sections.gift !== false && settings.gift_enabled && (
           <section class="gift-section" data-gift-section id="gift">
             <div class="gift-container">
@@ -760,51 +738,47 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
           </section>
         )}
 
-        <!-- THANK YOU SECTION (NOIR COMPATIBLE) -->
-        <section class="thankyou-section">
-          <SmartImage class="thankyou-section__bg" src={closingImage} alt="" aria-hidden="true" />
-          <div class="thankyou-section__inner">
-            <h2 class="thankyou-section__title" data-animate="fade-up" style="--animate-delay: 300ms;">Terima Kasih</h2>
-            <div class="thankyou-section__socials" data-animate="fade-up" style="--animate-delay: 550ms;">
-              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link" data-track-vendor-instagram>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="18" height="18" rx="5"></rect>
-                  <circle cx="12" cy="12" r="4"></circle>
-                  <circle cx="17.5" cy="6.5" r="1"></circle>
-                </svg>
+        <section class:list={['closing-row', { 'closing-row--no-media': !closingImage }]}>
+          {closingImage && (
+            <div class="closing-row__media" data-animate="fade-up">
+              <SmartImage src={closingImage} alt="" loading="lazy" />
+            </div>
+          )}
+          <div class="closing-row__content">
+            <h3 class="closing-row__title" data-animate="fade-up" style="--animate-delay: 200ms;">{closingTitle}</h3>
+            <p class="closing-row__message" data-animate="fade-up" style="--animate-delay: 350ms;">{closingMessage}</p>
+            <h4 class="closing-row__names" data-animate="fade-up" style="--animate-delay: 500ms;">{wedding.groom_name} &amp; {wedding.bride_name}</h4>
+            <footer class="thankyou-section__footer" data-animate="fade-up" style="--animate-delay: 650ms;">
+              <a href="https://senadda.id" target="_blank" rel="noopener noreferrer" title="Senadda - Undangan Digital Bali" class="thankyou-section__brand-link" data-track-vendor-site style="display: inline-block; line-height: 0;">
+                <SmartImage src="/images/senadda-logo.png" alt="Senadda - Undangan Digital Bali" class="thankyou-section__brand" />
               </a>
-              {whatsappUrl && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="WhatsApp"
-                  class="social-link"
-                  data-track-vendor-whatsapp
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Zm4.23-5.78c-.23-.12-1.37-.68-1.58-.75-.21-.08-.37-.12-.52.12-.16.23-.6.75-.74.9-.14.16-.27.18-.5.06-.23-.12-.98-.36-1.86-1.15-.69-.61-1.15-1.36-1.28-1.59-.14-.23-.02-.36.1-.48.11-.11.23-.27.35-.41.12-.14.16-.23.23-.39.08-.16.04-.29-.02-.41-.06-.12-.52-1.25-.71-1.71-.19-.45-.38-.39-.52-.4h-.45c-.16 0-.41.06-.62.29-.21.23-.81.79-.81 1.93 0 1.14.83 2.24.95 2.4.12.16 1.64 2.5 3.98 3.51.56.24.99.38 1.33.49.56.18 1.07.15 1.47.09.45-.07 1.37-.56 1.57-1.1.19-.54.19-1 .14-1.1-.06-.1-.21-.16-.44-.28Z"
-                    ></path>
+              <div class="thankyou-section__socials">
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link" data-track-vendor-instagram>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <circle cx="17.5" cy="6.5" r="1"></circle>
                   </svg>
                 </a>
-              )}
-              <a href="/" target="_blank" rel="noopener noreferrer" aria-label="Website" class="social-link" data-track-vendor-site>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path></svg>
-              </a>
-            </div>
-            <p class="thankyou-section__brand-text" data-animate="fade-up" style="--animate-delay: 800ms;">wedding invitation by <a href="https://senadda.id" target="_blank" rel="noopener noreferrer" title="Senadda - Undangan Digital Bali" data-track-vendor-site><span>Senadda</span></a></p>
+                {whatsappUrl && (
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="social-link" data-track-vendor-whatsapp>
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                    </svg>
+                  </a>
+                )}
+                <a href="/" target="_blank" rel="noopener noreferrer" aria-label="Website" class="social-link" data-track-vendor-site>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path></svg>
+                </a>
+              </div>
+              <p class="thankyou-section__copyright">&copy; Copyright {new Date().getFullYear()}</p>
+            </footer>
           </div>
         </section>
 
       </main>
     </div>
 
-    <!-- FLOATING AUDIO BUTTON -->
     {sections.music !== false && activeMusicUrl && (
       <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
         <div class="audio-icon-wrapper">

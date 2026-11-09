@@ -51,7 +51,7 @@ const defaults: PlatformSettings = {
   site_tagline: 'Jasa Pembuatan Undangan Digital Bali',
   logo_url: '/logo.jpg',
   logo_dark_url: '',
-  whatsapp_url: 'https://wa.me/088236262247',
+  whatsapp_url: '',
   instagram_url: 'https://www.instagram.com/senadda.id',
   email: '',
   facebook_url: '',

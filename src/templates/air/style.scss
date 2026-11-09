@@ -213,7 +213,6 @@ body.template-air {
   .cover-section__guest-top,
   .hero-section__guest-top {
     display: flex;
-    // flex-direction: column;
     width: 100%;
     justify-content: space-between;
     gap: 4px;
@@ -303,8 +302,6 @@ body.template-air {
     top: 45%;
     text-transform: none;
   }
-
-
 
   .invitation-layout {
     display: block;

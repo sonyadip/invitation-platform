@@ -31,7 +31,6 @@ function initAllure() {
     history.scrollRestoration = 'manual';
   }
 
-  // Lock scroll initially
   if (cover instanceof HTMLElement) {
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
@@ -39,7 +38,6 @@ function initAllure() {
     document.body.classList.add('template-no-scroll', 'template-cover-active');
   }
 
-  // Cover opening handler (matches Deauville & Terre)
   openBtn?.addEventListener('click', () => {
     if (cover instanceof HTMLElement) {
       cover.classList.add('is-opening');
@@ -98,7 +96,6 @@ function initAllure() {
     setInterval(advanceSlide, 6000);
   }
 
-  // Initialize interactive components
   initCountdown(root);
   initVideoPlayers(root);
   initGalleryLightbox(root);
@@ -106,7 +103,6 @@ function initAllure() {
   initWishesLoadMore(root);
   initGiftInteractions(root);
 
-  // Desktop or bypassed cover reveal trigger
   if (!cover || !openBtn || cover.style.display === 'none') {
     triggerRevealAnimations();
   } else {
@@ -119,7 +115,6 @@ function initAllure() {
     }
   }
 
-  // Safety net scroll listener for late items
   window.addEventListener('scroll', () => {
     if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 120)) {
       root.querySelectorAll('[data-animate]:not(.is-animated)').forEach(el => el.classList.add('is-animated'));

@@ -4,25 +4,26 @@ interface Props {
   animateItems?: boolean;
   baseDelay?: number;
   staggerDelay?: number;
+  labels?: [string, string, string, string];
 }
-const { date, animateItems = false, baseDelay = 250, staggerDelay = 180 } = Astro.props;
+const { date, animateItems = false, baseDelay = 250, staggerDelay = 180, labels = ['Hari', 'Jam', 'Menit', 'Detik'] } = Astro.props;
 ---
 <div class="countdown-grid" data-countdown-timer data-date={date}>
   <div class="countdown-item" {...(animateItems ? { 'data-animate': 'fade-up', style: `--animate-delay: ${baseDelay}ms;` } : {})}>
     <span class="countdown-item__value" data-countdown-days>00</span>
-    <span class="countdown-item__label">Hari</span>
+    <span class="countdown-item__label">{labels[0]}</span>
   </div>
   <div class="countdown-item" {...(animateItems ? { 'data-animate': 'fade-up', style: `--animate-delay: ${baseDelay + staggerDelay}ms;` } : {})}>
     <span class="countdown-item__value" data-countdown-hours>00</span>
-    <span class="countdown-item__label">Jam</span>
+    <span class="countdown-item__label">{labels[1]}</span>
   </div>
   <div class="countdown-item" {...(animateItems ? { 'data-animate': 'fade-up', style: `--animate-delay: ${baseDelay + staggerDelay * 2}ms;` } : {})}>
     <span class="countdown-item__value" data-countdown-minutes>00</span>
-    <span class="countdown-item__label">Menit</span>
+    <span class="countdown-item__label">{labels[2]}</span>
   </div>
   <div class="countdown-item" {...(animateItems ? { 'data-animate': 'fade-up', style: `--animate-delay: ${baseDelay + staggerDelay * 3}ms;` } : {})}>
     <span class="countdown-item__value" data-countdown-seconds>00</span>
-    <span class="countdown-item__label">Detik</span>
+    <span class="countdown-item__label">{labels[3]}</span>
   </div>
 </div>
 
