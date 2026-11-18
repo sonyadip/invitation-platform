@@ -122,6 +122,7 @@ const content = settings?.content || {
   brideChildNumber: '',
   brideAddress: '',
   giftDescription: '',
+  rsvpDescription: '',
   thankYouMessage: ''
 };
 const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl);
@@ -658,6 +659,7 @@ if (!isClaimed) {
                 </div>
                 <button type="button" id="add_gift_btn" class="secondary-action" style="margin-top: 16px; margin-bottom: 24px;">+ Add Gift Account</button>
                 <div class="form-grid">
+                  <label class="wide">RSVP Description / Teks Pengantar<textarea name="rsvpDescription" rows="2" placeholder="Merupakan suatu kehormatan dan kebahagiaan bagi kami...">{content.rsvpDescription || ''}</textarea></label>
                   <label class="wide">Wedding Gift Description<textarea name="giftDescription" rows="4" placeholder="Description or gift address instructions...">{content.giftDescription || ''}</textarea></label>
                   <label class="wide">Thank You Message<textarea name="thankYouMessage" rows="4" placeholder="Gratitude and closing remarks...">{content.thankYouMessage || ''}</textarea></label>
                   <label class="wide">Closing Image URL<input name="closingImageUrl" value={assets.closingImage || ''} placeholder="https://example.com/closing.jpg" /></label>

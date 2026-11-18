@@ -57,6 +57,7 @@ export interface InvitationFormInput {
   brideChildNumber: string | null;
   brideAddress: string | null;
   giftDescription: string | null;
+  rsvpDescription: string | null;
   thankYouMessage: string | null;
   introVerse: string | null;
   introVerseSource: string | null;
@@ -274,6 +275,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     brideChildNumber: nullableValue('brideChildNumber'),
     brideAddress: nullableValue('brideAddress'),
     giftDescription: nullableValue('giftDescription'),
+    rsvpDescription: nullableValue('rsvpDescription'),
     thankYouMessage: nullableValue('thankYouMessage'),
     introVerse: nullableValue('introVerse'),
     introVerseSource: nullableValue('introVerseSource'),
@@ -625,6 +627,7 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     brideAddress: input.brideAddress || undefined,
     galleryVideoUrls: input.galleryVideoUrls?.length ? input.galleryVideoUrls : undefined,
     giftDescription: input.giftDescription || undefined,
+    rsvpDescription: input.rsvpDescription || undefined,
     closingMessage: input.thankYouMessage || undefined,
     verse: input.introVerse || undefined,
     verseSource: input.introVerseSource || undefined

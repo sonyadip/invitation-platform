@@ -44,6 +44,7 @@ const defaults = {
   brideImageUrl: '',
   groomImageUrl: '',
   logoImageUrl: '',
+  closingImageUrl: '',
   sliderImageUrls: [] as string[],
   galleryImageUrls: [] as string[],
   galleryVideoUrls: [] as string[],
@@ -59,6 +60,7 @@ const defaults = {
   brideChildNumber: '',
   brideAddress: '',
   giftDescription: '',
+  rsvpDescription: '',
   thankYouMessage: '',
   introVerse: '',
   introVerseSource: '',
@@ -102,6 +104,7 @@ if (Astro.request.method === 'POST') {
     brideImageUrl: parsed.brideImageUrl || '',
     groomImageUrl: parsed.groomImageUrl || '',
     logoImageUrl: parsed.logoImageUrl || '',
+    closingImageUrl: parsed.closingImageUrl || '',
     sliderImageUrls: parsed.sliderImageUrls || [],
     galleryImageUrls: parsed.galleryImageUrls || [],
     instagramUrl: parsed.instagramUrl || '',
@@ -117,6 +120,7 @@ if (Astro.request.method === 'POST') {
     brideChildNumber: parsed.brideChildNumber || '',
     brideAddress: parsed.brideAddress || '',
     giftDescription: parsed.giftDescription || '',
+    rsvpDescription: parsed.rsvpDescription || '',
     thankYouMessage: parsed.thankYouMessage || '',
     introVerse: parsed.introVerse || '',
     introVerseSource: parsed.introVerseSource || '',
@@ -314,6 +318,15 @@ if (Astro.request.method === 'POST') {
         <div class="field-group wide">
           <label>Upload Multiple Slider Images</label>
           <input type="file" name="sliderImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple />
+        </div>
+
+        <div class="field-group wide">
+          <label>Closing Image URL (Optional)</label>
+          <input name="closingImageUrl" value={values.closingImageUrl || ''} placeholder="https://example.com/closing.jpg" />
+        </div>
+        <div class="field-group wide">
+          <label>Upload Closing Image File</label>
+          <input type="file" name="closingImageFile" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
         </div>
 
         <div class="field-group wide">
@@ -609,6 +622,10 @@ if (Astro.request.method === 'POST') {
       </div>
 
       <div class="form-grid">
+        <div class="field-group wide">
+          <label>RSVP Description / Teks Pengantar</label>
+          <textarea name="rsvpDescription" rows="2" placeholder="Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir...">{values.rsvpDescription}</textarea>
+        </div>
         <div class="field-group wide">
           <label>Wedding Gift Description</label>
           <textarea name="giftDescription" rows="3" placeholder="Doa restu Anda merupakan karunia yang sangat berarti...">{values.giftDescription}</textarea>

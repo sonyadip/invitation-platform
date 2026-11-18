@@ -1555,6 +1555,49 @@ const schemaData = {
         });
       });
 
+      document.querySelectorAll('.template-card').forEach((card) => {
+        card.addEventListener('click', (e) => {
+          const target = e.target;
+          if (!(target instanceof HTMLElement)) return;
+
+          if (
+            target.closest('.template-card__variant-btn') ||
+            target.closest('.template-card__btn-order') ||
+            target.closest('.template-card__btn-preview')
+          ) {
+            return;
+          }
+
+          const selection = window.getSelection();
+          if (selection && selection.toString().trim().length > 0) {
+            return;
+          }
+
+          const previewLink = card.querySelector('.template-card__btn-preview');
+          if (previewLink instanceof HTMLAnchorElement && previewLink.href) {
+            previewLink.click();
+          }
+        });
+
+        card.addEventListener('auxclick', (e) => {
+          if (e.button === 1) {
+            const target = e.target;
+            if (!(target instanceof HTMLElement)) return;
+            if (
+              target.closest('.template-card__variant-btn') ||
+              target.closest('.template-card__btn-order') ||
+              target.closest('.template-card__btn-preview')
+            ) {
+              return;
+            }
+            const previewLink = card.querySelector('.template-card__btn-preview');
+            if (previewLink instanceof HTMLAnchorElement && previewLink.href) {
+              window.open(previewLink.href, '_blank', 'noopener,noreferrer');
+            }
+          }
+        });
+      });
+
       const filterBtns = document.querySelectorAll(".template-filter-btn");
       const templateCardEls = document.querySelectorAll(".template-grid .template-card");
       const emptyStateEl = document.getElementById("template-empty");
@@ -2858,6 +2901,7 @@ const schemaData = {
   }
 
   .template-card {
+    cursor: pointer;
     --template-enter-y: 34px;
     --template-reveal-y: var(--template-enter-y);
     --template-offset-y: 0px;

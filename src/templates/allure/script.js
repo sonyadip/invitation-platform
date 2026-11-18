@@ -51,6 +51,7 @@ function initAllure() {
       if (cover instanceof HTMLElement) {
         cover.classList.remove('is-opening');
         cover.classList.add('is-opened');
+        cover.style.display = 'none';
       }
 
       document.body.classList.remove('template-no-scroll', 'template-cover-active');

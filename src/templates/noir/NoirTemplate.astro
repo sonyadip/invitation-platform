@@ -137,8 +137,8 @@ const brideInstagramUrl = brideRawIg && brideRawIg !== '#' && brideRawIg !== '-'
   : (isPreview ? (instagramUrl !== '#' ? instagramUrl : 'https://instagram.com') : null);
 const giftDescription = themeContent.giftDescription || 'Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan hadiah kasih, dapat melalui transfer rekening berikut:';
 const thankYouMessage = themeContent.closingMessage || 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.';
-const openingVerse = themeContent.quoteText || themeContent.openingVerse || `"Ihaiva stam mā vi yaustam, Visvām āyur vyasnutam. Krindantau putrair naptrbhih, Modamānau sve grhe."`;
-const openingVerseSource = themeContent.quoteSource || themeContent.verseSource || (themeContent.quoteText ? '' : '(Rgveda : X.85.42)');
+const openingVerse = themeContent.verse || themeContent.quoteText || themeContent.openingVerse || `"Ihaiva stam mā vi yaustam, Visvām āyur vyasnutam. Krindantau putrair naptrbhih, Modamānau sve grhe."`;
+const openingVerseSource = themeContent.verseSource || themeContent.quoteSource || themeContent.openingVerseSource || (themeContent.verse || themeContent.quoteText ? '' : '(Rgveda : X.85.42)');
 const groomPrefix = formatChildPrefix(themeContent.groomChildNumber, 'Putra', themeContent.groomPrefix, isPreview ? 'Putra pertama dari' : 'Putra dari');
 const bridePrefix = formatChildPrefix(themeContent.brideChildNumber, 'Putri', themeContent.bridePrefix, isPreview ? 'Putri pertama dari' : 'Putri dari');
 const groomAddressText = themeContent.groomAddress || themeContent.groomCity || themeContent.groomOrigin || (isPreview ? 'Denpasar, Bali' : '');

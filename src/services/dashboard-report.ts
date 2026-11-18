@@ -710,6 +710,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
         brideChildNumber: content.brideChildNumber || '',
         brideAddress: content.brideAddress || '',
         giftDescription: content.giftDescription || '',
+        rsvpDescription: content.rsvpDescription || '',
         thankYouMessage: content.closingMessage || '',
         introVerse: content.verse || '',
         introVerseSource: content.verseSource || ''

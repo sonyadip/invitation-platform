@@ -165,8 +165,8 @@ const giftDescription = themeContent.giftDescription || 'Bagi Bapak/Ibu/Saudara/
 const thankYouMessage = themeContent.closingMessage || 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.';
 const closingTitle = themeContent.thankYouTitle || themeContent.closingTitle || 'Terima Kasih';
 const closingMessage = themeContent.thankYouMessage || thankYouMessage;
-const openingVerse = themeContent.quoteText || themeContent.openingVerse || `"Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu."`;
-const openingVerseSource = themeContent.quoteSource || themeContent.verseSource || '(Rgveda : X.85.42)';
+const openingVerse = themeContent.verse || themeContent.quoteText || themeContent.openingVerse || `"Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu."`;
+const openingVerseSource = themeContent.verseSource || themeContent.quoteSource || themeContent.openingVerseSource || '(Rgveda : X.85.42)';
 const cleanQuoteText = openingVerse.replace(/^["“”]/, '').replace(/["“”]$/, '');
 
 const groomPrefix = formatChildPrefix(themeContent.groomChildNumber, 'Putra', themeContent.groomPrefix, isPreview ? 'Putra pertama dari' : 'Putra dari');
@@ -447,7 +447,7 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
                 <p class="event-card__time" data-animate="fade-up" style="--animate-delay: 1150ms;">{mainEventTime}</p>
 
                 <p class="event-card__venue" data-animate="fade-up" style="--animate-delay: 1350ms;">
-                  <strong>{mainEvent.venue_name || 'The Royal Garden'}</strong>
+                  {mainEvent.venue_name ? <strong>{mainEvent.venue_name}</strong> : (isPreview ? <strong>The Royal Garden</strong> : null)}
                   {mainEventAddress}
                 </p>
 
@@ -777,22 +777,23 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
         </section>
 
       </main>
-    </div>
 
-    {sections.music !== false && activeMusicUrl && (
-      <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
-        <div class="audio-icon-wrapper">
-          <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-          <svg class="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-            <rect x="6" y="4" width="4" height="16"></rect>
-            <rect x="14" y="4" width="4" height="16"></rect>
-          </svg>
-        </div>
-        <audio data-template-audio loop preload="none" src={activeMusicUrl}></audio>
-      </button>
-    )}
+      {sections.music !== false && activeMusicUrl && (
+        <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
+          <div class="audio-icon-wrapper">
+            <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <svg class="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+          </div>
+          <audio data-template-audio loop preload="none" src={activeMusicUrl}></audio>
+        </button>
+      )}
+
+    </div>
 
   </div>
 </BaseLayout>
