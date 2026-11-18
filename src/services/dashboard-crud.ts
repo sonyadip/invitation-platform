@@ -61,6 +61,7 @@ export interface InvitationFormInput {
   thankYouMessage: string | null;
   introVerse: string | null;
   introVerseSource: string | null;
+  customCss: string | null;
   events: InvitationEventInput[];
   gifts: InvitationGiftInput[];
   story: LoveStoryItem[];
@@ -144,6 +145,12 @@ function formatInstagramUrl(val: string | null): string | null {
   if (val.startsWith('http://') || val.startsWith('https://')) return val;
   if (val.startsWith('@')) return `https://www.instagram.com/${val.substring(1)}`;
   return `https://www.instagram.com/${val}`;
+}
+
+function sanitizeCustomCss(raw: string | null): string | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/<\/?style[^>]*>?/gi, '').trim();
+  return cleaned || null;
 }
 
 export function parseInvitationForm(formData: FormData): InvitationFormInput {
@@ -279,6 +286,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     thankYouMessage: nullableValue('thankYouMessage'),
     introVerse: nullableValue('introVerse'),
     introVerseSource: nullableValue('introVerseSource'),
+    customCss: sanitizeCustomCss(nullableValue('customCss')),
     events,
     gifts,
     story,
@@ -641,6 +649,12 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     themeConfig.content = content;
   } else {
     delete themeConfig.content;
+  }
+
+  if (input.customCss) {
+    themeConfig.customCss = input.customCss;
+  } else {
+    delete themeConfig.customCss;
   }
 
   return themeConfig;

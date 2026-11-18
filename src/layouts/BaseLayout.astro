@@ -46,6 +46,7 @@ const selectedImage = isVerticalPlatform ? (verticalImage || landscapeImage) : (
 
 const imageUrl = selectedImage ? new URL(selectedImage, Astro.url).toString() : null;
 const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith('.jpg') || imageUrl?.endsWith('.jpeg')) ? 'image/jpeg' : 'image/webp';
+const customCss = settings.theme_config?.customCss?.replace(/<\/?style[^>]*>?/gi, '').trim() || '';
 ---
 
 <!doctype html>
@@ -126,6 +127,7 @@ const imageType = imageUrl?.endsWith('.png') ? 'image/png' : (imageUrl?.endsWith
     </style>
 
     {styleUrl && <link rel="stylesheet" href={styleUrl} />}
+    {customCss && <style is:inline id="invitation-custom-css" set:html={customCss} />}
   </head>
   <body
     class:list={[

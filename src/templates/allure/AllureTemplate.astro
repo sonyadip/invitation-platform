@@ -105,13 +105,13 @@ const themeAssets = themeConfig.assets || {};
 const coverImage = themeAssets.coverImage || themeAssets.heroImage || (isPreview ? coverImg.src : undefined);
 const heroImage = themeAssets.heroImage || themeAssets.coverImage || (isPreview ? bgHero.src : coverImg.src);
 const rawHeroSlides = [
-  themeAssets.coverImage,
   themeAssets.heroImage,
   themeAssets.heroImageTwo,
   themeAssets.heroImageThree,
   ...(gallery && gallery.length > 0
     ? gallery.slice(0, 3).map((g: any) => typeof g.image_url === 'string' ? g.image_url : g.image_url?.src)
-    : (isPreview ? [bgHero.src, galleryOne.src, gallerySix.src] : []))
+    : (isPreview ? [bgHero.src, galleryOne.src, gallerySix.src] : [])),
+  themeAssets.coverImage
 ].filter(Boolean);
 
 const seenSlides = new Set<string>();

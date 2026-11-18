@@ -452,6 +452,17 @@ export function computeSnapshotDiff(
 
     const oldAssets = (oldS.theme_config as any)?.assets || {};
     const newAssets = (newS.theme_config as any)?.assets || {};
+    const oldCss = (oldS.theme_config as any)?.customCss || '';
+    const newCss = (newS.theme_config as any)?.customCss || '';
+    if (oldCss !== newCss) {
+      diffs.push({
+        field: 'customCss',
+        label: 'Custom CSS',
+        category: 'theme',
+        oldValue: oldCss ? (oldCss.length > 50 ? oldCss.slice(0, 47) + '...' : oldCss) : '(Empty)',
+        newValue: newCss ? (newCss.length > 50 ? newCss.slice(0, 47) + '...' : newCss) : '(Empty)'
+      });
+    }
     const assetFields: Array<{ key: string; label: string }> = [
       { key: 'heroImage', label: 'Cover Photo (Hero)' },
       { key: 'heroVideo', label: 'Cover Video (Hero)' },

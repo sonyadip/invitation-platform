@@ -64,6 +64,7 @@ const defaults = {
   thankYouMessage: '',
   introVerse: '',
   introVerseSource: '',
+  customCss: '',
   events: [
     {
       name: '',
@@ -124,6 +125,7 @@ if (Astro.request.method === 'POST') {
     thankYouMessage: parsed.thankYouMessage || '',
     introVerse: parsed.introVerse || '',
     introVerseSource: parsed.introVerseSource || '',
+    customCss: parsed.customCss || '',
     events: parsed.events.length > 0 ? parsed.events : defaults.events,
     gifts: (parsed.gifts || []).map((gift) => ({ ...gift, qrisUrl: gift.qrisUrl || '' })),
     story: parsed.story || []
@@ -654,6 +656,30 @@ if (Astro.request.method === 'POST') {
         <div class="field-group wide">
           <label>Upload Music File (MP3 / AAC / WAV)</label>
           <input type="file" name="musicFile" accept="audio/*,.mp3,.wav,.ogg,.aac,.m4a,.webm" />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card__header">
+        <span class="section-icon">🎨</span>
+        <div>
+          <h2>Custom CSS (Manual)</h2>
+          <p>Tambahkan kode CSS khusus untuk kustomisasi tampilan pada undangan ini.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field-group wide">
+          <label>Custom CSS Rules (Opsional)</label>
+          <textarea
+            name="customCss"
+            rows="6"
+            spellcheck="false"
+            style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5;"
+            placeholder={`/* Contoh: ubah ukuran font judul atau warna elemen tertentu */\n.hero-title {\n  font-size: 42px !important;\n}`}
+          >{values.customCss}</textarea>
+          <span class="hint">Kode CSS ini akan di-inject langsung pada halaman undangan ini (tulis aturan CSS tanpa tag <code>&lt;style&gt;</code>).</span>
         </div>
       </div>
     </div>

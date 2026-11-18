@@ -689,6 +689,39 @@ if (!isClaimed) {
               </div>
             </section>
 
+            <section class="collapsible-section is-collapsed" id="sec-custom-css">
+              <div class="collapsible-header">
+                <div class="collapsible-header__title">
+                  <span class="section-icon">🎨</span>
+                  <div>
+                    <h2>Custom CSS (Manual)</h2>
+                    <p class="section-sub">Tambahkan kode CSS khusus untuk kustomisasi tampilan pada undangan ini.</p>
+                  </div>
+                </div>
+                <div class="collapsible-header__right">
+                  {settings?.customCss && (
+                    <span class="badge-active">Active</span>
+                  )}
+                  <span class="chevron material-symbols-outlined">expand_more</span>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="form-grid single-col">
+                  <label>
+                    Custom CSS Rules
+                    <textarea
+                      name="customCss"
+                      rows="8"
+                      spellcheck="false"
+                      style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5;"
+                      placeholder={`/* Contoh: ubah ukuran font judul atau warna elemen tertentu */\n.hero-title {\n  font-size: 42px !important;\n}`}
+                    >{settings?.customCss || ''}</textarea>
+                    <span class="hint">Kode CSS ini akan di-inject langsung ke halaman undangan <code>/{detail.wedding.slug}</code> (tulis aturan CSS tanpa tag <code>&lt;style&gt;</code>).</span>
+                  </label>
+                </div>
+              </div>
+            </section>
+
             <section class="collapsible-section memo-section is-collapsed" id="sec-revision">
               <div class="collapsible-header">
                 <div class="collapsible-header__title">

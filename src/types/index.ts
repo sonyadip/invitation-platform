@@ -40,6 +40,7 @@ export interface ThemeConfig {
     heroStyle: 'centered' | 'split';
     galleryColumns: number;
   };
+  customCss?: string;
   assets?: {
     coverImage?: string;
     heroImage?: string;
