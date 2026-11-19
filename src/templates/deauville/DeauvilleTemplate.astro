@@ -575,7 +575,7 @@ const activeGifts =
             <section
               class="event-section snap-section"
               id="event"
-              style={eventImage ? `background-image: linear-gradient(rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.48)), url('${typeof eventImage === 'string' ? eventImage : eventImage.src}'); background-size: cover; background-position: center;` : undefined}
+              style={eventImage ? `background-image: none, url('${typeof eventImage === 'string' ? eventImage : eventImage.src}'); background-size: cover; background-position: center;` : undefined}
             >
               <header data-animate>
                 <div class="event-section__title">
@@ -652,7 +652,7 @@ const activeGifts =
             <section
               class="gallery-section snap-section"
               id="gallery"
-              style={galleryBgImage ? `background-image: linear-gradient(rgba(49, 49, 49, 0.62), rgba(49, 49, 49, 0.62)), url('${typeof galleryBgImage === 'string' ? galleryBgImage : galleryBgImage.src}'); background-size: cover; background-position: center;` : undefined}
+              style={galleryBgImage ? `background-image: none, url('${typeof galleryBgImage === 'string' ? galleryBgImage : galleryBgImage.src}'); background-size: cover; background-position: center;` : undefined}
             >
               <h3 class="gallery-section__title" data-animate>
                 Our Gallery
@@ -758,7 +758,7 @@ const activeGifts =
               class="rsvp-section snap-section"
               id="ucapan"
               data-rsvp-section
-              style={rsvpImage ? `background-image: linear-gradient(rgba(49, 49, 49, 0.72), rgba(49, 49, 49, 0.72)), url('${typeof rsvpImage === 'string' ? rsvpImage : rsvpImage.src}'); background-size: cover; background-position: center;` : undefined}
+              style={rsvpImage ? `background-image: none, url('${typeof rsvpImage === 'string' ? rsvpImage : rsvpImage.src}'); background-size: cover; background-position: center;` : undefined}
             >
               <h3 data-animate>RSVP &amp; Wishes</h3>
               <p data-animate>{text.rsvpDescription}</p>
@@ -893,7 +893,7 @@ const activeGifts =
             <section
               class="gift-section snap-section"
               data-gift-section
-              style={giftImage ? `background-image: linear-gradient(rgba(21, 21, 21, 0.68), rgba(21, 21, 21, 0.72)), url('${typeof giftImage === 'string' ? giftImage : giftImage.src}'); background-size: cover; background-position: center;` : undefined}
+              style={giftImage ? `background-image: none, url('${typeof giftImage === 'string' ? giftImage : giftImage.src}'); background-size: cover; background-position: center;` : undefined}
             >
               <div class="gift-container">
                 <div class="gift-header" data-animate>

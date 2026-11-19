@@ -107,10 +107,12 @@ body.template-deauville {
   .video-section::after,
   .couple-section::before,
   .event-section::before,
-  .thankyou-section::before {
+  .thankyou-section::before,
+  .gallery-section::before,
+  .gift-section::before,
+  .rsvp-section::before {
     position: absolute;
     inset: 0;
-    z-index: -1;
     content: "";
     background: rgba(49, 49, 49, 0.42);
   }
@@ -1059,7 +1061,7 @@ body.template-deauville {
       width: 34px;
       height: 34px;
       padding: 0;
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      border: none;
       border-radius: 50%;
       background: rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(4px);
