@@ -1,5 +1,6 @@
 ---
 import { createInvitation, parseInvitationForm } from '../../services/dashboard-crud';
+import { buildTemplateHalfPriceMap, getPlatformSettings } from '../../services/platform-settings';
 import { listTemplateKeys } from '../../templates/registry';
 import { hashPasswordSHA256 } from '../../utils/security';
 import AdminLayout from '../../layouts/AdminLayout.astro';
@@ -13,6 +14,9 @@ if (session?.role !== 'admin') {
   return Astro.redirect('/?login=admin');
 }
 
+const platformSettings = await getPlatformSettings();
+const templateHalfPriceMap = buildTemplateHalfPriceMap(platformSettings.home_template_cards);
+
 let errorMessage = '';
 const defaults = {
   slug: '',
@@ -23,6 +27,7 @@ const defaults = {
   musicUrl: '',
   template: 'noir',
   status: 'draft',
+  purchasePrice: (templateHalfPriceMap['noir'] ?? '') as number | string,
   rsvpEnabled: true,
   musicEnabled: true,
   countdownEnabled: true,
@@ -95,6 +100,7 @@ if (Astro.request.method === 'POST') {
   const parsed = parseInvitationForm(formData);
   values = {
     ...parsed,
+    purchasePrice: parsed.purchasePrice ?? '',
     accessPassword: parsed.accessPassword || '',
     clientPassword: parsed.clientPassword || '',
     musicUrl: parsed.musicUrl || '',
@@ -213,6 +219,21 @@ if (Astro.request.method === 'POST') {
         <div class="field-group">
           <label>Expiration Date</label>
           <input type="datetime-local" name="expirationDate" value={values.expirationDate} />
+        </div>
+
+        <div class="field-group wide">
+          <label for="purchase-price-input">Purchase Price (Rp)</label>
+          <input
+            type="number"
+            id="purchase-price-input"
+            name="purchasePrice"
+            min="0"
+            step="1000"
+            value={values.purchasePrice}
+            placeholder="75000"
+            data-half-prices={JSON.stringify(templateHalfPriceMap)}
+          />
+          <span class="hint">Auto-filled at 50% of the homepage promo price for the selected template; editable manually.</span>
         </div>
       </div>
 
@@ -674,9 +695,10 @@ if (Astro.request.method === 'POST') {
           <label>Custom CSS Rules (Opsional)</label>
           <textarea
             name="customCss"
-            rows="6"
+            rows="18"
             spellcheck="false"
-            style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5;"
+            data-lenis-prevent
+            style="min-height: 360px; padding: 14px 16px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13.5px; line-height: 1.6; tab-size: 2; overflow-y: auto; overscroll-behavior: contain; resize: vertical;"
             placeholder={`/* Contoh: ubah ukuran font judul atau warna elemen tertentu */\n.hero-title {\n  font-size: 42px !important;\n}`}
           >{values.customCss}</textarea>
           <span class="hint">Kode CSS ini akan di-inject langsung pada halaman undangan ini (tulis aturan CSS tanpa tag <code>&lt;style&gt;</code>).</span>
@@ -896,6 +918,38 @@ if (Astro.request.method === 'POST') {
     accessPasswordInput.addEventListener('input', () => {
       if ((accessPasswordInput as HTMLInputElement).value.trim().length > 0 && !(passwordProtectionToggle as HTMLInputElement).checked) {
         (passwordProtectionToggle as HTMLInputElement).checked = true;
+      }
+    });
+  }
+
+  const templateSelect = document.querySelector('select[name="template"]') as HTMLSelectElement | null;
+  const purchasePriceInput = document.getElementById('purchase-price-input') as HTMLInputElement | null;
+  if (templateSelect && purchasePriceInput) {
+    let halfPrices: Record<string, number> = {};
+    try {
+      halfPrices = JSON.parse(purchasePriceInput.getAttribute('data-half-prices') || '{}');
+    } catch {
+      halfPrices = {};
+    }
+
+    const getAutoPrice = (tpl: string) => {
+      const val = halfPrices[String(tpl || '').trim().toLowerCase()];
+      return typeof val === 'number' ? String(val) : '';
+    };
+
+    let isManualPrice =
+      purchasePriceInput.value.trim() !== '' &&
+      purchasePriceInput.value.trim() !== getAutoPrice(templateSelect.value);
+
+    purchasePriceInput.addEventListener('input', () => {
+      const trimmed = purchasePriceInput.value.trim();
+      isManualPrice = trimmed !== '' && trimmed !== getAutoPrice(templateSelect.value);
+    });
+
+    templateSelect.addEventListener('change', () => {
+      if (!isManualPrice || purchasePriceInput.value.trim() === '') {
+        purchasePriceInput.value = getAutoPrice(templateSelect.value);
+        isManualPrice = false;
       }
     });
   }

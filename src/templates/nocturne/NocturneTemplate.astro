@@ -596,6 +596,29 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
                 </button>
               </div>
 
+              {sections.video !== false && videoUrl && (
+                <div class="gallery-video-wrap" data-animate="fade-up" style="--animate-delay: 240ms;">
+                  <a
+                    class="gallery-video-card"
+                    href={videoUrl}
+                    data-fancybox="gallery"
+                    aria-label="Tonton Video Prewedding"
+                  >
+                    <SmartImage
+                      class="gallery-video-card__thumb"
+                      src={videoPoster}
+                      alt="Video Prewedding"
+                      loading="lazy"
+                    />
+                    <div class="gallery-video-card__play" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                        <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                      </svg>
+                    </div>
+                  </a>
+                </div>
+              )}
+
               {activeGallery.length > 1 && (
                 <div class="gallery-grid">
                   {activeGallery.slice(1).map((image, index) => (
@@ -621,32 +644,6 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
                       </div>
                     </a>
                   ))}
-                </div>
-              )}
-
-              {sections.video !== false && videoUrl && (
-                <div class="gallery-video-wrap" data-animate="fade-up" style="--animate-delay: 240ms;">
-                  <a
-                    class="gallery-video-card"
-                    href={videoUrl}
-                    data-fancybox="gallery"
-                    aria-label="Tonton Video Prewedding"
-                  >
-                    <SmartImage
-                      class="gallery-video-card__thumb"
-                      src={videoPoster}
-                      alt="Video Prewedding"
-                      loading="lazy"
-                    />
-                    <div class="gallery-video-card__play" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                        <polygon points="6 4 20 12 6 20 6 4"></polygon>
-                      </svg>
-                    </div>
-                    <div class="gallery-video-card__overlay">
-                      <span class="gallery-video-card__label">WATCH PREWEDDING FILM</span>
-                    </div>
-                  </a>
                 </div>
               )}
 

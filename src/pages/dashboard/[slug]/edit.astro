@@ -10,6 +10,7 @@ import {
   resetInvitationRsvps
 } from '../../../services/dashboard-crud';
 import { listTemplateKeys } from '../../../templates/registry';
+import { getPlatformSettings, getTemplateHalfPrice } from '../../../services/platform-settings';
 import { hashPasswordSHA256 } from '../../../utils/security';
 import { generateSetupToken } from '../../../utils/token';
 import { supabase } from '../../../lib/supabase';
@@ -151,6 +152,9 @@ if (!isClaimed) {
   const token = await generateSetupToken(detail.summary.slug);
   setupUrl = `${Astro.url.origin}/setup?token=${token}`;
 }
+
+const platformSettings = await getPlatformSettings();
+const defaultHalfPrice = getTemplateHalfPrice(detail.wedding.template, platformSettings.home_template_cards);
 ---
 
 <AdminLayout
@@ -257,6 +261,22 @@ if (!isClaimed) {
                   <label>
                     Expiration Date
                     <input type="datetime-local" name="expirationDate" value={toLocalInput(settings?.expirationDate || null)} />
+                  </label>
+                  <label class="wide">
+                    Purchase Price (Rp)
+                    <input
+                      type="number"
+                      name="purchasePrice"
+                      min="0"
+                      step="1000"
+                      value={detail.wedding.purchasePrice ?? ''}
+                      placeholder={defaultHalfPrice !== null ? String(defaultHalfPrice) : '0'}
+                    />
+                    {defaultHalfPrice !== null && (
+                      <span class="hint">
+                        50% homepage promo reference: Rp {defaultHalfPrice.toLocaleString('id-ID')}
+                      </span>
+                    )}
                   </label>
                 </div>
               </div>
@@ -711,9 +731,10 @@ if (!isClaimed) {
                     Custom CSS Rules
                     <textarea
                       name="customCss"
-                      rows="8"
+                      rows="18"
                       spellcheck="false"
-                      style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5;"
+                      data-lenis-prevent
+                      style="min-height: 360px; padding: 14px 16px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13.5px; line-height: 1.6; tab-size: 2; overflow-y: auto; overscroll-behavior: contain; resize: vertical;"
                       placeholder={`/* Contoh: ubah ukuran font judul atau warna elemen tertentu */\n.hero-title {\n  font-size: 42px !important;\n}`}
                     >{settings?.customCss || ''}</textarea>
                     <span class="hint">Kode CSS ini akan di-inject langsung ke halaman undangan <code>/{detail.wedding.slug}</code> (tulis aturan CSS tanpa tag <code>&lt;style&gt;</code>).</span>

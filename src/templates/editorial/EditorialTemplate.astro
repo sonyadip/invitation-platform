@@ -344,7 +344,9 @@ const activeGifts = gifts && gifts.length > 0
         {sections.coupleInfo && (
           <section class="couple-section">
             <article class="couple-section__person">
-              <SmartImage class="couple-section__image" src={groomImage} alt={wedding.groom_name} loading="lazy" data-animate />
+              <div class="couple-section__image" data-animate>
+                <SmartImage src={groomImage} alt={wedding.groom_name} loading="lazy" />
+              </div>
               <h3 class="couple-section__name" data-animate>{wedding.groom_full_name || wedding.groom_name}</h3>
               <p class="couple-section__parents" data-animate>
                 {groomParentLines.map((line) => (
@@ -363,7 +365,9 @@ const activeGifts = gifts && gifts.length > 0
               )}
             </article>
             <article class="couple-section__person">
-              <SmartImage class="couple-section__image" src={brideImage} alt={wedding.bride_name} loading="lazy" data-animate />
+              <div class="couple-section__image" data-animate>
+                <SmartImage src={brideImage} alt={wedding.bride_name} loading="lazy" />
+              </div>
               <h3 class="couple-section__name" data-animate>{wedding.bride_full_name || wedding.bride_name}</h3>
               <p class="couple-section__parents" data-animate>
                 {brideParentLines.map((line) => (

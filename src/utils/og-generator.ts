@@ -45,7 +45,7 @@ export async function createOgImageBlob(source: File | string): Promise<Blob> {
         const bgY = (targetH - bgH) / 2;
 
         if (typeof ctx.filter !== 'undefined') {
-          ctx.filter = 'blur(24px) brightness(0.65)';
+          ctx.filter = 'blur(24px) brightness(0.60)';
         }
         ctx.drawImage(img, bgX, bgY, bgW, bgH);
         ctx.restore();

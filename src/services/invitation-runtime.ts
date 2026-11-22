@@ -1,4 +1,5 @@
-import type { InvitationSettings } from '../types';
+import type { InvitationSettings, Wedding } from '../types';
+import type { SessionPayload } from '../utils/session';
 import { hashPasswordSHA256 } from '../utils/security';
 import { isLocalHost } from '../utils/analytics';
 
@@ -87,18 +88,39 @@ export async function handlePasswordUnlock(input: {
   }
 }
 
+/**
+ * Allows the invitation owner or superadmin to keep accessing an expired invitation.
+ */
+export function canBypassExpiredInvitation(
+  session: SessionPayload | null | undefined,
+  wedding: Pick<Wedding, 'id' | 'slug'>
+): boolean {
+  if (!session) return false;
+  if (session.role === 'admin') return true;
+  if (session.role === 'client') {
+    if (session.weddingId) {
+      return session.weddingId === wedding.id;
+    }
+    return Boolean(session.slug && session.slug.toLowerCase() === wedding.slug.toLowerCase());
+  }
+  return false;
+}
+
 export function getInvitationAccessState(
   settings: InvitationSettings,
   isUnlocked: boolean,
-  now = new Date()
+  now = new Date(),
+  canBypassExpired = false
 ) {
   const isMaintenance = settings.maintenance_mode;
-  const isExpired = Boolean(settings.expiration_date && new Date(settings.expiration_date) < now);
+  const isExpiredRaw = Boolean(settings.expiration_date && new Date(settings.expiration_date) < now);
+  const isExpired = isExpiredRaw && !canBypassExpired;
   const isPasswordLocked = Boolean(settings.password_protection_enabled && settings.access_password) && !isUnlocked;
 
   return {
     isMaintenance,
     isExpired,
+    isExpiredRaw,
     isPasswordLocked
   };
 }

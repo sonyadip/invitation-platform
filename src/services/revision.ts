@@ -182,22 +182,26 @@ export async function restoreRevision(
     });
 
     const targetWedding = snapshot.wedding;
+    const weddingRestorePayload: Record<string, any> = {
+      bride_name: targetWedding.bride_name,
+      groom_name: targetWedding.groom_name,
+      bride_full_name: targetWedding.bride_full_name,
+      groom_full_name: targetWedding.groom_full_name,
+      wedding_date: targetWedding.wedding_date,
+      venue_name: targetWedding.venue_name,
+      venue_address: targetWedding.venue_address,
+      maps_url: targetWedding.maps_url,
+      story: targetWedding.story || [],
+      music_url: targetWedding.music_url || null,
+      template: targetWedding.template || 'noir',
+      status: targetWedding.status || 'draft'
+    };
+    if ('purchase_price' in targetWedding) {
+      weddingRestorePayload.purchase_price = targetWedding.purchase_price ?? null;
+    }
     const { error: updateWeddingError } = await supabase
       .from('weddings')
-      .update({
-        bride_name: targetWedding.bride_name,
-        groom_name: targetWedding.groom_name,
-        bride_full_name: targetWedding.bride_full_name,
-        groom_full_name: targetWedding.groom_full_name,
-        wedding_date: targetWedding.wedding_date,
-        venue_name: targetWedding.venue_name,
-        venue_address: targetWedding.venue_address,
-        maps_url: targetWedding.maps_url,
-        story: targetWedding.story || [],
-        music_url: targetWedding.music_url || null,
-        template: targetWedding.template || 'noir',
-        status: targetWedding.status || 'draft'
-      })
+      .update(weddingRestorePayload)
       .eq('id', weddingId);
 
     if (updateWeddingError) {
@@ -350,6 +354,17 @@ export function computeSnapshotDiff(
     }
     if (oldW.status !== newW.status) {
       diffs.push({ field: 'status', label: 'Invitation Status', category: 'other', oldValue: oldW.status || '-', newValue: newW.status || '-' });
+    }
+    if ((oldW.purchase_price ?? null) !== (newW.purchase_price ?? null)) {
+      const fmtPrice = (val?: number | null) =>
+        val !== null && val !== undefined ? `Rp ${Number(val).toLocaleString('id-ID')}` : '-';
+      diffs.push({
+        field: 'purchase_price',
+        label: 'Purchase Price',
+        category: 'other',
+        oldValue: fmtPrice(oldW.purchase_price),
+        newValue: fmtPrice(newW.purchase_price)
+      });
     }
     if (oldW.music_url !== newW.music_url) {
       diffs.push({ field: 'music_url', label: 'Background Music', category: 'features', oldValue: oldW.music_url || 'None', newValue: newW.music_url || 'None' });

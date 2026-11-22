@@ -1,6 +1,7 @@
 ---
 import { getInvitationByDomainOrSlug } from '../services/invitation';
 import {
+  canBypassExpiredInvitation,
   getClientIp,
   getInvitationAccessState,
   handlePasswordUnlock,
@@ -10,6 +11,8 @@ import {
 import { shouldTrackInvitationView, trackInvitationView } from '../services/view-tracking';
 import { loadTemplate } from '../templates/registry';
 import { extractClientContext } from '../utils/analytics';
+import { getSessionFromCookies } from '../utils/session';
+import { resolveInvitationSeo } from '../utils/template-helpers';
 
 export const prerender = false;
 
@@ -51,11 +54,25 @@ if (unlockResult.success && unlockResult.redirectUrl) {
 
 const errorMessage = unlockResult.errorMessage;
 const isUnlocked = await isInvitationUnlocked(Astro.cookies, wedding.id, settings.access_password);
-const { isMaintenance, isExpired, isPasswordLocked } = getInvitationAccessState(settings, isUnlocked, now);
+const session = Astro.locals.session !== undefined
+  ? Astro.locals.session
+  : await getSessionFromCookies(Astro.cookies);
+const canBypassExpired = canBypassExpiredInvitation(session, wedding);
+const { isMaintenance, isExpired, isExpiredRaw, isPasswordLocked } = getInvitationAccessState(
+  settings,
+  isUnlocked,
+  now,
+  canBypassExpired
+);
 const guestName = Astro.url.searchParams.get('to') || null;
 const homeUrl = isDomain ? 'https://senadda.id/' : '/';
 
-if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked, Astro.url)) {
+// Prevent browsers/proxies from serving stale cached responses across login/logout transitions.
+if (isExpiredRaw) {
+  Astro.response.headers.set('Cache-Control', 'private, no-store');
+}
+
+if (shouldTrackInvitationView(settings, wedding.status, isMaintenance, isPasswordLocked, Astro.url, isExpiredRaw)) {
   const clientCtx = extractClientContext(Astro.request);
   trackInvitationView({
     weddingId: wedding.id,
@@ -82,6 +99,17 @@ if (!ActiveTemplate) {
   );
 }
 
+const seo = resolveInvitationSeo({
+  wedding,
+  settings,
+  events: data.events
+});
+const statusVerticalImage = settings.theme_config?.assets?.coverImage || settings.theme_config?.assets?.heroImage;
+const statusLandscapeImage = settings.theme_config?.assets?.ogImage || statusVerticalImage;
+const isVerticalPlatform = /WhatsApp/i.test(Astro.request.headers.get('user-agent') || '');
+const statusSelectedImage = isVerticalPlatform ? (statusVerticalImage || statusLandscapeImage) : (statusLandscapeImage || statusVerticalImage);
+const statusImageUrl = statusSelectedImage ? new URL(statusSelectedImage, Astro.url).toString() : null;
+const statusImageType = statusImageUrl?.endsWith('.png') ? 'image/png' : (statusImageUrl?.endsWith('.jpg') || statusImageUrl?.endsWith('.jpeg')) ? 'image/jpeg' : 'image/webp';
 ---
 
 {(!isMaintenance && !isExpired && !isPasswordLocked) ? (
@@ -91,8 +119,39 @@ if (!ActiveTemplate) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Senadda Wedding</title>
+    <title>{seo.title}</title>
+    <meta name="title" content={seo.title} />
+    <meta name="description" content={seo.description} />
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <link rel="canonical" href={Astro.url.href} />
+    <meta property="og:locale" content="id_ID" />
+
+    <meta name="geo.region" content={seo.geo.region} />
+    <meta name="geo.placename" content={seo.geo.placename} />
+    <meta name="geo.position" content={seo.geo.position} />
+    <meta name="ICBM" content={seo.geo.icbm} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:title" content={seo.title} />
+    <meta property="og:description" content={seo.description} />
+    <meta property="og:site_name" content={seo.title} />
+    {statusImageUrl && (
+      <>
+        <meta property="og:image" content={statusImageUrl} />
+        <meta property="og:image:secure_url" content={statusImageUrl} />
+        <meta property="og:image:type" content={statusImageType} />
+        <meta property="og:image:alt" content={seo.title} />
+      </>
+    )}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={Astro.url.href} />
+    <meta name="twitter:title" content={seo.title} />
+    <meta name="twitter:description" content={seo.description} />
+    {statusImageUrl && <meta name="twitter:image" content={statusImageUrl} />}
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" href="/fonts/SaolDisplay-Regular.woff2" as="font" type="font/woff2" crossorigin />

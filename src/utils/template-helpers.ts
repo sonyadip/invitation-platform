@@ -1,4 +1,4 @@
-import type { Wedding, WeddingEvent } from '../types';
+import type { Wedding, WeddingEvent, InvitationSettings } from '../types';
 
 export const buildParentText = (
   roleText: string,
@@ -80,14 +80,15 @@ export const formatDate = (iso: string): string => new Date(iso).toLocaleDateStr
   weekday: 'long',
   year: 'numeric',
   month: 'long',
-  day: 'numeric'
+  day: 'numeric',
+  timeZone: 'Asia/Makassar'
 });
 
 export const formatEventDate = (iso: string) => {
   const date = new Date(iso);
   return {
-    weekday: date.toLocaleDateString('id-ID', { weekday: 'long' }),
-    date: date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    weekday: date.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'Asia/Makassar' }),
+    date: date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Makassar' })
   };
 };
 
@@ -262,3 +263,221 @@ export const getBankLogoUrl = (bankName?: string | null, customLogo?: string | n
 
   return null;
 };
+
+export const cleanMetaText = (value?: string | null): string => {
+  if (!value) return '';
+  return String(value)
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s+/g, '\n')
+    .trim();
+};
+
+export const extractCoordinatesFromMapsUrl = (mapsUrl?: string | null): { lat: string; lng: string } | null => {
+  if (!mapsUrl) return null;
+  let decoded = mapsUrl;
+  try {
+    decoded = decodeURIComponent(mapsUrl);
+  } catch {
+    decoded = mapsUrl;
+  }
+
+  const qMatch = decoded.match(/(?:[?&](?:q|ll|center)=|@)(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+  if (qMatch) {
+    return { lat: qMatch[1], lng: qMatch[2] };
+  }
+
+  const bangMatch = decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  if (bangMatch) {
+    return { lat: bangMatch[1], lng: bangMatch[2] };
+  }
+
+  return null;
+};
+
+export const resolveInvitationGeo = (
+  wedding?: Partial<Wedding> | null,
+  settings?: Partial<InvitationSettings> | null,
+  events?: Partial<WeddingEvent>[] | null
+) => {
+  const themeContent = (settings?.theme_config as any)?.content || {};
+  const primaryEvent = events && events.length > 0 ? events[0] : null;
+
+  const venueName = cleanMetaText(wedding?.venue_name || primaryEvent?.venue_name || '');
+  const venueAddress = cleanMetaText(
+    wedding?.venue_address ||
+    primaryEvent?.venue_address ||
+    themeContent.groomAddress ||
+    themeContent.brideAddress ||
+    themeContent.familyAddress ||
+    themeContent.participantAddress ||
+    ''
+  );
+  const mapsUrl = wedding?.maps_url || primaryEvent?.maps_url || '';
+
+  let placename = 'Denpasar, Bali';
+  if (venueName && venueAddress) {
+    placename = venueAddress.toLowerCase().includes(venueName.toLowerCase())
+      ? venueAddress
+      : `${venueName}, ${venueAddress}`;
+  } else if (venueAddress || venueName) {
+    placename = venueAddress || venueName;
+  }
+
+  const locLower = placename.toLowerCase();
+  let region = 'ID-BA';
+  if (/\b(jawa timur|kediri|surabaya|malang|sidoarjo|banyuwangi)\b/.test(locLower)) region = 'ID-JI';
+  else if (/\b(jakarta)\b/.test(locLower)) region = 'ID-JK';
+  else if (/\b(jawa barat|bandung|bogor|bekasi|depok)\b/.test(locLower)) region = 'ID-JB';
+  else if (/\b(jawa tengah|semarang|solo|surakarta)\b/.test(locLower)) region = 'ID-JT';
+  else if (/\b(yogyakarta|jogja|sleman|bantul)\b/.test(locLower)) region = 'ID-YO';
+  else if (/\b(lombok|mataram|ntb)\b/.test(locLower)) region = 'ID-NB';
+
+  const parsedCoords = extractCoordinatesFromMapsUrl(mapsUrl);
+  let lat = '-8.670458';
+  let lng = '115.212629';
+
+  if (parsedCoords) {
+    lat = parsedCoords.lat;
+    lng = parsedCoords.lng;
+  } else if (/\b(gianyar|blahbatuh|sukawati|ubud|payangan|tampaksiring|tegallalang|beng|samplangan|keramas|belega|bonbiyu|bitera|buruan|kemenuh)\b/.test(locLower)) {
+    lat = '-8.5444';
+    lng = '115.3255';
+  } else if (/\b(bangli|susut|kintamani|tembuku|sulahan|sekardadi|tangkas)\b/.test(locLower)) {
+    lat = '-8.4542';
+    lng = '115.3549';
+  } else if (/\b(klungkung|nusa penida|batukandik|dawan|banjarangkan|besan|getakan)\b/.test(locLower)) {
+    lat = '-8.5367';
+    lng = '115.4024';
+  } else if (/\b(karangasem|bugbug|amlapura|ababi|manggis|rendang|sidemen)\b/.test(locLower)) {
+    lat = '-8.4485';
+    lng = '115.6127';
+  } else if (/\b(negara|jembrana|mendoyo|melaya|pekutatan|berangbang)\b/.test(locLower)) {
+    lat = '-8.3563';
+    lng = '114.6217';
+  } else if (/\b(buleleng|singaraja|sawan|seririt|kubutambahan|sukasada)\b/.test(locLower)) {
+    lat = '-8.1120';
+    lng = '115.0882';
+  } else if (/\b(tabanan|kerambitan|selemadeg|baturiti|marga)\b/.test(locLower)) {
+    lat = '-8.5414';
+    lng = '115.1253';
+  } else if (/\b(badung|kuta|mengwi|abiansemal|petang|jimbaran|canggu|seminyak|nusa dua)\b/.test(locLower)) {
+    lat = '-8.5819';
+    lng = '115.1771';
+  }
+
+  return {
+    region,
+    placename,
+    lat,
+    lng,
+    position: `${lat};${lng}`,
+    icbm: `${lat}, ${lng}`
+  };
+};
+
+export const resolveInvitationSeo = (options: {
+  wedding: Partial<Wedding>;
+  settings?: Partial<InvitationSettings> | null;
+  events?: Partial<WeddingEvent>[] | null;
+  title?: string | null;
+  description?: string | null;
+  templateClass?: string | null;
+}) => {
+  const { wedding, settings, events, title: customTitle, description: customDescription, templateClass } = options;
+  const themeContent = (settings?.theme_config as any)?.content || {};
+  const isMetatah = Boolean(
+    wedding?.template?.toLowerCase().includes('metatah') ||
+    templateClass?.toLowerCase().includes('metatah')
+  );
+
+  const rawDate = wedding?.wedding_date || events?.[0]?.event_date || '';
+  const parsedDate = rawDate ? new Date(rawDate) : null;
+  const formattedDate = parsedDate && !isNaN(parsedDate.getTime())
+    ? formatDate(parsedDate.toISOString())
+    : '';
+
+  let defaultTitle = '';
+  let defaultDescription = '';
+  let label = '';
+
+  if (isMetatah) {
+    const ceremonyTitleText = cleanMetaText(themeContent.ceremonyTitle || 'Mepandes / Metatah');
+    const rawParticipants: any[] =
+      Array.isArray(themeContent.participants) && themeContent.participants.length > 0
+        ? themeContent.participants
+        : Array.isArray(themeContent.potongGigiMembers) && themeContent.potongGigiMembers.length > 0
+          ? themeContent.potongGigiMembers
+          : Array.isArray(themeContent.members) && themeContent.members.length > 0
+            ? themeContent.members
+            : [];
+
+    const nicknames = rawParticipants
+      .map((item) => {
+        if (typeof item === 'object' && item !== null) {
+          return cleanMetaText(item.nickname || item.nickName || item.name || '');
+        }
+        return cleanMetaText(String(item || ''));
+      })
+      .filter(Boolean);
+
+    const formattedNicknames = nicknames.length === 0
+      ? cleanMetaText(themeContent.participantName || wedding?.groom_name || 'Peserta')
+      : nicknames.length === 1
+        ? nicknames[0]
+        : nicknames.length === 2
+          ? `${nicknames[0]} & ${nicknames[1]}`
+          : `${nicknames.slice(0, -1).join(', ')} & ${nicknames[nicknames.length - 1]}`;
+
+    const rawTitleMode = String(themeContent.titleMode || themeContent.titleType || '').toLowerCase().trim();
+    const explicitCover = cleanMetaText(themeContent.coverTitle || themeContent.coverName || themeContent.title || '');
+
+    let coverTitle = '';
+    if (rawTitleMode === 'participants' || rawTitleMode === 'peserta' || Boolean(themeContent.useParticipantsAsTitle)) {
+      coverTitle = cleanMetaText(themeContent.participantsTitle) || formattedNicknames;
+    } else if (explicitCover) {
+      coverTitle = explicitCover;
+    } else if (rawTitleMode === 'default' || rawTitleMode === 'ceremony' || rawTitleMode === 'metatah') {
+      coverTitle = cleanMetaText(themeContent.defaultTitle || ceremonyTitleText || 'Metatah');
+    } else {
+      coverTitle = cleanMetaText(themeContent.familyName || themeContent.familyTitle || wedding?.groom_name || 'Keluarga');
+    }
+
+    const isTitleRedundant = Boolean(
+      coverTitle &&
+      ceremonyTitleText &&
+      (
+        coverTitle.toLowerCase() === ceremonyTitleText.toLowerCase() ||
+        ceremonyTitleText.toLowerCase().includes(coverTitle.toLowerCase()) ||
+        /^(metatah|mepandes|upacara metatah|upacara mepandes)$/i.test(coverTitle)
+      )
+    );
+
+    label = isTitleRedundant ? ceremonyTitleText : `${ceremonyTitleText} ${coverTitle}`.trim();
+    defaultTitle = isTitleRedundant ? ceremonyTitleText : `${ceremonyTitleText} - ${coverTitle}`;
+    defaultDescription = isTitleRedundant
+      ? `Undangan ${ceremonyTitleText}.${formattedDate ? `\n${formattedDate}.` : ''}`
+      : `Undangan ${ceremonyTitleText} ${coverTitle}.${formattedDate ? `\n${formattedDate}.` : ''}`;
+  } else {
+    const groomName = cleanMetaText(themeContent.groomNickname || wedding?.groom_name || 'Mempelai Pria');
+    const brideName = cleanMetaText(themeContent.brideNickname || wedding?.bride_name || 'Mempelai Wanita');
+    label = `${groomName} & ${brideName}`;
+    defaultTitle = `The Wedding of ${groomName} & ${brideName}`;
+    defaultDescription = `Undangan pernikahan ${groomName} & ${brideName}.${formattedDate ? `\n${formattedDate}.` : ''}`;
+  }
+
+  const resolvedTitle = cleanMetaText(customTitle || themeContent.metaTitle || defaultTitle);
+  const resolvedDescription = cleanMetaText(customDescription || themeContent.metaDescription || defaultDescription);
+  const geo = resolveInvitationGeo(wedding, settings, events);
+
+  return {
+    title: resolvedTitle,
+    description: resolvedDescription,
+    label,
+    formattedDate,
+    isMetatah,
+    geo
+  };
+};
+

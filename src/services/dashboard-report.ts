@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem } from '../types';
 import { decodeHtmlEntities } from '../utils/template-helpers';
 import { parseUserAgent, detectDeviceModel, parseTrafficSource } from '../utils/analytics';
+import { buildTemplateHalfPriceMap, getPlatformSettings } from './platform-settings';
 
 export interface SlugReport {
   weddingId: string;
@@ -11,6 +12,7 @@ export interface SlugReport {
   weddingDate: string;
   status: string;
   template: string;
+  purchasePrice: number | null;
   customDomain: string | null;
   isMaintenance: boolean;
   isExpired: boolean;
@@ -30,6 +32,7 @@ export interface SlugReport {
 
 export interface DashboardReport {
   generatedAt: string;
+  schemaMissingPurchasePrice?: boolean;
   totals: {
     invitations: number;
     published: number;
@@ -42,6 +45,8 @@ export interface DashboardReport {
     guests: number;
     wishes: number;
     deleted: number;
+    revenue: number;
+    paidInvitations: number;
   };
   reports: SlugReport[];
   deletedReports: SlugReport[];
@@ -65,6 +70,7 @@ export interface SlugReportDetail {
     story: LoveStoryItem[];
     template: string;
     status: string;
+    purchasePrice: number | null;
     createdAt: string;
     updatedAt: string;
   };
@@ -232,15 +238,40 @@ const emptyBucket = (): CountBucket => ({
   latestRsvpAt: null
 });
 
-export async function getDashboardReport(now = new Date()): Promise<DashboardReport> {
-  const [weddings, settingsData, domainsData, viewsData, rsvpsData] = await Promise.all([
-    fetchAllRows((from, to) =>
+const isMissingPurchasePriceColumn = (error: any) =>
+  error?.code === '42703' || String(error?.message || '').includes('purchase_price');
+
+async function fetchDashboardWeddings(): Promise<{ rows: any[]; schemaMissingPurchasePrice: boolean }> {
+  const withPriceCols =
+    'id, slug, bride_name, groom_name, wedding_date, template, status, purchase_price, deleted_at, deleted_by, created_at';
+  const baseCols =
+    'id, slug, bride_name, groom_name, wedding_date, template, status, deleted_at, deleted_by, created_at';
+
+  try {
+    const rows = await fetchAllRows((from, to) =>
       (supabase
         .from('weddings')
-        .select('id, slug, bride_name, groom_name, wedding_date, template, status, deleted_at, deleted_by, created_at')
+        .select(withPriceCols)
         .order('created_at', { ascending: false })
         .range(from, to) as any)
-    ),
+    );
+    return { rows, schemaMissingPurchasePrice: false };
+  } catch (error) {
+    if (!isMissingPurchasePriceColumn(error)) throw error;
+    const rows = await fetchAllRows((from, to) =>
+      (supabase
+        .from('weddings')
+        .select(baseCols)
+        .order('created_at', { ascending: false })
+        .range(from, to) as any)
+    );
+    return { rows, schemaMissingPurchasePrice: true };
+  }
+}
+
+export async function getDashboardReport(now = new Date()): Promise<DashboardReport> {
+  const [{ rows: weddings, schemaMissingPurchasePrice }, settingsData, domainsData, viewsData, rsvpsData, platformSettings] = await Promise.all([
+    fetchDashboardWeddings(),
     fetchAllRows((from, to) =>
       (supabase
         .from('invitation_settings')
@@ -266,8 +297,13 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
         .select('wedding_id, attendance_status, guest_count, message, created_at')
         .order('created_at', { ascending: false })
         .range(from, to) as any)
-    )
+    ),
+    getPlatformSettings()
   ]);
+
+  const halfPriceMap = schemaMissingPurchasePrice
+    ? buildTemplateHalfPriceMap(platformSettings.home_template_cards)
+    : {};
 
   const settingsByWedding = new Map(
     settingsData.map((settings: any) => [settings.wedding_id, settings])
@@ -319,6 +355,14 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
       coupleName = `Upacara ${wedding.groom_name} ${wedding.bride_name}`;
     }
 
+    const rawPurchasePrice = (wedding as any).purchase_price;
+    const templateKey = String(wedding.template || 'noir').trim().toLowerCase();
+    const purchasePrice = schemaMissingPurchasePrice
+      ? (!wedding.deleted_at ? (halfPriceMap[templateKey] ?? null) : null)
+      : (rawPurchasePrice !== null && rawPurchasePrice !== undefined && Number.isFinite(Number(rawPurchasePrice))
+          ? Number(rawPurchasePrice)
+          : null);
+
     return {
       weddingId: wedding.id,
       slug: wedding.slug,
@@ -326,6 +370,7 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
       weddingDate: wedding.wedding_date,
       status: wedding.status,
       template: wedding.template,
+      purchasePrice,
       customDomain: domainByWedding.get(wedding.id) || null,
       isMaintenance: Boolean(settings?.maintenance_mode),
       isExpired,
@@ -360,6 +405,10 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
       acc.tentative += report.tentativeCount;
       acc.guests += report.guestCount;
       acc.wishes += report.wishesCount;
+      if (report.purchasePrice && report.purchasePrice > 0) {
+        acc.revenue += report.purchasePrice;
+        acc.paidInvitations += 1;
+      }
       return acc;
     },
     {
@@ -374,12 +423,15 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
       tentative: 0,
       guests: 0,
       wishes: 0,
-      deleted: deletedReports.length
+      deleted: deletedReports.length,
+      revenue: 0,
+      paidInvitations: 0
     }
   );
 
   return {
     generatedAt: now.toISOString(),
+    schemaMissingPurchasePrice,
     totals,
     reports: activeReports,
     deletedReports
@@ -624,6 +676,13 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     coupleName = `Upacara ${wedding.groom_name} ${wedding.bride_name}`;
   }
 
+  const purchasePrice =
+    (wedding as any).purchase_price !== null &&
+    (wedding as any).purchase_price !== undefined &&
+    Number.isFinite(Number((wedding as any).purchase_price))
+      ? Number((wedding as any).purchase_price)
+      : null;
+
   const summary: SlugReport = {
     weddingId: wedding.id,
     slug: wedding.slug,
@@ -631,6 +690,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     weddingDate: wedding.wedding_date,
     status: wedding.status,
     template: wedding.template,
+    purchasePrice,
     customDomain: (domainsRes.data as any)?.domain || null,
     isMaintenance: Boolean(settings?.maintenance_mode),
     isExpired,
@@ -666,6 +726,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       story: Array.isArray(wedding.story) ? wedding.story : [],
       template: wedding.template,
       status: wedding.status,
+      purchasePrice,
       createdAt: wedding.created_at,
       updatedAt: wedding.updated_at
     },

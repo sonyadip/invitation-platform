@@ -327,7 +327,7 @@ body.template-nocturne {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        filter: brightness(0.65);
+        filter: brightness(0.60);
       }
 
       &__overlay {
@@ -433,7 +433,7 @@ body.template-nocturne {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.65);
+      filter: brightness(0.60);
       opacity: 0;
       transition: opacity 1.6s ease-in-out;
       transform: translateZ(0);
@@ -445,12 +445,12 @@ body.template-nocturne {
       }
     }
 
-    &__overlay {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.75) 100%);
-      z-index: 1;
-    }
+    // &__overlay {
+    //   position: absolute;
+    //   inset: 0;
+    //   background: radial-gradient(circle at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.75) 100%);
+    //   z-index: 1;
+    // }
   }
 
   .hero {
@@ -486,7 +486,7 @@ body.template-nocturne {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: grayscale(100%) brightness(0.65);
+      filter: grayscale(100%) brightness(0.60);
     }
 
     &__inner {
@@ -2334,7 +2334,7 @@ body.template-nocturne {
       opacity: 0.8;
       transform: scale(0.9);
       transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1), filter 1s cubic-bezier(0.22, 1, 0.36, 1);
-      filter: brightness(0.65);
+      filter: brightness(0.60);
 
       &.is-active {
         opacity: 1;
@@ -2426,7 +2426,6 @@ body.template-nocturne {
       width: 100%;
       padding: 0 20px;
       box-sizing: border-box;
-      margin-top: 10px;
     }
 
     .gallery-video-card {
@@ -2470,27 +2469,6 @@ body.template-nocturne {
         svg {
           margin-left: 3px;
         }
-      }
-
-      &__overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 24px 16px 14px;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
-        display: flex;
-        justify-content: center;
-        z-index: 2;
-      }
-
-      &__label {
-        font-family: var(--nocturne-font-sans);
-        font-size: 11px;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        color: #ffffff;
-        font-weight: 500;
       }
 
       @media (hover: hover) and (pointer: fine) {

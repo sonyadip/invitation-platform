@@ -92,7 +92,7 @@ const dayNamesFull = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sa
 const weddingDayName = dayNamesFull[validWDate.getDay()];
 const monthNamesIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const fullDateDisplay = `${dayStr} ${monthNamesIndo[validWDate.getMonth()]} ${validWDate.getFullYear()}`;
-const dresscodeColors = [
+const defaultDresscodeColors = [
   '#F5F1EA',
   '#D7C9B8',
   '#B2967D',
@@ -148,6 +148,14 @@ const resepsiFormattedTime = (() => {
   return `${start} - ${end}`;
 })();
 const isPreview = wedding.id.startsWith('preview-');
+const customDresscodeColors = Array.isArray(themeContent.dresscodeColors) && themeContent.dresscodeColors.length > 0
+  ? themeContent.dresscodeColors
+  : null;
+const dresscodeColors = customDresscodeColors || defaultDresscodeColors;
+const explicitDresscodeToggle = typeof sections.dresscode === 'boolean'
+  ? sections.dresscode
+  : (typeof themeContent.showDresscode === 'boolean' ? themeContent.showDresscode : undefined);
+const showDresscode = explicitDresscodeToggle ?? Boolean(isPreview || customDresscodeColors);
 const themeAssets = themeConfig.assets || {};
 const heroImage = themeAssets.heroImage || (isPreview ? bgCover.src : undefined);
 const brideImage = themeAssets.brideImage || (isPreview ? coupleBride.src : undefined);
@@ -331,11 +339,11 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
                   <div class="couple-card__photo-col" data-animate="slide-right" style="--animate-delay: 100ms;">
                     <SmartImage src={brideImage} alt={wedding.bride_name} class="couple-card__photo couple-card__photo--bride" loading="lazy" />
                   </div>
-                  <div class="couple-card__nickname-col">
+                  {/* <div class="couple-card__nickname-col">
                     <p class="couple-card__nickname">
                       {wedding.bride_name}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div class="couple-card__details couple-card__details--bride">
@@ -372,11 +380,11 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
 
               <div class="couple-card couple-card--groom">
                 <div class="couple-card__grid">
-                  <div class="couple-card__nickname-col">
+                  {/* <div class="couple-card__nickname-col">
                     <p class="couple-card__nickname">
                       {wedding.groom_name}
                     </p>
-                  </div>
+                  </div> */}
                   <div class="couple-card__photo-col" data-animate="slide-left" style="--animate-delay: 100ms;">
                     <SmartImage src={groomImage} alt={wedding.groom_name} class="couple-card__photo couple-card__photo--groom" loading="lazy" />
                   </div>
@@ -469,14 +477,16 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
                 </article>
               </div>
 
-              <div class="dresscode-block">
-                <h3 class="dresscode-title" data-animate="fade-up" style="--animate-delay: 200ms;">Dresscode</h3>
-                <div class="dresscode-swatches">
-                  {dresscodeColors.map((color, cIdx) => (
-                    <div class="dresscode-swatch" data-animate="zoom-in" style={`background-color: ${color}; --animate-delay: ${450 + cIdx * 180}ms;`}></div>
-                  ))}
+              {showDresscode && (
+                <div class="dresscode-block">
+                  <h3 class="dresscode-title" data-animate="fade-up" style="--animate-delay: 200ms;">Dresscode</h3>
+                  <div class="dresscode-swatches">
+                    {dresscodeColors.map((color, cIdx) => (
+                      <div class="dresscode-swatch" data-animate="zoom-in" style={`background-color: ${color}; --animate-delay: ${450 + cIdx * 180}ms;`}></div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {sections.countdown !== false && settings.countdown_enabled && (
                 <div class="countdown-section" id="save-date">

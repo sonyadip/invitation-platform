@@ -23,7 +23,8 @@ export function shouldTrackInvitationView(
   status: WeddingStatus,
   isMaintenance: boolean,
   isPasswordLocked: boolean,
-  urlOrHostname?: URL | string
+  urlOrHostname?: URL | string,
+  isExpired = false
 ): boolean {
   const isLive = isLiveTrackingEnvironment(
     typeof urlOrHostname === 'string'
@@ -35,6 +36,7 @@ export function shouldTrackInvitationView(
     isLive &&
     Boolean(settings.view_counter_enabled) &&
     !isMaintenance &&
+    !isExpired &&
     !isPasswordLocked &&
     status === 'published'
   );

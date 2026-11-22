@@ -27,6 +27,7 @@ const recentEventCache = new Map<string, number>();
 
 export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOptions = {}) {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  if (document.body.dataset.analyticsDisabled === 'true') return;
   if (!isLiveTrackingEnvironment(window.location.hostname)) return;
 
   const weddingId = options.weddingId || document.body.dataset.weddingId || '';
@@ -83,6 +84,7 @@ let trackingInitialized = false;
 
 export function initAutomaticInteractionTracking() {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  if (document.body.dataset.analyticsDisabled === 'true') return;
   if (!isLiveTrackingEnvironment(window.location.hostname)) return;
   if (trackingInitialized) return;
   trackingInitialized = true;

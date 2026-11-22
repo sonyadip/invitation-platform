@@ -90,6 +90,41 @@ const defaults: PlatformSettings = {
 };
 
 /**
+ * Parse a Rupiah price string (e.g. "Rp 150.000") or number into a non-negative integer.
+ */
+export function parseRupiahAmount(value?: string | number | null): number {
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 0;
+}
+
+/**
+ * Build a map of template key -> 50% of active homepage promo price (falling back to regular price).
+ */
+export function buildTemplateHalfPriceMap(cards?: TemplateCard[]): Record<string, number> {
+  const result: Record<string, number> = {};
+  const merged = [...defaults.home_template_cards, ...(cards || [])];
+
+  for (const card of merged) {
+    const key = String(card?.key || '').trim().toLowerCase();
+    if (!key) continue;
+    const rawPromo = (card as any).promoPrice ?? (card as any).promo_price;
+    const basePrice = parseRupiahAmount(rawPromo) || parseRupiahAmount(card.price);
+    if (basePrice > 0) {
+      result[key] = Math.round(basePrice * 0.5);
+    }
+  }
+
+  return result;
+}
+
+export function getTemplateHalfPrice(template?: string | null, cards?: TemplateCard[]): number | null {
+  const key = String(template || 'noir').trim().toLowerCase();
+  const map = buildTemplateHalfPriceMap(cards);
+  return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : null;
+}
+
+/**
  * Read platform settings (public, no auth needed).
  * Always returns a valid object — falls back to defaults if table is empty.
  */

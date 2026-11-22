@@ -47,6 +47,7 @@ function protectScrollContainers() {
     '.fancybox__container',
     '.fancybox__slide',
     '#login-modal',
+    'textarea',
   ];
 
   modalSelectors.forEach((selector) => {
@@ -100,6 +101,7 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
     autoRaf: true,
     anchors: config.anchors ?? false,
     respectReducedMotion: true,
+    prevent: (node: HTMLElement) => node.tagName === 'TEXTAREA',
   });
 
   window.__lenis = lenis;

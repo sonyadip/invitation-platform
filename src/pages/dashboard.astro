@@ -90,6 +90,10 @@ if (isUnlocked && Astro.url.searchParams.get('restored')) {
 }
 
 const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value);
+const formatCurrency = (value: number | null | undefined) =>
+  value !== null && value !== undefined
+    ? `Rp ${new Intl.NumberFormat('id-ID').format(value)}`
+    : '-';
 const formatDate = (value: string | null) => value
   ? new Date(value).toLocaleDateString('en-US', {
       day: '2-digit',
@@ -109,6 +113,14 @@ const formatDateTime = (value: string | null) => value
 
 let report: any = null;
 let loadError = '';
+
+const sortableColumns = [
+  { key: 'slug', label: 'Slug', className: 'col-slug', width: '25%' },
+  { key: 'template', label: 'Template', className: 'col-template', width: '15%' },
+  { key: 'status', label: 'Status', className: 'col-status', width: '12%' },
+  { key: 'weddingDate', label: 'Wedding Date', className: 'col-date', width: '15%' },
+  { key: 'purchasePrice', label: 'Price', className: 'col-price', width: '13%' }
+];
 
 if (isUnlocked) {
   try {
@@ -184,6 +196,22 @@ if (isUnlocked) {
     </div>
   )}
 
+  {report && report.schemaMissingPurchasePrice && (
+    <div class="shadcn-alert shadcn-alert--warning" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <div>
+        <strong>Price Column Migration Required</strong>
+        <p>
+          The <code>purchase_price</code> column does not exist in Supabase yet. Displayed prices are currently estimated at 50% of the active homepage promo price — run <code>db/migrations/20261120_add_purchase_price.sql</code> in the Supabase SQL Editor to persist per-invitation prices.
+        </p>
+      </div>
+    </div>
+  )}
+
   {report && (
     <>
       <section class="metric-grid" aria-label="Key platform metrics">
@@ -232,6 +260,20 @@ if (isUnlocked) {
       </section>
 
       <section class="metric-grid metric-grid--secondary" aria-label="Detailed statistics">
+        <div class="metric-card">
+          <div class="metric-card__top">
+            <span class="metric-card__label">Total Revenue</span>
+            <svg class="metric-card__icon" style="color: #10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path>
+              <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path>
+            </svg>
+          </div>
+          <div class="metric-card__value">{formatCurrency(report.totals.revenue)}</div>
+          <p class="metric-card__note">
+            {formatNumber(report.totals.paidInvitations)} of {formatNumber(report.totals.invitations)} active invitations
+          </p>
+        </div>
+
         <div class="metric-card">
           <div class="metric-card__top">
             <span class="metric-card__label">Total Guests (Pax)</span>
@@ -321,21 +363,52 @@ if (isUnlocked) {
           <table class="shadcn-table" id="invitations-table">
             <thead>
               <tr>
-                <th style="width: 28%;" class="col-slug">Slug</th>
-                <th style="width: 16%;" class="col-template">Template</th>
-                <th style="width: 14%;" class="col-status">Status</th>
-                <th style="width: 18%;" class="col-date">Wedding Date</th>
-                <th style="width: 24%; text-align: right;" class="col-actions">Actions</th>
+                {sortableColumns.map((col) => (
+                  <th
+                    style={`width: ${col.width};`}
+                    class={`${col.className} col-sortable`}
+                    data-sort-col={col.key}
+                    aria-sort="none"
+                  >
+                    <button
+                      type="button"
+                      class="sort-header-btn"
+                      data-sort-label={col.label}
+                      title={`Sort by ${col.label}`}
+                      aria-label={`Sort by ${col.label}`}
+                    >
+                      <span>{col.label}</span>
+                      <svg
+                        class="sort-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path class="sort-arrow-up" d="m7 9 5-5 5 5"></path>
+                        <path class="sort-arrow-down" d="m7 15 5 5 5-5"></path>
+                      </svg>
+                    </button>
+                  </th>
+                ))}
+                <th style="width: 20%; text-align: right;" class="col-actions">Actions</th>
               </tr>
             </thead>
             <tbody id="invitations-tbody">
-              {report.reports.map((item: any) => (
+              {report.reports.map((item: any, index: number) => (
                 <tr
                   class="invitation-row"
-                  data-slug={item.slug.toLowerCase()}
-                  data-couple={item.coupleName.toLowerCase()}
-                  data-status={item.status.toLowerCase()}
-                  data-template={(item.template || '').toLowerCase()}
+                  data-index={index}
+                  data-slug={(item.slug || '').toLowerCase()}
+                  data-couple={(item.coupleName || '').toLowerCase()}
+                  data-domain={(item.customDomain || '').toLowerCase()}
+                  data-status={(item.status || '').toLowerCase()}
+                  data-template={(item.template || 'noir').toLowerCase()}
+                  data-wedding-date={item.weddingDate ? String(item.weddingDate) : ''}
+                  data-purchase-price={item.purchasePrice !== null && item.purchasePrice !== undefined ? String(item.purchasePrice) : ''}
                   data-edit-url={`/dashboard/${item.slug}/edit`}
                   title={`Click to edit "${item.slug}"`}
                 >
@@ -379,6 +452,11 @@ if (isUnlocked) {
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                       </svg>
                       {formatDate(item.weddingDate)}
+                    </span>
+                  </td>
+                  <td class="col-price">
+                    <span class={`price-cell${item.purchasePrice === null || item.purchasePrice === undefined ? ' price-cell--empty' : ''}`}>
+                      {formatCurrency(item.purchasePrice)}
                     </span>
                   </td>
                   <td class="col-actions">
@@ -489,6 +567,13 @@ if (isUnlocked) {
 
         <div class="shadcn-card__footer">
           <span id="showing-count">Showing {report.reports.length} of {report.reports.length} invitations</span>
+          <button type="button" id="sort-reset-btn" class="sort-reset-pill" style="display: none;" title="Reset table sorting">
+            <span id="sort-reset-label"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
       </section>
 
@@ -610,13 +695,117 @@ if (isUnlocked) {
   document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const filterPills = document.querySelectorAll('.filter-pill');
-    const rows = document.querySelectorAll('.invitation-row');
+    const tbody = document.getElementById('invitations-tbody');
+    const rows = Array.from(document.querySelectorAll('#invitations-tbody .invitation-row'));
+    const sortHeaders = Array.from(document.querySelectorAll('#invitations-table th[data-sort-col]'));
+    const sortResetBtn = document.getElementById('sort-reset-btn');
+    const sortResetLabel = document.getElementById('sort-reset-label');
     const emptyState = document.getElementById('no-search-results');
     const showingCount = document.getElementById('showing-count');
     const totalCount = rows.length;
 
+    const STATUS_ORDER = { published: 0, draft: 1, archived: 2 };
+    const SORT_LABELS = {
+      slug: 'Slug',
+      template: 'Template',
+      status: 'Status',
+      weddingDate: 'Wedding Date',
+      purchasePrice: 'Price'
+    };
+
     let currentFilter = 'all';
     let currentSearch = '';
+    let currentSortCol = null;
+    let currentSortDir = null;
+
+    function parseTimestamp(value) {
+      if (!value) return null;
+      const ms = Date.parse(value);
+      return Number.isFinite(ms) ? ms : null;
+    }
+
+    function parsePriceValue(value) {
+      if (value === null || value === undefined || value === '') return null;
+      const num = Number(value);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function compareByIndex(a, b) {
+      return Number(a.getAttribute('data-index') || 0) - Number(b.getAttribute('data-index') || 0);
+    }
+
+    function compareRows(a, b) {
+      if (!currentSortCol || !currentSortDir) {
+        return compareByIndex(a, b);
+      }
+
+      const factor = currentSortDir === 'asc' ? 1 : -1;
+
+      if (currentSortCol === 'weddingDate' || currentSortCol === 'purchasePrice') {
+        const isDate = currentSortCol === 'weddingDate';
+        const attr = isDate ? 'data-wedding-date' : 'data-purchase-price';
+        const parseFn = isDate ? parseTimestamp : parsePriceValue;
+        const aVal = parseFn(a.getAttribute(attr));
+        const bVal = parseFn(b.getAttribute(attr));
+        if (aVal === null && bVal === null) return compareByIndex(a, b);
+        // Keep empty cells at the bottom in both ascending and descending directions.
+        if (aVal === null) return 1;
+        if (bVal === null) return -1;
+        return aVal !== bVal ? (aVal - bVal) * factor : compareByIndex(a, b);
+      }
+
+      if (currentSortCol === 'status') {
+        const aStatus = a.getAttribute('data-status') || '';
+        const bStatus = b.getAttribute('data-status') || '';
+        const aRank = Object.prototype.hasOwnProperty.call(STATUS_ORDER, aStatus) ? STATUS_ORDER[aStatus] : 99;
+        const bRank = Object.prototype.hasOwnProperty.call(STATUS_ORDER, bStatus) ? STATUS_ORDER[bStatus] : 99;
+        const diff = aRank !== bRank ? aRank - bRank : aStatus.localeCompare(bStatus);
+        return diff !== 0 ? diff * factor : compareByIndex(a, b);
+      }
+
+      const isTemplate = currentSortCol === 'template';
+      const attr = isTemplate ? 'data-template' : 'data-slug';
+      const rawA = a.getAttribute(attr) || '';
+      const rawB = b.getAttribute(attr) || '';
+      const aVal = isTemplate ? rawA.replace(/-/g, ' ') : rawA;
+      const bVal = isTemplate ? rawB.replace(/-/g, ' ') : rawB;
+      const cmp = aVal.localeCompare(bVal, undefined, { numeric: true, sensitivity: 'base' });
+      return cmp !== 0 ? cmp * factor : compareByIndex(a, b);
+    }
+
+    function applySort() {
+      if (!tbody) return;
+
+      const sortedRows = [...rows].sort(compareRows);
+      const fragment = document.createDocumentFragment();
+      sortedRows.forEach(row => fragment.appendChild(row));
+      tbody.appendChild(fragment);
+
+      sortHeaders.forEach(th => {
+        const col = th.getAttribute('data-sort-col');
+        const btn = th.querySelector('.sort-header-btn');
+        const label = btn?.getAttribute('data-sort-label') || col;
+        const isCurrent = col === currentSortCol && currentSortDir;
+        const ariaSort = isCurrent ? (currentSortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+
+        th.setAttribute('aria-sort', ariaSort);
+        if (btn) {
+          const stateText = isCurrent ? ` (${currentSortDir === 'asc' ? 'ascending' : 'descending'})` : '';
+          btn.setAttribute('aria-label', `Sort by ${label}${stateText}`);
+          btn.setAttribute('title', `Sort by ${label}${stateText}`);
+        }
+      });
+
+      if (sortResetBtn && sortResetLabel) {
+        if (currentSortCol && currentSortDir) {
+          const dirLabel = currentSortDir === 'asc' ? 'Asc' : 'Desc';
+          sortResetLabel.textContent = `Sorted by ${SORT_LABELS[currentSortCol] || currentSortCol} (${dirLabel})`;
+          sortResetBtn.style.display = 'inline-flex';
+        } else {
+          sortResetBtn.style.display = 'none';
+        }
+      }
+    }
 
     function applyFilter() {
       let visible = 0;
@@ -624,13 +813,17 @@ if (isUnlocked) {
       rows.forEach(row => {
         const slug = row.getAttribute('data-slug') || '';
         const couple = row.getAttribute('data-couple') || '';
+        const domain = row.getAttribute('data-domain') || '';
         const status = row.getAttribute('data-status') || '';
         const template = row.getAttribute('data-template') || '';
+        const templateLabel = template.replace(/-/g, ' ');
 
         const matchesSearch = !currentSearch ||
           slug.includes(currentSearch) ||
           couple.includes(currentSearch) ||
-          template.includes(currentSearch);
+          domain.includes(currentSearch) ||
+          template.includes(currentSearch) ||
+          templateLabel.includes(currentSearch);
         const matchesStatus = currentFilter === 'all' || status === currentFilter;
 
         if (matchesSearch && matchesStatus) {
@@ -665,6 +858,32 @@ if (isUnlocked) {
         applyFilter();
       });
     });
+
+    sortHeaders.forEach(th => {
+      const btn = th.querySelector('.sort-header-btn');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort-col');
+        if (currentSortCol !== col) {
+          currentSortCol = col;
+          currentSortDir = 'asc';
+        } else if (currentSortDir === 'asc') {
+          currentSortDir = 'desc';
+        } else {
+          currentSortCol = null;
+          currentSortDir = null;
+        }
+        applySort();
+      });
+    });
+
+    if (sortResetBtn) {
+      sortResetBtn.addEventListener('click', () => {
+        currentSortCol = null;
+        currentSortDir = null;
+        applySort();
+      });
+    }
 
     rows.forEach(row => {
       row.addEventListener('click', (e) => {

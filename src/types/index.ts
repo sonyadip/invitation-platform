@@ -21,6 +21,7 @@ export interface Wedding {
   music_url: string | null;
   template: string;
   status: WeddingStatus;
+  purchase_price?: number | null;
   deleted_at: string | null;
   deleted_by: string | null;
   created_at: string;
@@ -89,6 +90,7 @@ export interface SectionToggles {
   video?: boolean;
   livestream?: boolean;
   introAnimation?: boolean;
+  dresscode?: boolean;
 }
 
 export interface InvitationSettings {

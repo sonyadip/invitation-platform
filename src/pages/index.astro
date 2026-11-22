@@ -1294,14 +1294,18 @@ const schemaData = {
             document.getElementById("username").value = "admin";
           }
           
-          if (urlParams.get('error') === '1') {
+          const errParam = urlParams.get('error');
+          if (errParam === '1' || errParam === 'link_used') {
             if (!document.getElementById("admin-error")) {
               const errorMsg = document.createElement("p");
               errorMsg.id = "admin-error";
               errorMsg.style.color = "#b91c1c";
               errorMsg.style.fontSize = "13px";
-              errorMsg.style.marginTop = "0.5rem";
-              errorMsg.innerText = "Username atau Password salah.";
+              errorMsg.style.marginTop = "-0.5rem";
+              errorMsg.style.marginBottom = "1rem";
+              errorMsg.innerText = errParam === 'link_used'
+                ? "Akun sudah diklaim. Silakan login dengan password Anda."
+                : "Username atau Password salah.";
               loginFormUnified.insertBefore(errorMsg, loginFormUnified.querySelector(".submit-btn"));
             }
           }

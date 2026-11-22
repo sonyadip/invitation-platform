@@ -127,15 +127,15 @@ body.template-editorial {
     background: #000;
     pointer-events: none;
 
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.64), rgba(0, 0, 0, 0.78)),
-        rgba(0, 0, 0, 0.2);
-    }
+    // &::after {
+    //   content: "";
+    //   position: absolute;
+    //   inset: 0;
+    //   z-index: 2;
+    //   background:
+    //     linear-gradient(180deg, rgba(0, 0, 0, 0.64), rgba(0, 0, 0, 0.78)),
+    //     rgba(0, 0, 0, 0.2);
+    // }
   }
 
   .template-slide {
@@ -145,6 +145,7 @@ body.template-editorial {
     height: 100%;
     object-fit: cover;
     opacity: 0;
+    filter: brightness(0.60);
     transform: scale(1);
     will-change: opacity, transform;
     backface-visibility: hidden;
@@ -292,17 +293,18 @@ body.template-editorial {
       height: 100%;
       object-fit: cover;
       object-position: center;
+      filter: brightness(0.60);
     }
   }
 
-  .cover-section__overlay {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.68) 0%, rgba(0, 0, 0, 0.24) 42%, rgba(0, 0, 0, 0.82) 100%),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.46) 0%, rgba(0, 0, 0, 0.08) 48%, rgba(0, 0, 0, 0.46) 100%);
-    background: rgba(0, 0, 0, 0.4);
-  }
+  // .cover-section__overlay {
+  //   position: absolute;
+  //   inset: 0;
+  //   background:
+  //     linear-gradient(180deg, rgba(0, 0, 0, 0.68) 0%, rgba(0, 0, 0, 0.24) 42%, rgba(0, 0, 0, 0.82) 100%),
+  //     linear-gradient(90deg, rgba(0, 0, 0, 0.46) 0%, rgba(0, 0, 0, 0.08) 48%, rgba(0, 0, 0, 0.46) 100%);
+  //   background: rgba(0, 0, 0, 0.4);
+  // }
 
   .cover-section__content {
     position: relative;
@@ -479,7 +481,15 @@ body.template-editorial {
     width: 40%;
     max-width: 270px;
     aspect-ratio: 2 / 3;
-    object-fit: cover;
+    overflow: hidden;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      scale: 1.4;
+    }
   }
 
   .couple-section__name {
@@ -1777,7 +1787,7 @@ body.template-editorial {
   }
 
   .page-bg::after {
-    background: rgba(0, 0, 0, 0.6);
+    // background: rgba(0, 0, 0, 0.6);
   }
 
   .cover-section__content {
@@ -1814,6 +1824,7 @@ body.template-editorial {
 
   .event-row {
     @include editorial-mobile-row;
+    padding: 0 5% 5%;
   }
 
   .rsvp-row {

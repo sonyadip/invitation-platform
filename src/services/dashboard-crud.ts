@@ -17,6 +17,7 @@ export interface InvitationFormInput {
   musicUrl: string | null;
   template: string;
   status: string;
+  purchasePrice: number | null;
   rsvpEnabled: boolean;
   musicEnabled: boolean;
   countdownEnabled: boolean;
@@ -126,6 +127,11 @@ const defaultThemeConfig: ThemeConfig = {
 function toDashboardError(error: any, context: string) {
   if (!error) return new Error(context);
   if (error instanceof Error) return error;
+  if (error.code === '42703' || String(error.message || '').includes('purchase_price')) {
+    return new Error(
+      'The purchase_price column is not available in Supabase yet. Run db/migrations/20261120_add_purchase_price.sql in the Supabase SQL Editor first.'
+    );
+  }
 
   const parts = [
     context,
@@ -222,6 +228,9 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     }))
     .filter((gift) => gift.bankName || gift.accountNumber || gift.accountName || gift.qrisUrl);
 
+  const rawPurchasePrice = value('purchasePrice');
+  const purchasePrice = rawPurchasePrice === '' ? null : Number(rawPurchasePrice);
+
   return {
     slug: value('slug'),
     brideName: value('brideName'),
@@ -235,6 +244,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     musicUrl: nullableValue('musicUrl'),
     template: value('template') || 'noir',
     status: value('status') || 'draft',
+    purchasePrice,
     rsvpEnabled: checked('rsvpEnabled'),
     musicEnabled: checked('musicEnabled'),
     countdownEnabled: checked('countdownEnabled'),
@@ -323,6 +333,10 @@ export function validateInvitationForm(input: InvitationFormInput) {
 
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug)) {
     throw new Error('Slug must use lowercase letters, numbers, and hyphens only.');
+  }
+
+  if (input.purchasePrice !== null && (!Number.isFinite(input.purchasePrice) || input.purchasePrice < 0)) {
+    throw new Error('Purchase price must be a non-negative number.');
   }
 
   if (!input.events.length) {
@@ -919,7 +933,8 @@ export async function createInvitation(input: InvitationFormInput) {
     story: resolvedInput.story,
     music_url: resolvedInput.musicUrl,
     template: resolvedInput.template,
-    status: resolvedInput.status
+    status: resolvedInput.status,
+    purchase_price: resolvedInput.purchasePrice !== null ? Math.round(resolvedInput.purchasePrice) : null
   };
 
   if (resolvedInput.clientPassword && resolvedInput.clientPassword.trim() !== '') {
@@ -994,7 +1009,8 @@ export async function updateInvitation(weddingId: string, input: InvitationFormI
     story: resolvedInput.story,
     music_url: resolvedInput.musicUrl,
     template: resolvedInput.template,
-    status: resolvedInput.status
+    status: resolvedInput.status,
+    purchase_price: resolvedInput.purchasePrice !== null ? Math.round(resolvedInput.purchasePrice) : null
   };
 
   if (resolvedInput.clientPassword && resolvedInput.clientPassword.trim() !== '') {
@@ -1179,7 +1195,8 @@ export async function duplicateInvitation(weddingId: string) {
       story: wedding.story || [],
       music_url: wedding.music_url,
       template: wedding.template,
-      status: 'draft'
+      status: 'draft',
+      purchase_price: null
     })
     .select('id, slug')
     .single();

@@ -1,6 +1,11 @@
 ---
 import { verifySetupToken } from '../utils/token';
 import { supabase } from '../lib/supabase';
+import { getPlatformSettings } from '../services/platform-settings';
+import { transformMediaUrls } from '../utils/cdn';
+import { resolveInvitationSeo } from '../utils/template-helpers';
+import metatahDefaultCover from '../templates/lumiere-metatah-v2/assets/cover.webp';
+import noirDefaultCover from '../templates/noir/assets/cover.webp';
 
 export const prerender = false;
 
@@ -16,19 +21,64 @@ if (!slug) {
   return Astro.redirect('/?error=invalid_setup_link');
 }
 
-const { data: wedding, error } = await supabase
+const { data: rawWedding, error } = await supabase
   .from('weddings')
-  .select('client_password_hash')
+  .select('id, slug, groom_name, bride_name, groom_full_name, bride_full_name, wedding_date, venue_name, venue_address, maps_url, template, status, client_password_hash')
   .eq('slug', slug)
   .single();
 
-if (error || !wedding) {
+if (error || !rawWedding) {
   return Astro.redirect('/?error=invalid_setup_link');
 }
 
-if (wedding.client_password_hash) {
+if (rawWedding.client_password_hash) {
   return Astro.redirect('/?login=client&error=link_used');
 }
+
+const [settingsRes, eventsRes, siteSettings] = await Promise.all([
+  supabase
+    .from('invitation_settings')
+    .select('*')
+    .eq('wedding_id', rawWedding.id)
+    .maybeSingle(),
+  supabase
+    .from('wedding_events')
+    .select('*')
+    .eq('wedding_id', rawWedding.id)
+    .order('sort_order', { ascending: true }),
+  getPlatformSettings()
+]);
+
+const wedding = transformMediaUrls(rawWedding);
+const settings = settingsRes.data ? transformMediaUrls(settingsRes.data) : null;
+const events = eventsRes.data || [];
+
+const seo = resolveInvitationSeo({
+  wedding,
+  settings,
+  events
+});
+
+const pageTitle = `Klaim Akun Dashboard - ${seo.title}`;
+const pageDescription = `Klaim akses dashboard undangan ${seo.label} untuk mengelola daftar tamu, pengiriman undangan, dan konfirmasi kehadiran (RSVP).`;
+
+const templateName = (wedding.template || 'noir').toLowerCase();
+const coverModules = import.meta.glob('../templates/*/assets/cover.{jpg,png,webp,jpeg}', { eager: true }) as Record<string, { default: { src: string } }>;
+const defaultCoverKey = Object.keys(coverModules).find((key) => key.includes(`/${templateName}/assets/cover.`));
+const fallbackCover = defaultCoverKey
+  ? coverModules[defaultCoverKey].default.src
+  : (seo.isMetatah ? metatahDefaultCover.src : noirDefaultCover.src);
+
+const themeAssets = (settings?.theme_config as any)?.assets || {};
+const userAgent = Astro.request.headers.get('user-agent') || '';
+const isVerticalPlatform = /WhatsApp/i.test(userAgent);
+const verticalImage = themeAssets.coverImage || themeAssets.heroImage || fallbackCover;
+const landscapeImage = themeAssets.ogImage || verticalImage;
+const selectedImage = isVerticalPlatform ? (verticalImage || landscapeImage) : (landscapeImage || verticalImage);
+const isLandscapeOgImage = !isVerticalPlatform && Boolean(themeAssets.ogImage) && selectedImage === themeAssets.ogImage;
+
+const imageUrl = selectedImage ? new URL(selectedImage, Astro.url).toString() : new URL('/logo.jpg', Astro.url).toString();
+const imageType = imageUrl.endsWith('.png') ? 'image/png' : (imageUrl.endsWith('.jpg') || imageUrl.endsWith('.jpeg')) ? 'image/jpeg' : 'image/webp';
 ---
 
 <!DOCTYPE html>
@@ -36,78 +86,201 @@ if (wedding.client_password_hash) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Klaim Akun Dashboard</title>
+  <title>{pageTitle}</title>
+  <meta name="title" content={pageTitle} />
+  <meta name="description" content={pageDescription} />
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+  <link rel="apple-touch-icon" href="/logo.jpg" />
+  <link rel="canonical" href={Astro.url.href} />
+  <meta property="og:locale" content="id_ID" />
+
+  <meta name="geo.region" content={seo.geo.region} />
+  <meta name="geo.placename" content={seo.geo.placename} />
+  <meta name="geo.position" content={seo.geo.position} />
+  <meta name="ICBM" content={seo.geo.icbm} />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={Astro.url.href} />
+  <meta property="og:site_name" content={seo.title} />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDescription} />
+  <meta property="og:image" content={imageUrl} />
+  <meta property="og:image:secure_url" content={imageUrl} />
+  <meta property="og:image:type" content={imageType} />
+  {isLandscapeOgImage && (
+    <>
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+    </>
+  )}
+  <meta property="og:image:alt" content={pageTitle} />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content={Astro.url.href} />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={pageDescription} />
+  <meta name="twitter:image" content={imageUrl} />
+  <meta name="theme-color" content="#17160f" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/fonts/SaolDisplay-Regular.woff2" as="font" type="font/woff2" crossorigin />
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
+    @font-face {
+      font-family: "SaolDisplay-Regular";
+      src: url("/fonts/SaolDisplay-Regular.woff2") format("woff2");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
 
     :root {
+      color-scheme: light;
+
       --ink-charcoal: #17160f;
       --deep-charcoal: #2f2e25;
       --ivory-paper: #f7f5ea;
       --soft-parchment: #efeddf;
       --warm-taupe: #b8aa92;
       --muted-clay: #a9785f;
-      --font-body: 'Montserrat', system-ui, sans-serif;
+
+      --accent: var(--muted-clay);
+      --black: var(--ink-charcoal);
+      --white: var(--ivory-paper);
+      --grey: var(--warm-taupe);
+      --dark-grey: var(--deep-charcoal);
+      --line: var(--warm-taupe);
+
+      --font-heading: "SaolDisplay-Regular", serif;
+      --font-body: "Montserrat", sans-serif;
+
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-soft: cubic-bezier(0.29, 0.73, 0.45, 1);
     }
 
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
       margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background: var(--white);
+      color: var(--black);
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    p,
+    h1,
+    h2 {
+      margin: 0;
+    }
+
+    svg {
+      width: 1em;
+      height: 1em;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2;
+    }
+
+    .hero-nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 12px;
+      background: linear-gradient(
+        180deg,
+        rgba(247, 245, 234, 0.9),
+        rgba(247, 245, 234, 0)
+      );
+      backdrop-filter: blur(14px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      margin-top: 5px;
+      text-decoration: none;
+    }
+
+    .brand-logo__image {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .login-page {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
-      font-family: var(--font-body);
-      background-color: var(--ivory-paper);
-      background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(169,120,95,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 20%, rgba(184,170,146,0.08) 0%, transparent 50%);
+      padding: 5rem 1rem 2rem;
     }
 
-    .setup-card {
+    .login-modal__content {
       position: relative;
       width: 100%;
       max-width: 400px;
-      background: var(--ivory-paper);
+      background: var(--white);
       padding: 2.5rem;
       border-radius: 1.5rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      border: 1px solid rgba(47, 46, 37, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
     }
 
-    @keyframes slideUp {
-      from { transform: translateY(20px); opacity: 0; }
-      to   { transform: translateY(0);    opacity: 1; }
+    .login-modal__close-btn {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      width: 48px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--grey);
+      transition: color 0.2s ease, background-color 0.2s ease;
+      padding: 0.25rem;
+      border-radius: 50%;
+      text-decoration: none;
     }
 
-    .setup-card__badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted-clay);
-      margin-bottom: 0.75rem;
+    .login-modal__close-btn:hover {
+      color: var(--black);
+      background: var(--soft-parchment);
     }
 
-    .setup-card h1 {
-      margin: 0 0 0.5rem;
+    .login-modal__header h1 {
+      font-family: var(--font-heading);
       font-size: 2rem;
       line-height: 1.1;
-      font-weight: 400;
-      color: var(--ink-charcoal);
-      font-family: Georgia, 'Times New Roman', serif;
+      margin-bottom: 0.5rem;
+      color: var(--black);
     }
 
-    .setup-card__sub {
-      font-size: 0.875rem;
-      color: var(--muted-clay);
-      margin: 0 0 2rem;
-      line-height: 1.5;
+    .login-modal__header p {
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
     }
 
     .form-group {
@@ -125,92 +298,100 @@ if (wedding.client_password_hash) {
     .form-group input {
       width: 100%;
       padding: 0.75rem 1rem;
-      border: 1px solid var(--warm-taupe);
+      border: 1px solid var(--deep-charcoal);
       border-radius: 0.75rem;
       font-family: var(--font-body);
       font-size: 0.9rem;
-      background: var(--ivory-paper);
-      color: var(--ink-charcoal);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      outline: none;
+      background: var(--white);
+      color: var(--black);
+      transition: all 0.2s ease;
     }
 
     .form-group input:focus {
-      border-color: var(--muted-clay);
-      box-shadow: 0 0 0 3px rgba(169, 120, 95, 0.12);
+      outline: none;
+      border-color: var(--black);
+      box-shadow: 0 0 0 3px rgba(169, 120, 95, 0.1);
     }
 
     .form-group input[readonly] {
       background: var(--soft-parchment);
-      color: var(--warm-taupe);
-      cursor: not-allowed;
-      border-color: transparent;
+      color: var(--deep-charcoal);
+      cursor: default;
     }
 
     .submit-btn {
       width: 100%;
       padding: 1rem;
-      background: var(--ink-charcoal);
-      color: var(--ivory-paper);
+      background: var(--black);
+      color: var(--white);
       border: none;
       border-radius: 0.75rem;
-      font-family: var(--font-body);
+      font-family: inherit;
       font-weight: 600;
       font-size: 0.95rem;
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.1s ease;
-      margin-top: 0.5rem;
     }
 
-    .submit-btn:hover { background: var(--deep-charcoal); }
-    .submit-btn:active { transform: scale(0.98); }
-
-    .setup-card__divider {
-      height: 1px;
-      background: var(--soft-parchment);
-      margin: 1.75rem 0;
+    .submit-btn:hover {
+      background: var(--deep-charcoal);
     }
 
-    .setup-card__hint {
-      font-size: 0.78rem;
-      color: var(--warm-taupe);
-      text-align: center;
-      line-height: 1.6;
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <div class="setup-card">
-    <span class="setup-card__badge">Sekali Pakai</span>
-    <h1>Klaim Akun</h1>
-    <p class="setup-card__sub">Buat password untuk mengakses dashboard undangan Anda.</p>
+  <nav class="hero-nav" aria-label="Navigasi utama">
+    <a class="brand-logo" href="/" aria-label="Beranda">
+      <img
+        src={siteSettings.logo_url || "/images/senadda-logo.png"}
+        alt={(siteSettings.site_name || "Senadda") + " Logo"}
+        class="brand-logo__image"
+      />
+    </a>
+  </nav>
 
-    <form method="POST" action="/api/auth/setup">
-      <input type="hidden" name="token" value={token} />
-
-      <div class="form-group">
-        <label for="setup-username">Username</label>
-        <input type="text" id="setup-username" name="username" value={slug} readonly />
+  <main class="login-page">
+    <div class="login-modal__content">
+      <a href="/" class="login-modal__close-btn" aria-label="Tutup">
+        <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </a>
+      <div class="login-modal__header">
+        <h1>Klaim Akun</h1>
+        <p>Buat password untuk mengakses dashboard akun Anda.</p>
       </div>
 
-      <div class="form-group">
-        <label for="setup-password">Password Baru</label>
-        <input
-          type="password"
-          id="setup-password"
-          name="password"
-          required
-          placeholder="••••••••"
-          minlength="6"
-          autofocus
-        />
-      </div>
+      <form class="login-modal__form" method="POST" action="/api/auth/setup">
+        <input type="hidden" name="token" value={token} />
 
-      <button type="submit" class="submit-btn">Simpan &amp; Login</button>
-    </form>
+        <div class="form-group">
+          <label for="setup-username">Username</label>
+          <input type="text" id="setup-username" name="username" value={slug} readonly />
+        </div>
 
-    <div class="setup-card__divider"></div>
-    <p class="setup-card__hint">Link ini hanya dapat digunakan satu kali.<br />Setelah password diset, link ini tidak bisa dipakai lagi.</p>
-  </div>
+        <div class="form-group">
+          <label for="setup-password">Password</label>
+          <input
+            type="password"
+            id="setup-password"
+            name="password"
+            required
+            placeholder="••••••••"
+            minlength="6"
+            autofocus
+          />
+        </div>
+
+        <button type="submit" class="submit-btn">Simpan &amp; Login</button>
+      </form>
+    </div>
+  </main>
 </body>
 </html>
