@@ -710,17 +710,13 @@ h2.section-title,
     }
 
     
-&--bride {
-      // .couple-card__photo-col {
-      //   margin: 0 -80px 0 -20px;
-      // }
-
+    &--groom {
       .couple-card__photo {
         border-radius: 0 10px 10px 0;
       }
     }
 
-    &--groom {
+    &--bride {
       .couple-card__nickname-col {
         margin: 50px 40px 0 0;
         z-index: 2;

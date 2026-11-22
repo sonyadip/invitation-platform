@@ -334,60 +334,16 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
           {sections.coupleInfo && (
             <section class="couple-section" id="mempelai">
 
-              <div class="couple-card couple-card--bride">
-                <div class="couple-card__grid">
-                  <div class="couple-card__photo-col" data-animate="slide-right" style="--animate-delay: 100ms;">
-                    <SmartImage src={brideImage} alt={wedding.bride_name} class="couple-card__photo couple-card__photo--bride" loading="lazy" />
-                  </div>
-                  {/* <div class="couple-card__nickname-col">
-                    <p class="couple-card__nickname">
-                      {wedding.bride_name}
-                    </p>
-                  </div> */}
-                </div>
-
-                <div class="couple-card__details couple-card__details--bride">
-                  <h3 class="couple-card__fullname" data-animate="fade-up" style="--animate-delay: 300ms;">{wedding.bride_full_name}</h3>
-                  <p class="couple-card__parents" data-animate="fade-up" style="--animate-delay: 480ms;">
-                    {brideParentLines.map((line, idx) => (
-                      <>
-                        {idx > 0 && <br />}
-                        {line}
-                      </>
-                    ))}
-                  </p>
-                  {brideInstagramUrl && (
-                    <a
-                      class="couple-card__social"
-                      href={brideInstagramUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${wedding.bride_name} Instagram`}
-                      data-track-couple-instagram="bride"
-                      data-animate="fade-up"
-                      style="--animate-delay: 650ms;"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                      </svg>
-                      <span>{getInstagramUsername(brideInstagramUrl)}</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-
               <div class="couple-card couple-card--groom">
                 <div class="couple-card__grid">
+                  <div class="couple-card__photo-col" data-animate="slide-right" style="--animate-delay: 100ms;">
+                    <SmartImage src={groomImage} alt={wedding.groom_name} class="couple-card__photo couple-card__photo--groom" loading="lazy" />
+                  </div>
                   {/* <div class="couple-card__nickname-col">
                     <p class="couple-card__nickname">
                       {wedding.groom_name}
                     </p>
                   </div> */}
-                  <div class="couple-card__photo-col" data-animate="slide-left" style="--animate-delay: 100ms;">
-                    <SmartImage src={groomImage} alt={wedding.groom_name} class="couple-card__photo couple-card__photo--groom" loading="lazy" />
-                  </div>
                 </div>
 
                 <div class="couple-card__details couple-card__details--groom">
@@ -417,6 +373,50 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
                         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                       </svg>
                       <span>{getInstagramUsername(groomInstagramUrl)}</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div class="couple-card couple-card--bride">
+                <div class="couple-card__grid">
+                  {/* <div class="couple-card__nickname-col">
+                    <p class="couple-card__nickname">
+                      {wedding.bride_name}
+                    </p>
+                  </div> */}
+                  <div class="couple-card__photo-col" data-animate="slide-left" style="--animate-delay: 100ms;">
+                    <SmartImage src={brideImage} alt={wedding.bride_name} class="couple-card__photo couple-card__photo--bride" loading="lazy" />
+                  </div>
+                </div>
+
+                <div class="couple-card__details couple-card__details--bride">
+                  <h3 class="couple-card__fullname" data-animate="fade-up" style="--animate-delay: 300ms;">{wedding.bride_full_name}</h3>
+                  <p class="couple-card__parents" data-animate="fade-up" style="--animate-delay: 480ms;">
+                    {brideParentLines.map((line, idx) => (
+                      <>
+                        {idx > 0 && <br />}
+                        {line}
+                      </>
+                    ))}
+                  </p>
+                  {brideInstagramUrl && (
+                    <a
+                      class="couple-card__social"
+                      href={brideInstagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${wedding.bride_name} Instagram`}
+                      data-track-couple-instagram="bride"
+                      data-animate="fade-up"
+                      style="--animate-delay: 650ms;"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                      </svg>
+                      <span>{getInstagramUsername(brideInstagramUrl)}</span>
                     </a>
                   )}
                 </div>
