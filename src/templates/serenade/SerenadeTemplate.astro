@@ -418,8 +418,8 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
                   const evtDate = evt.event_date ? new Date(evt.event_date) : (wedding.wedding_date ? new Date(wedding.wedding_date) : new Date());
                   const validDate = isNaN(evtDate.getTime()) ? new Date('2026-12-22') : evtDate;
 
-                  const dayName = validDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-                  const monthAbbr = validDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                  const dayName = validDate.toLocaleDateString('id-ID', { weekday: 'long' }).toUpperCase();
+                  const monthAbbr = validDate.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
                   const dayNum = String(validDate.getDate());
                   const yearNum = String(validDate.getFullYear());
 

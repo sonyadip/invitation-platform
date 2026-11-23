@@ -34,6 +34,7 @@ const theme = settings.theme_config.theme;
 
 const sections = (settings.theme_config as any)?.sections || {};
 const hasIntro = sections.introAnimation !== false;
+const isAdsPreview = wedding.id.startsWith('ads-');
 const isExpired = Boolean(settings.expiration_date && new Date(settings.expiration_date) < new Date());
 const templateBg = templateClass === 'template-terre' ? '#f1e9de' : (theme.bgColor || '#FAF8F5');
 const initialThemeColor = customThemeColor || (hasIntro ? '#000000' : templateBg);
@@ -82,7 +83,7 @@ const customCss = settings.theme_config?.customCss?.replace(/<\/?style[^>]*>?/gi
     <title>{docTitle}</title>
     <meta name="title" content={docTitle} />
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="robots" content={isAdsPreview ? "noindex, nofollow" : "index, follow, max-image-preview:large"} />
     <link rel="canonical" href={Astro.url.href} />
     <meta property="og:locale" content="id_ID" />
 

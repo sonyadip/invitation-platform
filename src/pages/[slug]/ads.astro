@@ -1,0 +1,80 @@
+---
+import { getInvitationByDomainOrSlug } from '../../services/invitation';
+import { sanitizeInvitationForAds } from '../../services/invitation-preview';
+import { resolveInvitationIdentifier } from '../../services/invitation-runtime';
+import { loadTemplate } from '../../templates/registry';
+import { getSessionFromCookies } from '../../utils/session';
+
+export const prerender = false;
+
+const privateHeaders = {
+  'Cache-Control': 'private, no-store',
+  'X-Robots-Tag': 'noindex, nofollow'
+};
+
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
+const session = Astro.locals.session !== undefined
+  ? Astro.locals.session
+  : await getSessionFromCookies(Astro.cookies);
+
+if (session?.role !== 'admin') {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      ...privateHeaders,
+      Location: '/?login=admin'
+    }
+  });
+}
+
+const { slug } = Astro.params;
+const { identifier, isDomain } = resolveInvitationIdentifier(Astro.url, slug);
+let data: Awaited<ReturnType<typeof getInvitationByDomainOrSlug>> = null;
+
+try {
+  data = await getInvitationByDomainOrSlug(identifier, isDomain);
+} catch (error) {
+  console.error(`[SSR Fatal] Database connection error for ads view "${identifier}":`, error);
+  return new Response('Terjadi gangguan sistem sementara. Silakan coba beberapa saat lagi.', {
+    status: 503,
+    headers: {
+      ...privateHeaders,
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Retry-After': '30'
+    }
+  });
+}
+
+if (!data) {
+  return new Response('Undangan tidak ditemukan atau telah dihapus.', {
+    status: 404,
+    headers: {
+      ...privateHeaders,
+      'Content-Type': 'text/plain; charset=utf-8'
+    }
+  });
+}
+
+const adsData = sanitizeInvitationForAds(data);
+const loadedTemplate = await loadTemplate(adsData.wedding.template);
+const ActiveTemplate = loadedTemplate.component as any;
+
+if (!ActiveTemplate) {
+  return new Response(
+    `Template "${loadedTemplate.key}" was not found. Make sure src/templates/${loadedTemplate.key}/ follows the template convention.`,
+    {
+      status: 404,
+      headers: {
+        ...privateHeaders,
+        'Content-Type': 'text/plain; charset=utf-8'
+      }
+    }
+  );
+}
+
+const guestName = Astro.url.searchParams.get('to') || null;
+---
+
+<ActiveTemplate data={adsData} guestName={guestName} />

@@ -1,6 +1,12 @@
 ---
 import { loadTemplate } from '../../templates/registry';
 import { getInvitationByDomainOrSlug } from '../../services/invitation';
+import {
+  buildMockGift,
+  buildMockWishes,
+  buildSanitizedThemeContent,
+  getFuturePreviewWeddingDate
+} from '../../services/invitation-preview';
 import type { FullInvitationData } from '../../types';
 import { COMMON_ASSETS } from '../../utils/cdn';
 import metatahPreviewBg from '../../templates/lumiere-metatah-v2/assets/metatah-bg.webp';
@@ -11,7 +17,7 @@ export const prerender = false;
 const { template } = Astro.params;
 const templateKey = (template || 'noir').toLowerCase();
 const now = new Date().toISOString();
-const weddingDate = '2026-12-22T08:00:00+08:00';
+const weddingDate = getFuturePreviewWeddingDate(30);
 
 const isMetatahTanpaFoto = templateKey === 'lumiere-metatah-tanpa-foto' || templateKey === 'lumiere-metatah-v2-tanpa-foto';
 const isMetatahV2 = templateKey === 'lumiere-metatah-v2' || isMetatahTanpaFoto;
@@ -159,32 +165,8 @@ const defaultData: FullInvitationData = {
         ])
   ],
   gallery: [],
-  gifts: [
-    {
-      id: 'gift-1',
-      wedding_id: `preview-${templateKey}`,
-      bank_name: 'BCA',
-      account_number: '0123 456 789',
-      account_name: 'Rama Pratama',
-      qris_url: null,
-      sort_order: 1,
-      created_at: now
-    }
-  ],
-  wishes: Array.from({ length: 40 }, (_, i) => ({
-    id: `wish-${i + 1}`,
-    wedding_id: `preview-${templateKey}`,
-    guest_name: ['Sahabat', 'Budi Santoso', 'Siti Rahma', 'Dimas Anggara', 'Rina Wulandari', 'Andi Pratama', 'Maya Putri', 'Eko Prasetyo', 'Dewi Lestari', 'Fajar Ramadhan'][i % 10] + ` #${i + 1}`,
-    attendance_status: (i % 3 === 0 ? 'attending' : (i % 3 === 1 ? 'tentative' : 'declined')) as any,
-    guest_count: (i % 3) + 1,
-    message: [
-      'Selamat menempuh hidup baru, semoga bahagia selalu!',
-      'Selamat ya! Semoga lancar sampai hari H dan langgeng selamanya.',
-      'Doa terbaik untuk kedua mempelai',
-      'Selamat berbahagia! Semoga cinta kasih senantiasa menyertai perjalanan hidup kalian.'
-    ][i % 4],
-    created_at: new Date(Date.now() - i * 3600000).toISOString()
-  }))
+  gifts: [buildMockGift(`preview-${templateKey}`, 'Rama Pratama', now)],
+  wishes: buildMockWishes(`preview-${templateKey}`, false)
 };
 
 if (isMetatahFamily) {
@@ -299,8 +281,8 @@ if (isMetatahFamily) {
       event_date: weddingDate,
       start_time: '08:00',
       end_time: '12:00',
-      venue_name: 'Griya Agung Sukawati',
-      venue_address: 'Jl. Raya Sukawati, Gianyar, Bali',
+      venue_name: 'The Royal Garden',
+      venue_address: 'Jl. Pantai Indah No. 8, Bali',
       maps_url: 'https://maps.google.com',
       sort_order: 1,
       created_at: now
@@ -312,8 +294,8 @@ if (isMetatahFamily) {
       event_date: weddingDate,
       start_time: '13:00',
       end_time: 'Selesai',
-      venue_name: 'Griya Agung Sukawati',
-      venue_address: 'Jl. Raya Sukawati, Gianyar, Bali',
+      venue_name: 'The Royal Garden',
+      venue_address: 'Jl. Pantai Indah No. 8, Bali',
       maps_url: 'https://maps.google.com',
       sort_order: 2,
       created_at: now
@@ -338,32 +320,8 @@ if (isMetatahFamily) {
       { id: '6', wedding_id: `preview-${templateKey}`, image_url: sidebarPreviewBg.src, sort_order: 6, created_at: now }
     ];
   }
-  defaultData.wishes = Array.from({ length: 40 }, (_, i) => ({
-    id: `wish-${i + 1}`,
-    wedding_id: `preview-${templateKey}`,
-    guest_name: ['Sahabat', 'Budi Santoso', 'Siti Rahma', 'Dimas Anggara', 'Rina Wulandari', 'Andi Pratama', 'Maya Putri', 'Eko Prasetyo', 'Dewi Lestari', 'Fajar Ramadhan'][i % 10] + ` #${i + 1}`,
-    attendance_status: (i % 3 === 0 ? 'attending' : (i % 3 === 1 ? 'tentative' : 'declined')) as any,
-    guest_count: (i % 3) + 1,
-    message: [
-      'Selamat melaksanakan upacara Metatah / Potong Gigi. Semoga senantiasa diberkahi kerahayuan dan kedamaian.',
-      'Rahajeng nyanggra Upacara Metatah. Dumogi rahayu sareng sami lan mamargi antar.',
-      'Selamat dan sukses atas upacara Metatah putra-putri tercinta. Semoga menjadi pribadi yang berbudi luhur.',
-      'Dumogi asung kertha wara nugraha Ida Sang Hyang Widhi Wasa menyertai seluruh rangkaian upacara.'
-    ][i % 4],
-    created_at: new Date(Date.now() - i * 3600000).toISOString()
-  }));
-  defaultData.gifts = [
-    {
-      id: 'gift-1',
-      wedding_id: `preview-${templateKey}`,
-      bank_name: 'BCA',
-      account_number: '0123 456 789',
-      account_name: 'Rama Pratama',
-      qris_url: null,
-      sort_order: 1,
-      created_at: now
-    }
-  ];
+  defaultData.wishes = buildMockWishes(`preview-${templateKey}`, true);
+  defaultData.gifts = [buildMockGift(`preview-${templateKey}`, 'Rama Pratama', now)];
 }
 
 let data: FullInvitationData = defaultData;
@@ -453,31 +411,7 @@ if (clientSlug) {
             heroVideo: clientData.settings.theme_config?.assets?.heroVideo || defaultData.settings.theme_config?.assets?.heroVideo,
             videoUrl: clientData.settings.theme_config?.assets?.videoUrl || defaultData.settings.theme_config?.assets?.videoUrl
           },
-          content: {
-            ...defaultData.settings.theme_config?.content,
-            ...(clientData.settings.theme_config?.content || {}),
-            groomFatherName: 'Bapak Mempelai',
-            groomMotherName: 'Ibu Mempelai',
-            groomParents: 'Putra dari Bapak Mempelai & Ibu Mempelai',
-            brideFatherName: 'Bapak Mempelai',
-            brideMotherName: 'Ibu Mempelai',
-            brideParents: 'Putri dari Bapak Mempelai & Ibu Mempelai',
-            groomAddress: 'Denpasar, Bali',
-            brideAddress: 'Gianyar, Bali',
-            groomCity: 'Denpasar',
-            brideCity: 'Gianyar',
-            groomOrigin: 'Denpasar, Bali',
-            brideOrigin: 'Gianyar, Bali',
-            participantAddress: 'Denpasar, Bali',
-            familyAddress: 'Gianyar, Bali',
-            instagramUrl: 'https://www.instagram.com/senadda.id',
-            groomInstagramUrl: 'https://www.instagram.com/senadda.id',
-            brideInstagramUrl: 'https://www.instagram.com/senadda.id',
-            groomIg: 'senadda.id',
-            brideIg: 'senadda.id',
-            participantInstagramUrl: 'https://www.instagram.com/senadda.id',
-            participantIg: 'senadda.id'
-          }
+          content: buildSanitizedThemeContent(clientData.settings.theme_config?.content, false)
         }
       };
 
@@ -573,16 +507,11 @@ if (clientSlug) {
 
       // Selalu gunakan 1 rekening dummy untuk preview agar data pribadi rekening klien tidak terekspos
       const gifts = [
-        {
-          id: 'gift-1',
-          wedding_id: `preview-${templateKey}`,
-          bank_name: 'BCA',
-          account_number: '0123 456 789',
-          account_name: wedding.groom_name || defaultData.wedding.groom_name,
-          qris_url: null,
-          sort_order: 1,
-          created_at: now
-        }
+        buildMockGift(
+          `preview-${templateKey}`,
+          wedding.groom_name || defaultData.wedding.groom_name,
+          now
+        )
       ];
 
       const wishes = defaultData.wishes;

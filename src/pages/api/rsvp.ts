@@ -5,6 +5,7 @@ import { jsonResponse } from '../../utils/http';
 import { validateRSVPInput } from '../../utils/security';
 import { getSessionFromCookies } from '../../utils/session';
 import { logActivity } from '../../services/activity-log';
+import { isNonLiveInvitationId } from '../../services/invitation-preview';
 
 export const prerender = false;
 
@@ -19,7 +20,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const normalizedMessage = message ? String(message).trim().slice(0, 500) : '';
 
-    if (typeof weddingId === 'string' && weddingId.startsWith('preview-')) {
+    if (typeof weddingId === 'string' && isNonLiveInvitationId(weddingId)) {
       const validated = validateRSVPInput(name, attendance, count);
       const mockItem = {
         id: `wish-preview-${Date.now()}`,

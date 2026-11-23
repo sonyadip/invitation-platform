@@ -276,12 +276,13 @@ const activeGifts = gifts && gifts.length > 0
               <div class="couple-section__row">
                 <div class="person-card">
                   <div class="person-card__photo-wrap" data-animate="fade-right">
-                    <SmartImage
-                      class="person-card__photo"
-                      src={groomImage}
-                      alt={wedding.groom_name}
-                      loading="lazy"
-                    />
+                    <div class="person-card__photo">
+                      <SmartImage
+                        src={groomImage}
+                        alt={wedding.groom_name}
+                        loading="lazy"
+                      />
+                    </div>
                   </div>
                   <p class="person-card__role" data-animate="fade-right">Groom</p>
                   <p class="person-card__fullname" data-animate="fade-right">{wedding.groom_full_name}</p>
@@ -309,12 +310,13 @@ const activeGifts = gifts && gifts.length > 0
 
                 <div class="person-card">
                   <div class="person-card__photo-wrap" data-animate="fade-left">
-                    <SmartImage
-                      class="person-card__photo"
-                      src={brideImage}
-                      alt={wedding.bride_name}
-                      loading="lazy"
-                    />
+                    <div class="person-card__photo">
+                      <SmartImage
+                        src={brideImage}
+                        alt={wedding.bride_name}
+                        loading="lazy"
+                      />
+                    </div>
                   </div>
                   <p class="person-card__role" data-animate="fade-left">Bride</p>
                   <p class="person-card__fullname" data-animate="fade-left">{wedding.bride_full_name}</p>

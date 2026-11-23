@@ -1,4 +1,5 @@
 import { isLiveTrackingEnvironment } from '../utils/analytics';
+import { isNonLiveInvitationId } from '../services/invitation-preview';
 
 export type EventType =
   | 'open_cover'
@@ -31,7 +32,7 @@ export function sendAnalyticsEvent(eventType: EventType, options: TrackEventOpti
   if (!isLiveTrackingEnvironment(window.location.hostname)) return;
 
   const weddingId = options.weddingId || document.body.dataset.weddingId || '';
-  if (!weddingId || weddingId.startsWith('preview-')) return;
+  if (isNonLiveInvitationId(weddingId) || !weddingId) return;
 
   const guestName = options.guestName ?? document.body.dataset.guestName ?? null;
 
@@ -90,7 +91,7 @@ export function initAutomaticInteractionTracking() {
   trackingInitialized = true;
 
   const weddingId = document.body.dataset.weddingId;
-  if (!weddingId || weddingId.startsWith('preview-')) return;
+  if (!weddingId || isNonLiveInvitationId(weddingId)) return;
 
   let coverOpenedTracked = false;
   let galleryClickCount = 0;

@@ -592,15 +592,22 @@ body.template-noir {
   }
 
   .person-card__photo {
-    display: block;
     width: 140px;
     height: 200px;
     border: 2px solid rgba(255, 255, 255, 0.6);
     border-radius: 100px;
-    object-fit: cover;
-    object-position: center top;
+    overflow: hidden;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     transition: opacity 0.25s ease, transform 0.4s ease, box-shadow 0.4s ease;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      scale: 1.3;
+    }
   }
 
   .person-card__role {

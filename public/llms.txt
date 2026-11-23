@@ -40,6 +40,7 @@ Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan 
 - **Atelier** (Artistic & Modern Luxury): Promo Rp 300.000 (Normal Rp 450.000)
 - **Allure** (Exclusive & Sophisticated): Promo Rp 250.000 (Normal Rp 350.000)
 - **Nocturne** (Editorial Dark Aesthetic & Timeless Luxury): Promo Rp 250.000 (Normal Rp 350.000)
+- **Serenade** (Monochrome Romantic & Classic Editorial): Promo Rp 250.000 (Normal Rp 350.000)
 - **Editorial** (Magazine Layout & Typographic): Promo Rp 200.000 (Normal Rp 300.000)
 - **Deauville** (Chic, Clean & Minimalist): Promo Rp 200.000 (Normal Rp 300.000)
 - **Terre** (Earth Tone & Warm Organic): Promo Rp 150.000 (Normal Rp 200.000)

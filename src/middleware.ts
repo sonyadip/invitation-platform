@@ -25,6 +25,7 @@ Selamat datang di Senadda, platform pembuatan undangan digital yang premium, ele
 - Atelier (Rp 300.000)
 - Allure (Rp 250.000)
 - Nocturne (Rp 250.000)
+- Serenade (Rp 250.000)
 - Editorial (Rp 200.000)
 - Deauville (Rp 200.000)
 - Terre (Rp 150.000)
