@@ -106,7 +106,7 @@ const defaultData: FullInvitationData = {
         galleryColumns: 3
       },
       assets: {
-        coverImage: templateKey === 'serenade' ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS00123.webp' : undefined,
+        coverImage: templateKey === 'serenade' ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS09888.webp' : undefined,
         eventImage: templateKey === 'serenade' ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS00134.webp' : undefined,
         heroVideo: ['lumiere', 'editorial', 'atelier'].includes(templateKey) ? COMMON_ASSETS.PREVIEW_VIDEO : undefined,
         videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm'
@@ -388,7 +388,7 @@ if (clientSlug) {
             coverImage: templateKey === 'nocturne'
               ? 'https://media.senadda.id/rah-agus-komala/closing/closing.webp'
               : templateKey === 'serenade'
-                ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS00123.webp'
+                ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS09888.webp'
                 : (templateKey === 'allure' || templateKey === 'velvet')
                   ? (clientData.gallery?.find(g => typeof g.image_url === 'string' && g.image_url.includes('gallery-6.webp'))?.image_url || clientData.settings.theme_config?.assets?.coverImage)
                   : clientData.settings.theme_config?.assets?.coverImage,

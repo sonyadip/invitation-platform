@@ -8,7 +8,7 @@ import {
 } from '../../scripts/template-modules';
 
 function initSerenade() {
-  const root = document.querySelector('body.template-serenade [data-template-root]') || document.querySelector('[data-template-root]');
+  const root = document.querySelector('body.template-serenade [data-template-root]');
   if (!root) return;
 
   const cover = root.querySelector('[data-template-cover]');
