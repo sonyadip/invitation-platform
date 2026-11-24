@@ -9,13 +9,13 @@ src/templates/
     style.scss
     script.js
     assets/
-  sage/
-    SageTemplate.astro
+  allure/
+    AllureTemplate.astro
     style.scss
     script.js
     assets/
-  ochre/
-    OchreTemplate.astro
+  nocturne/
+    NocturneTemplate.astro
     style.scss
     script.js
     assets/
@@ -47,4 +47,4 @@ Rules:
 - Use `data-template-*` attributes for JavaScript selectors so behavior is not tied to visual class names.
 - Dashboard template dropdown options are generated from folders in `src/templates/`.
 
-When adding a new template, set `wedding.template` to the folder key, for example `noir`, `sage`, `ochre`, `deauville`, or `editorial`.
+When adding a new template, set `wedding.template` to the folder key, for example `noir`, `allure`, `nocturne`, `deauville`, or `editorial`.

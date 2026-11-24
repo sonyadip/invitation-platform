@@ -65,17 +65,15 @@ function protectScrollContainers() {
 export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
   if (typeof window === 'undefined') return null;
 
-  // Respect user preference for reduced motion
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     return null;
   }
 
-  // Prevent multiple instances on the same window
   if (window.__lenis) {
     return window.__lenis;
   }
 
-  // Ensure native CSS scroll-behavior: smooth does not fight with Lenis RAF interpolation
+  // Prevent native CSS scroll-behavior from fighting Lenis RAF interpolation.
   if (typeof document !== 'undefined' && !document.getElementById('lenis-override-css')) {
     const style = document.createElement('style');
     style.id = 'lenis-override-css';
@@ -88,9 +86,7 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
     document.head.appendChild(style);
   }
 
-  // Initialize Lenis
-  // Note: syncTouch is false to preserve native iOS/Android 120Hz hardware momentum scrolling.
-  // Wheel scroll uses lerp damping and wheelMultiplier for responsive, lightweight mouse wheel feel.
+  // syncTouch stays false to preserve native iOS/Android 120Hz hardware momentum scrolling.
   const lenis = new Lenis({
     ...(config.duration !== undefined ? { duration: config.duration } : {}),
     lerp: config.lerp ?? 0.1,
@@ -106,12 +102,10 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
 
   window.__lenis = lenis;
 
-  // Check initial scroll lock state (e.g. unopened invitation cover or intro screen)
   if (isDocumentScrollLocked()) {
     lenis.stop();
   }
 
-  // Observer to toggle Lenis when cover is opened or modals are opened/closed
   const observer = new MutationObserver(() => {
     if (isDocumentScrollLocked()) {
       lenis.stop();
@@ -131,7 +125,6 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
     attributeFilter: ['class', 'style'],
   });
 
-  // Protect modals and dynamic overlays from scroll interference
   protectScrollContainers();
 
   const domObserver = new MutationObserver(() => {
@@ -139,7 +132,6 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
   });
   domObserver.observe(document.body, { childList: true, subtree: true });
 
-  // Recalculate dimensions on fullscreen toggle (used by "Buka Undangan")
   const onFullscreenChange = () => {
     setTimeout(() => {
       lenis.resize();
@@ -148,7 +140,6 @@ export function initLenis(config: LenisOptionsConfig = {}): Lenis | null {
   document.addEventListener('fullscreenchange', onFullscreenChange);
   document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
-  // Store cleanup function
   window.__lenisDestroy = () => {
     observer.disconnect();
     domObserver.disconnect();

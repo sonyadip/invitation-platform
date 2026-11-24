@@ -1,4 +1,3 @@
-import { supabase } from '../lib/supabase';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { InvitationSettings, WeddingStatus } from '../types';
 import { hashPasswordSHA256 } from '../utils/security';

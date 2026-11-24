@@ -15,7 +15,6 @@ import {
   buildGoogleCalendarUrl,
   getInstagramUsername,
   formatWishDate,
-  getYouTubeId,
   generatePaginationItems
 } from '../../utils/template-helpers';
 
@@ -342,10 +341,6 @@ const formattedNicknames = participantNicknames.length === 0
 const participantsNames = formattedNicknames;
 const participantsFullNames = participantsList.map(p => p.fullName || p.name).filter(Boolean).join(' & ') || participantFullName;
 
-// Title Mode resolution:
-// 1. 'default': Pakai Default (Metatah / Mepandes), otomatis tanpa closing-row__names
-// 2. 'family': Nama keluarga (misal: "Pande Ceria")
-// 3. 'participants': Nama panggilan masing-masing peserta
 const rawTitleMode = (text.titleMode || themeContent.titleMode || themeContent.titleType || '').toString().toLowerCase().trim();
 
 let titleMode: 'default' | 'family' | 'participants' = 'family';
@@ -358,7 +353,6 @@ if (rawTitleMode === 'default' || rawTitleMode === 'ceremony' || rawTitleMode ==
 } else if (Boolean(themeContent.useParticipantsAsTitle)) {
   titleMode = 'participants';
 } else {
-  // Infer mode from title content if not explicitly specified
   const explicitTitle = (text.coverTitle || text.coverName || text.title || '').trim();
   if (/^(metatah|mepandes|upacara metatah|upacara mepandes)$/i.test(explicitTitle)) {
     titleMode = 'default';
@@ -367,10 +361,6 @@ if (rawTitleMode === 'default' || rawTitleMode === 'ceremony' || rawTitleMode ==
   }
 }
 
-// Resolve coverTitle:
-// Mode 3: Participants nicknames
-// Mode 1 or 2: Respect explicit text.coverTitle / text.coverName / text.title first!
-// Fallbacks: Mode 1 falls back to 'Metatah', Mode 2 falls back to familyName or 'Pande Ceria'
 let coverTitle = '';
 if (titleMode === 'participants') {
   coverTitle = text.participantsTitle || formattedNicknames;
@@ -415,7 +405,6 @@ const hidePesertaTitle = Boolean(text.hidePesertaTitle || text.hidePesertaSectio
 const pesertaSectionTitle = text.pesertaSectionTitle || 'Peserta Upacara';
 const isDirectList = wedding.slug === 'pande-ceria' || themeConfig.layout?.participantLayout === 'direct';
 
-// Mode 1: Pakai Default (Metatah) otomatis ini tidak ada closing-row__names
 const isDefaultTitle = titleMode === 'default' || /^(metatah|mepandes|upacara metatah|upacara mepandes)$/i.test(coverTitle.trim());
 const hideClosingNames = isDefaultTitle
   ? true

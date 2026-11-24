@@ -73,7 +73,7 @@ const customCss = settings.theme_config?.customCss?.replace(/<\/?style[^>]*>?/gi
     </style>
 
     {preloadImageUrl && <link rel="preload" as="image" href={preloadImageUrl} fetchpriority="high" />}
-    {['template-noir', 'template-sage', 'template-ochre', 'template-blush', 'template-terre'].includes(templateClass || '') && (
+    {['template-noir', 'template-blush', 'template-terre'].includes(templateClass || '') && (
       <link rel="preload" href="/fonts/GreatVibes-Regular.woff2" as="font" type="font/woff2" crossorigin />
     )}
     {templateClass === 'template-noir' && (

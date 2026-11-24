@@ -1,25 +1,9 @@
 import type { APIRoute } from 'astro';
-import { fetchAllRows } from '../../lib/supabase';
-import { getSupabaseAdmin } from '../../lib/supabase-admin';
+import { getSupabaseAdmin, hasWeddingWriteAccess } from '../../lib/supabase-admin';
 import { jsonResponse } from '../../utils/http';
 import { getSessionFromCookies } from '../../utils/session';
 
 export const prerender = false;
-
-async function checkWeddingAuth(session: any, weddingId: string, adminSupabase: any): Promise<boolean> {
-  if (!session) return false;
-  if (session.role === 'admin') return true;
-  if (session.role === 'client') {
-    if (session.weddingId && session.weddingId === weddingId) return true;
-    const { data } = await adminSupabase
-      .from('weddings')
-      .select('id')
-      .eq('slug', session.slug)
-      .single();
-    return data?.id === weddingId;
-  }
-  return false;
-}
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
@@ -36,7 +20,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     }
 
     const adminSupabase = await getSupabaseAdmin();
-    const isAuthorized = await checkWeddingAuth(session, weddingId, adminSupabase);
+    const isAuthorized = await hasWeddingWriteAccess(adminSupabase, session, weddingId);
     if (!isAuthorized) {
       return jsonResponse({ error: 'Forbidden: Anda tidak memiliki akses ke data undangan ini.' }, 403);
     }
@@ -174,7 +158,7 @@ export const DELETE: APIRoute = async ({ request, cookies, locals }) => {
         return jsonResponse({ error: 'Tamu tidak ditemukan.' }, 404);
       }
 
-      const isAuthorized = await checkWeddingAuth(session, guestRecord.wedding_id, adminSupabase);
+      const isAuthorized = await hasWeddingWriteAccess(adminSupabase, session, guestRecord.wedding_id);
       if (!isAuthorized) {
         return jsonResponse({ error: 'Forbidden: Anda tidak memiliki akses untuk menghapus data ini.' }, 403);
       }

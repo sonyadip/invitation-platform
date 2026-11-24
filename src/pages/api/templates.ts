@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseAdmin } from '../../lib/supabase-admin';
+import { getSupabaseAdmin, hasWeddingWriteAccess } from '../../lib/supabase-admin';
 import { jsonResponse } from '../../utils/http';
 import { getSessionFromCookies } from '../../utils/session';
 
@@ -21,16 +21,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     const adminSupabase = await getSupabaseAdmin();
 
-    if (session.role !== 'admin') {
-      const { data: wedding } = await adminSupabase
-        .from('weddings')
-        .select('id')
-        .eq('slug', session.slug)
-        .single();
-
-      if (!wedding || wedding.id !== weddingId) {
-        return jsonResponse({ error: 'Forbidden: Anda tidak memiliki akses untuk mengubah template ini.' }, 403);
-      }
+    if (!(await hasWeddingWriteAccess(adminSupabase, session, weddingId))) {
+      return jsonResponse({ error: 'Forbidden: Anda tidak memiliki akses untuk mengubah template ini.' }, 403);
     }
 
     const { error } = await adminSupabase

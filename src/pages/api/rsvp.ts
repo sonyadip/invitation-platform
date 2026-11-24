@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
-import { getSupabaseAdmin } from '../../lib/supabase-admin';
+import { getSupabaseAdmin, hasWeddingWriteAccess } from '../../lib/supabase-admin';
 import { jsonResponse } from '../../utils/http';
 import { validateRSVPInput } from '../../utils/security';
 import { getSessionFromCookies } from '../../utils/session';
@@ -134,13 +134,7 @@ export const DELETE: APIRoute = async ({ request, cookies, locals }) => {
         return jsonResponse({ error: 'Data RSVP tidak ditemukan.' }, 404);
       }
 
-      const { data: wedding } = await adminSupabase
-        .from('weddings')
-        .select('id')
-        .eq('slug', session.slug)
-        .single();
-
-      if (!wedding || wedding.id !== rsvpRecord.wedding_id) {
+      if (!(await hasWeddingWriteAccess(adminSupabase, session, rsvpRecord.wedding_id))) {
         return jsonResponse({ error: 'Forbidden: Anda tidak memiliki akses untuk menghapus RSVP ini.' }, 403);
       }
     }

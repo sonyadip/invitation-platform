@@ -154,7 +154,7 @@ export interface RSVP {
   id: string;
   wedding_id: string;
   guest_name: string;
-  attendance_status: 'attending' | 'declined';
+  attendance_status: 'attending' | 'declined' | 'tentative';
   guest_count: number;
   message: string | null;
   created_at: string;

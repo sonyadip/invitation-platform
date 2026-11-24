@@ -129,10 +129,8 @@ function initParticipantModals(container) {
     }
     dialog.classList.remove('is-closing');
 
-    // Save exact scroll position
     savedScrollY = window.scrollY;
 
-    // Pause smooth scrolling and lock document
     window.__lenis?.stop();
     document.body.classList.add('participant-modal-active');
     document.documentElement.classList.add('participant-modal-active');
@@ -143,13 +141,12 @@ function initParticipantModals(container) {
       dialog.setAttribute('open', '');
     }
 
-    // Reset inner scroll
     const innerDialog = dialog.querySelector('.participant-modal__dialog');
     if (innerDialog) {
       innerDialog.scrollTop = 0;
     }
 
-    // Prevent showModal focus from scrolling the page
+    // Prevent native showModal() focus from scrolling the underlying page
     if (typeof savedScrollY === 'number' && window.scrollY !== savedScrollY) {
       window.scrollTo(0, savedScrollY);
     }

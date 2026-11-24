@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem, SectionToggles, ThemeConfig } from '../types';
 import { logActivity } from './activity-log';
 import { captureRevisionSnapshot } from './revision';
-import { uploadToR2, isR2Configured } from './r2-storage';
+import { uploadToR2, isR2StorageConfigured } from './r2-storage';
 
 export interface InvitationFormInput {
   slug: string;
@@ -98,7 +98,7 @@ export interface InvitationGiftInput {
   qrisUrl: string | null;
 }
 
-const storageBucket =
+export const storageBucket =
   (typeof process !== 'undefined' ? process.env.SUPABASE_STORAGE_BUCKET : '') ||
   (import.meta as any).env?.SUPABASE_STORAGE_BUCKET ||
   'invitation-images';
@@ -110,7 +110,7 @@ const maxUploadBytes = Number(
 const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
 const allowedAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a', 'audio/x-m4a', 'audio/webm'];
 
-const defaultThemeConfig: ThemeConfig = {
+export const defaultThemeConfig: ThemeConfig = {
   theme: {
     primaryColor: '#ffffff',
     secondaryColor: '#111111',
@@ -125,7 +125,7 @@ const defaultThemeConfig: ThemeConfig = {
   }
 };
 
-function toDashboardError(error: any, context: string) {
+export function toDashboardError(error: any, context: string) {
   if (!error) return new Error(context);
   if (error instanceof Error) return error;
   if (error.code === '42703' || String(error.message || '').includes('purchase_price')) {
@@ -145,7 +145,7 @@ function toDashboardError(error: any, context: string) {
   return new Error(parts.join(' - '));
 }
 
-function formatInstagramUrl(val: string | null): string | null {
+export function formatInstagramUrl(val: string | null): string | null {
   if (!val) return null;
   val = val.trim();
   if (!val) return null;
@@ -154,7 +154,7 @@ function formatInstagramUrl(val: string | null): string | null {
   return `https://www.instagram.com/${val}`;
 }
 
-function sanitizeCustomCss(raw: string | null): string | null {
+export function sanitizeCustomCss(raw: string | null): string | null {
   if (!raw) return null;
   const cleaned = raw.replace(/<\/?style[^>]*>?/gi, '').trim();
   return cleaned || null;
@@ -426,7 +426,7 @@ function validateAudioFile(file: File) {
   }
 }
 
-async function ensureStorageBucket(supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>) {
+export async function ensureStorageBucket(supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>) {
   const { data: bucket, error: getBucketError } = await supabase.storage.getBucket(storageBucket);
   
   if (!getBucketError && bucket) {
@@ -448,7 +448,7 @@ async function ensureStorageBucket(supabase: Awaited<ReturnType<typeof getSupaba
   }
 }
 
-function sanitizeFileName(fileName: string, fallbackExt = '') {
+export function sanitizeFileName(fileName: string, fallbackExt = '') {
   const lastDotIndex = fileName.lastIndexOf('.');
   const rawBase = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
   const rawExt = lastDotIndex !== -1 ? fileName.substring(lastDotIndex + 1) : fallbackExt;
@@ -480,7 +480,7 @@ async function uploadImageFile(
   const cleanName = sanitizeFileName(file.name, fileExtension(file));
   const path = [slug, scope, cleanName].join('/');
 
-  if (isR2Configured) {
+  if (isR2StorageConfigured()) {
     const arrayBuffer = await file.arrayBuffer();
     return await uploadToR2(path, arrayBuffer, file.type || 'image/webp');
   }
@@ -513,7 +513,7 @@ async function uploadAudioFile(
   const cleanName = sanitizeFileName(file.name, ext);
   const path = [slug, 'music', cleanName].join('/');
 
-  if (isR2Configured) {
+  if (isR2StorageConfigured()) {
     const arrayBuffer = await file.arrayBuffer();
     return await uploadToR2(path, arrayBuffer, file.type || 'audio/mpeg');
   }
@@ -719,7 +719,7 @@ function buildSections(baseSections: any, input: InvitationFormInput): SectionTo
   };
 }
 
-async function replaceGalleryImages(
+export async function replaceGalleryImages(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   weddingId: string,
   imageUrls: string[]
@@ -746,7 +746,7 @@ async function replaceGalleryImages(
   if (insertError) throw toDashboardError(insertError, 'Failed to save gallery images.');
 }
 
-async function replaceWeddingEvents(
+export async function replaceWeddingEvents(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   weddingId: string,
   events: InvitationEventInput[]
@@ -777,7 +777,7 @@ async function replaceWeddingEvents(
   if (insertError) throw toDashboardError(insertError, 'Failed to save wedding events.');
 }
 
-async function replaceGiftAccounts(
+export async function replaceGiftAccounts(
   supabase: Awaited<ReturnType<typeof getSupabaseAdmin>>,
   weddingId: string,
   gifts: InvitationGiftInput[]

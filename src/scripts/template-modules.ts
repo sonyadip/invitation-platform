@@ -382,7 +382,6 @@ export function initRevealAnimations(root: Element | Document = document) {
   animatedItems.forEach((item) => {
     if (item instanceof HTMLElement) {
       if (!item.style.getPropertyValue('--animate-delay')) {
-        // 1. Wishes list items
         const wishesList = item.closest('.wishes-list');
         if (wishesList && wishesList !== item) {
           const listItems = Array.from(wishesList.querySelectorAll(':scope > [data-animate]'));
@@ -391,7 +390,6 @@ export function initRevealAnimations(root: Element | Document = document) {
             item.style.setProperty('--animate-delay', `${Math.min(idx * 140, 800)}ms`);
           }
         } else {
-          // 2. Recognized card / component container
           const container = item.closest(
             '.event-card, .closing-row, .couple-section__person, .couple-swiss__wrapper, .couple-swiss, .story-section, .countdown-section, .rsvp-section, .gift-section'
           );
@@ -402,7 +400,6 @@ export function initRevealAnimations(root: Element | Document = document) {
               item.style.setProperty('--animate-delay', `${Math.min(idx * 180, 1200)}ms`);
             }
           } else {
-            // 3. Fallback to direct parent / grid
             const parent = item.parentElement;
             if (parent) {
               const computedStyle = window.getComputedStyle(parent);

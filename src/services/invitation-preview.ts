@@ -92,7 +92,7 @@ export function buildMockWishes(weddingId: string, isMetatah: boolean, count = 4
     id: `wish-${i + 1}`,
     wedding_id: weddingId,
     guest_name: `${MOCK_WISH_AUTHORS[i % MOCK_WISH_AUTHORS.length]} #${i + 1}`,
-    attendance_status: (i % 3 === 0 ? 'attending' : i % 3 === 1 ? 'tentative' : 'declined') as any,
+    attendance_status: i % 3 === 0 ? 'attending' : i % 3 === 1 ? 'tentative' : 'declined',
     guest_count: (i % 3) + 1,
     message: messages[i % messages.length],
     created_at: new Date(Date.now() - i * 3600000).toISOString()

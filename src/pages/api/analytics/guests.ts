@@ -1,87 +1,25 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../../lib/supabase';
-import { getSupabaseAdmin } from '../../../lib/supabase-admin';
+import { fetchAllRows } from '../../../lib/supabase';
 import { jsonResponse, parseBoundedInt } from '../../../utils/http';
 import { decodeHtmlEntities } from '../../../utils/template-helpers';
-import { getSessionFromCookies } from '../../../utils/session';
+import {
+  ANALYTICS_EVENT_CONFIG,
+  isWithinAnalyticsTimeRange,
+  resolveAnalyticsAuth
+} from '../../../services/analytics-api';
 
 export const prerender = false;
 
-const eventConfig: Record<string, { label: string; desc: string; icon: string; badgeClass: string; iconColor: string }> = {
-  open_cover: { label: 'Buka Undangan', desc: 'Membuka cover / amplop undangan digital', icon: 'drafts', badgeClass: 'act-badge--primary', iconColor: '#111827' },
-  click_maps: { label: 'Petunjuk Maps', desc: 'Membuka tautan rute peta lokasi / Google Maps', icon: 'location_on', badgeClass: 'act-badge--info', iconColor: '#2563eb' },
-  click_calendar: { label: 'Simpan Kalender', desc: 'Menyimpan jadwal resepsi ke Google Calendar', icon: 'calendar_month', badgeClass: 'act-badge--purple', iconColor: '#9333ea' },
-  copy_gift: { label: 'Salin Rekening', desc: 'Menyalin nomor rekening / informasi hadiah digital', icon: 'content_copy', badgeClass: 'act-badge--warning', iconColor: '#d97706' },
-  play_music: { label: 'Putar Musik', desc: 'Memutar musik latar belakang undangan', icon: 'music_note', badgeClass: 'act-badge--teal', iconColor: '#0d9488' },
-  pause_music: { label: 'Jeda Musik', desc: 'Mematikan / menjeda musik latar belakang', icon: 'music_off', badgeClass: 'act-badge--neutral', iconColor: '#64748b' },
-  play_video: { label: 'Putar Video Momen', desc: 'Memutar video momen pernikahan di layout video', icon: 'smart_display', badgeClass: 'act-badge--purple', iconColor: '#7c3aed' },
-  view_gallery: { label: 'Lihat Galeri Foto', desc: 'Membuka atau melihat preview galeri foto mempelai', icon: 'photo_library', badgeClass: 'act-badge--indigo', iconColor: '#4f46e5' },
-  click_rsvp: { label: 'Klik Form RSVP', desc: 'Menavigasi atau membuka form konfirmasi kehadiran', icon: 'how_to_reg', badgeClass: 'act-badge--emerald', iconColor: '#059669' },
-  click_wishes: { label: 'Buka Form Ucapan', desc: 'Membuka form doa & ucapan selamat untuk mempelai', icon: 'forum', badgeClass: 'act-badge--amber', iconColor: '#b45309' },
-  click_participant: { label: 'Detail Peserta', desc: 'Membuka popup profil detail peserta upacara', icon: 'person', badgeClass: 'act-badge--purple', iconColor: '#9333ea' },
-  click_couple_instagram: { label: 'Instagram Pengantin', desc: 'Membuka tautan profil Instagram mempelai', icon: 'photo_camera', badgeClass: 'act-badge--pink', iconColor: '#db2777' },
-  click_vendor_whatsapp: { label: 'Vendor WhatsApp', desc: 'Menghubungi vendor undangan (Senadda) via WhatsApp', icon: 'chat', badgeClass: 'act-badge--success', iconColor: '#16a34a' },
-  click_vendor_instagram: { label: 'Vendor Instagram', desc: 'Membuka profil Instagram vendor (Senadda)', icon: 'camera_alt', badgeClass: 'act-badge--pink', iconColor: '#e1306c' },
-  click_vendor_site: { label: 'Website Senadda', desc: 'Mengunjungi website utama platform Senadda.id', icon: 'language', badgeClass: 'act-badge--info', iconColor: '#0284c7' },
-  page_view: { label: 'Kunjungan Halaman', desc: 'Membuka dan memuat halaman undangan digital', icon: 'visibility', badgeClass: 'act-badge--neutral', iconColor: '#64748b' }
-};
-
 export const GET: APIRoute = async ({ url, locals, cookies }) => {
   try {
-    const session = locals.session || await getSessionFromCookies(cookies);
-    const slug = url.searchParams.get('slug');
-    const weddingIdParam = url.searchParams.get('weddingId');
+    const auth = await resolveAnalyticsAuth(url, locals, cookies);
+    if (auth instanceof Response) return auth;
+    const { adminSupabase, weddingId } = auth;
+
     const page = parseBoundedInt(url.searchParams.get('page'), 1, 1, 10000);
     const limit = parseBoundedInt(url.searchParams.get('limit'), 15, 1, 50);
     const search = (url.searchParams.get('search') || '').trim().toLowerCase();
     const timeRange = url.searchParams.get('timeRange') || 'all';
-
-    const adminSupabase = await getSupabaseAdmin();
-
-    let weddingId = weddingIdParam;
-    let weddingSlug = slug;
-    if (!weddingId && slug) {
-      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('slug', slug).single();
-      if (w) {
-        weddingId = w.id;
-        weddingSlug = w.slug;
-      }
-    } else if (weddingId && !weddingSlug) {
-      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('id', weddingId).single();
-      if (w) weddingSlug = w.slug;
-    }
-
-    if (!weddingId) {
-      return jsonResponse({ error: 'weddingId or slug is required' }, 400);
-    }
-
-    const isAdmin = session?.role === 'admin';
-    const isClient = session?.role === 'client' && (session?.slug === weddingSlug || session?.weddingId === weddingId);
-
-    if (!isAdmin && !isClient) {
-      return jsonResponse({ error: 'Unauthorized' }, 401);
-    }
-
-    async function fetchAllRows<T>(
-      queryFn: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>,
-      pageSize = 1000,
-      maxBatches = 5
-    ): Promise<T[]> {
-      const rows: T[] = [];
-      let from = 0;
-      let batch = 0;
-      while (batch < maxBatches) {
-        batch++;
-        const to = from + pageSize - 1;
-        const { data, error } = await queryFn(from, to);
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        rows.push(...data);
-        if (data.length < pageSize) break;
-        from += pageSize;
-      }
-      return rows;
-    }
 
     const [viewsData, eventsData, rsvpsRes, sentRes] = await Promise.all([
       fetchAllRows<any>((from, to) =>
@@ -90,7 +28,9 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
           .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at')
           .eq('wedding_id', weddingId)
           .order('created_at', { ascending: false })
-          .range(from, to)
+          .range(from, to),
+        1000,
+        5
       ),
       fetchAllRows<any>((from, to) =>
         adminSupabase
@@ -98,7 +38,9 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
           .select('id, event_type, guest_name, metadata, created_at')
           .eq('wedding_id', weddingId)
           .order('created_at', { ascending: false })
-          .range(from, to)
+          .range(from, to),
+        1000,
+        5
       ),
       adminSupabase
         .from('rsvps')
@@ -136,19 +78,6 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
     }
 
     const now = Date.now();
-    function isWithinTime(createdAtStr: string): boolean {
-      if (timeRange === 'all' || !createdAtStr) return true;
-      const itemTime = new Date(createdAtStr).getTime();
-      if (timeRange === '24h') return now - itemTime <= 24 * 3600 * 1000;
-      if (timeRange === '7d') return now - itemTime <= 7 * 24 * 3600 * 1000;
-      if (timeRange === '30d') return now - itemTime <= 30 * 24 * 3600 * 1000;
-      if (timeRange === 'today') {
-        const itemWita = new Date(itemTime + 8 * 3600000).toISOString().slice(0, 10);
-        const nowWita = new Date(now + 8 * 3600000).toISOString().slice(0, 10);
-        return itemWita === nowWita;
-      }
-      return true;
-    }
 
     interface GuestCard {
       key: string;
@@ -189,7 +118,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     for (const item of allRawItems) {
-      if (!isWithinTime(item.created_at)) continue;
+      if (!isWithinAnalyticsTimeRange(item.created_at, timeRange, now)) continue;
 
       const isGuest = !!item.guest_name;
       const key = isGuest ? item.guest_name.trim().toLowerCase() : '__anon__';
@@ -266,7 +195,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
       }
 
       if (g.items.length < 20) {
-        const conf = eventConfig[item.event_type] || {
+        const conf = ANALYTICS_EVENT_CONFIG[item.event_type] || {
           label: item.event_type,
           desc: 'Aktivitas pada undangan',
           icon: 'touch_app',

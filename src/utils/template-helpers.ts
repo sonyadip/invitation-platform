@@ -216,7 +216,7 @@ export const getBankLogoUrl = (bankName?: string | null, customLogo?: string | n
   const s = bankName.toLowerCase().replace(/[^a-z0-9]/g, '');
   if (!s) return null;
 
-  // 1. Compound / specific brand names first to avoid false substring matches
+  // Check compound brand names before short acronyms (e.g., "btnsyariah" before "btn").
   if (s.includes('btnsyariah') || (s.includes('btn') && s.includes('syariah'))) return '/images/banks/btn_syariah.svg';
   if (s.includes('blu') || s.includes('bcadigital')) return '/images/banks/blu.svg';
   if (s.includes('jenius')) return '/images/banks/jenius.svg';
@@ -253,7 +253,6 @@ export const getBankLogoUrl = (bankName?: string | null, customLogo?: string | n
   if (s.includes('qris')) return '/images/banks/qris.svg';
   if (s.includes('ovo')) return '/images/banks/ovo.svg';
 
-  // 2. Acronyms & core banks
   if (s.includes('btn')) return '/images/banks/btn.svg';
   if (s.includes('btpn')) return '/images/banks/btpn.svg';
   if (s.includes('bca') || s.includes('centralasia')) return '/images/banks/bca.svg';

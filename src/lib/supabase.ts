@@ -34,20 +34,21 @@ export const supabase = new Proxy({} as SupabaseClient<any>, {
 });
 
 export async function fetchAllRows<T = any>(
-  fetchPage: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>
+  fetchPage: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>,
+  pageSize = 1000,
+  maxBatches = Infinity
 ): Promise<T[]> {
-  const PAGE_SIZE = 1000;
   const results: T[] = [];
   let page = 0;
 
-  while (true) {
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
+  while (page < maxBatches) {
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
     const { data, error } = await fetchPage(from, to);
     if (error) throw error;
     if (!data || data.length === 0) break;
     results.push(...data);
-    if (data.length < PAGE_SIZE) break;
+    if (data.length < pageSize) break;
     page++;
   }
 

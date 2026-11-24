@@ -6,12 +6,10 @@ import {
   softDeleteInvitation,
   updateInvitation,
   resetInvitationActivities,
-  resetInvitationViews,
   resetInvitationRsvps
 } from '../../../services/dashboard-crud';
 import { listTemplateKeys } from '../../../templates/registry';
 import { getPlatformSettings, getTemplateHalfPrice } from '../../../services/platform-settings';
-import { hashPasswordSHA256 } from '../../../utils/security';
 import { generateSetupToken } from '../../../utils/token';
 import { supabase } from '../../../lib/supabase';
 import AdminLayout from '../../../layouts/AdminLayout.astro';

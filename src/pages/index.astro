@@ -4,10 +4,7 @@ Astro.response.headers.set('Link', '</llms.txt>; rel="describedby"');
 
 import airCover from "../templates/air/assets/cover.webp";
 import deauvilleCover from "../templates/deauville/assets/cover.webp";
-import ivoryCover from "../templates/noir/assets/bg-hero.webp";
 import noirCover from "../templates/noir/assets/cover.webp";
-import ochreMotionCover from "../templates/noir/assets/gallery-8.webp";
-import sageCover from "../templates/noir/assets/bg-hero.webp";
 import editorialCover from "../templates/editorial/assets/cover.webp";
 import lumiereCover from "../templates/lumiere/assets/cover.webp";
 import lumiereMetatahCover from "../templates/lumiere-metatah/assets/cover.webp";
@@ -57,10 +54,7 @@ const imageMap: Record<string, string> = {
   deauville: deauvilleCover.src,
   air: airCover.src,
   noir: noirCover.src,
-  terre: terreCover.src,
-  sage: sageCover.src,
-  ochre: ochreMotionCover.src,
-  ivory: ivoryCover.src
+  terre: terreCover.src
 };
 
 const defaultTemplateCards = [
@@ -3794,7 +3788,6 @@ const schemaData = {
       --template-offset-y: 0px;
       min-height: 0;
     }
-    /* Disable card hover effects on mobile */
     .template-card:hover {
       --template-hover-y: 0px !important;
       transform: translate3d(0, calc(var(--template-offset-y) + var(--template-reveal-y)), 0) !important;

@@ -2,7 +2,6 @@ import { supabase, fetchAllRows } from '../lib/supabase';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 import type { LoveStoryItem } from '../types';
 import { decodeHtmlEntities } from '../utils/template-helpers';
-import { parseUserAgent, detectDeviceModel, parseTrafficSource } from '../utils/analytics';
 import { buildTemplateHalfPriceMap, getPlatformSettings } from './platform-settings';
 
 export interface SlugReport {
@@ -42,6 +41,7 @@ export interface DashboardReport {
     rsvps: number;
     attending: number;
     declined: number;
+    tentative: number;
     guests: number;
     wishes: number;
     deleted: number;
@@ -490,7 +490,6 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
 
   const [
     viewsRes,
-    trackedEventsCountRes,
     rawGuestsRes,
     trackedEventsRes,
     viewsBreakdownRes
@@ -502,11 +501,6 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .order('created_at', { ascending: false })
       .limit(10),
     adminSupabase
-      .from('invitation_events')
-      .select('id, event_type', { count: 'exact' })
-      .eq('wedding_id', wedding.id)
-      .limit(1),
-    adminSupabase
       .from('sent_invitations')
       .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
       .eq('wedding_id', wedding.id)
@@ -514,7 +508,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .limit(500),
     adminSupabase
       .from('invitation_events')
-      .select('event_type')
+      .select('event_type', { count: 'exact' })
       .eq('wedding_id', wedding.id)
       .limit(5000),
     adminSupabase
@@ -527,8 +521,8 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   const recentViews = viewsRes.data || [];
   const rawGuests = rawGuestsRes.data || [];
   const totalViewsCount = viewsRes.count ?? recentViews.length;
-  const totalEventsCount = trackedEventsCountRes.count ?? 0;
   const trackedEvents = trackedEventsRes.data || [];
+  const totalEventsCount = trackedEventsRes.count ?? trackedEvents.length;
   const viewsBreakdown = viewsBreakdownRes.data || [];
 
   if (settingsRes.error) throw settingsRes.error;

@@ -1,5 +1,4 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../../lib/supabase';
 import { getSupabaseAdmin } from '../../../lib/supabase-admin';
 import { jsonResponse } from '../../../utils/http';
 import { isLiveTrackingEnvironment } from '../../../utils/analytics';

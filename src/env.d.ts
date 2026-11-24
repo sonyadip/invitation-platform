@@ -5,6 +5,9 @@ declare namespace App {
   interface Locals {
     session: import('./utils/session').SessionPayload | null;
     requestId?: string;
+    runtime?: {
+      env?: Record<string, string | undefined>;
+    };
   }
 }
 

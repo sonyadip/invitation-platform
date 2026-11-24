@@ -574,14 +574,6 @@ body.template-serenade {
     &__bg-overlay {
       position: absolute;
       inset: 0;
-      // background: linear-gradient(
-      //   180deg,
-      //   rgba(0, 0, 0, 0.45) 0%,
-      //   rgba(0, 0, 0, 0.1) 25%,
-      //   rgba(0, 0, 0, 0.15) 55%,
-      //   rgba(0, 0, 0, 0.72) 80%,
-      //   rgba(0, 0, 0, 0.92) 100%
-      // );
       background: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.1) 25%, rgba(0, 0, 0, 0.15) 55%, rgba(0, 0, 0, 0.72) 80%);
     }
 
@@ -1144,8 +1136,6 @@ body.template-serenade {
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
         rgba(0, 0, 0, 0.32);
-      // backdrop-filter: blur(2px);
-      // -webkit-backdrop-filter: blur(2px);
       color: #ffffff;
       text-align: left;
       box-shadow: none;

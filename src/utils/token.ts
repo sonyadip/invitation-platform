@@ -1,11 +1,19 @@
-export const prerender = false;
-
 const getSecret = () => {
-  const pw = import.meta.env.DASHBOARD_PASSWORD || 
-             (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') || 
-             'default-secret';
+  const pw = import.meta.env.DASHBOARD_PASSWORD ||
+    (typeof process !== 'undefined' ? process.env.DASHBOARD_PASSWORD : '') ||
+    'default-secret';
   return pw + '-setup-token';
 };
+
+// Constant-time string comparison to prevent HMAC/digest timing attacks.
+export function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
 
 /**
  * Generates a signed token for setting up the dashboard password.
@@ -16,12 +24,12 @@ const getSecret = () => {
 export async function generateSetupToken(slug: string, expiresInHours: number = 24): Promise<string> {
   const exp = Date.now() + expiresInHours * 60 * 60 * 1000;
   const payload = `${slug}:${exp}`;
-  
+
   const msgBuffer = new TextEncoder().encode(payload + getSecret());
   const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
+
   const tokenRaw = `${payload}:${signature}`;
   return btoa(tokenRaw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
@@ -38,23 +46,23 @@ export async function verifySetupToken(token: string): Promise<string | null> {
       base64 += '=';
     }
     const decoded = atob(base64);
-    
+
     const parts = decoded.split(':');
     if (parts.length !== 3) return null;
-    
+
     const [slug, expStr, signature] = parts;
     const exp = parseInt(expStr, 10);
-    
+
     if (Date.now() > exp) return null;
-    
+
     const payload = `${slug}:${expStr}`;
     const msgBuffer = new TextEncoder().encode(payload + getSecret());
     const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const expectedSignature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    if (signature !== expectedSignature) return null;
-    
+
+    if (!constantTimeEqual(signature, expectedSignature)) return null;
+
     return slug;
   } catch (e) {
     return null;

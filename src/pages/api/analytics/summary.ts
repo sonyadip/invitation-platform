@@ -1,64 +1,16 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../../lib/supabase';
-import { getSupabaseAdmin } from '../../../lib/supabase-admin';
+import { fetchAllRows } from '../../../lib/supabase';
 import { jsonResponse } from '../../../utils/http';
-import { getSessionFromCookies } from '../../../utils/session';
 import { decodeHtmlEntities } from '../../../utils/template-helpers';
+import { resolveAnalyticsAuth } from '../../../services/analytics-api';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ url, locals, cookies }) => {
   try {
-    const session = locals.session || await getSessionFromCookies(cookies);
-    const slug = url.searchParams.get('slug');
-    const weddingIdParam = url.searchParams.get('weddingId');
-
-    const adminSupabase = await getSupabaseAdmin();
-
-    let weddingId = weddingIdParam;
-    let weddingSlug = slug;
-    if (!weddingId && slug) {
-      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('slug', slug).single();
-      if (w) {
-        weddingId = w.id;
-        weddingSlug = w.slug;
-      }
-    } else if (weddingId && !weddingSlug) {
-      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('id', weddingId).single();
-      if (w) weddingSlug = w.slug;
-    }
-
-    if (!weddingId) {
-      return jsonResponse({ error: 'weddingId or slug is required' }, 400);
-    }
-
-    const isAdmin = session?.role === 'admin';
-    const isClient = session?.role === 'client' && (session?.slug === weddingSlug || session?.weddingId === weddingId);
-
-    if (!isAdmin && !isClient) {
-      return jsonResponse({ error: 'Unauthorized' }, 401);
-    }
-
-    async function fetchAllRows<T>(
-      queryFn: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>,
-      pageSize = 1000,
-      maxBatches = 5
-    ): Promise<T[]> {
-      const rows: T[] = [];
-      let from = 0;
-      let batch = 0;
-      while (batch < maxBatches) {
-        batch++;
-        const to = from + pageSize - 1;
-        const { data, error } = await queryFn(from, to);
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        rows.push(...data);
-        if (data.length < pageSize) break;
-        from += pageSize;
-      }
-      return rows;
-    }
+    const auth = await resolveAnalyticsAuth(url, locals, cookies);
+    if (auth instanceof Response) return auth;
+    const { adminSupabase, weddingId } = auth;
 
     const [
       views,
@@ -71,14 +23,18 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
           .from('invitation_views')
           .select('device_type, browser, created_at, guest_name')
           .eq('wedding_id', weddingId)
-          .range(from, to)
+          .range(from, to),
+        1000,
+        5
       ),
       fetchAllRows<any>((from, to) =>
         adminSupabase
           .from('invitation_events')
           .select('event_type, guest_name, created_at')
           .eq('wedding_id', weddingId)
-          .range(from, to)
+          .range(from, to),
+        1000,
+        5
       ),
       adminSupabase
         .from('rsvps')

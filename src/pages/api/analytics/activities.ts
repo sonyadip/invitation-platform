@@ -1,62 +1,20 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../../lib/supabase';
-import { getSupabaseAdmin } from '../../../lib/supabase-admin';
+import { fetchAllRows } from '../../../lib/supabase';
 import { jsonResponse, parseBoundedInt } from '../../../utils/http';
 import { decodeHtmlEntities } from '../../../utils/template-helpers';
-import { getSessionFromCookies } from '../../../utils/session';
+import {
+  ANALYTICS_EVENT_CONFIG,
+  isWithinAnalyticsTimeRange,
+  resolveAnalyticsAuth
+} from '../../../services/analytics-api';
 
 export const prerender = false;
 
-const eventConfig: Record<string, { label: string; desc: string; icon: string; category: string; categoryLabel: string; badgeClass: string; iconBg: string; iconColor: string }> = {
-  open_cover: { label: 'Buka Undangan', desc: 'Membuka cover / amplop undangan digital', icon: 'drafts', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--primary', iconBg: '#f3f4f6', iconColor: '#111827' },
-  click_maps: { label: 'Petunjuk Maps', desc: 'Membuka tautan rute peta lokasi / Google Maps', icon: 'location_on', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--info', iconBg: '#eff6ff', iconColor: '#2563eb' },
-  click_calendar: { label: 'Simpan Kalender', desc: 'Menyimpan jadwal resepsi ke Google Calendar', icon: 'calendar_month', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--purple', iconBg: '#faf5ff', iconColor: '#9333ea' },
-  copy_gift: { label: 'Salin Rekening', desc: 'Menyalin nomor rekening / informasi hadiah digital', icon: 'content_copy', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--warning', iconBg: '#fffbeb', iconColor: '#d97706' },
-  play_music: { label: 'Putar Musik', desc: 'Memutar musik latar belakang undangan', icon: 'music_note', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--teal', iconBg: '#f0fdfa', iconColor: '#0d9488' },
-  pause_music: { label: 'Jeda Musik', desc: 'Mematikan / menjeda musik latar belakang', icon: 'music_off', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--neutral', iconBg: '#f8fafc', iconColor: '#64748b' },
-  play_video: { label: 'Putar Video Momen', desc: 'Memutar video momen pernikahan di layout video', icon: 'smart_display', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--purple', iconBg: '#f5f3ff', iconColor: '#7c3aed' },
-  view_gallery: { label: 'Lihat Galeri Foto', desc: 'Membuka atau melihat preview galeri foto mempelai', icon: 'photo_library', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--indigo', iconBg: '#eef2ff', iconColor: '#4f46e5' },
-  click_rsvp: { label: 'Klik Form RSVP', desc: 'Menavigasi atau membuka form konfirmasi kehadiran', icon: 'how_to_reg', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--emerald', iconBg: '#ecfdf5', iconColor: '#059669' },
-  click_wishes: { label: 'Buka Form Ucapan', desc: 'Membuka form doa & ucapan selamat untuk mempelai', icon: 'forum', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--amber', iconBg: '#fffbeb', iconColor: '#b45309' },
-  click_participant: { label: 'Detail Peserta', desc: 'Membuka popup profil detail peserta upacara', icon: 'person', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--purple', iconBg: '#faf5ff', iconColor: '#9333ea' },
-  click_couple_instagram: { label: 'Instagram Pengantin', desc: 'Membuka tautan profil Instagram mempelai', icon: 'photo_camera', category: 'interaksi', categoryLabel: 'Interaksi', badgeClass: 'act-badge--pink', iconBg: '#fdf2f8', iconColor: '#db2777' },
-  click_vendor_whatsapp: { label: 'Vendor WhatsApp', desc: 'Menghubungi vendor undangan (Senadda) via WhatsApp', icon: 'chat', category: 'vendor', categoryLabel: 'Vendor', badgeClass: 'act-badge--success', iconBg: '#f0fdf4', iconColor: '#16a34a' },
-  click_vendor_instagram: { label: 'Vendor Instagram', desc: 'Membuka profil Instagram vendor (Senadda)', icon: 'camera_alt', category: 'vendor', categoryLabel: 'Vendor', badgeClass: 'act-badge--pink', iconBg: '#fdf2f8', iconColor: '#e1306c' },
-  click_vendor_site: { label: 'Website Senadda', desc: 'Mengunjungi website utama platform Senadda.id', icon: 'language', category: 'vendor', categoryLabel: 'Vendor', badgeClass: 'act-badge--info', iconBg: '#eff6ff', iconColor: '#0284c7' },
-  page_view: { label: 'Kunjungan Halaman', desc: 'Membuka dan memuat halaman undangan digital', icon: 'visibility', category: 'kunjungan', categoryLabel: 'Kunjungan', badgeClass: 'act-badge--neutral', iconBg: '#f8fafc', iconColor: '#64748b' }
-};
-
 export const GET: APIRoute = async ({ url, locals, cookies }) => {
   try {
-    const session = locals.session || await getSessionFromCookies(cookies);
-    const slug = url.searchParams.get('slug');
-    const weddingIdParam = url.searchParams.get('weddingId');
-
-    const adminSupabase = await getSupabaseAdmin();
-
-    let weddingId = weddingIdParam;
-    let weddingSlug = slug;
-    if (!weddingId && slug) {
-      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('slug', slug).single();
-      if (w) {
-        weddingId = w.id;
-        weddingSlug = w.slug;
-      }
-    } else if (weddingId && !weddingSlug) {
-      const { data: w } = await adminSupabase.from('weddings').select('id, slug').eq('id', weddingId).single();
-      if (w) weddingSlug = w.slug;
-    }
-
-    if (!weddingId) {
-      return jsonResponse({ error: 'weddingId or slug is required' }, 400);
-    }
-
-    const isAdmin = session?.role === 'admin';
-    const isClient = session?.role === 'client' && (session?.slug === weddingSlug || session?.weddingId === weddingId);
-
-    if (!isAdmin && !isClient) {
-      return jsonResponse({ error: 'Unauthorized' }, 401);
-    }
+    const auth = await resolveAnalyticsAuth(url, locals, cookies);
+    if (auth instanceof Response) return auth;
+    const { adminSupabase, weddingId } = auth;
 
     const page = parseBoundedInt(url.searchParams.get('page'), 1, 1, 10000);
     const limit = parseBoundedInt(url.searchParams.get('limit'), 25, 1, 100);
@@ -65,27 +23,6 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
     const search = (url.searchParams.get('search') || '').trim().toLowerCase();
     const timeRange = url.searchParams.get('timeRange') || 'all';
 
-    async function fetchAllRows<T>(
-      queryFn: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>,
-      pageSize = 1000,
-      maxBatches = 5
-    ): Promise<T[]> {
-      const rows: T[] = [];
-      let from = 0;
-      let batch = 0;
-      while (batch < maxBatches) {
-        batch++;
-        const to = from + pageSize - 1;
-        const { data, error } = await queryFn(from, to);
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        rows.push(...data);
-        if (data.length < pageSize) break;
-        from += pageSize;
-      }
-      return rows;
-    }
-
     const [viewsData, eventsData, rsvpsRes] = await Promise.all([
       fetchAllRows<any>((from, to) =>
         adminSupabase
@@ -93,7 +30,9 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
           .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at')
           .eq('wedding_id', weddingId)
           .order('created_at', { ascending: false })
-          .range(from, to)
+          .range(from, to),
+        1000,
+        5
       ),
       fetchAllRows<any>((from, to) =>
         adminSupabase
@@ -101,7 +40,9 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
           .select('id, event_type, guest_name, metadata, created_at')
           .eq('wedding_id', weddingId)
           .order('created_at', { ascending: false })
-          .range(from, to)
+          .range(from, to),
+        1000,
+        5
       ),
       adminSupabase
         .from('rsvps')
@@ -120,7 +61,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
     }
 
     const viewItems = (viewsRes.data || []).map((v) => {
-      const conf = eventConfig['page_view'];
+      const conf = ANALYTICS_EVENT_CONFIG['page_view'];
       const dt = v.device_type || 'mobile';
       const isGuest = !!v.guest_name;
       const gName = v.guest_name ? decodeHtmlEntities(v.guest_name) : null;
@@ -156,7 +97,7 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
     });
 
     const eventItems = (eventsRes.data || []).map((ev) => {
-      const conf = eventConfig[ev.event_type] || eventConfig['page_view'];
+      const conf = ANALYTICS_EVENT_CONFIG[ev.event_type] || ANALYTICS_EVENT_CONFIG['page_view'];
       const isGuest = !!ev.guest_name;
       const gName = ev.guest_name ? decodeHtmlEntities(ev.guest_name) : null;
       const rsvp = gName ? rsvpMap.get(gName.trim().toLowerCase()) : null;
@@ -195,22 +136,8 @@ export const GET: APIRoute = async ({ url, locals, cookies }) => {
     });
 
     const now = Date.now();
-    function isWithinTime(createdAtStr: string): boolean {
-      if (timeRange === 'all' || !createdAtStr) return true;
-      const itemTime = new Date(createdAtStr).getTime();
-      if (timeRange === '24h') return now - itemTime <= 24 * 3600 * 1000;
-      if (timeRange === '7d') return now - itemTime <= 7 * 24 * 3600 * 1000;
-      if (timeRange === '30d') return now - itemTime <= 30 * 24 * 3600 * 1000;
-      if (timeRange === 'today') {
-        const itemWita = new Date(itemTime + 8 * 3600000).toISOString().slice(0, 10);
-        const nowWita = new Date(now + 8 * 3600000).toISOString().slice(0, 10);
-        return itemWita === nowWita;
-      }
-      return true;
-    }
-
     const timeAndSearchFiltered = allActivities.filter((item) => {
-      if (!isWithinTime(item.createdAt)) return false;
+      if (!isWithinAnalyticsTimeRange(item.createdAt, timeRange, now)) return false;
       if (search) {
         const searchBlob = `${item.guestName || ''} ${item.label} ${item.desc} ${item.browser} ${item.deviceModel} ${item.source} ${item.city || ''} ${item.metadata?.target || ''} ${item.metadata?.href || ''}`.toLowerCase();
         if (!searchBlob.includes(search)) return false;

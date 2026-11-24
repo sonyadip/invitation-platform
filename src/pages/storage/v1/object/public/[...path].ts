@@ -11,8 +11,8 @@ function getSupabaseUrl(): string {
 }
 
 async function handleProxyRequest(request: Request, path: string | undefined, isHead = false): Promise<Response> {
-  if (!path) {
-    return new Response('Asset path is required', { status: 400 });
+  if (!path || path.includes('..') || path.includes('\\') || /^https?:/i.test(path)) {
+    return new Response('Invalid asset path', { status: 400 });
   }
 
   const supabaseUrl = getSupabaseUrl();
@@ -57,7 +57,9 @@ async function handleProxyRequest(request: Request, path: string | undefined, is
     if (!upstreamResponse.ok && upstreamResponse.status !== 206) {
       const errorHeaders = new Headers(upstreamResponse.headers);
       errorHeaders.set('Cache-Control', 'public, max-age=300, s-maxage=300');
-      return new Response(upstreamResponse.body, {
+      errorHeaders.set('CDN-Cache-Control', 'public, max-age=300');
+      errorHeaders.set('Cloudflare-CDN-Cache-Control', 'public, max-age=300');
+      return new Response(isHead ? null : upstreamResponse.body, {
         status: upstreamResponse.status,
         statusText: upstreamResponse.statusText,
         headers: errorHeaders
@@ -97,7 +99,9 @@ async function handleProxyRequest(request: Request, path: string | undefined, is
     return new Response('Failed to retrieve asset from storage proxy', {
       status: 502,
       headers: {
-        'Cache-Control': 'public, max-age=300, s-maxage=300'
+        'Cache-Control': 'public, max-age=300, s-maxage=300',
+        'CDN-Cache-Control': 'public, max-age=300',
+        'Cloudflare-CDN-Cache-Control': 'public, max-age=300'
       }
     });
   }

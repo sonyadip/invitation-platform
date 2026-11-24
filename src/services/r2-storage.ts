@@ -1,51 +1,52 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
-const r2AccountId =
-  (typeof process !== 'undefined' ? process.env.R2_ACCOUNT_ID : '') ||
-  (import.meta as any).env?.R2_ACCOUNT_ID;
+function getEnv(name: string, runtimeEnv?: Record<string, string | undefined>): string {
+  return (
+    runtimeEnv?.[name] ||
+    (typeof process !== 'undefined' ? process.env[name] : '') ||
+    (import.meta as any).env?.[name] ||
+    ''
+  );
+}
 
-const r2AccessKeyId =
-  (typeof process !== 'undefined' ? process.env.R2_ACCESS_KEY_ID : '') ||
-  (import.meta as any).env?.R2_ACCESS_KEY_ID;
+function getR2Config(runtimeEnv?: Record<string, string | undefined>) {
+  const accountId = getEnv('R2_ACCOUNT_ID', runtimeEnv);
+  const accessKeyId = getEnv('R2_ACCESS_KEY_ID', runtimeEnv);
+  const secretAccessKey = getEnv('R2_SECRET_ACCESS_KEY', runtimeEnv);
+  const bucketName = getEnv('R2_BUCKET_NAME', runtimeEnv) || 'senadda-media';
+  const publicUrl = (getEnv('R2_PUBLIC_URL', runtimeEnv) || 'https://media.senadda.id').replace(/\/$/, '');
+  const useR2 = getEnv('USE_R2_STORAGE', runtimeEnv);
+  const configured = Boolean(useR2 === 'true' && accountId && accessKeyId && secretAccessKey);
 
-const r2SecretAccessKey =
-  (typeof process !== 'undefined' ? process.env.R2_SECRET_ACCESS_KEY : '') ||
-  (import.meta as any).env?.R2_SECRET_ACCESS_KEY;
+  return { accountId, accessKeyId, secretAccessKey, bucketName, publicUrl, configured };
+}
 
-const r2BucketName =
-  (typeof process !== 'undefined' ? process.env.R2_BUCKET_NAME : '') ||
-  (import.meta as any).env?.R2_BUCKET_NAME ||
-  'senadda-media';
+export function isR2StorageConfigured(runtimeEnv?: Record<string, string | undefined>): boolean {
+  return getR2Config(runtimeEnv).configured;
+}
 
-const r2PublicUrl = (
-  (typeof process !== 'undefined' ? process.env.R2_PUBLIC_URL : '') ||
-  (import.meta as any).env?.R2_PUBLIC_URL ||
-  'https://media.senadda.id'
-).replace(/\/$/, '');
-
-const useR2 =
-  (typeof process !== 'undefined' ? process.env.USE_R2_STORAGE : '') ||
-  (import.meta as any).env?.USE_R2_STORAGE;
-
-export const isR2Configured = Boolean(
-  useR2 === 'true' && r2AccountId && r2AccessKeyId && r2SecretAccessKey
-);
+export const isR2Configured = getR2Config().configured;
 
 let s3ClientInstance: S3Client | null = null;
+let s3ClientKey = '';
 
-export function getR2Client(): S3Client {
-  if (!s3ClientInstance) {
-    if (!isR2Configured) {
-      throw new Error('Cloudflare R2 credentials are not configured in environment variables.');
-    }
+export function getR2Client(runtimeEnv?: Record<string, string | undefined>): S3Client {
+  const cfg = getR2Config(runtimeEnv);
+  if (!cfg.configured) {
+    throw new Error('Cloudflare R2 credentials are not configured in environment variables.');
+  }
+
+  const key = `${cfg.accountId}::${cfg.accessKeyId}::${cfg.secretAccessKey}`;
+  if (!s3ClientInstance || s3ClientKey !== key) {
     s3ClientInstance = new S3Client({
       region: 'auto',
-      endpoint: `https://${r2AccountId}.r2.cloudflarestorage.com`,
+      endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId: r2AccessKeyId!,
-        secretAccessKey: r2SecretAccessKey!
+        accessKeyId: cfg.accessKeyId,
+        secretAccessKey: cfg.secretAccessKey
       }
     });
+    s3ClientKey = key;
   }
   return s3ClientInstance;
 }
@@ -53,14 +54,16 @@ export function getR2Client(): S3Client {
 export async function uploadToR2(
   path: string,
   data: ArrayBuffer | Uint8Array | Buffer,
-  contentType: string
+  contentType: string,
+  runtimeEnv?: Record<string, string | undefined>
 ): Promise<string> {
-  const client = getR2Client();
+  const cfg = getR2Config(runtimeEnv);
+  const client = getR2Client(runtimeEnv);
   const body = Buffer.isBuffer(data) ? data : Buffer.from(data as any);
 
   await client.send(
     new PutObjectCommand({
-      Bucket: r2BucketName,
+      Bucket: cfg.bucketName,
       Key: path,
       Body: body,
       ContentType: contentType,
@@ -68,14 +71,18 @@ export async function uploadToR2(
     })
   );
 
-  return `${r2PublicUrl}/${path}`;
+  return `${cfg.publicUrl}/${path}`;
 }
 
-export async function deleteFromR2(path: string): Promise<void> {
-  const client = getR2Client();
+export async function deleteFromR2(
+  path: string,
+  runtimeEnv?: Record<string, string | undefined>
+): Promise<void> {
+  const cfg = getR2Config(runtimeEnv);
+  const client = getR2Client(runtimeEnv);
   await client.send(
     new DeleteObjectCommand({
-      Bucket: r2BucketName,
+      Bucket: cfg.bucketName,
       Key: path
     })
   );

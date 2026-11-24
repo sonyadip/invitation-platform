@@ -5,6 +5,9 @@ export interface SessionPayload {
   exp: number;
 }
 
+let cachedSecretStr = '';
+let cachedCryptoKey: CryptoKey | null = null;
+
 const getSecretKey = async (): Promise<CryptoKey> => {
   let secretStr = '';
   if (typeof process !== 'undefined' && process.env) {
@@ -17,16 +20,22 @@ const getSecretKey = async (): Promise<CryptoKey> => {
     secretStr = 'senadda-default-secure-salt-2026';
   }
 
+  if (cachedCryptoKey && cachedSecretStr === secretStr) {
+    return cachedCryptoKey;
+  }
+
   const encoder = new TextEncoder();
   const keyData = encoder.encode(secretStr + '-senadda-session-v1');
 
-  return globalThis.crypto.subtle.importKey(
+  cachedCryptoKey = await globalThis.crypto.subtle.importKey(
     'raw',
     keyData,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign', 'verify']
   );
+  cachedSecretStr = secretStr;
+  return cachedCryptoKey;
 };
 
 function base64UrlEncode(str: string): string {
