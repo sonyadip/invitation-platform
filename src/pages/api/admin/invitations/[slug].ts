@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
 import { jsonResponse } from '../../../../utils/http';
 import {
-  AdminApiError,
   getAdminInvitationBySlug,
   handleAdminApiError,
+  parseAdminJsonBody,
   patchAdminInvitation,
   resolveAdminApiAuth
 } from '../../../../services/admin-api';
@@ -32,17 +32,7 @@ export const PATCH: APIRoute = async ({ params, request, locals, cookies }) => {
     const auth = await resolveAdminApiAuth(request, locals, cookies);
     if (auth instanceof Response) return auth;
 
-    let body: any;
-    try {
-      body = await request.json();
-    } catch {
-      throw new AdminApiError(400, 'Request body must be valid JSON.');
-    }
-
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
-      throw new AdminApiError(400, 'Request body must be a JSON object.');
-    }
-
+    const body = await parseAdminJsonBody(request);
     const data = await patchAdminInvitation(auth.adminSupabase, params.slug || '', body, auth.actorName);
     return jsonResponse({
       success: true,

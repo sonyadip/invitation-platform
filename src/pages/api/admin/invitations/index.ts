@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
 import { jsonResponse, parseBoundedInt } from '../../../../utils/http';
 import {
-  AdminApiError,
   createAdminInvitation,
   handleAdminApiError,
   listAdminInvitations,
+  parseAdminJsonBody,
   resolveAdminApiAuth
 } from '../../../../services/admin-api';
 
@@ -34,17 +34,7 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
     const auth = await resolveAdminApiAuth(request, locals, cookies);
     if (auth instanceof Response) return auth;
 
-    let body: any;
-    try {
-      body = await request.json();
-    } catch {
-      throw new AdminApiError(400, 'Request body must be valid JSON.');
-    }
-
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
-      throw new AdminApiError(400, 'Request body must be a JSON object.');
-    }
-
+    const body = await parseAdminJsonBody(request);
     const result = await createAdminInvitation(auth.adminSupabase, body, auth.actorName);
     return jsonResponse({ success: true, ...result }, 201);
   } catch (error) {

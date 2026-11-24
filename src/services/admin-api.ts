@@ -25,7 +25,7 @@ import {
   type InvitationGiftInput
 } from './dashboard-crud';
 
-export type RuntimeEnv = Record<string, string | undefined>;
+type RuntimeEnv = Record<string, string | undefined>;
 
 export class AdminApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -34,7 +34,7 @@ export class AdminApiError extends Error {
   }
 }
 
-export interface AdminApiAuthContext {
+interface AdminApiAuthContext {
   actorName: string;
   adminSupabase: SupabaseClient<any>;
   runtimeEnv?: RuntimeEnv;
@@ -108,13 +108,33 @@ const SETTINGS_FLAG_FIELDS: Array<{ column: string; keys: string[]; defaultValue
 
 const INSTAGRAM_CONTENT_KEYS = ['instagramUrl', 'groomInstagramUrl', 'brideInstagramUrl'];
 
-export function getEnvSetting(name: string, runtimeEnv?: RuntimeEnv): string {
+function getEnvSetting(name: string, runtimeEnv?: RuntimeEnv): string {
   return (
     runtimeEnv?.[name] ||
     (typeof process !== 'undefined' ? process.env[name] : '') ||
     (import.meta as any).env?.[name] ||
     ''
   );
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  return value as Record<string, unknown>;
+}
+
+export async function parseAdminJsonBody(request: Request): Promise<Record<string, unknown>> {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    throw new AdminApiError(400, 'Request body must be valid JSON.');
+  }
+
+  const record = asRecord(body);
+  if (!record) {
+    throw new AdminApiError(400, 'Request body must be a JSON object.');
+  }
+  return record;
 }
 
 function pick<T = any>(source: Record<string, any> | null | undefined, ...keys: string[]): T | undefined {
@@ -151,7 +171,7 @@ function toIsoDate(value: unknown, fieldName: string): string {
   return parsed.toISOString();
 }
 
-export function validateAdminSlug(rawSlug: unknown): string {
+function validateAdminSlug(rawSlug: unknown): string {
   const slug = String(rawSlug || '').trim().toLowerCase();
   if (!slug || slug.length > 120 || !SLUG_REGEX.test(slug)) {
     throw new AdminApiError(400, 'Slug must use lowercase letters, numbers, and hyphens only.');
@@ -159,7 +179,7 @@ export function validateAdminSlug(rawSlug: unknown): string {
   return slug;
 }
 
-export function inferMediaContentType(filename: string, rawMimeType?: string): { contentType: string; ext: string } {
+function inferMediaContentType(filename: string, rawMimeType?: string): { contentType: string; ext: string } {
   const extFromName = filename.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
   const normalizedMime = String(rawMimeType || '').split(';')[0].trim().toLowerCase();
 
@@ -181,7 +201,7 @@ export function inferMediaContentType(filename: string, rawMimeType?: string): {
   return { contentType: inferredMime, ext: extFromName };
 }
 
-export function extractBearerToken(request: Request): string | null {
+function extractBearerToken(request: Request): string | null {
   const authHeader = request.headers.get('authorization') || '';
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   if (match?.[1]) return match[1].trim();
@@ -250,7 +270,7 @@ function mergeRecord(base: Record<string, any> | undefined, patch: Record<string
   return Object.keys(next).length ? next : undefined;
 }
 
-export function mergeThemeConfig(
+function mergeThemeConfig(
   baseConfig: any,
   incomingConfig: any,
   overrides: {
@@ -305,7 +325,7 @@ export function mergeThemeConfig(
   return next;
 }
 
-export function normalizeEvents(rawEvents: any[], isPublished: boolean): InvitationEventInput[] {
+function normalizeEvents(rawEvents: any[], isPublished: boolean): InvitationEventInput[] {
   return rawEvents.map((ev, index) => {
     const num = index + 1;
     const name = String(pick(ev, 'name', 'event_name', 'eventName') || '').trim();
@@ -325,7 +345,7 @@ export function normalizeEvents(rawEvents: any[], isPublished: boolean): Invitat
   });
 }
 
-export function normalizeGifts(rawGifts: any[]): InvitationGiftInput[] {
+function normalizeGifts(rawGifts: any[]): InvitationGiftInput[] {
   return rawGifts
     .map((g, index) => {
       const bankName = String(pick(g, 'bankName', 'bank_name') || '').trim();
@@ -343,7 +363,7 @@ export function normalizeGifts(rawGifts: any[]): InvitationGiftInput[] {
     .filter(Boolean) as InvitationGiftInput[];
 }
 
-export function normalizeGalleryUrls(rawGallery: any[]): string[] {
+function normalizeGalleryUrls(rawGallery: any[]): string[] {
   return rawGallery
     .map((item) => (typeof item === 'string' ? item.trim() : String(pick(item, 'image_url', 'imageUrl', 'url') || '').trim()))
     .filter(Boolean);
@@ -364,7 +384,7 @@ function defaultExpirationIso(anchorDateIso: string | null | undefined): string 
   return d.toISOString();
 }
 
-export interface GalleryRowItem {
+interface GalleryRowItem {
   id: string;
   image_url: string;
   sort_order: number;
@@ -395,7 +415,7 @@ function findGalleryIndex(items: GalleryRowItem[], selector: string): number {
   return bySubstring[0].idx;
 }
 
-export function resolveGallerySwaps(
+function resolveGallerySwaps(
   currentGallery: GalleryRowItem[],
   swaps: Array<[string, string]>
 ): Array<{ id: string; sort_order: number; image_url: string }> {
@@ -532,7 +552,14 @@ export async function getAdminInvitationBySlug(adminSupabase: SupabaseClient<any
   if (galleryRes.error) throw toDashboardError(galleryRes.error, 'Failed to fetch gallery images.');
   if (giftsRes.error) throw toDashboardError(giftsRes.error, 'Failed to fetch gift accounts.');
 
-  const { client_password_hash: _hashOmitted, ...safeWedding } = wedding as Record<string, any>;
+  const { client_password_hash: _hashOmitted, ...safeWedding } = wedding as {
+    client_password_hash?: unknown;
+    id: string;
+    slug: string;
+    status: WeddingStatus;
+    maps_url: string | null;
+    [key: string]: unknown;
+  };
   return {
     wedding: safeWedding,
     settings: settingsRes.data || null,
@@ -544,11 +571,11 @@ export async function getAdminInvitationBySlug(adminSupabase: SupabaseClient<any
 
 export async function createAdminInvitation(
   adminSupabase: SupabaseClient<any>,
-  body: Record<string, any>,
+  body: Record<string, unknown>,
   actorName: string
 ) {
-  const weddingSrc = body.wedding && typeof body.wedding === 'object' ? body.wedding : undefined;
-  const settingsSrc = body.settings && typeof body.settings === 'object' ? body.settings : undefined;
+  const weddingSrc = asRecord(body.wedding);
+  const settingsSrc = asRecord(body.settings);
   const sources = [weddingSrc, body];
 
   const slug = validateAdminSlug(pickFrom(sources, 'slug'));
@@ -686,22 +713,22 @@ export async function createAdminInvitation(
 
     const sections: SectionToggles = {
       ...DEFAULT_SECTIONS,
-      ...(typeof body.sections === 'object' && body.sections ? body.sections : {}),
-      ...(typeof settingsSrc?.sections === 'object' && settingsSrc.sections ? settingsSrc.sections : {})
+      ...(asRecord(body.sections) || {}),
+      ...(asRecord(settingsSrc?.sections) || {})
     };
 
     const incomingThemeConfig = pickFrom([settingsSrc, body], 'themeConfig', 'theme_config');
     const themeConfig = mergeThemeConfig(defaultThemeConfig, incomingThemeConfig, {
-      theme: pick(body, 'theme'),
-      layout: pick(body, 'layout'),
-      assets: pick(body, 'assets'),
-      content: pick(body, 'content'),
+      theme: asRecord(pick(body, 'theme')),
+      layout: asRecord(pick(body, 'layout')),
+      assets: asRecord(pick(body, 'assets')),
+      content: asRecord(pick(body, 'content')),
       customCss: pickFrom([body, settingsSrc], 'customCss', 'custom_css')
     });
 
-    const waTemplates = pickFrom([settingsSrc, body], 'waTemplates', 'wa_templates');
+    const waTemplates = asRecord(pickFrom([settingsSrc, body], 'waTemplates', 'wa_templates'));
 
-    const settingsInsert: Record<string, any> = {
+    const settingsInsert: Record<string, unknown> = {
       wedding_id: wedding.id,
       ...flagValues,
       access_password: asNonEmptyString(pickFrom(settingsSources, 'accessPassword', 'access_password')),
@@ -709,7 +736,7 @@ export async function createAdminInvitation(
       sections,
       theme_config: themeConfig
     };
-    if (waTemplates && typeof waTemplates === 'object') {
+    if (waTemplates) {
       settingsInsert.wa_templates = waTemplates;
     }
 
@@ -752,7 +779,7 @@ export async function createAdminInvitation(
 export async function patchAdminInvitation(
   adminSupabase: SupabaseClient<any>,
   rawSlug: string,
-  body: Record<string, any>,
+  body: Record<string, unknown>,
   actorName: string
 ) {
   const currentSlug = validateAdminSlug(rawSlug);
@@ -760,8 +787,8 @@ export async function patchAdminInvitation(
   const wedding = current.wedding;
   const currentSettings = current.settings || {};
 
-  const weddingSrc = body.wedding && typeof body.wedding === 'object' ? body.wedding : undefined;
-  const settingsSrc = body.settings && typeof body.settings === 'object' ? body.settings : undefined;
+  const weddingSrc = asRecord(body.wedding);
+  const settingsSrc = asRecord(body.settings);
   const weddingSources = [weddingSrc, body];
   const settingsSources = [settingsSrc, body];
 
@@ -896,8 +923,8 @@ export async function patchAdminInvitation(
       : toIsoDate(nextExpiration, 'expirationDate');
   }
 
-  const rawSections = pick(body, 'sections') ?? pick(settingsSrc, 'sections');
-  if (rawSections && typeof rawSections === 'object') {
+  const rawSections = asRecord(pick(body, 'sections') ?? pick(settingsSrc, 'sections'));
+  if (rawSections) {
     settingsPatch.sections = {
       ...(currentSettings.sections || DEFAULT_SECTIONS),
       ...rawSections
@@ -920,10 +947,10 @@ export async function patchAdminInvitation(
     topCustomCss !== undefined
   ) {
     settingsPatch.theme_config = mergeThemeConfig(currentSettings.theme_config, incomingThemeConfig, {
-      theme: topTheme,
-      layout: topLayout,
-      assets: topAssets,
-      content: topContent,
+      theme: asRecord(topTheme),
+      layout: asRecord(topLayout),
+      assets: asRecord(topAssets),
+      content: asRecord(topContent),
       customCss: topCustomCss
     });
   }
@@ -932,10 +959,12 @@ export async function patchAdminInvitation(
   if (incomingWaTemplates !== undefined) {
     if (incomingWaTemplates === null) {
       settingsPatch.wa_templates = null;
-    } else if (typeof incomingWaTemplates === 'object') {
-      settingsPatch.wa_templates = mergeRecord(currentSettings.wa_templates || {}, incomingWaTemplates) || {};
     } else {
-      throw new AdminApiError(400, 'waTemplates must be an object or null.');
+      const waObj = asRecord(incomingWaTemplates);
+      if (!waObj) {
+        throw new AdminApiError(400, 'waTemplates must be an object or null.');
+      }
+      settingsPatch.wa_templates = mergeRecord(currentSettings.wa_templates || {}, waObj) || {};
     }
   }
 

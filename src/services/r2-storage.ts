@@ -25,8 +25,6 @@ export function isR2StorageConfigured(runtimeEnv?: Record<string, string | undef
   return getR2Config(runtimeEnv).configured;
 }
 
-export const isR2Configured = getR2Config().configured;
-
 let s3ClientInstance: S3Client | null = null;
 let s3ClientKey = '';
 
