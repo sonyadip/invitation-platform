@@ -445,6 +445,7 @@ export function computeSnapshotDiff(
       { key: 'brideAddress', label: 'Bride Family Address', cat: 'couple' },
       { key: 'brideInstagramUrl', label: 'Bride Instagram', cat: 'couple' },
       { key: 'instagramUrl', label: 'Shared Instagram', cat: 'couple' },
+      { key: 'heroEyebrow', label: 'Hero Eyebrow', cat: 'theme' },
       { key: 'introVerse', label: 'Opening Verse / Quote', cat: 'theme' },
       { key: 'introVerseSource', label: 'Verse Source', cat: 'theme' },
       { key: 'giftDescription', label: 'Gift Instructions', cat: 'gifts' },

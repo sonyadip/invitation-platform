@@ -60,6 +60,7 @@ export interface InvitationFormInput {
   giftDescription: string | null;
   rsvpDescription: string | null;
   thankYouMessage: string | null;
+  heroEyebrow: string | null;
   introVerse: string | null;
   introVerseSource: string | null;
   customCss: string | null;
@@ -192,6 +193,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
   const eventVenueNames = values('eventVenueName');
   const eventVenueAddresses = values('eventVenueAddress');
   const eventMapsUrls = values('eventMapsUrl');
+  const storyYears = values('storyYear');
   const storyTitles = values('storyTitle');
   const storyDescriptions = values('storyDescription');
   const giftBankNames = values('giftBankName');
@@ -212,9 +214,15 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
       mapsUrl: eventMapsUrls[index] || ''
     }))
     .filter((event) => event.name || event.date || event.venueName || event.venueAddress || event.mapsUrl);
-  const primaryEvent = events[0];
+  // When events span different dates (e.g., past Akad + upcoming Ngunduh Mantu), anchor the countdown/hero date to the reception/main event.
+  const firstEventDay = events[0]?.date ? events[0].date.slice(0, 10) : '';
+  const hasMultiDayEvents = events.length > 1 && events.some((event) => event.date && event.date.slice(0, 10) !== firstEventDay);
+  const primaryEvent = hasMultiDayEvents
+    ? (events.find((event) => /resepsi|ngunduh/i.test(event.name)) || events[events.length - 1] || events[0])
+    : events[0];
   const story = storyTitles
     .map((title, index) => ({
+      ...(storyYears[index] ? { year: storyYears[index] } : {}),
       title,
       description: storyDescriptions[index] || ''
     }))
@@ -260,8 +268,9 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     accessPassword: nullableValue('accessPassword'),
     clientPassword: nullableValue('clientPassword'),
     expirationDate: nullableDateValue('expirationDate') || (() => {
-      if (events.length > 0 && events[0].date) {
-        const d = new Date(events[0].date);
+      const targetDate = primaryEvent?.date || events[0]?.date;
+      if (targetDate) {
+        const d = new Date(targetDate);
         d.setMonth(d.getMonth() + 1);
         return d.toISOString();
       }
@@ -294,6 +303,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
     giftDescription: nullableValue('giftDescription'),
     rsvpDescription: nullableValue('rsvpDescription'),
     thankYouMessage: nullableValue('thankYouMessage'),
+    heroEyebrow: nullableValue('heroEyebrow'),
     introVerse: nullableValue('introVerse'),
     introVerseSource: nullableValue('introVerseSource'),
     customCss: sanitizeCustomCss(nullableValue('customCss')),
@@ -316,6 +326,7 @@ export function parseInvitationForm(formData: FormData): InvitationFormInput {
 }
 
 export function validateInvitationForm(input: InvitationFormInput) {
+  const isPublished = input.status === 'published';
   const required = [
     ['slug', input.slug],
     ['bride name', input.brideName],
@@ -324,7 +335,7 @@ export function validateInvitationForm(input: InvitationFormInput) {
     ['groom full name', input.groomFullName],
     ['wedding date', input.weddingDate],
     ['venue address', input.venueAddress],
-    ['maps URL', input.mapsUrl]
+    ...(isPublished ? [['maps URL', input.mapsUrl]] : [])
   ];
 
   for (const [label, value] of required) {
@@ -349,7 +360,7 @@ export function validateInvitationForm(input: InvitationFormInput) {
       [`event ${eventNumber} name`, event.name],
       [`event ${eventNumber} date`, event.date],
       [`event ${eventNumber} venue address`, event.venueAddress],
-      [`event ${eventNumber} maps URL`, event.mapsUrl]
+      ...(isPublished ? [[`event ${eventNumber} maps URL`, event.mapsUrl]] : [])
     ];
 
     for (const [label, value] of requiredEventFields) {
@@ -651,6 +662,7 @@ function buildThemeConfig(baseThemeConfig: any, input: InvitationFormInput): The
     giftDescription: input.giftDescription || undefined,
     rsvpDescription: input.rsvpDescription || undefined,
     closingMessage: input.thankYouMessage || undefined,
+    heroEyebrow: input.heroEyebrow || undefined,
     verse: input.introVerse || undefined,
     verseSource: input.introVerseSource || undefined
   };

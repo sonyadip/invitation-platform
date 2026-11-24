@@ -67,6 +67,7 @@ const defaults = {
   giftDescription: '',
   rsvpDescription: '',
   thankYouMessage: '',
+  heroEyebrow: '',
   introVerse: '',
   introVerseSource: '',
   customCss: '',
@@ -129,6 +130,7 @@ if (Astro.request.method === 'POST') {
     giftDescription: parsed.giftDescription || '',
     rsvpDescription: parsed.rsvpDescription || '',
     thankYouMessage: parsed.thankYouMessage || '',
+    heroEyebrow: parsed.heroEyebrow || '',
     introVerse: parsed.introVerse || '',
     introVerseSource: parsed.introVerseSource || '',
     customCss: parsed.customCss || '',
@@ -353,6 +355,12 @@ if (Astro.request.method === 'POST') {
         </div>
 
         <div class="field-group wide">
+          <label>Hero Eyebrow Text</label>
+          <input name="heroEyebrow" value={values.heroEyebrow} placeholder="The Wedding Of" />
+          <span class="hint">Opsional (template Terre). Kosongkan untuk menggunakan default "The Wedding Of".</span>
+        </div>
+
+        <div class="field-group wide">
           <label>Intro Verse / Quote</label>
           <textarea name="introVerse" rows="3" placeholder="Enter holy scripture or wedding quote...">{values.introVerse}</textarea>
         </div>
@@ -505,8 +513,8 @@ if (Astro.request.method === 'POST') {
                 <input name="eventVenueName" value={event.venueName} placeholder="Grand Ballroom" />
               </div>
               <div class="field-group">
-                <label>Google Maps URL <span class="required">*</span></label>
-                <input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} placeholder="https://maps.google.com/..." />
+                <label>Google Maps URL</label>
+                <input name="eventMapsUrl" value={event.mapsUrl} placeholder="https://maps.google.com/..." />
               </div>
               <div class="field-group wide">
                 <label>Venue Address</label>
@@ -541,7 +549,11 @@ if (Astro.request.method === 'POST') {
           <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
             <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Story Milestone <span class="idx">{index + 1}</span></div>
             <div class="form-grid">
-              <div class="field-group wide">
+              <div class="field-group">
+                <label>Date / Year (Optional)</label>
+                <input name="storyYear" value={story.year || ''} placeholder="Desember 2024" />
+              </div>
+              <div class="field-group">
                 <label>Title</label>
                 <input name="storyTitle" value={story.title} placeholder="HOW WE MET" />
               </div>
@@ -762,7 +774,11 @@ if (Astro.request.method === 'POST') {
     <div class="repeater-item" style="background: var(--admin-zinc-50); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-md); padding: 18px;">
       <div style="font-weight: 700; font-size: 13px; color: var(--admin-zinc-900); margin-bottom: 12px;">Story Milestone <span class="idx"></span></div>
       <div class="form-grid">
-        <div class="field-group wide">
+        <div class="field-group">
+          <label>Date / Year (Optional)</label>
+          <input name="storyYear" placeholder="Desember 2024" />
+        </div>
+        <div class="field-group">
           <label>Title</label>
           <input name="storyTitle" placeholder="OUR FIRST DATE" />
         </div>

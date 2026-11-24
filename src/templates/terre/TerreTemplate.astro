@@ -131,22 +131,18 @@ const activeEvents = events && events.length > 0
       }
     ];
 
-const resepsiEvent = activeEvents.find(e => /resepsi/i.test(e.event_name)) || activeEvents[activeEvents.length - 1] || activeEvents[0];
-const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, resepsiEvent as any);
-
-const resepsiDate = formatEventDate(resepsiEvent.event_date || wedding.wedding_date);
-const resepsiFormattedTime = (() => {
-  const start = (resepsiEvent.start_time || '18:00').trim();
-  if (!resepsiEvent.end_time) return `${start} - Selesai`;
-  const end = resepsiEvent.end_time.trim();
-  if (/^(wib|wita|wit)$/i.test(end)) {
-    return `${start} ${end.toUpperCase()}`;
-  }
-  if (/^selesai$/i.test(end)) {
-    return `${start} - Selesai`;
-  }
+const formatEventTime = (startTime?: string | null, endTime?: string | null): string => {
+  const start = (startTime || '').trim();
+  const end = (endTime || '').trim();
+  if (!start && !end) return '';
+  if (!start) return end;
+  if (!end || /^selesai$/i.test(end)) return `${start} - Selesai`;
+  if (/^(wib|wita|wit)$/i.test(end)) return `${start} ${end.toUpperCase()}`;
   return `${start} - ${end}`;
-})();
+};
+
+const primaryEvent = activeEvents.find(e => /resepsi|ngunduh/i.test(e.event_name)) || activeEvents[activeEvents.length - 1] || activeEvents[0];
+const googleCalendarUrl = buildGoogleCalendarUrl(wedding as any, primaryEvent as any);
 const isPreview = wedding.id.startsWith('preview-');
 const customDresscodeColors = Array.isArray(themeContent.dresscodeColors) && themeContent.dresscodeColors.length > 0
   ? themeContent.dresscodeColors
@@ -233,6 +229,7 @@ const instagramUrl = themeContent.instagramUrl && themeContent.instagramUrl !== 
 const _baseWa = themeContent.whatsappUrl || platformSettings.whatsapp_url || '';
 const _themeName = (wedding.template || 'Template').charAt(0).toUpperCase() + (wedding.template || 'Template').slice(1);
 const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : '';
+const heroEyebrow = (typeof themeContent.heroEyebrow === 'string' && themeContent.heroEyebrow.trim()) || 'The Wedding Of';
 const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadiran Anda dan berikan doa restu untuk kami.';
 ---
 
@@ -277,16 +274,18 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
 
         <section class="hero-section">
           <div class="hero-section__content">
-            <p class="hero-section__eyebrow">The Wedding Of</p>
+            <p class="hero-section__eyebrow">{heroEyebrow}</p>
             <h1 class="hero-section__names">
               {wedding.groom_name}
               <span class="hero-section__amp">&amp;</span>
               {wedding.bride_name}
             </h1>
 
-            <div class="hero-section__photo-wrap">
-              <SmartImage src={heroImage} alt={`${wedding.bride_name} & ${wedding.groom_name}`} class="hero-section__photo" loading="eager" />
-            </div>
+            {heroImage && (
+              <div class="hero-section__photo-wrap">
+                <SmartImage src={heroImage} alt={`${wedding.bride_name} & ${wedding.groom_name}`} class="hero-section__photo" loading="eager" />
+              </div>
+            )}
 
             <p class="hero-section__wedding-day">{weddingDayName || 'Senin'}</p>
             <p class="hero-section__date">{dottedDateStr}</p>
@@ -335,16 +334,13 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
             <section class="couple-section" id="mempelai">
 
               <div class="couple-card couple-card--groom">
-                <div class="couple-card__grid">
-                  <div class="couple-card__photo-col" data-animate="slide-right" style="--animate-delay: 100ms;">
-                    <SmartImage src={groomImage} alt={wedding.groom_name} class="couple-card__photo couple-card__photo--groom" loading="lazy" />
+                {groomImage && (
+                  <div class="couple-card__grid">
+                    <div class="couple-card__photo-col" data-animate="slide-right" style="--animate-delay: 100ms;">
+                      <SmartImage src={groomImage} alt={wedding.groom_name} class="couple-card__photo couple-card__photo--groom" loading="lazy" />
+                    </div>
                   </div>
-                  {/* <div class="couple-card__nickname-col">
-                    <p class="couple-card__nickname">
-                      {wedding.groom_name}
-                    </p>
-                  </div> */}
-                </div>
+                )}
 
                 <div class="couple-card__details couple-card__details--groom">
                   <h3 class="couple-card__fullname" data-animate="fade-up" style="--animate-delay: 300ms;">{wedding.groom_full_name}</h3>
@@ -379,16 +375,13 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
               </div>
 
               <div class="couple-card couple-card--bride">
-                <div class="couple-card__grid">
-                  {/* <div class="couple-card__nickname-col">
-                    <p class="couple-card__nickname">
-                      {wedding.bride_name}
-                    </p>
-                  </div> */}
-                  <div class="couple-card__photo-col" data-animate="slide-left" style="--animate-delay: 100ms;">
-                    <SmartImage src={brideImage} alt={wedding.bride_name} class="couple-card__photo couple-card__photo--bride" loading="lazy" />
+                {brideImage && (
+                  <div class="couple-card__grid">
+                    <div class="couple-card__photo-col" data-animate="slide-left" style="--animate-delay: 100ms;">
+                      <SmartImage src={brideImage} alt={wedding.bride_name} class="couple-card__photo couple-card__photo--bride" loading="lazy" />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div class="couple-card__details couple-card__details--bride">
                   <h3 class="couple-card__fullname" data-animate="fade-up" style="--animate-delay: 300ms;">{wedding.bride_full_name}</h3>
@@ -446,35 +439,47 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
           {sections.eventDetails && (
             <section class="events-section" id="acara">
               {eventImage && (
-                <>
-                  <SmartImage class="events-section__bg" src={eventImage} alt="" loading="lazy" />
-                  <div class="events-section__overlay"></div>
-                </>
+                <SmartImage class="events-section__bg" src={eventImage} alt="" loading="lazy" />
               )}
+              <div class="events-section__overlay"></div>
               <div class="events-section__content">
                 <h2 class="section-title section-title--white" data-animate="fade-up" style="--animate-delay: 150ms;">
                   Save The Date
                 </h2>
 
               <div class="events-section__list">
-                <article class="event-card">
-                  <h3 class="event-card__title" data-animate="fade-up" style="--animate-delay: 250ms;">{resepsiEvent.event_name}</h3>
-                  <h4 class="event-card__date" data-animate="fade-up" style="--animate-delay: 350ms;">{resepsiDate.weekday}, {resepsiDate.date}</h4>
-                  <p class="event-card__time" data-animate="fade-up" style="--animate-delay: 450ms;">
-                    {resepsiFormattedTime}
-                  </p>
-                  <p class="event-card__venue" data-animate="fade-up" style="--animate-delay: 550ms;">{resepsiEvent.venue_name}</p>
-                  <p class="event-card__address" data-animate="fade-up" style="--animate-delay: 650ms;">{resepsiEvent.venue_address}</p>
-                  {resepsiEvent.maps_url && (
-                    <a class="event-card__map-btn" href={resepsiEvent.maps_url} target="_blank" rel="noopener noreferrer" data-animate="fade-up" style="--animate-delay: 750ms;">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      Open Maps
-                    </a>
-                  )}
-                </article>
+                {activeEvents.map((evt, evtIdx) => {
+                  const evtDate = formatEventDate(evt.event_date || wedding.wedding_date);
+                  const evtTime = formatEventTime(evt.start_time, evt.end_time);
+                  const hasMaps = Boolean(evt.maps_url && evt.maps_url.trim() !== '' && evt.maps_url.trim() !== '#');
+                  const baseDelay = evtIdx * 120;
+                  return (
+                    <article class="event-card">
+                      <h3 class="event-card__title" data-animate="fade-up" style={`--animate-delay: ${250 + baseDelay}ms;`}>{evt.event_name}</h3>
+                      <h4 class="event-card__date" data-animate="fade-up" style={`--animate-delay: ${350 + baseDelay}ms;`}>{evtDate.weekday}, {evtDate.date}</h4>
+                      {evtTime && (
+                        <p class="event-card__time" data-animate="fade-up" style={`--animate-delay: ${450 + baseDelay}ms;`}>
+                          {evtTime}
+                        </p>
+                      )}
+                      {evt.venue_name && (
+                        <p class="event-card__venue" data-animate="fade-up" style={`--animate-delay: ${550 + baseDelay}ms;`}>{evt.venue_name}</p>
+                      )}
+                      {evt.venue_address && (
+                        <p class="event-card__address" data-animate="fade-up" style={`--animate-delay: ${650 + baseDelay}ms;`}>{evt.venue_address}</p>
+                      )}
+                      {hasMaps && (
+                        <a class="event-card__map-btn" href={evt.maps_url} target="_blank" rel="noopener noreferrer" data-animate="fade-up" style={`--animate-delay: ${750 + baseDelay}ms;`}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                          </svg>
+                          Open Maps
+                        </a>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
 
               {showDresscode && (
@@ -707,7 +712,7 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
                 Wedding Gift
               </h2>
               <p class="section-desc" data-animate="fade-up" style="--animate-delay: 350ms;">
-                Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika Anda bermaksud memberikan tanda kasih, Anda dapat menyampaikannya melalui:
+                {themeContent.giftDescription || 'Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika Anda bermaksud memberikan tanda kasih, Anda dapat menyampaikannya melalui:'}
               </p>
               <div class="gift-section__grid-wrap">
                 <GiftGrid gifts={activeGifts} />
@@ -773,7 +778,7 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
       </main>
     </div>
 
-    {sections.music && (
+    {sections.music && settings.music_enabled && wedding.music_url && (
       <div class="floating-audio-wrap">
         <button class="audio-toggle floating-audio-btn" data-template-audio-toggle id="tombol-musik" type="button" aria-label="Play or pause music">
           <div class="audio-icon-wrapper">
@@ -785,9 +790,7 @@ const rsvpDescription = themeContent.rsvpDescription || 'Mohon konfirmasi kehadi
               <rect x="14" y="4" width="4" height="16"></rect>
             </svg>
           </div>
-          {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
-          )}
+          <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
         </button>
       </div>
     )}

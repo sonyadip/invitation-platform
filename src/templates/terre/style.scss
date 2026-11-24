@@ -242,6 +242,7 @@ body.template-terre {
         justify-content: center;
         overflow: hidden;
         padding: 60px;
+        background-color: #2c2119;
 
         &__bg {
           position: absolute;
@@ -826,6 +827,7 @@ h2.section-title,
     overflow: hidden;
     text-align: center;
     width: 100%;
+    background-color: #2c2119;
 
     &__bg {
       position: absolute;
@@ -860,6 +862,9 @@ h2.section-title,
     &__list {
       max-width: 360px;
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
     }
 
     .event-card {
@@ -873,6 +878,11 @@ h2.section-title,
       font-family: 'EB Garamond', Georgia, serif;
       color: #ffffff;
       letter-spacing: 0.5px;
+
+      & + .event-card {
+        padding-top: 36px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      }
 
       &__title {
         font-size: 32px;
@@ -1749,6 +1759,7 @@ h2.section-title,
     overflow: hidden;
     padding: 0 32px 40px;
     text-align: center;
+    background-color: #2c2119;
 
     &::after {
       content: '';

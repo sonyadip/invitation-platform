@@ -116,6 +116,7 @@ export interface SlugReportDetail {
       brideAddress: string;
       giftDescription: string;
       thankYouMessage: string;
+      heroEyebrow?: string;
       introVerse: string;
       introVerseSource: string;
       groomChildNumber?: string;
@@ -775,6 +776,7 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
         giftDescription: content.giftDescription || '',
         rsvpDescription: content.rsvpDescription || '',
         thankYouMessage: content.closingMessage || '',
+        heroEyebrow: content.heroEyebrow || '',
         introVerse: content.verse || '',
         introVerseSource: content.verseSource || ''
       }

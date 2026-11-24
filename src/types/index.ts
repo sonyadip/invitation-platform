@@ -70,6 +70,7 @@ export interface ThemeConfig {
     brideMotherName?: string;
     groomAddress?: string;
     brideAddress?: string;
+    heroEyebrow?: string;
     galleryVideoUrls?: string[];
     [key: string]: any;
   };

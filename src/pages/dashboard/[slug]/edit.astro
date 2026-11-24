@@ -124,7 +124,8 @@ const content = settings?.content || {
   brideAddress: '',
   giftDescription: '',
   rsvpDescription: '',
-  thankYouMessage: ''
+  thankYouMessage: '',
+  heroEyebrow: ''
 };
 const galleryImageUrls = detail.galleryImages.map((image) => image.imageUrl);
 const sliderImageUrls = assets.sliderImages || [];
@@ -454,6 +455,11 @@ const defaultHalfPrice = getTemplateHalfPrice(detail.wedding.template, platformS
                     <input type="file" name="sliderImageFiles" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple />
                   </label>
                   <label class="wide">
+                    Hero Eyebrow Text
+                    <input name="heroEyebrow" value={content.heroEyebrow || ''} placeholder="The Wedding Of" />
+                    <span class="hint">Opsional (template Terre). Kosongkan untuk menggunakan default "The Wedding Of".</span>
+                  </label>
+                  <label class="wide">
                     Intro Verse / Quotes
                     <textarea name="introVerse" rows="4" placeholder="Enter opening verse or religious quote...">{content.introVerse || ''}</textarea>
                   </label>
@@ -542,7 +548,7 @@ const defaultHalfPrice = getTemplateHalfPrice(detail.wedding.template, platformS
                         <label>Start Time<input type="time" name="eventStartTime" value={event.startTime} /></label>
                         <label>End Time<input name="eventEndTime" value={event.endTime} placeholder="Finish" /></label>
                         <label>Venue Name<input name="eventVenueName" value={event.venueName} /></label>
-                        <label>Google Maps URL<input name="eventMapsUrl" value={event.mapsUrl} required={index === 0} /></label>
+                        <label>Google Maps URL<input name="eventMapsUrl" value={event.mapsUrl} /></label>
                         <label class="wide">Venue Full Address<textarea name="eventVenueAddress" rows="3" required={index === 0}>{event.venueAddress}</textarea></label>
                       </div>
                       {index > 0 && <button type="button" class="remove-btn secondary-action" style="margin-top: 10px;">Delete Event</button>}
@@ -573,6 +579,7 @@ const defaultHalfPrice = getTemplateHalfPrice(detail.wedding.template, platformS
                     <fieldset class="story-card repeater-item">
                       <legend>Story Chapter <span class="idx">{index + 1}</span></legend>
                       <div class="form-grid">
+                        <label>Date / Year (Optional)<input name="storyYear" value={story.year || ''} placeholder="Desember 2024" /></label>
                         <label>Milestone Title<input name="storyTitle" value={story.title} placeholder="HOW WE MET" /></label>
                         <label class="wide">Story Description<textarea name="storyDescription" rows="3">{story.description}</textarea></label>
                       </div>
@@ -903,6 +910,7 @@ const defaultHalfPrice = getTemplateHalfPrice(detail.wedding.template, platformS
       <fieldset class="story-card repeater-item">
         <legend>Story Chapter <span class="idx"></span></legend>
         <div class="form-grid">
+          <label>Date / Year (Optional)<input name="storyYear" placeholder="Desember 2024" /></label>
           <label>Milestone Title<input name="storyTitle" placeholder="HOW WE MET" /></label>
           <label class="wide">Story Description<textarea name="storyDescription" rows="3"></textarea></label>
         </div>
