@@ -52,14 +52,19 @@ const saveDateImage = themeAssets.countdownImage || (isPreview ? saveDatePhoto.s
 
 const heroImage = themeAssets.heroImage;
 const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || coverImage || heroImage || (isPreview ? coverPhoto.src : undefined);
-const heroSlides = [
+const explicitSliderImages = Array.isArray(themeAssets.bgSliderImages) && themeAssets.bgSliderImages.length > 0
+  ? themeAssets.bgSliderImages
+  : Array.isArray(themeAssets.sliderImages) && themeAssets.sliderImages.length > 0
+    ? themeAssets.sliderImages
+    : null;
+const heroSlides = (explicitSliderImages || [
   heroImage || coverImage || groomImage,
   brideImage,
   eventImage,
   rsvpImage,
   saveDateImage,
   coverImage
-].filter((s, i, a) => Boolean(s) && a.indexOf(s) === i);
+]).filter((s: unknown, i: number, a: unknown[]) => Boolean(s) && a.indexOf(s) === i);
 
 const defaultText = {
   verse: ' Wahai pasangan suami-isteri, semoga kalian tetap bersatu dan tidak pernah terpisahkan. Semoga kalian mencapai hidup penuh kebahagiaan, tinggal di rumah yang penuh kegembiraan bersama seluruh keturunanmu. ',
@@ -324,14 +329,16 @@ const activeStory = wedding.story && wedding.story.length > 0
         {sections.coupleInfo && (
           <section class="couple-section" id="data-mempelai">
             <article class="couple-section__person">
-              <div class="couple-section__image-wrap" data-animate>
-                <SmartImage
-                  class="couple-section__image"
-                  src={groomImage}
-                  alt={wedding.groom_name}
-                  loading="lazy"
-                />
-              </div>
+              {groomImage && (
+                <div class="couple-section__image-wrap" data-animate>
+                  <SmartImage
+                    class="couple-section__image"
+                    src={groomImage}
+                    alt={wedding.groom_name}
+                    loading="lazy"
+                  />
+                </div>
+              )}
               <div class="couple-section__divider" data-animate>
                 <span class="couple-section__role">The Groom</span>
               </div>
@@ -356,14 +363,16 @@ const activeStory = wedding.story && wedding.story.length > 0
             </article>
 
             <article class="couple-section__person">
-              <div class="couple-section__image-wrap" data-animate>
-                <SmartImage
-                  class="couple-section__image"
-                  src={brideImage}
-                  alt={wedding.bride_name}
-                  loading="lazy"
-                />
-              </div>
+              {brideImage && (
+                <div class="couple-section__image-wrap" data-animate>
+                  <SmartImage
+                    class="couple-section__image"
+                    src={brideImage}
+                    alt={wedding.bride_name}
+                    loading="lazy"
+                  />
+                </div>
+              )}
               <div class="couple-section__divider" data-animate>
                 <span class="couple-section__role">The Bride</span>
               </div>
@@ -442,7 +451,9 @@ const activeStory = wedding.story && wedding.story.length > 0
                     <p class="event-card__time" data-animate>
                       Pukul {event.start_time} {event.end_time ? `- ${event.end_time}` : '- Selesai'}
                     </p>
-                    <p class="event-card__venue" data-animate>{event.venue_name}</p>
+                    {event.venue_name && (
+                      <p class="event-card__venue" data-animate>{event.venue_name}</p>
+                    )}
                     <p class="event-card__address" data-animate>{event.venue_address}</p>
                     {event.maps_url && (
                       <a class="event-card__map-btn" href={event.maps_url} target="_blank" rel="noopener noreferrer" data-animate>
@@ -681,7 +692,7 @@ const activeStory = wedding.story && wedding.story.length > 0
 
       </main>
 
-      {sections.music && (
+      {sections.music && settings.music_enabled && wedding.music_url && (
         <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
           <div class="audio-icon-wrapper">
             <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
@@ -692,9 +703,7 @@ const activeStory = wedding.story && wedding.story.length > 0
               <rect x="14" y="4" width="4" height="16"></rect>
             </svg>
           </div>
-          {settings.music_enabled && wedding.music_url && (
-            <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
-          )}
+          <audio data-template-audio loop preload="none" src={wedding.music_url}></audio>
         </button>
       )}
 
