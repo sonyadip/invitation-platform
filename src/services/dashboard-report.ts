@@ -439,7 +439,23 @@ export async function getDashboardReport(now = new Date()): Promise<DashboardRep
   };
 }
 
-export async function getSlugReportDetail(slug: string, now = new Date()): Promise<SlugReportDetail | null> {
+export interface SlugReportDetailOptions {
+  includeAnalytics?: boolean;
+  includeRsvps?: boolean;
+  includeSentInvitations?: boolean;
+}
+
+export async function getSlugReportDetail(
+  slug: string,
+  now = new Date(),
+  options: SlugReportDetailOptions = {}
+): Promise<SlugReportDetail | null> {
+  const {
+    includeAnalytics = true,
+    includeRsvps = true,
+    includeSentInvitations = true
+  } = options;
+
   const { data: wedding, error: weddingError } = await supabase
     .from('weddings')
     .select('*')
@@ -450,7 +466,8 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
   if (weddingError) throw weddingError;
   if (!wedding) return null;
 
-  const adminSupabase = await getSupabaseAdmin();
+  const needsAdmin = includeAnalytics || includeSentInvitations;
+  const adminSupabase = needsAdmin ? await getSupabaseAdmin() : null;
 
   const [settingsRes, domainsRes, eventsRes, galleryRes, giftsRes, rsvps] = await Promise.all([
     supabase
@@ -479,14 +496,18 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
       .select('bank_name, account_number, account_name, qris_url')
       .eq('wedding_id', wedding.id)
       .order('sort_order', { ascending: true }),
-    supabase
-      .from('rsvps')
-      .select('id, guest_name, attendance_status, guest_count, message, created_at')
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false })
-      .limit(500)
-      .then(res => res.data || [])
+    includeRsvps
+      ? supabase
+          .from('rsvps')
+          .select('id, guest_name, attendance_status, guest_count, message, created_at')
+          .eq('wedding_id', wedding.id)
+          .order('created_at', { ascending: false })
+          .limit(500)
+          .then(res => res.data || [])
+      : Promise.resolve([])
   ]);
+
+  const emptyCountRes = { data: [] as any[], count: 0 };
 
   const [
     viewsRes,
@@ -494,28 +515,36 @@ export async function getSlugReportDetail(slug: string, now = new Date()): Promi
     trackedEventsRes,
     viewsBreakdownRes
   ] = await Promise.all([
-    adminSupabase
-      .from('invitation_views')
-      .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at', { count: 'exact' })
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false })
-      .limit(10),
-    adminSupabase
-      .from('sent_invitations')
-      .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
-      .eq('wedding_id', wedding.id)
-      .order('created_at', { ascending: false })
-      .limit(500),
-    adminSupabase
-      .from('invitation_events')
-      .select('event_type', { count: 'exact' })
-      .eq('wedding_id', wedding.id)
-      .limit(5000),
-    adminSupabase
-      .from('invitation_views')
-      .select('device_type, browser')
-      .eq('wedding_id', wedding.id)
-      .limit(5000)
+    includeAnalytics && adminSupabase
+      ? adminSupabase
+          .from('invitation_views')
+          .select('id, guest_name, device_type, os, browser, city, country, referrer, created_at', { count: 'exact' })
+          .eq('wedding_id', wedding.id)
+          .order('created_at', { ascending: false })
+          .limit(10)
+      : Promise.resolve(emptyCountRes),
+    includeSentInvitations && adminSupabase
+      ? adminSupabase
+          .from('sent_invitations')
+          .select('id, guest_name, phone, opened_at, last_opened_at, open_count, created_at')
+          .eq('wedding_id', wedding.id)
+          .order('created_at', { ascending: false })
+          .limit(500)
+      : Promise.resolve({ data: [] as any[] }),
+    includeAnalytics && adminSupabase
+      ? adminSupabase
+          .from('invitation_events')
+          .select('event_type', { count: 'exact' })
+          .eq('wedding_id', wedding.id)
+          .limit(5000)
+      : Promise.resolve(emptyCountRes),
+    includeAnalytics && adminSupabase
+      ? adminSupabase
+          .from('invitation_views')
+          .select('device_type, browser')
+          .eq('wedding_id', wedding.id)
+          .limit(5000)
+      : Promise.resolve({ data: [] as any[] })
   ]);
 
   const recentViews = viewsRes.data || [];

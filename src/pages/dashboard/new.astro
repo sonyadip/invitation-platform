@@ -1,5 +1,11 @@
 ---
-import { createInvitation, parseInvitationForm } from '../../services/dashboard-crud';
+import {
+  createInvitation,
+  parseInvitationForm,
+  type InvitationEventInput,
+  type InvitationGiftInput
+} from '../../services/dashboard-crud';
+import type { LoveStoryItem } from '../../types';
 import { buildTemplateHalfPriceMap, getPlatformSettings } from '../../services/platform-settings';
 import { listTemplateKeys } from '../../templates/registry';
 import AdminLayout from '../../layouts/AdminLayout.astro';
@@ -80,9 +86,9 @@ const defaults = {
       venueAddress: '',
       mapsUrl: ''
     }
-  ] as any[],
-  gifts: [] as any[],
-  story: [] as any[]
+  ] as InvitationEventInput[],
+  gifts: [] as InvitationGiftInput[],
+  story: [] as LoveStoryItem[]
 };
 
 const toLocalInput = (value: string | null) => {
@@ -114,8 +120,8 @@ if (Astro.request.method === 'POST') {
     closingImageUrl: parsed.closingImageUrl || '',
     sliderImageUrls: parsed.sliderImageUrls || [],
     galleryImageUrls: parsed.galleryImageUrls || [],
+    galleryVideoUrls: parsed.galleryVideoUrls || [],
     instagramUrl: parsed.instagramUrl || '',
-    whatsappUrl: (parsed as any).whatsappUrl || '',
     groomInstagramUrl: parsed.groomInstagramUrl || '',
     brideInstagramUrl: parsed.brideInstagramUrl || '',
     groomFatherName: parsed.groomFatherName || '',
@@ -870,169 +876,10 @@ if (Astro.request.method === 'POST') {
 </style>
 
 <script>
-  function setupRepeater(containerId: string, btnId: string, templateId: string) {
-    const container = document.getElementById(containerId);
-    const btn = document.getElementById(btnId);
-    const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+  import { initInvitationForm } from '../../scripts/invitation-form';
 
-    if (!container || !btn || !template) return;
-
-    function updateIndexes() {
-      const items = container!.querySelectorAll('.repeater-item');
-      items.forEach((item, index) => {
-        const idxSpan = item.querySelector('.idx');
-        if (idxSpan) idxSpan.textContent = String(index + 1);
-      });
-    }
-
-    btn.addEventListener('click', () => {
-      const clone = template.content.cloneNode(true);
-      container.appendChild(clone);
-      updateIndexes();
-    });
-
-    container.addEventListener('click', async (e: any) => {
-      if (e.target.classList.contains('remove-btn') || e.target.closest('.remove-btn')) {
-        const item = e.target.closest('.repeater-item');
-        if (item) {
-          item.remove();
-          updateIndexes();
-        }
-      }
-    });
-  }
-
-  setupRepeater('slider_container', 'add_slider_btn', 'slider_template');
-  setupRepeater('events_container', 'add_event_btn', 'event_template');
-  setupRepeater('stories_container', 'add_story_btn', 'story_template');
-  setupRepeater('gallery_container', 'add_gallery_btn', 'gallery_template');
-  setupRepeater('gallery_videos_container', 'add_gallery_video_btn', 'gallery_video_template');
-  setupRepeater('gifts_container', 'add_gift_btn', 'gift_template');
-
-  const settingTargets = document.querySelectorAll('[data-setting-target]');
-
-  function syncSettingTargets() {
-    settingTargets.forEach((target: any) => {
-      const toggleName = target.getAttribute('data-setting-target');
-      const toggle = toggleName ? document.querySelector(`input[name="${toggleName}"]`) : null;
-      if (!(toggle instanceof HTMLInputElement)) return;
-
-      target.hidden = !toggle.checked;
-    });
-  }
-
-  document
-    .querySelectorAll('.toggle-grid input[type="checkbox"]')
-    .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
-
-  syncSettingTargets();
-
-  const accessPasswordInput = document.getElementById('accessPasswordInput');
-  const passwordProtectionToggle = document.getElementById('passwordProtectionToggle');
-  if (accessPasswordInput && passwordProtectionToggle) {
-    accessPasswordInput.addEventListener('input', () => {
-      if ((accessPasswordInput as HTMLInputElement).value.trim().length > 0 && !(passwordProtectionToggle as HTMLInputElement).checked) {
-        (passwordProtectionToggle as HTMLInputElement).checked = true;
-      }
-    });
-  }
-
-  const templateSelect = document.querySelector('select[name="template"]') as HTMLSelectElement | null;
-  const purchasePriceInput = document.getElementById('purchase-price-input') as HTMLInputElement | null;
-  if (templateSelect && purchasePriceInput) {
-    let halfPrices: Record<string, number> = {};
-    try {
-      halfPrices = JSON.parse(purchasePriceInput.getAttribute('data-half-prices') || '{}');
-    } catch {
-      halfPrices = {};
-    }
-
-    const getAutoPrice = (tpl: string) => {
-      const val = halfPrices[String(tpl || '').trim().toLowerCase()];
-      return typeof val === 'number' ? String(val) : '';
-    };
-
-    let isManualPrice =
-      purchasePriceInput.value.trim() !== '' &&
-      purchasePriceInput.value.trim() !== getAutoPrice(templateSelect.value);
-
-    purchasePriceInput.addEventListener('input', () => {
-      const trimmed = purchasePriceInput.value.trim();
-      isManualPrice = trimmed !== '' && trimmed !== getAutoPrice(templateSelect.value);
-    });
-
-    templateSelect.addEventListener('change', () => {
-      if (!isManualPrice || purchasePriceInput.value.trim() === '') {
-        purchasePriceInput.value = getAutoPrice(templateSelect.value);
-        isManualPrice = false;
-      }
-    });
-  }
-
-  import { createOgImageBlob } from '../../utils/og-generator';
-
-  const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
-  const heroFileInput = document.getElementById('hero-image-file-input') as HTMLInputElement | null;
-  const ogFileInput = document.getElementById('og-image-file-input') as HTMLInputElement | null;
-  const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
-  const newForm = document.getElementById('new-invitation-form') as HTMLFormElement | null;
-
-  async function ensureOgImageGenerated() {
-    const sourceFile = heroFileInput?.files?.[0];
-    const sourceUrl = heroUrlInput?.value.trim();
-
-    if (sourceFile) {
-      try {
-        const blob = await createOgImageBlob(sourceFile);
-        if (ogFileInput) {
-          const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-          const dt = new DataTransfer();
-          dt.items.add(file);
-          ogFileInput.files = dt.files;
-        }
-      } catch (err) {
-        console.warn('Auto OG generation from file error:', err);
-      }
-    } else if (sourceUrl && !ogUrlInput?.value) {
-      try {
-        const blob = await createOgImageBlob(sourceUrl);
-        if (ogFileInput) {
-          const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-          const dt = new DataTransfer();
-          dt.items.add(file);
-          ogFileInput.files = dt.files;
-        }
-      } catch (err) {
-        console.warn('Auto OG generation from URL error:', err);
-      }
-    }
-  }
-
-  heroFileInput?.addEventListener('change', () => {
-    const file = heroFileInput.files?.[0];
-    if (file) {
-      createOgImageBlob(file).then((blob) => {
-        if (ogFileInput) {
-          const f = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-          const dt = new DataTransfer();
-          dt.items.add(f);
-          ogFileInput.files = dt.files;
-        }
-      }).catch(console.warn);
-    }
-  });
-
-  import('../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
-    if (newForm) bindAutoMediaCompression(newForm);
-  }).catch(console.warn);
-
-  newForm?.addEventListener('submit', async (e) => {
-    const sourceFile = heroFileInput?.files?.[0];
-    const sourceUrl = heroUrlInput?.value.trim();
-    if ((sourceFile || sourceUrl) && !ogFileInput?.files?.length) {
-      e.preventDefault();
-      await ensureOgImageGenerated();
-      newForm.submit();
-    }
+  initInvitationForm({
+    formId: 'new-invitation-form',
+    enablePurchasePriceSync: true
   });
 </script>

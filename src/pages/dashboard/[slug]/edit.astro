@@ -32,7 +32,13 @@ const toLocalInput = (value: string | null) => {
   return local.toISOString().slice(0, 16);
 };
 
-let detail = slug ? await getSlugReportDetail(slug) : null;
+let detail = slug
+  ? await getSlugReportDetail(slug, new Date(), {
+      includeAnalytics: false,
+      includeRsvps: false,
+      includeSentInvitations: false
+    })
+  : null;
 if (!detail) {
   return new Response('Invitation slug report not found.', { status: 404 });
 }
@@ -951,192 +957,13 @@ const defaultHalfPrice = getTemplateHalfPrice(detail.wedding.template, platformS
     </template>
 
     <script>
-      function setupRepeater(containerId, btnId, templateId) {
-        const container = document.getElementById(containerId);
-        const btn = document.getElementById(btnId);
-        const template = document.getElementById(templateId);
+      import { initInvitationForm } from '../../../scripts/invitation-form';
 
-        if (!container || !btn || !template) return;
-
-        function updateIndexes() {
-          const items = container.querySelectorAll('.repeater-item');
-          items.forEach((item, index) => {
-            const idxSpan = item.querySelector('.idx');
-            if (idxSpan) idxSpan.textContent = index + 1;
-          });
-        }
-
-        btn.addEventListener('click', () => {
-          const clone = template.content.cloneNode(true);
-          container.appendChild(clone);
-          updateIndexes();
-        });
-
-        container.addEventListener('click', async (e) => {
-          if (e.target.classList.contains('remove-btn')) {
-            const confirmed = await window.showConfirm({
-              title: 'Delete Item',
-              message: 'Are you sure you want to delete this item?',
-              confirmText: 'Delete',
-              cancelText: 'Cancel',
-              variant: 'danger',
-              icon: 'delete'
-            });
-            if (!confirmed) return;
-            const item = e.target.closest('.repeater-item');
-            if (item) {
-              item.remove();
-              updateIndexes();
-            }
-          }
-        });
-      }
-
-      setupRepeater('slider_container', 'add_slider_btn', 'slider_template');
-      setupRepeater('events_container', 'add_event_btn', 'event_template');
-      setupRepeater('stories_container', 'add_story_btn', 'story_template');
-      setupRepeater('gallery_container', 'add_gallery_btn', 'gallery_template');
-      setupRepeater('gallery_videos_container', 'add_gallery_video_btn', 'gallery_video_template');
-      setupRepeater('gifts_container', 'add_gift_btn', 'gift_template');
-
-      const settingTargets = document.querySelectorAll('[data-setting-target]');
-      function syncSettingTargets() {
-        settingTargets.forEach((target) => {
-          const toggleName = target.getAttribute('data-setting-target');
-          const toggle = toggleName ? document.querySelector(`input[name="${toggleName}"]`) : null;
-          if (!(toggle instanceof HTMLInputElement)) return;
-
-          target.hidden = !toggle.checked;
-        });
-      }
-      document
-        .querySelectorAll('.toggle-grid input[type="checkbox"]')
-        .forEach((toggle) => toggle.addEventListener('change', syncSettingTargets));
-      syncSettingTargets();
-
-      const accessPasswordInput = document.getElementById('accessPasswordInput');
-      const passwordProtectionToggle = document.getElementById('passwordProtectionToggle');
-      if (accessPasswordInput && passwordProtectionToggle) {
-        accessPasswordInput.addEventListener('input', () => {
-          if (accessPasswordInput.value.trim().length > 0 && !(passwordProtectionToggle as HTMLInputElement).checked) {
-            (passwordProtectionToggle as HTMLInputElement).checked = true;
-          }
-        });
-      }
-
-      const sections = document.querySelectorAll('.collapsible-section');
-      sections.forEach(section => {
-        const header = section.querySelector('.collapsible-header');
-        if (header) {
-          header.addEventListener('click', () => {
-            section.classList.toggle('is-collapsed');
-          });
-        }
-      });
-
-      function expandAll() {
-        sections.forEach(sec => sec.classList.remove('is-collapsed'));
-      }
-      function collapseAll() {
-        sections.forEach(sec => sec.classList.add('is-collapsed'));
-      }
-
-      document.getElementById('global-expand-btn')?.addEventListener('click', expandAll);
-      document.getElementById('global-collapse-btn')?.addEventListener('click', collapseAll);
-      document.getElementById('sidebar-expand-btn')?.addEventListener('click', expandAll);
-      document.getElementById('sidebar-collapse-btn')?.addEventListener('click', collapseAll);
-
-      import { createOgImageBlob } from '../../../utils/og-generator';
-
-      const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
-      const heroFileInput = document.getElementById('hero-image-file-input') as HTMLInputElement | null;
-      const ogFileInput = document.getElementById('og-image-file-input') as HTMLInputElement | null;
-      const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
-
-      async function ensureOgImageGenerated() {
-        const sourceFile = heroFileInput?.files?.[0];
-        const sourceUrl = heroUrlInput?.value.trim();
-
-        if (sourceFile) {
-          try {
-            const blob = await createOgImageBlob(sourceFile);
-            if (ogFileInput) {
-              const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-              const dt = new DataTransfer();
-              dt.items.add(file);
-              ogFileInput.files = dt.files;
-            }
-          } catch (err) {
-            console.warn('Auto OG generation from file error:', err);
-          }
-        } else if (sourceUrl && !ogUrlInput?.value) {
-          try {
-            const blob = await createOgImageBlob(sourceUrl);
-            if (ogFileInput) {
-              const file = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-              const dt = new DataTransfer();
-              dt.items.add(file);
-              ogFileInput.files = dt.files;
-            }
-          } catch (err) {
-            console.warn('Auto OG generation from URL error:', err);
-          }
-        }
-      }
-
-      heroFileInput?.addEventListener('change', () => {
-        const file = heroFileInput.files?.[0];
-        if (file) {
-          createOgImageBlob(file).then((blob) => {
-            if (ogFileInput) {
-              const f = new File([blob], 'og-thumbnail.jpg', { type: 'image/jpeg' });
-              const dt = new DataTransfer();
-              dt.items.add(f);
-              ogFileInput.files = dt.files;
-            }
-          }).catch(console.warn);
-        }
-      });
-
-      const editForm = document.getElementById('edit-form') as HTMLFormElement;
-
-      import('../../../scripts/media-compressor').then(({ bindAutoMediaCompression }) => {
-        if (editForm) bindAutoMediaCompression(editForm);
-      }).catch(console.warn);
-
-      async function handleSaveSubmit() {
-        if (!editForm) return;
-        await ensureOgImageGenerated();
-        if (typeof editForm.requestSubmit === 'function') {
-          editForm.requestSubmit();
-        } else {
-          editForm.submit();
-        }
-      }
-
-      document.getElementById('sidebar-save-trigger')?.addEventListener('click', () => {
-        handleSaveSubmit();
-      });
-
-      editForm?.addEventListener('submit', async (e) => {
-        const ogFileInput = document.getElementById('og-image-file-input') as HTMLInputElement | null;
-        const heroFileInput = document.getElementById('hero-image-file-input') as HTMLInputElement | null;
-        const heroUrlInput = document.getElementById('hero-image-url-input') as HTMLInputElement | null;
-        const ogUrlInput = document.getElementById('og-image-url-input') as HTMLInputElement | null;
-        const hasHero = heroFileInput?.files?.[0] || heroUrlInput?.value.trim();
-
-        if (hasHero && !ogFileInput?.files?.length && !ogUrlInput?.value.trim()) {
-          e.preventDefault();
-          await ensureOgImageGenerated();
-          editForm.submit();
-        }
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-          e.preventDefault();
-          handleSaveSubmit();
-        }
+      initInvitationForm({
+        formId: 'edit-form',
+        confirmDelete: true,
+        enableCollapsibles: true,
+        enableSaveShortcut: true
       });
     </script>
   </body>

@@ -21,7 +21,11 @@ if (!slug) {
   return Astro.redirect('/dashboard');
 }
 
-const detail = await getSlugReportDetail(slug);
+const detail = await getSlugReportDetail(slug, new Date(), {
+  includeAnalytics: false,
+  includeRsvps: false,
+  includeSentInvitations: false
+});
 if (!detail) {
   return new Response('Invitation not found.', { status: 404 });
 }

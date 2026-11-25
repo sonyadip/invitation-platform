@@ -9,7 +9,10 @@ if (!session || (session.role === 'client' && session.slug !== slug)) {
 import ClientLayout from "../../../layouts/ClientLayout.astro";
 import { getSlugReportDetail } from "../../../services/dashboard-report";
 
-const report = await getSlugReportDetail(slug);
+const report = await getSlugReportDetail(slug, new Date(), {
+  includeAnalytics: false,
+  includeRsvps: false
+});
 if (!report) {
   return Astro.redirect('/dashboard');
 }
@@ -109,6 +112,15 @@ const isMetatah = Boolean(report.summary.template?.includes('metatah'));
       let currentPage = 1;
       const itemsPerPage = 10;
 
+      function escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       function formatShortDate(isoStr) {
         if (!isoStr) return '';
         const d = new Date(isoStr);
@@ -173,12 +185,12 @@ const isMetatah = Boolean(report.summary.template?.includes('metatah'));
           
           let waButtonHtml = '';
           if (guest.phone) {
-            waButtonHtml = `<a href="#" data-phone="${guest.phone}" class="kirim-guests__btn-wa">Kirim WA</a>`;
+            waButtonHtml = `<a href="#" data-phone="${escapeHtml(guest.phone)}" class="kirim-guests__btn-wa">Kirim WA</a>`;
           }
 
           const isOpened = Boolean(guest.openedAt);
           const statusBadge = isOpened
-            ? `<span class="guest-status-badge guest-status-badge--opened" title="${new Date(guest.openedAt).toLocaleString('id-ID')}">
+            ? `<span class="guest-status-badge guest-status-badge--opened" title="${escapeHtml(new Date(guest.openedAt).toLocaleString('id-ID'))}">
                 <span class="guest-status-dot guest-status-dot--opened"></span> Dibuka ${formatShortDate(guest.openedAt)}${guest.openCount > 1 ? ` (${guest.openCount}x)` : ''}
                </span>`
             : `<span class="guest-status-badge guest-status-badge--unopened">
@@ -187,7 +199,7 @@ const isMetatah = Boolean(report.summary.template?.includes('metatah'));
 
           newRow.innerHTML = `
               <div class="kirim-guests__info">
-                <h4 class="kirim-guests__name">${guest.name}</h4>
+                <h4 class="kirim-guests__name">${escapeHtml(guest.name)}</h4>
                 ${statusBadge}
               </div>
               <div class="kirim-guests__actions">

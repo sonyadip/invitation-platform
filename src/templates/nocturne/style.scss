@@ -1074,12 +1074,6 @@ body.template-nocturne {
       z-index: 1;
     }
 
-    &__overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 40%, rgba(0, 0, 0, 0.72) 100%);
-      z-index: 2;
-    }
 
     &__inner {
       position: relative;

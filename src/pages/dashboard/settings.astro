@@ -372,6 +372,14 @@ const settings = await getPlatformSettings();
       cards = [];
     }
 
+    const escapeAttr = (val) =>
+      String(val ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
     function render() {
       if (!container) return;
       container.innerHTML = '';
@@ -382,11 +390,11 @@ const settings = await getPlatformSettings();
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px;">
             <div class="field-group">
               <label style="font-size: 11px;">Theme Key</label>
-              <input type="text" placeholder="lumiere" value="${card.key || ''}" data-idx="${index}" data-field="key" />
+              <input type="text" placeholder="lumiere" value="${escapeAttr(card.key)}" data-idx="${index}" data-field="key" />
             </div>
             <div class="field-group">
               <label style="font-size: 11px;">Card Name</label>
-              <input type="text" placeholder="Lumiere" value="${card.name || ''}" data-idx="${index}" data-field="name" />
+              <input type="text" placeholder="Lumiere" value="${escapeAttr(card.name)}" data-idx="${index}" data-field="name" />
             </div>
             <div class="field-group">
               <label style="font-size: 11px;">Category</label>
@@ -397,15 +405,15 @@ const settings = await getPlatformSettings();
             </div>
             <div class="field-group">
               <label style="font-size: 11px;">Price</label>
-              <input type="text" placeholder="Rp 450.000" value="${card.price || ''}" data-idx="${index}" data-field="price" />
+              <input type="text" placeholder="Rp 450.000" value="${escapeAttr(card.price)}" data-idx="${index}" data-field="price" />
             </div>
             <div class="field-group">
               <label style="font-size: 11px;">Promo Price</label>
-              <input type="text" placeholder="Rp 300.000" value="${card.promoPrice || ''}" data-idx="${index}" data-field="promoPrice" />
+              <input type="text" placeholder="Rp 300.000" value="${escapeAttr(card.promoPrice)}" data-idx="${index}" data-field="promoPrice" />
             </div>
             <div class="field-group">
               <label style="font-size: 11px;">Image URL</label>
-              <input type="text" placeholder="(Optional)" value="${card.image || ''}" data-idx="${index}" data-field="image" />
+              <input type="text" placeholder="(Optional)" value="${escapeAttr(card.image)}" data-idx="${index}" data-field="image" />
             </div>
           </div>
           <div style="display: flex; justify-content: flex-end;">

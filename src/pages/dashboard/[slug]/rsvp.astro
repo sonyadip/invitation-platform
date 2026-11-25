@@ -10,7 +10,10 @@ import ClientLayout from "../../../layouts/ClientLayout.astro";
 import { getSlugReportDetail } from "../../../services/dashboard-report";
 import { formatWishDate } from "../../../utils/template-helpers";
 
-const report = await getSlugReportDetail(slug);
+const report = await getSlugReportDetail(slug, new Date(), {
+  includeAnalytics: false,
+  includeSentInvitations: false
+});
 if (!report) {
   return Astro.redirect('/dashboard');
 }

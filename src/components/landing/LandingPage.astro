@@ -1,0 +1,735 @@
+---
+Astro.response.headers.set('Link', '</llms.txt>; rel="describedby"');
+
+import airCover from "../../templates/air/assets/cover.webp";
+import deauvilleCover from "../../templates/deauville/assets/cover.webp";
+import noirCover from "../../templates/noir/assets/cover.webp";
+import editorialCover from "../../templates/editorial/assets/cover.webp";
+import lumiereCover from "../../templates/lumiere/assets/cover.webp";
+import lumiereMetatahCover from "../../templates/lumiere-metatah/assets/cover.webp";
+import lumiereMetatahV2Cover from "../../templates/lumiere-metatah-v2/assets/cover.webp";
+import atelierCover from "../../templates/atelier/assets/cover.webp";
+import terreCover from "../../templates/terre/assets/cover.webp";
+import allureCover from "../../templates/allure/assets/cover.webp";
+import nocturneCover from "../../templates/nocturne/assets/cover.webp";
+import serenadeCover from "../../templates/serenade/assets/cover.webp";
+import GoogleAnalytics from "../common/GoogleAnalytics.astro";
+import { getPlatformSettings } from "../../services/platform-settings";
+import {
+  LANDING_ADDONS,
+  LANDING_DASHBOARD_TABS,
+  LANDING_FAQS,
+  LANDING_FEATURES,
+  LANDING_NAV_ITEMS,
+  LANDING_PAGE_KEYWORDS,
+  LANDING_PROCESS_STEPS,
+  buildHomeCatalog,
+  buildHomeJsonLd,
+  buildWhatsAppBookingUrl
+} from "../../services/landing-home";
+import "../../styles/landing-home.scss";
+
+interface Props {
+  variant?: "home" | "special-deal";
+}
+
+const { variant = "home" } = Astro.props;
+const isSpecialDeal = variant === "special-deal";
+
+const siteSettings = await getPlatformSettings();
+const getWaUrl = (templateName?: string, promoPrice?: string | null) =>
+  isSpecialDeal
+    ? buildWhatsAppBookingUrl(siteSettings.whatsapp_url, templateName, promoPrice, "special-deal")
+    : buildWhatsAppBookingUrl(siteSettings.whatsapp_url, templateName);
+const defaultBookingUrl = getWaUrl();
+
+const headingWords = [
+  siteSettings.home_heading_1 || "Undangan",
+  siteSettings.home_heading_2 || "Pernikahan",
+  siteSettings.home_heading_3 || "Digital",
+];
+
+const imageMap: Record<string, string> = {
+  allure: allureCover.src,
+  nocturne: nocturneCover.src,
+  serenade: serenadeCover.src,
+  lumiere: lumiereCover.src,
+  "lumiere-metatah": lumiereMetatahCover.src,
+  "lumiere-metatah-v2": lumiereMetatahV2Cover.src,
+  editorial: editorialCover.src,
+  atelier: atelierCover.src,
+  deauville: deauvilleCover.src,
+  air: airCover.src,
+  noir: noirCover.src,
+  terre: terreCover.src,
+  ...(isSpecialDeal ? { blush: deauvilleCover.src } : {})
+};
+
+const templateCards = buildHomeCatalog(
+  siteSettings.home_template_cards,
+  imageMap,
+  isSpecialDeal
+    ? { fallbackImage: lumiereCover.src, halfPricePromo: true }
+    : undefined
+);
+const heroMotionCards = [
+  ...templateCards.filter((card) => card.category !== "metatah"),
+  ...templateCards.filter((card) => card.category === "metatah"),
+];
+const uniqueTemplateNames = [...new Set(templateCards.map((card) => card.name))];
+
+const parsedStat = parseInt((siteSettings.home_stat_number || "").replace(/\D/g, ""), 10) || 0;
+const statNumber =
+  parsedStat >= templateCards.length ? siteSettings.home_stat_number : `${templateCards.length}+`;
+const stats = [[statNumber, siteSettings.home_stat_label || "Koleksi\nEksklusif"]];
+
+const midFaq = Math.ceil(LANDING_FAQS.length / 2);
+const faqColumns = [LANDING_FAQS.slice(0, midFaq), LANDING_FAQS.slice(midFaq)];
+
+const pageTitle = siteSettings.meta_title || "Senadda - Undangan Digital Bali";
+const pageDescription =
+  siteSettings.meta_description ||
+  "Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.";
+const pageUrl = "https://senadda.id/";
+const pageImage = new URL("/logo.jpg", pageUrl).toString();
+const schemaData = buildHomeJsonLd({
+  siteSettings,
+  pageTitle,
+  pageDescription,
+  pageUrl,
+  pageImage,
+  faqs: LANDING_FAQS
+});
+---
+
+<!doctype html>
+<html lang="id" class={!isSpecialDeal ? "intro-scroll-lock" : undefined}>
+  <head>
+    <GoogleAnalytics />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>{pageTitle}</title>
+    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content={LANDING_PAGE_KEYWORDS} />
+    <meta name="author" content="Senadda" />
+    <link rel="canonical" href={pageUrl} />
+    <meta
+      name="robots"
+      content={isSpecialDeal
+        ? "noindex, nofollow"
+        : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"}
+    />
+    <meta property="og:locale" content="id_ID" />
+
+    <meta name="geo.region" content="ID-BA" />
+    <meta name="geo.placename" content="Denpasar, Bali" />
+    <meta name="geo.position" content="-8.670458;115.212629" />
+    <meta name="ICBM" content="-8.670458, 115.212629" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:site_name" content="Senadda" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={pageImage} />
+    <meta property="og:image:secure_url" content={pageImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="739" />
+    <meta property="og:image:height" content="739" />
+    <meta property="og:image:alt" content="Senadda - Undangan Pernikahan Digital Bali" />
+
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:url" content={pageUrl} />
+    <meta property="twitter:title" content={pageTitle} />
+    <meta property="twitter:description" content={pageDescription} />
+    <meta property="twitter:image" content={pageImage} />
+    <meta name="theme-color" content="#17160f" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="preload"
+      href="/fonts/SaolDisplay-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+  </head>
+  <body id="top" class={isSpecialDeal ? "intro-complete landing--special-deal" : "intro-enter"}>
+    {!isSpecialDeal && <div class="intro-animation" data-intro aria-hidden="true"></div>}
+
+    <main>
+      <div id="main-content-wrapper">
+        <nav class="hero-nav" aria-label="Navigasi utama">
+          <a
+            class="brand-logo motion-down"
+            style="--i: 0"
+            href="#top"
+            aria-label="Kembali ke atas"
+          >
+            <img
+              src={siteSettings.logo_url || "/images/senadda-logo.png"}
+              alt={`${siteSettings.site_name} Logo`}
+              class="brand-logo__image"
+            />
+          </a>
+
+          <div class="nav-right">
+            {isSpecialDeal ? (
+              <a
+                href={defaultBookingUrl}
+                target="_blank"
+                rel="noreferrer"
+                class="nav-action motion-down"
+                style="--i: 4"
+                id="nav-wa-btn"
+                aria-label="Konsultasi via WhatsApp"
+              >
+                WhatsApp
+              </a>
+            ) : (
+              <button
+                type="button"
+                class="nav-action motion-down"
+                style="--i: 4"
+                id="login-btn"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+              >
+                Login
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                  <polyline points="10 17 15 12 10 7"></polyline>
+                  <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+              </button>
+            )}
+          </div>
+        </nav>
+
+        <div class="nav-links" aria-label="Menu desktop">
+          {
+            LANDING_NAV_ITEMS.map(([label, href], index) => (
+              <a class="motion-down" style={`--i: ${index + 1}`} href={href}>
+                {label}
+              </a>
+            ))
+          }
+        </div>
+
+        <button type="button" class="menu-toggle motion-down" style="--i: 5" id="menu-toggle" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <a
+          href={defaultBookingUrl}
+          target="_blank"
+          rel="noreferrer"
+          class="floating-wa motion-up"
+          style="--i: 6"
+          id="floating-wa"
+          aria-label="Konsultasi via WhatsApp"
+        >
+          <svg viewBox="0 0 448 512" aria-hidden="true">
+            <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+          </svg>
+        </a>
+
+        <div class="hero-shell-placeholder" aria-hidden="true"></div>
+
+        <section class="hero-shell section-observe is-visible" data-section>
+          <div class="hero-sticky">
+            <div class="hero-motion-wrap" aria-hidden="true">
+              <div class="hero-motion">
+                {
+                  heroMotionCards.map((template, index) => (
+                    <figure
+                      class={`hero-motion__card${index === 0 ? " is-active" : ""}`}
+                      data-hero-motion-card
+                    >
+                      <img
+                        src={template.image}
+                        alt={`Desain Undangan Digital Bali - ${template.name}`}
+                        loading={index === 0 ? "eager" : "lazy"}
+                        decoding={index === 0 ? "sync" : "async"}
+                        fetchpriority={index === 0 ? "high" : undefined}
+                      />
+                    </figure>
+                  ))
+                }
+              </div>
+
+              <div class="hero-motion-seal">
+                <svg viewBox="0 0 120 120">
+                  <defs>
+                    <path
+                      id="hero-motion-seal-path"
+                      d="M60 60 m -43 0 a 43 43 0 1 1 86 0 a 43 43 0 1 1 -86 0"
+                    ></path>
+                  </defs>
+                  <text>
+                    <textPath href="#hero-motion-seal-path" startOffset="0%">
+                      {siteSettings.home_hero_seal_text || "SENADDA • DIGITAL STUDIO • UNDANGAN •"}
+                    </textPath>
+                  </text>
+                </svg>
+              </div>
+            </div>
+
+            <div class="stats-row" aria-label="Statistik platform">
+              <div class="stats-row__inner">
+                {
+                  stats.map(([number, label], index) => (
+                    <div class="stat-item motion-up" style={`--i: ${index + 2}`}>
+                      <strong>
+                        <span>+</span>
+                        {`${number}`.replace("+", "").trim()}
+                      </strong>
+                      <p>{label}</p>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+
+            <div class="bottom-content" aria-label="Hero content">
+              <div class="bottom-content__top">
+                <div class="hero-cta-wrapper">
+                  <div class="hero-wa-anchor" id="hero-wa-anchor" aria-hidden="true"></div>
+                  <a class="hero-cta motion-up" style="--i: 6" href="#templates">
+                    {siteSettings.home_cta_label || "Lihat Koleksi"}
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M7 17 17 7"></path>
+                      <path d="M8 7h9v9"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+
+              <div class="bottom-content__main">
+                <p class="description motion-up" style="--i: 7">
+                  {siteSettings.home_description || "Bagikan momen bahagia Anda lewat undangan digital yang elegan, tanpa batas jarak dan waktu."}
+                </p>
+                <h1 aria-label={headingWords.join(" ")}>
+                  {
+                    headingWords.map((word, index) => (
+                      <span class="heading-mask">
+                        <span class="heading-word" style={`--word-i: ${index}`}>
+                          {word}
+                        </span>
+                      </span>
+                    ))
+                  }
+                </h1>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="template-list section-observe"
+          id="templates"
+          data-template-names={uniqueTemplateNames.join(",")}
+          data-auto-scroll-templates={isSpecialDeal ? "true" : undefined}
+          data-section
+        >
+          <div class="section-heading">
+            <p>{siteSettings.home_templates_eyebrow || "Koleksi Desain"}</p>
+            <h2>{siteSettings.home_templates_heading || "Pilih Nuansa."}</h2>
+            <p class="section-subheading">Koleksi undangan digital eksklusif untuk pernikahan modern, Pawiwahan adat Hindu Bali, hingga Upacara Metatah / Mepandes dari Senadda.</p>
+          </div>
+
+          <div class="template-filter-bar reveal-blur" role="tablist" aria-label="Filter kategori tema">
+            <button
+              type="button"
+              class="template-filter-btn is-active"
+              role="tab"
+              aria-selected="true"
+              data-filter="pernikahan"
+            >
+              Pernikahan
+            </button>
+            <button
+              type="button"
+              class="template-filter-btn"
+              role="tab"
+              aria-selected="false"
+              data-filter="metatah"
+            >
+              Metatah
+            </button>
+          </div>
+
+          <div class="template-grid" id="template-grid">
+            {
+              templateCards.map((template, index) => (
+                <article
+                  class={`template-card${template.category !== "pernikahan" ? " is-filtered-out" : ""}`}
+                  style={`--template-i: ${index}`}
+                  data-category={template.category}
+                >
+                  <div class="template-card__media">
+                    <img
+                      src={template.image}
+                      alt={`Undangan Digital ${template.category === "metatah" ? "Metatah Adat Bali" : "Pernikahan Bali"} Tema ${template.name} - Senadda`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="template-card__body">
+                    {template.hasVariants && template.variants && (
+                      <div class="template-card__variants" role="group" aria-label="Pilihan varian foto">
+                        {template.variants.map((variant, vIdx) => (
+                          <button
+                            type="button"
+                            class={`template-card__variant-btn${vIdx === 0 ? " is-active" : ""}`}
+                            data-preview-url={variant.previewUrl}
+                            data-wa-url={getWaUrl(variant.waTheme, variant.promoPrice)}
+                            data-price={variant.price}
+                            data-promo-price={variant.promoPrice}
+                          >
+                            {variant.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div class="template-card__meta">
+                      <strong>{template.name}</strong>
+                      {template.promoPrice ? (
+                        <div class="template-card__price-wrapper">
+                          <span class="template-card__price template-card__price--original"><s>{template.price}</s></span>
+                          <span class="template-card__price template-card__price--promo">{template.promoPrice}</span>
+                        </div>
+                      ) : (
+                        <span class="template-card__price">{template.price}</span>
+                      )}
+                    </div>
+                    <div class="template-card__actions">
+                      <a
+                        href={template.variants ? template.variants[0].previewUrl : `/preview/${template.key}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        class="template-card__btn-preview"
+                      >
+                        Demo
+                      </a>
+                      <a
+                        href={template.variants ? getWaUrl(template.variants[0].waTheme, template.variants[0].promoPrice) : getWaUrl(template.name, template.promoPrice)}
+                        target="_blank"
+                        rel="noreferrer"
+                        class="template-card__btn-order"
+                      >
+                        Pesan
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))
+            }
+          </div>
+
+          <div class="template-empty hidden" id="template-empty">
+            <p>Belum ada template pada kategori ini.</p>
+          </div>
+        </section>
+
+        <section
+          class="process-section section-observe"
+          id="process"
+          data-section
+        >
+          <div class="process-container">
+            <div class="section-heading reveal-blur">
+              <p>Alur Pembuatan</p>
+              <h2>Tiga Langkah Mudah.</h2>
+            </div>
+
+            <div class="process-cols">
+              {
+                LANDING_PROCESS_STEPS.map((step) => (
+                  <div class="process-col reveal-blur" style={`--delay: ${step.delay}`}>
+                    <div class="process-col__header">
+                      <h3 class="process-col__title">{step.title}</h3>
+                      <span class="process-col__num">{step.num}</span>
+                    </div>
+                    <p class="process-col__desc">{step.desc}</p>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="dashboard-showcase section-observe"
+          id="dashboard"
+          data-section
+        >
+          <div class="section-heading-centered section-heading-centered--dark reveal-blur">
+            <p class="section-heading-centered__eyebrow">Dashboard</p>
+            <h2>Kelola Undanganmu.</h2>
+          </div>
+
+          <div class={`dashboard-tabs${isSpecialDeal ? " dashboard-tabs--stacked" : ""}`}>
+            <div class="dashboard-tabs__nav">
+              <span class="dashboard-tabs__indicator"></span>
+              <button class="dashboard-tabs__btn is-active" data-tab="home" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Dashboard
+              </button>
+              <button class="dashboard-tabs__btn" data-tab="kirim" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Kirim Undangan
+              </button>
+              <button class="dashboard-tabs__btn" data-tab="rsvp" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                RSVP
+              </button>
+            </div>
+
+            {isSpecialDeal ? (
+              <div class="dashboard-tabs__panels">
+                {
+                  LANDING_DASHBOARD_TABS.map((tab, idx) => (
+                    <div class={`dashboard-tabs__panel${idx === 0 ? " is-active" : ""}`} data-panel={tab.key}>
+                      <div class="dashboard-tabs__screenshot">
+                        <img
+                          src={tab.image}
+                          alt={tab.alt}
+                          loading="lazy"
+                          decoding="async"
+                          width="976"
+                          height="686"
+                        />
+                      </div>
+                      <div class="dashboard-tabs__info">
+                        <h3>{tab.title}</h3>
+                        <p>{tab.desc}</p>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            ) : (
+              <div class="dashboard-tabs__layout">
+                <div class="dashboard-tabs__info-list" role="tablist" aria-label="Fitur Dashboard">
+                  {
+                    LANDING_DASHBOARD_TABS.map((tab, idx) => (
+                      <div
+                        class={`dashboard-tabs__info-item${idx === 0 ? " is-active" : ""}`}
+                        data-tab={tab.key}
+                        role="tab"
+                        aria-selected={idx === 0 ? "true" : "false"}
+                        tabindex="0"
+                      >
+                        <h3 class="dashboard-tabs__info-title">{tab.title}</h3>
+                        <p class="dashboard-tabs__info-desc">{tab.desc}</p>
+                      </div>
+                    ))
+                  }
+                </div>
+
+                <div class="dashboard-tabs__panels">
+                  {
+                    LANDING_DASHBOARD_TABS.map((tab, idx) => (
+                      <div class={`dashboard-tabs__panel${idx === 0 ? " is-active" : ""}`} data-panel={tab.key}>
+                        <div class="dashboard-tabs__screenshot">
+                          <img
+                            src={tab.image}
+                            alt={tab.alt}
+                            loading="lazy"
+                            decoding="async"
+                            width="976"
+                            height="686"
+                          />
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section
+          class="features-list section-observe"
+          id="features"
+          data-section
+        >
+          <div class="features-container">
+            <div class="section-heading-centered reveal-blur">
+              <h2>Features</h2>
+            </div>
+
+            <ul class="features-grid-simple">
+              {
+                LANDING_FEATURES.map((feature, index) => (
+                  <li class="feature-item dark-item" style={`--feature-i: ${index}`}>
+                    <div class="addon-left">
+                      <svg viewBox="0 0 24 24" class="check-box-icon" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <path d="M9 12l2 2 4-4" />
+                      </svg>
+                      {feature}
+                    </div>
+                  </li>
+                ))
+              }
+            </ul>
+
+            <div class="section-heading-centered section-heading-centered--addon reveal-blur">
+              <h2>Addon</h2>
+            </div>
+
+            <ul class="addon-list">
+              {
+                LANDING_ADDONS.map((addon, index) => (
+                  <li class="feature-item dark-item" style={`--feature-i: ${index + LANDING_FEATURES.length}`}>
+                    <div class="addon-left">
+                      <svg viewBox="0 0 24 24" class="check-box-icon" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      </svg>
+                      {addon.name}
+                    </div>
+                    <span class="addon-price">{addon.price}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </section>
+
+        <section class="faq-section section-observe" id="faq" data-section>
+          <div class="faq-section-inner">
+            <div class="section-heading-centered section-heading-centered--dark section-heading-centered--faq reveal-blur">
+              {isSpecialDeal ? (
+                <>
+                  <p class="faq-eyebrow">Pertanyaan Umum</p>
+                  <h2>Hal yang Sering Ditanyakan</h2>
+                </>
+              ) : (
+                <h2>FAQ</h2>
+              )}
+            </div>
+
+            <div class="faq-container">
+              {
+                faqColumns.map((col) => (
+                  <div class="faq-col">
+                    {col.map((item) => (
+                      <div class="faq-item reveal-blur">
+                        <button type="button" class="faq-btn" aria-expanded="false">
+                          <h3 class="faq-question">{item.q}</h3>
+                          <span class="faq-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="faq-content">
+                          <p class="faq-answer" set:html={item.a}></p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <section class="start section-observe" id="booking" data-section>
+      <p>{siteSettings.home_booking_eyebrow || "Langkah Selanjutnya"}</p>
+      <h2>
+        {siteSettings.home_booking_heading || "Ceritakan undangan Anda."}
+      </h2>
+      <a
+        class="start__button"
+        href={defaultBookingUrl}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {siteSettings.home_booking_cta || "Hubungi via WhatsApp"}
+      </a>
+      <footer class="start-footer">
+        <div class="start-footer__links">
+          <a href="#templates">Koleksi</a>
+          <a href="#process">Alur</a>
+          <a href="#features">Fitur</a>
+          <a href="#faq">FAQ</a>
+          <a href={siteSettings.instagram_url || "https://www.instagram.com/senadda.id"} target="_blank" rel="noopener">Instagram</a>
+        </div>
+        <div class="start-footer__copy">
+          <span>&copy; {new Date().getFullYear()} Senadda</span>
+          <span class="start-footer__dot" aria-hidden="true">&bull;</span>
+          <span>Bali, Indonesia</span>
+        </div>
+      </footer>
+    </section>
+
+    {!isSpecialDeal && (
+      <>
+        <dialog id="login-modal" class="login-modal">
+          <div class="login-modal__backdrop" id="login-modal-close"></div>
+          <div class="login-modal__content">
+            <button type="button" class="login-modal__close-btn" id="login-modal-close-btn" aria-label="Tutup">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <div class="login-modal__header">
+              <h2>Login</h2>
+              <p>Masuk ke dashboard akun Anda.</p>
+            </div>
+
+            <form id="login-form-unified" class="login-modal__form" method="POST" action="/api/auth/login">
+              <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Masukkan username" />
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••" />
+              </div>
+              <button type="submit" class="submit-btn">Login</button>
+            </form>
+          </div>
+        </dialog>
+
+        <div id="promo-popup" class="promo-popup hidden">
+          <div class="promo-popup__overlay"></div>
+          <div class="promo-popup__content">
+            <button type="button" class="promo-popup__close" aria-label="Close">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+            </button>
+            <div class="promo-popup__badge">🚀 Promo Launching</div>
+            <h3>Harga Spesial!</h3>
+            <p>Dapatkan harga spesial untuk semua koleksi desain kami selama masa launching berlangsung.</p>
+
+            <div class="promo-countdown" id="promo-countdown">
+              <div class="countdown-item"><span id="cd-days">00</span><small>Hari</small></div>
+              <div class="countdown-item"><span id="cd-hours">00</span><small>Jam</small></div>
+              <div class="countdown-item"><span id="cd-minutes">00</span><small>Menit</small></div>
+              <div class="countdown-item"><span id="cd-seconds">00</span><small>Detik</small></div>
+            </div>
+
+            <a href="#templates" class="promo-popup__cta">Lihat Koleksi</a>
+          </div>
+        </div>
+      </>
+    )}
+
+    <script>
+      import "../../scripts/landing-home";
+    </script>
+  </body>
+</html>

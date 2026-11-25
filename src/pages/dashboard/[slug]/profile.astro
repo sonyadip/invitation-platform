@@ -12,7 +12,11 @@ import { getSupabaseAdmin } from "../../../lib/supabase-admin";
 import { hashPasswordSHA256 } from "../../../utils/security";
 import { logActivity } from "../../../services/activity-log";
 
-const report = await getSlugReportDetail(slug);
+const report = await getSlugReportDetail(slug, new Date(), {
+  includeAnalytics: false,
+  includeRsvps: false,
+  includeSentInvitations: false
+});
 if (!report) {
   return Astro.redirect('/dashboard');
 }

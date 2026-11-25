@@ -71,9 +71,9 @@ const defaults: PlatformSettings = {
   home_stat_number: '12+',
   home_stat_label: 'Koleksi\nEksklusif',
   home_template_cards: [
-    { key: "allure", name: "Allure", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000" },
-    { key: "nocturne", name: "Nocturne", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000" },
     { key: "serenade", name: "Serenade", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000" },
+    { key: "nocturne", name: "Nocturne", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000" },
+    { key: "allure", name: "Allure", category: "pernikahan", price: "Rp 350.000", promoPrice: "Rp 250.000" },
     { key: "lumiere", name: "Lumiere", category: "pernikahan", price: "Rp 450.000", promoPrice: "Rp 300.000" },
     { key: "lumiere-metatah", name: "Lumiere", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000" },
     { key: "lumiere-metatah-v2", name: "Lumiere v2", category: "metatah", price: "Rp 450.000", promoPrice: "Rp 300.000" },
