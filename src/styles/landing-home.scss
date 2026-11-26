@@ -15,8 +15,8 @@ html:not(.lenis) {
 
   --ink-charcoal: #17160f;
   --deep-charcoal: #2f2e25;
-  --ivory-paper: #f7f5ea;
-  --soft-parchment: #efeddf;
+  --ivory-paper: #ffffff;
+  --soft-parchment: #f1f1f1;
   --warm-taupe: #b8aa92;
   --muted-clay: #a9785f;
 
@@ -365,7 +365,7 @@ body.intro-exit .hero-motion-wrap {
   min-width: 320px;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  box-shadow: 0 30px 90px rgba(44, 18, 85, 0.05);
+  // box-shadow: 0 30px 90px rgba(44, 18, 85, 0.05);
   transition:
     width 1.25s cubic-bezier(0.76, 0, 0.24, 1),
     height 1.25s cubic-bezier(0.76, 0, 0.24, 1);
@@ -380,7 +380,6 @@ body.intro-exit .hero-motion-wrap {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: var(--soft-parchment);
   clip-path: inset(0 0 100% 0);
   transition: clip-path var(--hero-reveal-duration, 3600ms) cubic-bezier(0.76, 0, 0.24, 1);
   will-change: clip-path;
@@ -477,7 +476,7 @@ body.intro-exit .hero-motion-seal {
   align-items: center;
   justify-content: space-between;
   padding: 20px 20px 12px;
-  background: linear-gradient(180deg, rgba(247, 245, 234, 0.9), rgba(247, 245, 234, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
   backdrop-filter: blur(14px);
   transition:
     opacity 0.28s ease,
@@ -502,8 +501,8 @@ body.intro-exit .hero-motion-seal {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 20px;
-  margin-top: 5px;
+  height: 22px;
+  margin-top: 3px;
   transition: transform 0.3s ease;
 
   &__image {
@@ -594,6 +593,7 @@ body.intro-exit .hero-motion-seal {
   text-decoration: none;
   bottom: var(--wa-bottom, 108px);
   right: var(--wa-right, 48px);
+  margin-bottom: 4px;
   transition:
     bottom 0.55s cubic-bezier(0.16, 1, 0.3, 1),
     right 0.55s cubic-bezier(0.16, 1, 0.3, 1),
@@ -606,7 +606,7 @@ body.intro-exit .hero-motion-seal {
     width: 48px;
     bottom: 48px;
     right: 48px;
-    background: rgba(247, 245, 234, 0.75);
+    background: rgb(255, 255, 255);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -1010,7 +1010,7 @@ h1 {
     overflow: hidden;
     border-radius: 5px;
     background: var(--soft-parchment);
-    box-shadow: 0 26px 70px rgba(33, 21, 48, 0.12);
+    // box-shadow: 0 26px 70px rgba(33, 21, 48, 0.12);
     transition: box-shadow 0.35s ease, transform 0.35s ease;
     will-change: transform;
 
@@ -1396,7 +1396,7 @@ h1 {
     justify-content: center;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 26px 70px rgba(33, 21, 48, 0.12), 0 1px 3px rgba(0, 0, 0, 0.04);
+    // box-shadow: 0 26px 70px rgba(33, 21, 48, 0.12), 0 1px 3px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     background: #ffffff;
     transition: box-shadow 0.35s ease, transform 0.35s ease;
@@ -2030,8 +2030,8 @@ h1 {
 
   .hero-motion-seal {
     --seal-size: 112px;
-    top: -32px;
-    left: -56px;
+    top: 0;
+    left: -20px;
   }
 
   .nav-links {
@@ -2335,17 +2335,17 @@ h1 {
   .menu-toggle {
     display: flex;
     position: fixed;
-    top: calc(87px + max(215px, min(93.75vw, 437.5px)));
+    top: calc(55px + max(215px, min(93.75vw, 437.5px)));
     right: 16px;
 
     @media (max-height: 900px) {
-      top: calc(87px + max(215px, min(93.75vw, 400px)));
+      top: calc(55px + max(215px, min(93.75vw, 400px)));
     }
     @media (max-height: 800px) {
-      top: calc(87px + max(215px, min(93.75vw, 362.5px)));
+      top: calc(55px + max(215px, min(93.75vw, 362.5px)));
     }
     @media (max-height: 700px) {
-      top: calc(-2px + max(215px, min(93.75vw, 325px)));
+      top: calc(27px + max(215px, min(93.75vw, 325px)));
       width: 44px;
       height: 44px;
     }
@@ -2374,8 +2374,12 @@ h1 {
   .hero-wa-anchor {
     @media (max-height: 700px) {
       position: fixed;
-      top: calc(52px + max(215px, min(93.75vw, 325px)));
+      top: calc(115px + max(215px, min(93.75vw, 325px)));
       right: 16px;
+
+      @media (max-width: 360px) {
+        top: calc(130px + max(215px, min(93.75vw, 325px)));
+      }
     }
   }
 
@@ -2386,6 +2390,7 @@ h1 {
     &.is-scrolled {
       bottom: calc(16px + env(safe-area-inset-bottom, 0px));
       right: 16px;
+      margin-bottom: 0;
     }
   }
 
@@ -2396,9 +2401,10 @@ h1 {
     right: 16px;
     width: calc(100% - 32px);
     max-width: 150px;
-    background: rgba(247, 245, 234, 0.85);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: white;
+    // background: rgba(247, 245, 234, 0.85);
+    // backdrop-filter: blur(24px);
+    // -webkit-backdrop-filter: blur(24px);
     flex-direction: column;
     align-items: flex-start;
     gap: 20px;
@@ -2487,7 +2493,7 @@ h1 {
 
   .hero-motion-seal {
     --seal-size: 82px;
-    top: -24px;
+    top: 0px;
     left: -18px;
 
     text {
@@ -2612,7 +2618,7 @@ h1 {
       transition: none;
 
       .template-card__media {
-        box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
+        // box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
         transform: none;
 
         img {
@@ -2624,7 +2630,7 @@ h1 {
     &__media {
       aspect-ratio: 4 / 4.8;
       border-radius: 5px;
-      box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
+      // box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
     }
 
     &__body {
