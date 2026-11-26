@@ -152,7 +152,7 @@ export const LANDING_FAQS: readonly FaqItem[] = [
   },
   {
     q: 'Bagaimana jika kami belum memiliki video prewedding?',
-    a: 'Tidak masalah. Untuk tema yang memiliki latar video, kami dapat menggantinya dengan fitur <strong>galeri foto dinamis (photo slider)</strong> yang memutar foto-foto Anda secara bergantian dengan transisi yang halus dan tetap elegan.'
+    a: 'Tidak masalah. Untuk tema yang memiliki latar video, kami dapat menggantinya dengan fitur <strong>galeri foto dinamis (photo slider)</strong> yang memutar foto-foto Anda secara bergantian dengan transisi yang halus.'
   },
   {
     q: 'Apakah ada batasan revisi jika ada kesalahan data atau perubahan?',
@@ -377,6 +377,27 @@ export function buildHomeJsonLd(params: {
         publisher: { '@id': 'https://senadda.id/#organization' }
       },
       {
+        '@type': 'ImageObject',
+        '@id': 'https://senadda.id/#primaryimage',
+        url: pageImage,
+        contentUrl: pageImage,
+        width: 1200,
+        height: 630,
+        caption: pageTitle
+      },
+      {
+        '@type': 'WebPage',
+        '@id': 'https://senadda.id/#webpage',
+        url: pageUrl,
+        name: pageTitle,
+        description: pageDescription,
+        inLanguage: 'id-ID',
+        isPartOf: { '@id': 'https://senadda.id/#website' },
+        about: { '@id': 'https://senadda.id/#localbusiness' },
+        primaryImageOfPage: { '@id': 'https://senadda.id/#primaryimage' },
+        thumbnailUrl: pageImage
+      },
+      {
         '@type': 'Organization',
         '@id': 'https://senadda.id/#organization',
         name: 'Senadda',
@@ -409,7 +430,7 @@ export function buildHomeJsonLd(params: {
         logo: 'https://senadda.id/logo.jpg',
         image: pageImage,
         description:
-          'Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, serta upacara metatah/mepandes.',
+          'Jasa dan platform pembuatan undangan digital simple, clean, dan minimalis di Bali untuk pernikahan, pawiwahan adat Bali, serta upacara metatah/mepandes.',
         telephone: siteSettings.whatsapp_url
           ? siteSettings.whatsapp_url.replace(/[^0-9+]/g, '')
           : '+6288236262247',
@@ -452,7 +473,7 @@ export function buildHomeJsonLd(params: {
                 '@type': 'Service',
                 name: 'Undangan Upacara Metatah / Mepandes Bali',
                 description:
-                  'Koleksi khusus upacara Manusa Yadnya potong gigi khas Bali yang sakral dan elegan.'
+                  'Koleksi khusus upacara Manusa Yadnya potong gigi khas Bali yang sakral, clean, dan minimalis.'
               }
             }
           ]

@@ -28,7 +28,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (acceptHeader.includes('text/markdown') && (pathname === '/' || pathname === '')) {
     const markdown = `# Senadda - Undangan Pernikahan Digital
 
-Selamat datang di Senadda, platform pembuatan undangan digital yang premium, elegan, dan eksklusif.
+Selamat datang di Senadda, platform pembuatan undangan digital yang simple, clean, dan minimalis.
 
 ## Koleksi Template
 - Lumiere (Rp 300.000)

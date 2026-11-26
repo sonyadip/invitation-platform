@@ -90,8 +90,9 @@ const imageType = imageUrl.endsWith('.png') ? 'image/png' : (imageUrl.endsWith('
   <meta name="title" content={pageTitle} />
   <meta name="description" content={pageDescription} />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" type="image/jpeg" href="/logo.jpg" />
-  <link rel="apple-touch-icon" href="/logo.jpg" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="canonical" href={Astro.url.href} />
   <meta property="og:locale" content="id_ID" />
 

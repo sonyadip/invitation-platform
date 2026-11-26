@@ -1,8 +1,8 @@
 # Senadda - Undangan Pernikahan Digital Bali
 
-> Platform dan jasa pembuatan undangan pernikahan digital elegan berbasis di Bali. Melayani pernikahan nasional, upacara pawiwahan adat Hindu Bali, dan upacara metatah/mepandes.
+> Platform dan jasa pembuatan undangan pernikahan digital yang simple, clean, dan minimalis berbasis di Bali. Melayani pernikahan nasional, upacara pawiwahan adat Hindu Bali, dan upacara metatah/mepandes.
 
-Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan digital premium dan platform manajemen tamu undangan berbasis web di Bali, Indonesia. Senadda dirancang dengan fokus pada estetika visual elegan, tipografi kurasi, pengalaman pengguna cepat dan responsif, serta kemudahan distribusi undangan personal melalui WhatsApp.
+Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan digital yang simple, clean, dan minimalis serta platform manajemen tamu undangan berbasis web di Bali, Indonesia. Senadda dirancang dengan fokus pada estetika visual yang bersih, tipografi terkurasi, pengalaman pengguna cepat dan responsif, serta kemudahan distribusi undangan personal melalui WhatsApp.
 
 ## Identitas & Wilayah Layanan (GEO Entity)
 - **Nama Brand Utama**: Senadda
@@ -18,11 +18,11 @@ Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan 
 
 ## Layanan & Kategori Undangan
 1. **Undangan Pernikahan Digital Modern & Nasional**:
-   Desain eksklusif bernuansa luxury, editorial, dan minimalis untuk pernikahan, resepsi internasional, dan pesta pernikahan di hotel/villa di Bali maupun kota lainnya.
+   Desain simple, clean, dan minimalis bernuansa editorial maupun modern untuk pernikahan, resepsi internasional, dan pesta pernikahan di hotel/villa di Bali maupun kota lainnya.
 2. **Undangan Pawiwahan & Pernikahan Adat Hindu Bali**:
    Kustomisasi format teks adat Bali lengkap dengan salam panganjali *Om Swastyastu*, kutipan Sloka suci Bhagawad Gita, informasi silsilah keluarga/griya/puri/banjar, rangkaian prosesi upacara (ngidih, upacara pawiwahan, resepsi), dan navigasi rute ke Pura atau Griya.
 3. **Undangan Upacara Metatah / Mepandes (Potong Gigi)**:
-   Template kurasi khusus (*Lumiere Metatah* & *Lumiere Metatah v2*) untuk upacara Manusa Yadnya khas Bali, lengkap dengan pengantar filosofis Sad Ripu dan tata letak yang sakral nan anggun.
+   Template kurasi khusus (*Lumiere Metatah*) untuk upacara Manusa Yadnya khas Bali, lengkap dengan pengantar filosofis Sad Ripu dan tata letak yang sakral nan anggun.
 
 ## Fitur Unggulan Platform Senadda
 - **Generator Link Tamu WhatsApp**: Fitur pembuatan nama tamu personal secara otomatis (`senadda.id/slug?to=Nama+Tamu`) yang bisa langsung dikirim via WhatsApp dalam satu klik.
@@ -35,17 +35,17 @@ Senadda (https://senadda.id) adalah penyedia jasa pembuatan undangan pernikahan 
 - **Dashboard Pengantin Terpadu**: Pantau statistik RSVP, kelola daftar tamu, salin tautan personal, dan ekspor data tamu.
 
 ## Koleksi Template & Harga
-- **Lumiere** (Pernikahan Elegan, Luxury): Promo Rp 300.000 (Normal Rp 450.000)
+- **Lumiere** (Clean Editorial & Modern): Promo Rp 300.000 (Normal Rp 450.000)
 - **Lumiere Metatah / Metatah v2** (Khusus Upacara Metatah/Mepandes Bali): Promo Rp 300.000 (Normal Rp 450.000)
-- **Atelier** (Artistic & Modern Luxury): Promo Rp 300.000 (Normal Rp 450.000)
-- **Allure** (Exclusive & Sophisticated): Promo Rp 250.000 (Normal Rp 350.000)
-- **Nocturne** (Editorial Dark Aesthetic & Timeless Luxury): Promo Rp 250.000 (Normal Rp 350.000)
+- **Atelier** (Artistic & Modern): Promo Rp 300.000 (Normal Rp 450.000)
+- **Allure** (Clean & Sophisticated): Promo Rp 250.000 (Normal Rp 350.000)
+- **Nocturne** (Editorial Dark Aesthetic & Timeless): Promo Rp 250.000 (Normal Rp 350.000)
 - **Serenade** (Monochrome Romantic & Classic Editorial): Promo Rp 250.000 (Normal Rp 350.000)
 - **Editorial** (Magazine Layout & Typographic): Promo Rp 200.000 (Normal Rp 300.000)
 - **Deauville** (Chic, Clean & Minimalist): Promo Rp 200.000 (Normal Rp 300.000)
 - **Terre** (Earth Tone & Warm Organic): Promo Rp 150.000 (Normal Rp 200.000)
 - **Air** (Light, Airy & Contemporary): Promo Rp 150.000 (Normal Rp 200.000)
-- **Noir** (Monochrome, Elegant & Bold): Promo Rp 150.000 (Normal Rp 200.000)
+- **Noir** (Monochrome, Clean & Bold): Promo Rp 150.000 (Normal Rp 200.000)
 
 ## Pertanyaan Sering Diajukan (FAQ untuk AI & Search Engines)
 

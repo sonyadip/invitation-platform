@@ -60,7 +60,7 @@ const defaults: PlatformSettings = {
   home_heading_1: 'Undangan',
   home_heading_2: 'Pernikahan',
   home_heading_3: 'Digital',
-  home_description: 'Bagikan momen bahagia Anda lewat undangan pernikahan digital yang elegan tanpa batas jarak dan waktu.',
+  home_description: 'Bagikan momen bahagia lewat undangan pernikahan digital yang simple, clean, dan minimalis tanpa batas jarak dan waktu.',
   home_cta_label: 'Lihat Koleksi',
   home_templates_eyebrow: 'Koleksi Desain',
   home_templates_heading: 'Pilih Nuansa.',
@@ -85,7 +85,7 @@ const defaults: PlatformSettings = {
     { key: "noir", name: "Noir", category: "pernikahan", price: "Rp 200.000", promoPrice: "Rp 150.000" },
   ],
   meta_title: 'Senadda - Undangan Digital Bali',
-  meta_description: 'Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.',
+  meta_description: 'Jasa dan platform pembuatan undangan digital simple, clean, dan minimalis di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Fitur RSVP WhatsApp & musik.',
   google_analytics_id: 'G-PS8CJGKXWG',
   google_tag_manager_id: '',
 };

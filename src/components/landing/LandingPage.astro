@@ -89,9 +89,9 @@ const faqColumns = [LANDING_FAQS.slice(0, midFaq), LANDING_FAQS.slice(midFaq)];
 const pageTitle = siteSettings.meta_title || "Senadda - Undangan Digital Bali";
 const pageDescription =
   siteSettings.meta_description ||
-  "Jasa dan platform pembuatan undangan digital elegan di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Desain eksklusif, fitur RSVP WhatsApp & musik.";
+  "Jasa dan platform pembuatan undangan digital simple, clean, dan minimalis di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Fitur RSVP WhatsApp & musik.";
 const pageUrl = "https://senadda.id/";
-const pageImage = new URL("/logo.jpg", pageUrl).toString();
+const pageImage = new URL("/images/og-image.png", pageUrl).toString();
 const schemaData = buildHomeJsonLd({
   siteSettings,
   pageTitle,
@@ -110,8 +110,9 @@ const schemaData = buildHomeJsonLd({
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>{pageTitle}</title>
-    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
-    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="title" content={pageTitle} />
     <meta name="description" content={pageDescription} />
     <meta name="keywords" content={LANDING_PAGE_KEYWORDS} />
@@ -137,12 +138,12 @@ const schemaData = buildHomeJsonLd({
     <meta property="og:description" content={pageDescription} />
     <meta property="og:image" content={pageImage} />
     <meta property="og:image:secure_url" content={pageImage} />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="739" />
-    <meta property="og:image:height" content="739" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Senadda - Undangan Pernikahan Digital Bali" />
 
-    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={pageUrl} />
     <meta property="twitter:title" content={pageTitle} />
     <meta property="twitter:description" content={pageDescription} />
@@ -320,7 +321,7 @@ const schemaData = buildHomeJsonLd({
 
               <div class="bottom-content__main">
                 <p class="description motion-up" style="--i: 7">
-                  {siteSettings.home_description || "Bagikan momen bahagia Anda lewat undangan digital yang elegan, tanpa batas jarak dan waktu."}
+                  {siteSettings.home_description || "Bagikan momen bahagia lewat undangan digital yang minimalis, tanpa batas jarak dan waktu."}
                 </p>
                 <h1 aria-label={headingWords.join(" ")}>
                   {
@@ -348,7 +349,7 @@ const schemaData = buildHomeJsonLd({
           <div class="section-heading">
             <p>{siteSettings.home_templates_eyebrow || "Koleksi Desain"}</p>
             <h2>{siteSettings.home_templates_heading || "Pilih Nuansa."}</h2>
-            <p class="section-subheading">Koleksi undangan digital eksklusif untuk pernikahan modern, Pawiwahan adat Hindu Bali, hingga Upacara Metatah / Mepandes dari Senadda.</p>
+            <p class="section-subheading">Koleksi undangan digital yang simple, clean, dan minimalis untuk pernikahan modern, Pawiwahan adat Hindu Bali, hingga Upacara Metatah / Mepandes dari Senadda.</p>
           </div>
 
           <div class="template-filter-bar reveal-blur" role="tablist" aria-label="Filter kategori tema">

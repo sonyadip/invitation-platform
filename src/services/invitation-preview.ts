@@ -1,5 +1,4 @@
 import type { FullInvitationData, GiftAccount, LoveStoryItem, RSVP, WeddingEvent } from '../types';
-import { COMMON_ASSETS } from '../utils/cdn';
 
 const DEFAULT_WEDDING_STORY: LoveStoryItem[] = [
   {
@@ -285,12 +284,12 @@ export function sanitizeInvitationForAds(clientData: FullInvitationData): FullIn
       ...clientData.settings.theme_config,
       assets: {
         ...rawAssets,
-        heroVideo: hasHeroVideo ? COMMON_ASSETS.PREVIEW_VIDEO : undefined,
-        videoUrl: videoSectionEnabled && hasVideoUrl ? COMMON_ASSETS.PREVIEW_VIDEO : undefined
+        heroVideo: hasHeroVideo ? rawAssets.heroVideo : undefined,
+        videoUrl: videoSectionEnabled && hasVideoUrl ? rawAssets.videoUrl : undefined
       },
       content: buildSanitizedThemeContent(rawContent, isMetatah, {
         clearGiftDescription: true,
-        galleryVideoUrls: videoSectionEnabled && hasGalleryVideos ? [COMMON_ASSETS.PREVIEW_VIDEO] : []
+        galleryVideoUrls: videoSectionEnabled && hasGalleryVideos ? rawContent.galleryVideoUrls : []
       })
     }
   };
