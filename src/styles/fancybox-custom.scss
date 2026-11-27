@@ -34,7 +34,7 @@ div.fancybox__container,
   --f-arrow-pos: 24px;
 
   --fancybox-bg: rgba(0, 0, 0, 0.92);
-  --f-button-color: var(--editorial-white);
+  --f-button-color: var(--editorial-white, rgba(255, 255, 255, 0.9));
   --f-thumb-width: 58px;
   --f-thumb-height: 58px;
   --f-thumb-border-radius: 2px;

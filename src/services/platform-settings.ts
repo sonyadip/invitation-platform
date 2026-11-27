@@ -63,7 +63,7 @@ const defaults: PlatformSettings = {
   home_description: 'Bagikan momen bahagia lewat undangan pernikahan digital yang simple, clean, dan minimalis tanpa batas jarak dan waktu.',
   home_cta_label: 'Lihat Koleksi',
   home_templates_eyebrow: 'Koleksi Desain',
-  home_templates_heading: 'Pilih Nuansa.',
+  home_templates_heading: 'Pilih Tema.',
   home_booking_eyebrow: 'Langkah Selanjutnya',
   home_booking_heading: 'Ceritakan undangan Anda.',
   home_booking_cta: 'Hubungi via WhatsApp',

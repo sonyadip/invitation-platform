@@ -42,6 +42,8 @@ export interface DashboardTab {
   title: string;
   desc: string;
   image: string;
+  width: number;
+  height: number;
   alt: string;
 }
 
@@ -65,6 +67,7 @@ const REQUIRED_CARD_KEYS = ['terre', 'serenade', 'nocturne', 'allure'] as const;
 export const LANDING_NAV_ITEMS: ReadonlyArray<readonly [string, string]> = [
   ['Koleksi', '#templates'],
   ['Alur', '#process'],
+  ['Dashboard', '#dashboard'],
   ['Fitur', '#features'],
   ['FAQ', '#faq'],
   ['Konsultasi', '#booking']
@@ -120,7 +123,9 @@ export const LANDING_DASHBOARD_TABS: readonly DashboardTab[] = [
     label: 'Dashboard',
     title: 'Pantau Semuanya',
     desc: 'Lihat ringkasan lengkap undangan: statistik RSVP, jumlah tamu, countdown hari H, rangkaian acara, dan ucapan terbaru dalam satu halaman.',
-    image: '/images/dashboard/dashboard-home.png',
+    image: '/images/dashboard/dashboard-home.webp',
+    width: 1385,
+    height: 967,
     alt: 'Dashboard Manajemen Undangan Digital Senadda'
   },
   {
@@ -128,7 +133,9 @@ export const LANDING_DASHBOARD_TABS: readonly DashboardTab[] = [
     label: 'Kirim Undangan',
     title: 'Kirim dengan Mudah',
     desc: 'Pilih template pesan sesuai nada (Formal, Teman, Keluarga), kelola daftar tamu, dan kirim undangan langsung via WhatsApp. Satu klik, langsung terkirim.',
-    image: '/images/dashboard/dashboard-kirim.png',
+    image: '/images/dashboard/dashboard-kirim.webp',
+    width: 1385,
+    height: 970,
     alt: 'Kirim Undangan Digital WhatsApp - Senadda'
   },
   {
@@ -136,7 +143,9 @@ export const LANDING_DASHBOARD_TABS: readonly DashboardTab[] = [
     label: 'RSVP',
     title: 'Lacak Kehadiran',
     desc: 'Ringkasan RSVP real-time: siapa yang hadir, berapa total pax, filter berdasarkan status, dan export data tamu kapan saja.',
-    image: '/images/dashboard/dashboard-rsvp.png',
+    image: '/images/dashboard/dashboard-rsvp.webp',
+    width: 1384,
+    height: 969,
     alt: 'Lacak RSVP & Buku Tamu Undangan Digital - Senadda'
   }
 ];

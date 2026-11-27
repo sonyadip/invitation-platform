@@ -338,6 +338,66 @@ function initDashboardTabs() {
   });
 }
 
+function initDashboardLightbox() {
+  const selector = '.dashboard-tabs__screenshot[data-fancybox="dashboard-showcase"]';
+  const triggers = document.querySelectorAll<HTMLAnchorElement>(selector);
+  if (!triggers.length) return;
+
+  let isBound = false;
+  let fancyboxPromise: Promise<typeof import('@fancyapps/ui')> | null = null;
+  const options = {
+    groupAll: false,
+    placeFocusBack: false,
+    Hash: false as const,
+    Carousel: {
+      infinite: true,
+      Toolbar: {
+        display: {
+          left: ['counter'],
+          middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'reset'],
+          right: ['close'],
+        },
+      },
+      Thumbs: false as const,
+    },
+  };
+
+  const loadFancybox = () => {
+    if (!fancyboxPromise) {
+      fancyboxPromise = Promise.all([
+        import('@fancyapps/ui/dist/fancybox/fancybox.css'),
+        import('../styles/fancybox-custom.scss'),
+        import('@fancyapps/ui'),
+      ]).then(([, , mod]) => mod);
+    }
+    return fancyboxPromise;
+  };
+
+  loadFancybox()
+    .then(({ Fancybox }) => {
+      Fancybox.bind(document.body, selector, options);
+      isBound = true;
+    })
+    .catch((err) => {
+      console.error('Failed to initialize dashboard lightbox:', err);
+    });
+
+  // Prevent navigating to raw image URL if clicked before async module loads.
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+      if (isBound) return;
+      event.preventDefault();
+      loadFancybox().then(({ Fancybox }) => {
+        if (!isBound) {
+          Fancybox.bind(document.body, selector, options);
+          isBound = true;
+        }
+        Fancybox.fromTriggerEl(trigger, options);
+      });
+    });
+  });
+}
+
 function initFaqAccordion() {
   const faqItems = Array.from(document.querySelectorAll<HTMLElement>('.faq-item')).map((item) => ({
     item,
@@ -647,7 +707,7 @@ function initHeroAndScroll() {
       if (lenis) {
         lenis.scrollTo(maxScroll, { duration: immediate ? 0 : 1.2, immediate });
       } else {
-        window.scrollTo({ top: maxScroll, behavior: immediate ? 'auto' : 'smooth' });
+        window.scrollTo({ top: maxScroll, behavior: immediate || reduceMotion ? 'auto' : 'smooth' });
       }
       return;
     }
@@ -659,10 +719,10 @@ function initHeroAndScroll() {
 
     const lenis = getLenis();
     if (lenis) {
-      lenis.scrollTo(target, { offset: -84, duration: immediate ? 0 : 1.2, immediate });
+      lenis.scrollTo(target, { offset: 0, duration: immediate ? 0 : 1.2, immediate });
     } else {
       requestAnimationFrame(() => {
-        target.scrollIntoView({ behavior: immediate ? 'auto' : 'smooth', block: 'start' });
+        target.scrollIntoView({ behavior: immediate || reduceMotion ? 'auto' : 'smooth', block: 'start' });
       });
     }
   };
@@ -788,7 +848,7 @@ function initHeroAndScroll() {
       if (lenis) {
         lenis.scrollTo(0, { duration: immediate ? 0 : 1.2, immediate });
       } else {
-        window.scrollTo({ top: 0, behavior: immediate ? 'auto' : 'smooth' });
+        window.scrollTo({ top: 0, behavior: immediate || reduceMotion ? 'auto' : 'smooth' });
       }
     }
   };
@@ -832,11 +892,12 @@ function initWebMcpTools() {
 }
 
 export function initLandingHome() {
-  initLenis({ lerp: 0.1, wheelMultiplier: 1.15, offset: -84 });
+  initLenis({ lerp: 0.1, wheelMultiplier: 1.15 });
   initMobileMenu();
   initLoginModal();
   initTemplateCatalog();
   initDashboardTabs();
+  initDashboardLightbox();
   initFaqAccordion();
   initPromoPopup();
   initHeroAndScroll();

@@ -91,7 +91,7 @@ const pageDescription =
   siteSettings.meta_description ||
   "Jasa dan platform pembuatan undangan digital simple, clean, dan minimalis di Bali untuk pernikahan, pawiwahan adat Bali, hingga upacara metatah/mepandes. Fitur RSVP WhatsApp & musik.";
 const pageUrl = "https://senadda.id/";
-const pageImage = new URL("/images/og-image.png", pageUrl).toString();
+const pageImage = new URL("/images/og-image.jpg", pageUrl).toString();
 const schemaData = buildHomeJsonLd({
   siteSettings,
   pageTitle,
@@ -138,7 +138,7 @@ const schemaData = buildHomeJsonLd({
     <meta property="og:description" content={pageDescription} />
     <meta property="og:image" content={pageImage} />
     <meta property="og:image:secure_url" content={pageImage} />
-    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Senadda - Undangan Pernikahan Digital Bali" />
@@ -348,7 +348,7 @@ const schemaData = buildHomeJsonLd({
         >
           <div class="section-heading">
             <p>{siteSettings.home_templates_eyebrow || "Koleksi Desain"}</p>
-            <h2>{siteSettings.home_templates_heading || "Pilih Nuansa."}</h2>
+            <h2>{siteSettings.home_templates_heading || "Pilih Tema."}</h2>
             <p class="section-subheading">Koleksi undangan digital yang simple, clean, dan minimalis untuk pernikahan modern, Pawiwahan adat Hindu Bali, hingga Upacara Metatah / Mepandes dari Senadda.</p>
           </div>
 
@@ -505,16 +505,24 @@ const schemaData = buildHomeJsonLd({
                 {
                   LANDING_DASHBOARD_TABS.map((tab, idx) => (
                     <div class={`dashboard-tabs__panel${idx === 0 ? " is-active" : ""}`} data-panel={tab.key}>
-                      <div class="dashboard-tabs__screenshot">
+                      <a
+                        href={tab.image}
+                        class="dashboard-tabs__screenshot"
+                        data-fancybox="dashboard-showcase"
+                        aria-label={`Perbesar gambar ${tab.label}`}
+                      >
                         <img
                           src={tab.image}
                           alt={tab.alt}
                           loading="lazy"
                           decoding="async"
-                          width="976"
-                          height="686"
+                          width={tab.width}
+                          height={tab.height}
                         />
-                      </div>
+                        <span class="dashboard-tabs__zoom-hint" aria-hidden="true">
+                          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /><path d="M11 8v6" /><path d="M8 11h6" /></svg>
+                        </span>
+                      </a>
                       <div class="dashboard-tabs__info">
                         <h3>{tab.title}</h3>
                         <p>{tab.desc}</p>
@@ -546,16 +554,24 @@ const schemaData = buildHomeJsonLd({
                   {
                     LANDING_DASHBOARD_TABS.map((tab, idx) => (
                       <div class={`dashboard-tabs__panel${idx === 0 ? " is-active" : ""}`} data-panel={tab.key}>
-                        <div class="dashboard-tabs__screenshot">
+                        <a
+                          href={tab.image}
+                          class="dashboard-tabs__screenshot"
+                          data-fancybox="dashboard-showcase"
+                          aria-label={`Perbesar gambar ${tab.label}`}
+                        >
                           <img
                             src={tab.image}
                             alt={tab.alt}
                             loading="lazy"
                             decoding="async"
-                            width="976"
-                            height="686"
+                            width={tab.width}
+                            height={tab.height}
                           />
-                        </div>
+                          <span class="dashboard-tabs__zoom-hint" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /><path d="M11 8v6" /><path d="M8 11h6" /></svg>
+                          </span>
+                        </a>
                       </div>
                     ))
                   }
@@ -667,6 +683,7 @@ const schemaData = buildHomeJsonLd({
         <div class="start-footer__links">
           <a href="#templates">Koleksi</a>
           <a href="#process">Alur</a>
+          <a href="#dashboard">Dashboard</a>
           <a href="#features">Fitur</a>
           <a href="#faq">FAQ</a>
           <a href={siteSettings.instagram_url || "https://www.instagram.com/senadda.id"} target="_blank" rel="noopener">Instagram</a>
