@@ -33,6 +33,7 @@ Selamat datang di Senadda, platform pembuatan undangan digital yang simple, clea
 ## Koleksi Template
 - Lumiere (Rp 300.000)
 - Atelier (Rp 300.000)
+- Memoire (Rp 300.000)
 - Allure (Rp 250.000)
 - Nocturne (Rp 250.000)
 - Serenade (Rp 250.000)

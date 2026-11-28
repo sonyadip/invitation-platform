@@ -60,6 +60,7 @@ body.template-serenade {
   &.template-no-scroll {
     overflow: hidden !important;
     height: 100vh !important;
+    height: 100svh !important;
   }
 
   * {
@@ -121,24 +122,16 @@ body.template-serenade {
     overflow: hidden;
     background-color: var(--serenade-darker);
     isolation: isolate;
-    transition: transform 2.6s cubic-bezier(0.25, 1, 0.3, 1);
-    will-change: transform;
+    opacity: 1;
+    transition: opacity 1.8s cubic-bezier(0.37, 0, 0.63, 1);
+    will-change: opacity;
 
     &.is-opening {
-      transform: translateX(-100%);
+      opacity: 0;
       pointer-events: none;
 
-      .cover__eyebrow,
-      .cover__names {
-        transition: opacity 1.8s cubic-bezier(0.25, 1, 0.3, 1), transform 2.2s cubic-bezier(0.25, 1, 0.3, 1);
-        opacity: 0.1;
-        transform: translateX(-60px);
-      }
-
-      .cover__guest-box {
-        transition: opacity 1.8s cubic-bezier(0.25, 1, 0.3, 1), transform 2.2s cubic-bezier(0.25, 1, 0.3, 1);
-        opacity: 0.1;
-        transform: translateX(-40px);
+      .cover__center-content {
+        opacity: 0;
       }
     }
 
@@ -148,7 +141,7 @@ body.template-serenade {
       display: none !important;
       visibility: hidden;
       pointer-events: none;
-      transform: translateX(-100%);
+      opacity: 0;
     }
 
     &__bg {
@@ -185,6 +178,9 @@ body.template-serenade {
       justify-content: center;
       text-align: center;
       width: 100%;
+      opacity: 1;
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity;
     }
 
     &__eyebrow {
@@ -364,14 +360,15 @@ body.template-serenade {
     }
   }
 
+  // Lock fixed background to large viewport height so mobile browser toolbars
+  // showing/hiding on scroll never resize the container or zoom object-fit: cover.
   .main-bg-slider {
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh;
+    height: 100lvh;
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
@@ -384,6 +381,28 @@ body.template-serenade {
       width: 460px;
       left: auto;
       right: 0;
+    }
+
+    &__poster,
+    &__video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.60);
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    &__poster {
+      z-index: 0;
+    }
+
+    &__video {
+      z-index: 1;
     }
 
     &__slides {
@@ -546,6 +565,7 @@ body.template-serenade {
     position: relative;
     min-height: 600px;
     height: 75vh;
+    height: 75lvh;
     max-height: 760px;
     display: flex;
     flex-direction: column;
@@ -1896,6 +1916,7 @@ body.template-serenade {
     &__media {
       width: 100%;
       min-height: 60vh;
+      min-height: 60lvh;
       overflow: hidden;
       padding: 0 20px;
       box-sizing: border-box;
@@ -1904,6 +1925,7 @@ body.template-serenade {
         width: 100%;
         height: 100%;
         min-height: 60vh;
+        min-height: 60lvh;
         object-fit: cover;
         display: block;
       }
@@ -1955,7 +1977,7 @@ body.template-serenade {
   }
 
   .thankyou-section__brand {
-    height: 11px;
+    height: 14px;
     width: auto;
     filter: brightness(0) invert(1);
   }
@@ -2191,7 +2213,7 @@ body.template-serenade {
 
   @media (prefers-reduced-motion: reduce) {
     [data-animate],
-    .cover,
+    .cover:not(.is-opening):not(.is-opened),
     .cover__inner,
     .gallery-item__img,
     .audio-icon-wrapper {
@@ -2200,6 +2222,11 @@ body.template-serenade {
       filter: none !important;
       transition: none !important;
       animation: none !important;
+    }
+
+    .cover,
+    .cover__center-content {
+      transition: none !important;
     }
   }
 }

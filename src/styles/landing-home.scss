@@ -365,7 +365,6 @@ body.intro-exit .hero-motion-wrap {
   min-width: 320px;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  // box-shadow: 0 30px 90px rgba(44, 18, 85, 0.05);
   transition:
     width 1.25s cubic-bezier(0.76, 0, 0.24, 1),
     height 1.25s cubic-bezier(0.76, 0, 0.24, 1);
@@ -502,13 +501,7 @@ body.intro-exit .hero-motion-seal {
   align-items: center;
   justify-content: center;
   height: 22px;
-  // margin-bottom: 4px;
   transition: transform 0.3s ease;
-
-  // @media (max-width: 768px){
-  //   margin-bottom: 0;
-  //   margin-top: 3px;
-  // }
 
   &__image {
     height: 100%;
@@ -1014,7 +1007,6 @@ h1 {
     overflow: hidden;
     border-radius: 5px;
     background: var(--soft-parchment);
-    // box-shadow: 0 26px 70px rgba(33, 21, 48, 0.12);
     transition: box-shadow 0.35s ease, transform 0.35s ease;
     will-change: transform;
 
@@ -1399,7 +1391,6 @@ h1 {
     justify-content: center;
     border-radius: 8px;
     overflow: hidden;
-    // box-shadow: 0 26px 70px rgba(33, 21, 48, 0.12), 0 1px 3px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     background: #ffffff;
     cursor: zoom-in;
@@ -2462,9 +2453,6 @@ h1 {
     width: calc(100% - 32px);
     max-width: 150px;
     background: white;
-    // background: rgba(247, 245, 234, 0.85);
-    // backdrop-filter: blur(24px);
-    // -webkit-backdrop-filter: blur(24px);
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
@@ -2678,7 +2666,6 @@ h1 {
       transition: none;
 
       .template-card__media {
-        // box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
         transform: none;
 
         img {
@@ -2690,7 +2677,6 @@ h1 {
     &__media {
       aspect-ratio: 4 / 4.8;
       border-radius: 5px;
-      // box-shadow: 0 16px 36px rgba(33, 21, 48, 0.1);
     }
 
     &__body {

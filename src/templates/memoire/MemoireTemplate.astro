@@ -1,0 +1,1070 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ClassicIntro from "../../components/common/ClassicIntro.astro";
+import SmartImage from "../../components/common/SmartImage.astro";
+import CountdownTimer from "../../components/common/CountdownTimer.astro";
+import type { FullInvitationData } from '../../types';
+import { getPlatformSettings } from '../../services/platform-settings';
+import { toCdnUrl } from '../../utils/cdn';
+
+import bgHero from '../noir/assets/bg-hero.webp';
+import coupleBride from '../noir/assets/couple-bride.jpg';
+import coupleGroom from '../noir/assets/couple-groom.jpg';
+import galleryOne from '../noir/assets/gallery-1.jpg';
+import galleryTwo from '../noir/assets/gallery-2.jpg';
+import galleryThree from '../noir/assets/gallery-3.jpg';
+import galleryFour from '../noir/assets/gallery-4.jpg';
+import galleryFive from '../noir/assets/gallery-5.jpg';
+import gallerySix from '../noir/assets/gallery-6.jpg';
+import gallerySeven from '../noir/assets/gallery-7.jpg';
+
+import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import styleUrl from './style.scss?url';
+
+import {
+  formatChildPrefix,
+  formatDate,
+  buildGoogleCalendarUrl,
+  getInstagramUsername,
+  formatWishDate,
+  generatePaginationItems,
+  decodeHtmlEntities,
+  getBankLogoUrl
+} from '../../utils/template-helpers';
+
+interface Props {
+  data: FullInvitationData;
+  guestName: string | null;
+}
+
+const { data, guestName } = Astro.props;
+const { wedding, settings, events, gallery, gifts, wishes } = data;
+const sections = settings.sections || ({} as any);
+
+const isPreview = wedding.id.startsWith('preview-');
+
+const groomNickname = (wedding.groom_name === 'Rah Agus' ? 'Agus' : wedding.groom_name) || 'Agus';
+const brideNickname = wedding.bride_name || 'Meita';
+const groomFullName = wedding.groom_full_name || wedding.groom_name || 'I Wayan Yudi Artayasa';
+const brideFullName = wedding.bride_full_name || wedding.bride_name || 'Ni Kadek Meita Widiantari';
+
+const themeConfig = (settings.theme_config || {
+  theme: {},
+  layout: { galleryColumns: 3 },
+  assets: {}
+}) as any;
+const themeContent = themeConfig.content || {};
+const platformSettings = await getPlatformSettings();
+
+const overrideSettings = {
+  ...settings,
+  theme_config: {
+    ...themeConfig,
+    theme: {
+      ...themeConfig.theme,
+      primaryColor: '#c2c2c2',
+      secondaryColor: '#262627',
+      textColor: '#ffffff',
+      bgColor: '#0f0f10',
+      fontHeading: 'Cormorant Garamond',
+      fontBody: 'Montserrat'
+    }
+  }
+};
+
+const weddingDateStr = wedding.wedding_date || '2026-12-22';
+const fullFormattedDate = formatDate(weddingDateStr);
+
+const activeEvents = events && events.length > 0
+  ? events
+  : [
+      {
+        id: 'event-akad',
+        event_name: 'Akad Nikah',
+        event_date: weddingDateStr,
+        start_time: '13:00 WITA',
+        end_time: 'Selesai',
+        venue_name: 'The Royal Garden',
+        venue_address: 'Jl. Pantai Indah No. 8, Bali',
+        maps_url: wedding.maps_url || 'https://maps.google.com',
+        sort_order: 1,
+        wedding_id: wedding.id,
+        created_at: ''
+      }
+    ];
+
+const primaryEvent = activeEvents[0];
+const primaryEventDateObj = new Date(primaryEvent?.event_date || weddingDateStr);
+const validPrimaryEventDate = isNaN(primaryEventDateObj.getTime()) ? new Date('2026-12-22') : primaryEventDateObj;
+const primaryDayName = validPrimaryEventDate.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'Asia/Makassar' }).toUpperCase();
+const primaryFullDate = validPrimaryEventDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Asia/Makassar' }).toUpperCase();
+const heroDateParts = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: '2-digit',
+  year: '2-digit',
+  timeZone: 'Asia/Makassar'
+}).formatToParts(validPrimaryEventDate);
+const heroDayStr = heroDateParts.find((p) => p.type === 'day')?.value || '22';
+const heroMonthStr = heroDateParts.find((p) => p.type === 'month')?.value || '12';
+const heroYearShortStr = heroDateParts.find((p) => p.type === 'year')?.value || '26';
+
+function formatCleanTime(startTime?: string, endTime?: string): string {
+  if (!startTime) return '';
+  const s = startTime.trim().replace(/^pukul\s*:\s*/i, '');
+  const e = endTime ? endTime.trim().replace(/^pukul\s*:\s*/i, '') : '';
+  if (!e) return s;
+  return `${s} - ${e}`;
+}
+
+const themeAssets = themeConfig.assets || {};
+const coverImage = themeAssets.coverImage || themeAssets.heroImage || (isPreview ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS09888.webp' : bgHero.src);
+const heroImage = themeAssets.heroImage || bgHero.src;
+const brideImage = themeAssets.brideImage || coupleBride.src;
+const groomImage = themeAssets.groomImage || coupleGroom.src;
+const closingImage = themeAssets.closingImage || themeAssets.heroImage || (isPreview ? 'https://media.senadda.id/rah-agus-komala/closing/closing.webp' : coverImage);
+const heroVideo = themeAssets.heroVideo ? toCdnUrl(themeAssets.heroVideo) : '';
+const videoUrl = toCdnUrl(themeAssets.videoUrl || themeAssets.heroVideo || '');
+const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || heroImage || coverImage;
+
+const googleCalendarUrl = primaryEvent ? buildGoogleCalendarUrl(wedding as any, primaryEvent as any) : '';
+
+const defaultGallery = [
+  { id: '1', image_url: galleryOne.src },
+  { id: '2', image_url: galleryTwo.src },
+  { id: '3', image_url: galleryThree.src },
+  { id: '4', image_url: galleryFour.src },
+  { id: '5', image_url: galleryFive.src },
+  { id: '6', image_url: gallerySix.src },
+  { id: '7', image_url: gallerySeven.src }
+];
+
+const activeGallery = gallery && gallery.length > 0
+  ? gallery.map((image) => ({
+      id: image.id,
+      image_url: typeof image.image_url === 'string' ? image.image_url : (image.image_url as any)?.src || galleryOne.src
+    }))
+  : defaultGallery;
+
+const countdownImage = themeAssets.countdownImage || activeGallery[0]?.image_url || heroImage || coverImage;
+
+const _themeName = 'Memoire';
+
+const rawSliderImages = [
+  coverImage,
+  ...(themeAssets.bgSliderImages && themeAssets.bgSliderImages.length > 0
+    ? themeAssets.bgSliderImages
+    : (themeAssets.sliderImages && themeAssets.sliderImages.length > 0
+        ? themeAssets.sliderImages
+        : (activeGallery && activeGallery.length > 0
+            ? activeGallery.map((g: any) => g.image_url).filter(Boolean)
+            : [heroImage, brideImage, groomImage, galleryOne.src, galleryTwo.src])))
+].filter(Boolean);
+
+const seenSliderUrls = new Set<string>();
+const sliderImages = rawSliderImages.filter((url) => {
+  const key = typeof url === 'string' ? url : (url as any)?.src || '';
+  if (!key || seenSliderUrls.has(key)) return false;
+  seenSliderUrls.add(key);
+  return true;
+});
+if (sliderImages.length === 0 && coverImage) sliderImages.push(coverImage);
+
+const brideFather = themeContent.brideFatherName || 'Bapak Mempelai';
+const brideMother = themeContent.brideMotherName || 'Ibu Mempelai';
+const brideChildVal = themeContent.brideChildNumber || (wedding as any).bride_child_position || themeContent.brideChildPosition;
+const bridePrefix = formatChildPrefix(brideChildVal, 'Putri', null, isPreview ? 'Putri Pertama dari' : 'Putri dari');
+const brideAddressText = themeContent.brideAddress || themeContent.brideCity || themeContent.brideOrigin || '';
+
+const groomFather = themeContent.groomFatherName || 'Bapak Mempelai';
+const groomMother = themeContent.groomMotherName || 'Ibu Mempelai';
+const groomChildVal = themeContent.groomChildNumber || (wedding as any).groom_child_position || themeContent.groomChildPosition;
+const groomPrefix = formatChildPrefix(groomChildVal, 'Putra', null, isPreview ? 'Putra Kedua dari' : 'Putra dari');
+const groomAddressText = themeContent.groomAddress || themeContent.groomCity || themeContent.groomOrigin || '';
+
+const formatIgUrl = (val?: string | null) => {
+  if (!val) return null;
+  const s = val.trim();
+  if (!s || s === '#') return null;
+  if (s.startsWith('http://') || s.startsWith('https://')) return s;
+  return `https://instagram.com/${s.replace(/^@/, '')}`;
+};
+const brideInstagramUrl = formatIgUrl(themeContent.brideInstagramUrl || (wedding as any).bride_instagram);
+const groomInstagramUrl = formatIgUrl(themeContent.groomInstagramUrl || (wedding as any).groom_instagram);
+
+const openingVerse = themeContent.verse || themeContent.quoteText || themeContent.openingVerse || `"Ihaiva stam mā vi yaustam, Visvām āyur vyasnutam. Krindantau putrair naptrbhih, Modamānau sve grhe."`;
+const openingVerseSource = themeContent.verseSource || themeContent.quoteSource || themeContent.openingVerseSource || (themeContent.verse || themeContent.quoteText ? '' : '(Rgveda : X.85.42)');
+const cleanVerse = openingVerse.replace(/^["“”]/, '').replace(/["“”]$/, '').trim();
+const formattedVerseSource = openingVerseSource ? (openingVerseSource.startsWith('(') ? openingVerseSource : `(${openingVerseSource})`) : '';
+
+const defaultStory = [
+  {
+    year: 'Awal Pertemuan',
+    title: 'Pertemuan Pertama',
+    description: 'Semua berawal dari sebuah perkenalan sederhana yang perlahan menumbuhkan rasa nyaman dan keyakinan untuk melangkah bersama.'
+  },
+  {
+    year: 'Menjalani Bersama',
+    title: 'Bertumbuh & Saling Menguatkan',
+    description: 'Melalui tawa, doa, dan berbagai cerita kehidupan, kami belajar bahwa rumah terbaik adalah saling menggenggam satu sama lain.'
+  },
+  {
+    year: 'Hari Bahagia',
+    title: 'Menuju Pernikahan',
+    description: 'Kini kami melangkah menuju babak baru kehidupan untuk menyatukan dua hati dalam ikatan suci pernikahan.'
+  }
+];
+
+const activeStory = wedding.story && wedding.story.length > 0
+  ? wedding.story
+  : (isPreview ? defaultStory : []);
+
+const showCouple = sections.coupleInfo !== false;
+const showStory = sections.story !== false && activeStory.length > 0;
+const showEvents = sections.eventDetails !== false;
+const showCountdown = sections.countdown !== false && settings.countdown_enabled !== false;
+const showRsvp = sections.rsvp !== false && settings.rsvp_enabled !== false;
+const showGift = sections.gift !== false && settings.gift_enabled !== false;
+const showGallery = sections.gallery !== false && settings.gallery_enabled !== false && activeGallery.length > 0;
+const showVideo = sections.video !== false && Boolean(videoUrl);
+
+const instagramUrl = themeContent.instagramUrl || platformSettings?.instagram_url || 'https://instagram.com/senadda.id';
+const _baseWa = themeContent.whatsappUrl || platformSettings?.whatsapp_url || '';
+const whatsappUrl = _baseWa ? `${_baseWa}${_baseWa.includes('?') ? '&' : '?'}text=${encodeURIComponent('Halo Admin, saya tertarik untuk membuat undangan digital dengan tema *' + _themeName + '*. Boleh minta informasi mengenai cara pemesanannya?')}` : '';
+const closingTitle = themeContent.thankYouTitle || themeContent.closingTitle || 'Terima Kasih';
+const closingMessage = themeContent.thankYouMessage || themeContent.closingMessage || 'Merupakan suatu kebahagiaan dan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu di hari bahagia kami.';
+
+const defaultGifts = [
+  {
+    id: 'gift-1',
+    bank_name: 'BCA',
+    account_number: '0123 456 789',
+    account_name: groomFullName,
+    bank_logo: undefined
+  },
+  {
+    id: 'gift-2',
+    bank_name: 'MANDIRI',
+    account_number: '123 456 7891',
+    account_name: brideFullName,
+    bank_logo: undefined
+  }
+];
+
+const activeGifts = gifts && gifts.length > 0
+  ? gifts.map((g) => ({
+      id: g.id,
+      bank_name: g.bank_name,
+      account_number: g.account_number,
+      account_name: g.account_name,
+      bank_logo: (g as any).bank_logo
+    }))
+  : defaultGifts;
+
+const displayedWishes = wishes && wishes.length > 0 ? wishes.slice(0, 4) : [];
+const isWishesEmpty = !wishes || wishes.length === 0;
+const totalWishPages = Math.ceil((wishes?.length || 0) / 4);
+
+const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ? 'https://media.senadda.id/audio/banda-neira-sampai-jadi-debu.mp3' : undefined);
+
+const navItems = [
+  { id: 'beranda', label: 'Beranda' },
+  ...(showCouple ? [{ id: 'mempelai-pria', label: 'Mempelai' }] : []),
+  ...(showEvents ? [{ id: 'acara', label: 'Acara' }] : []),
+  ...(showGallery ? [{ id: 'galeri', label: 'Galeri' }] : []),
+  ...(showRsvp ? [{ id: 'rsvp', label: 'RSVP & Ucapan' }] : [])
+];
+---
+
+<BaseLayout
+  wedding={wedding}
+  settings={overrideSettings}
+  to={guestName}
+  templateClass={`template-memoire${sections.introAnimation !== false ? " has-intro" : ""}`}
+  image={coverImage}
+  styleUrl={styleUrl}
+>
+  <div class="invitation-root" data-template-root data-lenis-prevent>
+    {sections.introAnimation !== false && (
+      <ClassicIntro
+        groomName={groomNickname}
+        brideName={brideNickname}
+        subtitle="The Wedding Of"
+      />
+    )}
+
+    <div class="cover" data-template-cover>
+      <SmartImage class="cover__bg" src={coverImage} alt="" aria-hidden="true" loading="eager" fetchpriority="high" />
+      <div class="cover__scrim" aria-hidden="true"></div>
+
+      <div class="cover__inner">
+        <div class="cover__top-block">
+          <p class="cover__eyebrow">{themeContent.heroEyebrow || 'The Wedding Of'}</p>
+          <h1 class="cover__names">
+            <span>{groomNickname} &amp;</span>
+            <span>{brideNickname}</span>
+          </h1>
+          <p class="cover__date">{fullFormattedDate}</p>
+        </div>
+
+        <div class="cover__bottom-block">
+          <p class="cover__dear">Kepada Yth.</p>
+          <h2 class="cover__guest-name">{guestName || 'Tamu Undangan'}</h2>
+
+          <button class="cover__btn" data-template-open type="button" aria-label="Buka Undangan">
+            <span>Buka Undangan</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout" data-template-layout>
+      <aside class="sidebar">
+        <SmartImage class="sidebar__bg" src={coverImage} alt="" aria-hidden="true" />
+        <div class="sidebar__overlay" aria-hidden="true"></div>
+        <div class="sidebar__caption">
+          <p class="sidebar__names" data-animate="fade-up" style="--animate-delay: 250ms;">
+            {groomNickname} &amp; {brideNickname}
+          </p>
+        </div>
+      </aside>
+
+      <div class="stage-shell">
+        <div class="main-bg-layer" aria-hidden="true">
+          {heroVideo ? (
+            <video
+              class="main-bg-layer__video"
+              src={heroVideo}
+              poster={typeof coverImage === 'string' ? coverImage : (coverImage as any)?.src}
+              preload="metadata"
+              autoplay
+              muted
+              loop
+              playsinline
+            ></video>
+          ) : (
+            <div class="main-bg-slider" data-main-bg-slider>
+              <div class="main-bg-slider__slides">
+                {sliderImages.map((slide: string, index: number) => (
+                  <SmartImage
+                    class={`main-bg-slider__slide ${index === 0 ? 'is-active' : ''}`}
+                    src={slide}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          <div class="main-bg-layer__scrim"></div>
+        </div>
+
+        <button
+          type="button"
+          class="nav-menu-trigger"
+          data-menu-toggle
+          aria-label="Buka menu navigasi"
+          aria-expanded="false"
+        >
+          <span class="nav-menu-trigger__lines" aria-hidden="true">
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+
+        <nav class="nav-popover" data-menu-drawer aria-label="Menu Navigasi">
+          {navItems.map((item) => (
+            <button
+              type="button"
+              class="nav-popover__link"
+              data-nav-target={`#${item.id}`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {sections.music !== false && activeMusicUrl && (
+          <button class="audio-toggle" data-template-audio-toggle type="button" aria-label="Play or pause music">
+            <div class="audio-icon-wrapper">
+              <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <svg class="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+            </div>
+            <audio data-template-audio loop preload="none" src={activeMusicUrl}></audio>
+          </button>
+        )}
+
+        <main class="horizontal-track" data-horizontal-track data-lenis-prevent>
+          <section class="h-slide h-slide--hero" id="beranda" data-slide-label="Beranda">
+            <div class="hero-editorial">
+              <div class="hero-editorial__left" data-animate="fade-right" style="--animate-delay: 160ms;">
+                <span class="hero-editorial__vertical-script">
+                  {groomNickname} + {brideNickname}
+                </span>
+              </div>
+
+              <div class="hero-editorial__right">
+                <div class="hero-editorial__ornament">
+                  <span class="hero-editorial__vline" aria-hidden="true" data-animate="expand-y" data-animate-origin="top" style="--animate-delay: 220ms;"></span>
+                  <div class="hero-editorial__date-stacked" data-animate="fade-up" style="--animate-delay: 380ms;">
+                    <span>{heroDayStr}</span>
+                    <span class="hero-editorial__dot" aria-hidden="true">&bull;</span>
+                    <span>{heroMonthStr}</span>
+                    <span class="hero-editorial__dot" aria-hidden="true">&bull;</span>
+                    <span>{heroYearShortStr}</span>
+                  </div>
+                  <span class="hero-editorial__vline" aria-hidden="true" data-animate="expand-y" data-animate-origin="bottom" style="--animate-delay: 320ms;"></span>
+                </div>
+
+                <div class="hero-editorial__details">
+                  <h1 class="hero-editorial__names" data-animate="fade-left" style="--animate-delay: 320ms;">
+                    <span>{groomNickname} &amp;</span>
+                    <span>{brideNickname}</span>
+                  </h1>
+
+                  <div class="hero-editorial__quote" data-animate="fade-left" style="--animate-delay: 520ms;">
+                    <p class="hero-editorial__quote-text">"{cleanVerse}"</p>
+                    {formattedVerseSource && (
+                      <p class="hero-editorial__quote-source">{formattedVerseSource.replace(/^\(|\)$/g, '')}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="hero-scroll-indicator"
+              data-track-next-cue
+              data-animate="fade-right"
+              style="--animate-delay: 760ms;"
+              aria-label="Geser ke samping"
+            >
+              <span class="scroll-text">GESER</span>
+              <span class="scroll-line" aria-hidden="true"></span>
+            </button>
+          </section>
+
+          {showCouple && (
+            <section class="h-slide h-slide--couple" id="mempelai-pria" data-slide-label="Mempelai">
+              <div class="couple-slide__bg-wrap">
+                <SmartImage class="couple-slide__bg-img" src={groomImage} alt={groomNickname} data-animate="blur-scale" />
+                <div class="couple-slide__scrim"></div>
+              </div>
+
+              <span class="couple-slide__role" data-animate="fade-right" style="--animate-delay: 120ms;">The Groom</span>
+
+              <div class="couple-slide__body">
+                <h2 class="couple-slide__nickname" data-animate="fade-up" style="--animate-delay: 240ms;">{groomNickname}</h2>
+                <p class="couple-slide__fullname" data-animate="fade-up" style="--animate-delay: 340ms;">{groomFullName}</p>
+                <div class="couple-slide__prefix-row" data-animate="fade-up" style="--animate-delay: 420ms;">
+                  <p class="couple-slide__prefix">{groomPrefix || 'Putra dari'}</p>
+                  <div class="couple-slide__rule" data-animate="expand-x" data-animate-origin="left"></div>
+                </div>
+                <p class="couple-slide__parents" data-animate="fade-up" style="--animate-delay: 580ms;">
+                  {groomFather} &amp; {groomMother}
+                  {groomAddressText && <><br />{groomAddressText}</>}
+                </p>
+
+                {(groomInstagramUrl || isPreview) && (
+                  <a
+                    class="couple-slide__ig"
+                    href={groomInstagramUrl || 'https://instagram.com'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-animate="fade-up"
+                    style="--animate-delay: 680ms;"
+                  >
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <span>@{getInstagramUsername(groomInstagramUrl) || wedding.groom_instagram || 'instagram'}</span>
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
+
+          {showCouple && (
+            <section class="h-slide h-slide--couple" id="mempelai-wanita" data-slide-label="Mempelai">
+              <div class="couple-slide__bg-wrap">
+                <SmartImage class="couple-slide__bg-img" src={brideImage} alt={brideNickname} data-animate="blur-scale" />
+                <div class="couple-slide__scrim"></div>
+              </div>
+
+              <span class="couple-slide__role" data-animate="fade-right" style="--animate-delay: 120ms;">The Bride</span>
+
+              <div class="couple-slide__body">
+                <h2 class="couple-slide__nickname" data-animate="fade-up" style="--animate-delay: 240ms;">{brideNickname}</h2>
+                <p class="couple-slide__fullname" data-animate="fade-up" style="--animate-delay: 340ms;">{brideFullName}</p>
+                <div class="couple-slide__prefix-row" data-animate="fade-up" style="--animate-delay: 420ms;">
+                  <p class="couple-slide__prefix">{bridePrefix || 'Putri dari'}</p>
+                  <div class="couple-slide__rule" data-animate="expand-x" data-animate-origin="left"></div>
+                </div>
+                <p class="couple-slide__parents" data-animate="fade-up" style="--animate-delay: 580ms;">
+                  {brideFather} &amp; {brideMother}
+                  {brideAddressText && <><br />{brideAddressText}</>}
+                </p>
+
+                {(brideInstagramUrl || isPreview) && (
+                  <a
+                    class="couple-slide__ig"
+                    href={brideInstagramUrl || 'https://instagram.com'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-animate="fade-up"
+                    style="--animate-delay: 680ms;"
+                  >
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <span>@{getInstagramUsername(brideInstagramUrl) || wedding.bride_instagram || 'instagram'}</span>
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
+
+          {showStory && (
+            <section class="h-slide h-slide--story-host" id="kisah-cinta" data-slide-label="Kisah Cinta" data-story-host>
+              <div class="v-story-track" data-story-vertical-track>
+                {activeStory.map((item, idx) => {
+                  const storyPhoto = activeGallery[idx % activeGallery.length]?.image_url || heroImage || coverImage;
+                  const isLastStory = idx === activeStory.length - 1;
+                  return (
+                    <article class="v-story-slide" data-story-slide data-story-index={idx}>
+                      <div class="story-slide__inner">
+                        {idx === 0 && (
+                          <h2 class="story-slide__lead" data-animate="fade-up" style="--animate-delay: 120ms;">
+                            Our Story
+                          </h2>
+                        )}
+
+                        <h3 class="story-slide__heading" data-animate="fade-up" style="--animate-delay: 220ms;">
+                          {item.year || item.title}
+                        </h3>
+
+                        {storyPhoto && (
+                          <div class="story-slide__inset" data-animate="fade-up" style="--animate-delay: 300ms;">
+                            <SmartImage src={storyPhoto} alt={item.title || 'Kisah Cinta'} loading={idx === 0 ? 'eager' : 'lazy'} />
+                          </div>
+                        )}
+
+                        {item.year && item.title && item.year !== item.title && (
+                          <p class="story-slide__subtitle" data-animate="fade-up" style="--animate-delay: 360ms;">{item.title}</p>
+                        )}
+
+                        <p class="story-slide__desc" data-animate="fade-up" style="--animate-delay: 420ms;">
+                          {item.description}
+                        </p>
+
+                        <span class="story-slide__counter" data-animate="fade-up" style="--animate-delay: 520ms;">
+                          {idx + 1} / {activeStory.length}
+                        </span>
+
+                        {!isLastStory && (
+                          <button
+                            type="button"
+                            class="story-slide__cue story-slide__cue--down"
+                            data-story-next
+                            data-animate="fade-up"
+                            style="--animate-delay: 600ms;"
+                            aria-label="Kisah selanjutnya ke bawah"
+                          >
+                            <span class="story-slide__cue-text">LANJUT</span>
+                            <span class="story-slide__cue-line story-slide__cue-line--y" aria-hidden="true"></span>
+                          </button>
+                        )}
+                      </div>
+
+                      {isLastStory && (
+                        <button
+                          type="button"
+                          class="story-slide__cue story-slide__cue--right"
+                          data-story-continue-right
+                          data-animate="fade-right"
+                          style="--animate-delay: 600ms;"
+                          aria-label="Geser ke bagian acara"
+                        >
+                          <span class="story-slide__cue-text">GESER</span>
+                          <span class="story-slide__cue-line story-slide__cue-line--x" aria-hidden="true"></span>
+                        </button>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {showEvents && (
+            <section class="h-slide h-slide--event h-slide--scrollable" id="acara" data-slide-label="Acara">
+              <div class="h-slide__scroll-inner event-v2__inner">
+                <div class="countdown-slide__frame" data-animate="fade-up" style="--animate-delay: 120ms;">
+                  <SmartImage src={countdownImage} alt={`${groomNickname} & ${brideNickname}`} loading="lazy" />
+                </div>
+
+                <div class="event-v2__primary-date" data-animate="fade-up" style="--animate-delay: 220ms;">
+                  <span class="event-v2__day">{primaryDayName}</span>
+                  <span class="event-v2__date">{primaryFullDate}</span>
+                </div>
+
+                <div class="event-v2__list">
+                  {activeEvents.map((evt, idx) => {
+                    const evtDate = evt.event_date ? new Date(evt.event_date) : validPrimaryEventDate;
+                    const validEvtDate = isNaN(evtDate.getTime()) ? validPrimaryEventDate : evtDate;
+                    const evtDateText = validEvtDate.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Asia/Makassar' });
+                    const showSeparateEvtDate = idx > 0 && evt.event_date && evt.event_date !== primaryEvent?.event_date;
+                    const timeText = formatCleanTime(evt.start_time, evt.end_time) || '13:00 WITA - Selesai';
+
+                    return (
+                      <article class="event-v2__item" data-animate="fade-up" style={`--animate-delay: ${300 + idx * 140}ms;`}>
+                        <h2 class="event-v2__title">{(evt.event_name || 'Resepsi').toUpperCase()}</h2>
+                        {showSeparateEvtDate && <p class="event-v2__subdate">{evtDateText}</p>}
+                        <p class="event-v2__time">{timeText}</p>
+                        {evt.venue_name && <p class="event-v2__venue">{evt.venue_name}</p>}
+                        {evt.venue_address && <p class="event-v2__address">{evt.venue_address}</p>}
+                        {(evt.maps_url || wedding.maps_url) && (
+                          <a
+                            href={evt.maps_url || wedding.maps_url || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="event-v2__maps-btn"
+                          >
+                            Maps
+                          </a>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {showCountdown && (
+            <section class="h-slide h-slide--countdown" id="hitung-mundur" data-slide-label="Hitung Mundur">
+              <div class="countdown-slide__inner">
+                <div class="event-v2__lockup" data-animate="fade-up" style="--animate-delay: 120ms;" aria-label="Save Our Date">
+                  <span class="event-v2__lockup-line event-v2__lockup-line--1">SAVE</span>
+                  <span class="event-v2__lockup-line event-v2__lockup-line--2">OUR</span>
+                  <span class="event-v2__lockup-line event-v2__lockup-line--3">DATE</span>
+                </div>
+
+                <div class="countdown-slide__timer">
+                  <CountdownTimer
+                    date={weddingDateStr}
+                    animateItems={true}
+                    baseDelay={260}
+                    staggerDelay={140}
+                    labels={['Hari', 'Jam', 'Menit', 'Detik']}
+                  />
+                </div>
+
+                {googleCalendarUrl && (
+                  <a
+                    href={googleCalendarUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="countdown-slide__cal-btn"
+                    data-animate="fade-up"
+                    style="--animate-delay: 820ms;"
+                  >
+                    Simpan ke Kalender
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
+
+          {showGallery && (
+            <section class="h-slide h-slide--gallery h-slide--scrollable" id="galeri" data-slide-label="Galeri">
+              <div class="h-slide__scroll-inner gallery-slide__inner">
+                <div class="gallery-container">
+                  <div class="gallery-header">
+                    <h2 class="gallery-section__title" data-animate="fade-up">Our Gallery</h2>
+                    <div class="gallery-header__rule" data-animate="expand-x" style="--animate-delay: 150ms;"></div>
+                  </div>
+
+                  <div class="gallery-slider-wrap" data-gallery-slider data-animate="fade-up" style="--animate-delay: 260ms;">
+                    <button type="button" class="gallery-slider__nav gallery-slider__nav--prev" data-slider-prev aria-label="Foto sebelumnya">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                      </svg>
+                    </button>
+
+                    <div class="gallery-slider__viewport" data-slider-viewport>
+                      <div class="gallery-slider__track" data-slider-track>
+                        {activeGallery.map((img, idx) => (
+                          <div class={`gallery-slider__slide ${idx === 0 ? 'is-active' : ''}`} data-slider-slide data-index={idx}>
+                            <a
+                              href={typeof img.image_url === 'string' ? img.image_url : (img.image_url as any).src}
+                              data-fancybox="gallery"
+                              class="gallery-slider__link"
+                            >
+                              <SmartImage src={img.image_url} alt={`Momen pernikahan ${idx + 1}`} loading={idx === 0 ? 'eager' : 'lazy'} />
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button type="button" class="gallery-slider__nav gallery-slider__nav--next" data-slider-next aria-label="Foto berikutnya">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+
+                  {activeGallery.length > 1 && (
+                    <div class="gallery-grid">
+                      {activeGallery.slice(1).map((image, index) => (
+                        <a
+                          class="gallery-item"
+                          href={typeof image.image_url === 'string' ? image.image_url : (image.image_url as any).src}
+                          data-fancybox="gallery"
+                          data-animate="fade-up"
+                          style={`--animate-delay: ${(index % 2) * 140 + Math.floor(index / 2) * 80}ms;`}
+                        >
+                          <SmartImage
+                            src={image.image_url}
+                            alt="Wedding gallery moment"
+                            loading="lazy"
+                            class="gallery-item__img"
+                          />
+                          <div class="gallery-item__overlay">
+                            <div class="gallery-item__zoom">
+                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                              </svg>
+                            </div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {showVideo && (
+            <section class="h-slide h-slide--video" id="video" data-slide-label="Video">
+              <div class="video-slide__inner">
+                <h2 class="video-slide__title" data-animate="fade-up" style="--animate-delay: 140ms;">
+                  A Glimpse of<br />Our Story
+                </h2>
+
+                <a
+                  class="video-slide__card"
+                  href={videoUrl}
+                  data-fancybox="gallery"
+                  aria-label="Tonton Video Prewedding"
+                  data-animate="fade-up"
+                  style="--animate-delay: 260ms;"
+                >
+                  <SmartImage class="video-slide__thumb" src={videoPoster} alt="Video Prewedding" loading="lazy" />
+                  <div class="video-slide__play" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                      <polygon points="7 4 20 12 7 20 7 4"></polygon>
+                    </svg>
+                  </div>
+                </a>
+
+                <p class="video-slide__script" data-animate="fade-up" style="--animate-delay: 380ms;">
+                  {groomNickname} &amp; {brideNickname}
+                </p>
+              </div>
+            </section>
+          )}
+
+          {showRsvp && (
+            <section class="h-slide h-slide--rsvp h-slide--scrollable" id="rsvp" data-slide-label="RSVP & Ucapan">
+              <div class="h-slide__scroll-inner rsvp-slide__inner">
+                <div class="rsvp-header" data-animate="fade-up" style="--animate-delay: 120ms;">
+                  <h2 class="rsvp-header__title">RSVP &amp; Wishes</h2>
+                  <p class="rsvp-header__desc">
+                    {themeContent.rsvpDescription || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.'}
+                  </p>
+                </div>
+
+                <div class="rsvp-card" data-animate="fade-up" style="--animate-delay: 220ms;">
+                  <div class="rsvp-success" data-rsvp-success>
+                    <div class="rsvp-success__icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="36" height="36">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                    </div>
+                    <h4 class="rsvp-success__title">Terima Kasih!</h4>
+                    <p class="rsvp-success__desc">Konfirmasi kehadiran dan ucapan Anda telah berhasil kami simpan.</p>
+                  </div>
+
+                  <form class="rsvp-form" data-rsvp-form>
+                    <input type="hidden" name="weddingId" value={wedding.id} />
+
+                    <div class="rsvp-form__field">
+                      <label for="rsvp-memoire-name" class="rsvp-form__label">NAMA LENGKAP *</label>
+                      <input
+                        type="text"
+                        id="rsvp-memoire-name"
+                        name="name"
+                        required
+                        placeholder="Nama Lengkap"
+                        class="rsvp-form__input"
+                        value={guestName || ''}
+                        maxlength="100"
+                      />
+                    </div>
+
+                    <div class="rsvp-form__row">
+                      <div class="rsvp-form__field">
+                        <label for="rsvp-memoire-attendance" class="rsvp-form__label">KEHADIRAN *</label>
+                        <select
+                          id="rsvp-memoire-attendance"
+                          name="attendance"
+                          required
+                          class="rsvp-form__select"
+                          data-rsvp-attendance
+                        >
+                          <option value="" disabled>Pilih Kehadiran</option>
+                          <option value="attending" selected>Hadir</option>
+                          <option value="tentative">Ragu-ragu</option>
+                          <option value="declined">Tidak Hadir</option>
+                        </select>
+                      </div>
+
+                      <div class="rsvp-form__field">
+                        <label for="rsvp-memoire-count" class="rsvp-form__label">JUMLAH TAMU</label>
+                        <select id="rsvp-memoire-count" name="count" class="rsvp-form__select">
+                          <option value="1" selected>1 Orang</option>
+                          <option value="2">2 Orang</option>
+                          <option value="3">3 Orang</option>
+                          <option value="4">4 Orang</option>
+                          <option value="5">5 Orang</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="rsvp-form__field">
+                      <label for="rsvp-memoire-message" class="rsvp-form__label">UCAPAN &amp; DOA</label>
+                      <textarea
+                        id="rsvp-memoire-message"
+                        name="message"
+                        rows="3"
+                        placeholder="Tuliskan ucapan & doa restu..."
+                        class="rsvp-form__textarea"
+                        maxlength="500"
+                      ></textarea>
+                    </div>
+
+                    <div class="rsvp-form__error" data-rsvp-error></div>
+                    <button type="submit" class="rsvp-form__submit" data-rsvp-submit>Kirim Konfirmasi</button>
+                  </form>
+                </div>
+
+                <div class="wishes-block" data-animate="fade-up" style="--animate-delay: 320ms;">
+                  <div class="wishes-list" data-wishes-list>
+                    <div class:list={['wishes-empty', { 'is-hidden': !isWishesEmpty }]} data-wishes-empty>
+                      <span>Belum ada ucapan. Jadilah yang pertama memberikan doa restu!</span>
+                    </div>
+
+                    {displayedWishes.map((wish) => (
+                      <div
+                        class="wish-card"
+                        data-wish-id={wish.id}
+                        data-wish-key={wish.id || `${wish.created_at}|${wish.guest_name}|${wish.message || ''}`}
+                      >
+                        <div class="wish-card__header">
+                          <div class="wish-card__meta">
+                            <span class="wish-card__name">{decodeHtmlEntities(wish.guest_name)}</span>
+                            <span class={`wish-card__badge ${wish.attendance_status === "attending" ? "wish-card__badge--attend" : wish.attendance_status === "tentative" ? "wish-card__badge--tentative" : "wish-card__badge--absent"}`}>
+                              {wish.attendance_status === "attending" ? "Hadir" : wish.attendance_status === "tentative" ? "Ragu" : "Tidak Hadir"}
+                            </span>
+                          </div>
+                          <span class="wish-card__date">{formatWishDate(wish.created_at)}</span>
+                        </div>
+                        <p class="wish-card__message">{decodeHtmlEntities(wish.message)}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {totalWishPages > 1 && (
+                    <div
+                      class="wishes-pagination"
+                      data-wishes-pagination
+                      data-wedding-id={wedding.id}
+                      data-current-page="1"
+                      data-total-pages={totalWishPages}
+                      data-per-page="4"
+                    >
+                      <button type="button" class="wishes-pagination__btn" data-wishes-prev disabled aria-label="Halaman sebelumnya">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                          <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                      </button>
+                      <div class="wishes-pagination__numbers" data-wishes-numbers>
+                        {generatePaginationItems(1, totalWishPages).map((item) => (
+                          typeof item === 'number' ? (
+                            <button
+                              type="button"
+                              class={`wishes-pagination__num ${item === 1 ? 'wishes-pagination__num--active' : ''}`}
+                              data-wishes-page={item}
+                              aria-label={`Halaman ${item}`}
+                            >
+                              {item}
+                            </button>
+                          ) : (
+                            <span class="wishes-pagination__ellipsis">...</span>
+                          )
+                        ))}
+                      </div>
+                      <button type="button" class="wishes-pagination__btn" data-wishes-next aria-label="Halaman berikutnya">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {showGift && (
+            <section class="h-slide h-slide--gift h-slide--scrollable gift-section" id="hadiah" data-slide-label="Tanda Kasih">
+              <div class="h-slide__scroll-inner gift-slide__inner">
+                <div class="gift-slide__top" data-animate="fade-up" style="--animate-delay: 120ms;">
+                  <h2 class="gift-slide__title">Wedding Gift</h2>
+                  <p class="gift-slide__desc">
+                    {themeContent.giftDescription || 'Bagi Bapak/Ibu/Saudara/i yang berkenan memberikan tanda kasih, dapat melalui rekening berikut.'}
+                  </p>
+
+                  <button
+                    type="button"
+                    class="gift-toggle-btn"
+                    data-gift-toggle
+                    data-show-text="Lihat Rekening"
+                    data-hide-text="Tutup Rekening"
+                    aria-expanded="false"
+                  >
+                    <span>Lihat Rekening</span>
+                  </button>
+                </div>
+
+                <div class="gift-collapse-wrapper" data-gift-wrapper>
+                  <div class="gift-collapse-inner">
+                    <div class="gift-grid" data-gift-grid hidden>
+                      {activeGifts.map((gift, gIdx) => {
+                        const logoUrl = getBankLogoUrl(gift.bank_name, (gift as any).bank_logo);
+                        return (
+                          <article class="gift-card" style={`--animate-delay: ${gIdx * 140}ms;`}>
+                            <div class="gift-card__body">
+                              {logoUrl ? (
+                                <img src={logoUrl} alt={gift.bank_name} class="gift-card__bank-logo" />
+                              ) : (
+                                <span class="gift-card__bank">{gift.bank_name}</span>
+                              )}
+                              <p class="gift-card__number">{gift.account_number}</p>
+                              <p class="gift-card__holder">a.n. {gift.account_name}</p>
+                            </div>
+                            <div class="gift-card__actions">
+                              <button
+                                class="gift-btn gift-btn--copy"
+                                data-copy-btn
+                                data-value={gift.account_number}
+                                data-account-name={gift.account_name}
+                                data-bank-name={gift.bank_name}
+                                type="button"
+                              >
+                                <span class="gift-btn__icon-wrapper">
+                                  <svg class="gift-btn__icon gift-btn__icon--copy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                                  </svg>
+                                  <svg class="gift-btn__icon gift-btn__icon--check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                  </svg>
+                                </span>
+                                <span class="gift-btn__text">Salin</span>
+                              </button>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section class="h-slide h-slide--closing" id="penutup" data-slide-label="Penutup">
+            {closingImage && (
+              <div class="closing-slide__bg-wrap" aria-hidden="true">
+                <SmartImage class="closing-slide__bg-img" src={closingImage} alt="" loading="lazy" />
+                <div class="closing-slide__scrim"></div>
+              </div>
+            )}
+
+            <div class="closing-slide__inner">
+              <div class="closing-slide__top">
+                <h2 class="closing-slide__title" data-animate="fade-up" style="--animate-delay: 150ms;">{closingTitle}</h2>
+                <p class="closing-slide__message" data-animate="fade-up" style="--animate-delay: 280ms;">{closingMessage}</p>
+                <p class="closing-slide__names" data-animate="fade-up" style="--animate-delay: 400ms;">
+                  {groomNickname} &amp; {brideNickname}
+                </p>
+              </div>
+
+              <footer class="thankyou-section__footer" data-animate="fade-up" style="--animate-delay: 520ms;">
+                <a
+                  href="https://senadda.id"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Senadda - Undangan Digital Bali"
+                  class="thankyou-section__brand-link"
+                  data-track-vendor-site
+                >
+                  <SmartImage src="/images/senadda-logo.png" alt="Senadda - Undangan Digital Bali" class="thankyou-section__brand" />
+                </a>
+                <div class="thankyou-section__socials">
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-link" data-track-vendor-instagram>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                      <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                      <circle cx="12" cy="12" r="4"></circle>
+                      <circle cx="17.5" cy="6.5" r="1"></circle>
+                    </svg>
+                  </a>
+                  {whatsappUrl && (
+                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="social-link" data-track-vendor-whatsapp>
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                      </svg>
+                    </a>
+                  )}
+                  <a href="/" target="_blank" rel="noopener noreferrer" aria-label="Website" class="social-link" data-track-vendor-site>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path>
+                    </svg>
+                  </a>
+                </div>
+                <p class="thankyou-section__copyright">&copy; Copyright {new Date().getFullYear()}</p>
+              </footer>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import './script.js';
+</script>

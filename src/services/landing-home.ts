@@ -48,6 +48,7 @@ export interface DashboardTab {
 }
 
 const DEFAULT_TEMPLATE_ENTRIES: Array<Omit<TemplateCard, 'image' | 'hasVariants' | 'variants'>> = [
+  { key: 'memoire', name: 'Memoire', category: 'pernikahan', price: 'Rp 450.000', promoPrice: 'Rp 300.000' },
   { key: 'serenade', name: 'Serenade', category: 'pernikahan', price: 'Rp 350.000', promoPrice: 'Rp 250.000' },
   { key: 'nocturne', name: 'Nocturne', category: 'pernikahan', price: 'Rp 350.000', promoPrice: 'Rp 250.000' },
   { key: 'allure', name: 'Allure', category: 'pernikahan', price: 'Rp 350.000', promoPrice: 'Rp 250.000' },
@@ -62,7 +63,7 @@ const DEFAULT_TEMPLATE_ENTRIES: Array<Omit<TemplateCard, 'image' | 'hasVariants'
   { key: 'noir', name: 'Noir', category: 'pernikahan', price: 'Rp 200.000', promoPrice: 'Rp 150.000' }
 ];
 
-const REQUIRED_CARD_KEYS = ['terre', 'serenade', 'nocturne', 'allure'] as const;
+const REQUIRED_CARD_KEYS = ['terre', 'serenade', 'nocturne', 'allure', 'memoire'] as const;
 
 export const LANDING_NAV_ITEMS: ReadonlyArray<readonly [string, string]> = [
   ['Koleksi', '#templates'],

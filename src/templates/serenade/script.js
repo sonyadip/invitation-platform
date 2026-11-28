@@ -54,6 +54,7 @@ function initSerenade() {
 
   openBtn?.addEventListener('click', () => {
     if (cover instanceof HTMLElement) {
+      if (cover.classList.contains('is-opening') || cover.classList.contains('is-opened')) return;
       cover.classList.add('is-opening');
     }
 
@@ -61,6 +62,7 @@ function initSerenade() {
       layout.style.opacity = '1';
     }
 
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.setTimeout(() => {
       if (cover instanceof HTMLElement) {
         cover.classList.remove('is-opening');
@@ -70,11 +72,21 @@ function initSerenade() {
 
       document.body.classList.remove('template-no-scroll', 'template-cover-active');
       document.body.style.height = '';
-    }, 2650);
+    }, reduceMotion ? 0 : 1850);
 
     if (song instanceof HTMLAudioElement) {
       song.play().catch(() => {});
       audioBtn?.classList.add('audio-toggle--playing');
+    }
+
+    const bgVideo = root.querySelector('[data-template-bg-video]');
+    if (bgVideo instanceof HTMLVideoElement) {
+      bgVideo.muted = true;
+      if (reduceMotion) {
+        bgVideo.pause();
+      } else {
+        bgVideo.play().catch(() => {});
+      }
     }
 
     setTimeout(() => {
@@ -362,6 +374,12 @@ function initSerenade() {
   }
 
   initMainBgSlider();
+
+  const bgVideoEl = root.querySelector('[data-template-bg-video]');
+  if (bgVideoEl instanceof HTMLVideoElement && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    bgVideoEl.removeAttribute('autoplay');
+    bgVideoEl.pause();
+  }
 
   initVideoPlayers(root);
   initGalleryLightbox(root);

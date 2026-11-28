@@ -13,6 +13,7 @@ import terreCover from "../../templates/terre/assets/cover.webp";
 import allureCover from "../../templates/allure/assets/cover.webp";
 import nocturneCover from "../../templates/nocturne/assets/cover.webp";
 import serenadeCover from "../../templates/serenade/assets/cover.webp";
+import memoireCover from "../../templates/memoire/assets/cover.webp";
 import GoogleAnalytics from "../common/GoogleAnalytics.astro";
 import { getPlatformSettings } from "../../services/platform-settings";
 import {
@@ -50,6 +51,7 @@ const headingWords = [
 ];
 
 const imageMap: Record<string, string> = {
+  memoire: memoireCover.src,
   allure: allureCover.src,
   nocturne: nocturneCover.src,
   serenade: serenadeCover.src,

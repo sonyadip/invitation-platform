@@ -15,6 +15,9 @@
 }
 
 html:has(body.template-deauville) {
+  overflow: hidden !important;
+  height: 100vh;
+  height: 100dvh;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -43,20 +46,23 @@ body.template-deauville {
   --dea-paper-ink: #202020;
 
   margin: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden !important;
   background: var(--dea-dark);
   color: var(--dea-ink);
   font-family: var(--font-body), "Josefin Sans", sans-serif;
 
-  &.template-no-scroll {
-    overflow: hidden;
+  &.template-no-scroll,
+  &.template-cover-active {
+    overflow: hidden !important;
     height: 100vh;
-    height: 100svh;
+    height: 100dvh;
   }
 
-  &.template-cover-active {
-    overflow: hidden;
-    height: 100vh;
-    height: 100svh;
+  &.template-cover-active .invitation-main {
+    overflow: hidden !important;
   }
 
   &.template-cover-active .cover-section {
@@ -69,8 +75,9 @@ body.template-deauville {
   }
 
   .invitation-root {
-    min-height: 100vh;
-    min-height: 100svh;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     background: var(--dea-dark);
   }
 
@@ -289,8 +296,7 @@ body.template-deauville {
   .invitation-layout {
     display: flex;
     width: 100%;
-    min-height: 100vh;
-    min-height: 100svh;
+    height: 100%;
     flex-direction: row;
     position: relative;
     z-index: 2;
@@ -324,6 +330,7 @@ body.template-deauville {
     display: flex;
     width: calc(100% - 480px);
     height: 100vh;
+    height: 100dvh;
     align-items: center;
     justify-content: center;
     overflow: hidden;
@@ -409,21 +416,44 @@ body.template-deauville {
   }
 
   .invitation-main {
+    position: relative;
     width: 480px;
-    min-height: 100vh;
+    height: 100%;
     flex-shrink: 0;
     margin-left: auto;
     box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    will-change: scroll-position;
     background: transparent;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    &.is-gliding {
+      scroll-snap-type: none;
+      scroll-behavior: auto;
+
+      .snap-section {
+        pointer-events: none;
+      }
+    }
   }
 
   .snap-section {
     position: relative;
-    min-height: 100vh;
-    min-height: 100svh;
+    height: 100%;
+    min-height: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
     padding: 60px 30px;
     overflow: hidden;
+    contain: layout style;
   }
 
   .template-slider {
@@ -1682,8 +1712,23 @@ body.template-deauville {
     to { transform: rotate(360deg); }
   }
 
+  .event-section,
+  .gallery-section,
+  .rsvp-section,
+  .gift-section {
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-content: safe center;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   [data-animate] {
     opacity: 0;
+    will-change: opacity, transform;
   }
 
   [data-animate].is-animated {
@@ -1692,10 +1737,19 @@ body.template-deauville {
 
   [data-opening-animate] {
     opacity: 0;
+    will-change: opacity, transform;
   }
 
   [data-opening-animate].is-animated {
     animation: deauville-fade-in 1.8s ease var(--opening-delay, 0.5s) forwards;
+  }
+
+  [data-animate].is-resetting,
+  [data-opening-animate].is-resetting,
+  [data-animate].is-resetting .countdown-item {
+    animation: none !important;
+    transition: none !important;
+    transition-delay: 0ms !important;
   }
 
   .qris-lightbox {
@@ -1802,7 +1856,8 @@ body.template-deauville {
     }
 
     .snap-section {
-      min-height: 100svh;
+      height: 100%;
+      min-height: 100%;
       padding: 46px 20px;
     }
 
@@ -1828,13 +1883,20 @@ body.template-deauville {
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+
+    [data-animate],
+    [data-opening-animate],
+    .countdown-item {
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 
   .thankyou-section {
     position: relative;
     display: flex;
-    min-height: 100vh;
-    min-height: 100svh;
+    height: 100%;
+    min-height: 100%;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;

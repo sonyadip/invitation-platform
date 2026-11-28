@@ -341,7 +341,7 @@ const activeGifts =
     }
   </style>
 
-  <div class="invitation-root" data-template-root>
+  <div class="invitation-root" data-template-root data-lenis-prevent>
     {sections.introAnimation !== false && (
       <ClassicIntro
         groomName={wedding.groom_name}
@@ -396,7 +396,7 @@ const activeGifts =
         </aside>
       </div>
 
-      <main class="invitation-main">
+      <main class="invitation-main" data-vertical-track data-lenis-prevent>
 
         <section class="hero-section snap-section">
           <div class="template-slider" data-template-slider>

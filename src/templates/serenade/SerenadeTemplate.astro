@@ -5,6 +5,7 @@ import SmartImage from "../../components/common/SmartImage.astro";
 import CountdownTimer from "../../components/common/CountdownTimer.astro";
 import type { FullInvitationData } from '../../types';
 import { getPlatformSettings } from '../../services/platform-settings';
+import { COMMON_ASSETS, toCdnUrl } from '../../utils/cdn';
 
 import bgHero from '../noir/assets/bg-hero.webp';
 import coupleBride from '../noir/assets/couple-bride.jpg';
@@ -111,6 +112,8 @@ const heroImage = themeAssets.heroImage || bgHero.src;
 const brideImage = themeAssets.brideImage || (isPreview ? coupleBride.src : '');
 const groomImage = themeAssets.groomImage || (isPreview ? coupleGroom.src : '');
 const closingImage = themeAssets.closingImage || themeAssets.heroImage || (isPreview ? 'https://media.senadda.id/rah-agus-komala/closing/closing.webp' : undefined);
+const heroVideo = themeAssets.heroVideo ? toCdnUrl(themeAssets.heroVideo) : (isPreview ? COMMON_ASSETS.PREVIEW_VIDEO : '');
+const bgVideoPoster = themeAssets.videoPoster || themeAssets.posterImage || coverImage;
 const videoUrl = themeAssets.videoUrl || themeAssets.heroVideo || '';
 const videoPoster = themeAssets.videoPoster || themeAssets.posterImage || heroImage || coverImage;
 
@@ -285,23 +288,46 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
       <main class="main-content">
 
         <div class="main-bg-slider" data-main-bg-slider aria-hidden="true">
-          <div class="main-bg-slider__slides">
-            {sliderImages.map((slide: string, index: number) => (
+          {heroVideo ? (
+            <>
               <SmartImage
-                class={`main-bg-slider__slide ${index === 0 ? 'is-active' : ''}`}
-                src={slide}
+                class="main-bg-slider__poster"
+                src={bgVideoPoster}
                 alt=""
                 aria-hidden="true"
+                loading="eager"
               />
-            ))}
-          </div>
+              <video
+                class="main-bg-slider__video"
+                src={heroVideo}
+                poster={typeof bgVideoPoster === 'string' ? bgVideoPoster : (bgVideoPoster as any)?.src}
+                preload="metadata"
+                autoplay
+                muted
+                loop
+                playsinline
+                data-template-bg-video
+              ></video>
+            </>
+          ) : (
+            <div class="main-bg-slider__slides">
+              {sliderImages.map((slide: string, index: number) => (
+                <SmartImage
+                  class={`main-bg-slider__slide ${index === 0 ? 'is-active' : ''}`}
+                  src={slide}
+                  alt=""
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <section class="hero" id="hero">
           <div class="hero__inner">
             <div class="hero__header">
-              <p class="hero__eyebrow" data-animate="fade-up" style="--animate-delay: 200ms;">The Wedding Of</p>
-              <h1 class="hero__names" data-animate="fade-up" style="--animate-delay: 450ms;">
+              <p class="hero__eyebrow">The Wedding Of</p>
+              <h1 class="hero__names">
                 <span class="hero__name-first">{groomNickname}</span>
                 <span class="hero__name-second">&{brideNickname}</span>
               </h1>
@@ -309,7 +335,7 @@ const activeMusicUrl = wedding.music_url || themeAssets.musicUrl || (isPreview ?
 
             <div class="hero__spacer" aria-hidden="true"></div>
 
-            <div class="hero__quote" data-animate="fade-up" style="--animate-delay: 750ms;">
+            <div class="hero__quote">
               <p class="hero__quote-text">
                 "{cleanVerse}"
               </p>

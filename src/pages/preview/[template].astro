@@ -32,6 +32,7 @@ const CLIENT_PREVIEW_MAP: Record<string, string> = {
   allure: 'yudi-meita',
   nocturne: 'rah-agus-komala',
   serenade: 'rah-agus-komala',
+  memoire: 'rah-agus-komala',
   solenne: 'yudi-meita',
   velvet: 'yudi-meita'
 };
@@ -106,9 +107,9 @@ const defaultData: FullInvitationData = {
         galleryColumns: 3
       },
       assets: {
-        coverImage: templateKey === 'serenade' ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS09888.webp' : undefined,
-        eventImage: templateKey === 'serenade' ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS00134.webp' : undefined,
-        heroVideo: ['lumiere', 'editorial', 'atelier'].includes(templateKey) ? COMMON_ASSETS.PREVIEW_VIDEO : undefined,
+        coverImage: (templateKey === 'serenade' || templateKey === 'memoire') ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS09888.webp' : undefined,
+        eventImage: (templateKey === 'serenade' || templateKey === 'memoire') ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS00134.webp' : undefined,
+        heroVideo: ['lumiere', 'editorial', 'atelier', 'memoire', 'serenade'].includes(templateKey) ? COMMON_ASSETS.PREVIEW_VIDEO : undefined,
         videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm'
       },
       content: {
@@ -334,7 +335,7 @@ if (clientSlug) {
       const wedding = {
         ...defaultData.wedding,
         ...clientData.wedding,
-        groom_name: (templateKey === 'nocturne' || templateKey === 'serenade') && clientData.wedding.groom_name === 'Rah Agus'
+        groom_name: (templateKey === 'nocturne' || templateKey === 'serenade' || templateKey === 'memoire') && clientData.wedding.groom_name === 'Rah Agus'
           ? 'Agus'
           : (clientData.wedding.groom_name || defaultData.wedding.groom_name),
         id: `preview-${templateKey}`,
@@ -387,12 +388,12 @@ if (clientSlug) {
               : clientData.settings.theme_config?.assets?.ogImage,
             coverImage: templateKey === 'nocturne'
               ? 'https://media.senadda.id/rah-agus-komala/closing/closing.webp'
-              : templateKey === 'serenade'
+              : (templateKey === 'serenade' || templateKey === 'memoire')
                 ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS09888.webp'
                 : (templateKey === 'allure' || templateKey === 'velvet')
                   ? (clientData.gallery?.find(g => typeof g.image_url === 'string' && g.image_url.includes('gallery-6.webp'))?.image_url || clientData.settings.theme_config?.assets?.coverImage)
                   : clientData.settings.theme_config?.assets?.coverImage,
-            eventImage: templateKey === 'serenade'
+            eventImage: (templateKey === 'serenade' || templateKey === 'memoire')
               ? 'https://media.senadda.id/rah-agus-komala/gallery/DMS00134.webp'
               : (templateKey === 'allure' || templateKey === 'velvet')
                 ? (clientData.settings.theme_config?.assets?.coverImage || clientData.settings.theme_config?.assets?.heroImage)
@@ -431,7 +432,7 @@ if (clientSlug) {
           }))
         : defaultData.events;
 
-      if (events.length === 1 && !['blush', 'deauville', 'allure', 'velvet', 'serenade'].includes(templateKey)) {
+      if (events.length === 1 && !['blush', 'deauville', 'allure', 'velvet', 'serenade', 'memoire'].includes(templateKey)) {
         const firstEvt = events[0];
         const isFirstResepsi = firstEvt.event_name.toLowerCase().includes('resepsi');
         const isHindu = /rgveda|veda|hindu|om swastyastu/i.test(
@@ -468,9 +469,15 @@ if (clientSlug) {
       }
       if (['blush', 'deauville', 'allure', 'velvet'].includes(templateKey)) {
         events = events.slice(0, 1);
-      } else if (templateKey === 'serenade') {
+      } else if (templateKey === 'serenade' || templateKey === 'memoire') {
         const resepsiEvt = events.find((evt) => evt.event_name.toLowerCase().includes('resepsi')) || events[0];
-        events = resepsiEvt ? [{ ...resepsiEvt, event_name: 'Resepsi' }] : defaultData.events;
+        events = resepsiEvt
+          ? [{
+              ...resepsiEvt,
+              event_name: 'Resepsi',
+              ...(templateKey === 'memoire' ? { start_time: '13:00 WITA', end_time: 'Selesai' } : {})
+            }]
+          : defaultData.events.slice(0, 1);
       }
 
       const EXCLUDED_PREVIEW_IMAGES: Record<string, string[]> = {
@@ -493,6 +500,13 @@ if (clientSlug) {
           'DMS09996.webp',
           'DMS00003.webp',
           'DMS00006.webp'
+        ],
+        memoire: [
+          'DMS09996.webp',
+          'DMS00003.webp',
+          'DMS00006.webp',
+          'DMS09848.webp',
+          'DMS09888.webp'
         ]
       };
       const excludedImages = EXCLUDED_PREVIEW_IMAGES[templateKey] || [];
